@@ -18,7 +18,7 @@ The format is based on stage completion, and this project follows strict TDD and
 ### Stage 4: Execution Graph - 2025-11-21
 **Duration:** Single session
 **Status:** ✅ Complete
-**Commit:** [TO BE ADDED]
+**Commit:** fe3a439
 **Tag:** `stage-4-complete`
 **Proof:** See `STAGE_4_PROOF.md`
 

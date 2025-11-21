@@ -1,0 +1,12 @@
+/Users/darren/dev/workflow/src/WorkflowCore/bin/Release/net8.0/WorkflowCore.deps.json
+/Users/darren/dev/workflow/src/WorkflowCore/bin/Release/net8.0/WorkflowCore.dll
+/Users/darren/dev/workflow/src/WorkflowCore/bin/Release/net8.0/WorkflowCore.pdb
+/Users/darren/dev/workflow/src/WorkflowCore/obj/Release/net8.0/WorkflowCore.csproj.AssemblyReference.cache
+/Users/darren/dev/workflow/src/WorkflowCore/obj/Release/net8.0/WorkflowCore.GeneratedMSBuildEditorConfig.editorconfig
+/Users/darren/dev/workflow/src/WorkflowCore/obj/Release/net8.0/WorkflowCore.AssemblyInfoInputs.cache
+/Users/darren/dev/workflow/src/WorkflowCore/obj/Release/net8.0/WorkflowCore.AssemblyInfo.cs
+/Users/darren/dev/workflow/src/WorkflowCore/obj/Release/net8.0/WorkflowCore.csproj.CoreCompileInputs.cache
+/Users/darren/dev/workflow/src/WorkflowCore/obj/Release/net8.0/WorkflowCore.dll
+/Users/darren/dev/workflow/src/WorkflowCore/obj/Release/net8.0/refint/WorkflowCore.dll
+/Users/darren/dev/workflow/src/WorkflowCore/obj/Release/net8.0/WorkflowCore.pdb
+/Users/darren/dev/workflow/src/WorkflowCore/obj/Release/net8.0/ref/WorkflowCore.dll

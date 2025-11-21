@@ -1,0 +1,68 @@
+{
+  "version": 2,
+  "dgSpecHash": "iUw32MiHfdU=",
+  "success": true,
+  "projectFilePath": "/Users/darren/dev/workflow/src/WorkflowCore/WorkflowCore.csproj",
+  "expectedPackageFiles": [
+    "/Users/darren/.nuget/packages/fractions/7.3.0/fractions.7.3.0.nupkg.sha512",
+    "/Users/darren/.nuget/packages/identitymodel/5.2.0/identitymodel.5.2.0.nupkg.sha512",
+    "/Users/darren/.nuget/packages/identitymodel.oidcclient/5.2.1/identitymodel.oidcclient.5.2.1.nupkg.sha512",
+    "/Users/darren/.nuget/packages/jetbrains.annotations/2021.2.0/jetbrains.annotations.2021.2.0.nupkg.sha512",
+    "/Users/darren/.nuget/packages/json.more.net/1.9.0/json.more.net.1.9.0.nupkg.sha512",
+    "/Users/darren/.nuget/packages/jsonpointer.net/3.0.3/jsonpointer.net.3.0.3.nupkg.sha512",
+    "/Users/darren/.nuget/packages/jsonschema.net/5.5.0/jsonschema.net.5.5.0.nupkg.sha512",
+    "/Users/darren/.nuget/packages/kubernetesclient/13.0.1/kubernetesclient.13.0.1.nupkg.sha512",
+    "/Users/darren/.nuget/packages/microsoft.extensions.dependencyinjection/6.0.0/microsoft.extensions.dependencyinjection.6.0.0.nupkg.sha512",
+    "/Users/darren/.nuget/packages/microsoft.extensions.dependencyinjection.abstractions/6.0.0/microsoft.extensions.dependencyinjection.abstractions.6.0.0.nupkg.sha512",
+    "/Users/darren/.nuget/packages/microsoft.extensions.http/3.1.0/microsoft.extensions.http.3.1.0.nupkg.sha512",
+    "/Users/darren/.nuget/packages/microsoft.extensions.logging/6.0.0/microsoft.extensions.logging.6.0.0.nupkg.sha512",
+    "/Users/darren/.nuget/packages/microsoft.extensions.logging.abstractions/6.0.0/microsoft.extensions.logging.abstractions.6.0.0.nupkg.sha512",
+    "/Users/darren/.nuget/packages/microsoft.extensions.objectpool/7.0.0/microsoft.extensions.objectpool.7.0.0.nupkg.sha512",
+    "/Users/darren/.nuget/packages/microsoft.extensions.options/6.0.0/microsoft.extensions.options.6.0.0.nupkg.sha512",
+    "/Users/darren/.nuget/packages/microsoft.extensions.primitives/6.0.0/microsoft.extensions.primitives.6.0.0.nupkg.sha512",
+    "/Users/darren/.nuget/packages/microsoft.identitymodel.abstractions/7.0.3/microsoft.identitymodel.abstractions.7.0.3.nupkg.sha512",
+    "/Users/darren/.nuget/packages/microsoft.identitymodel.jsonwebtokens/7.0.3/microsoft.identitymodel.jsonwebtokens.7.0.3.nupkg.sha512",
+    "/Users/darren/.nuget/packages/microsoft.identitymodel.logging/7.0.3/microsoft.identitymodel.logging.7.0.3.nupkg.sha512",
+    "/Users/darren/.nuget/packages/microsoft.identitymodel.tokens/7.0.3/microsoft.identitymodel.tokens.7.0.3.nupkg.sha512",
+    "/Users/darren/.nuget/packages/prometheus-net/8.2.1/prometheus-net.8.2.1.nupkg.sha512",
+    "/Users/darren/.nuget/packages/serilog/3.1.1/serilog.3.1.1.nupkg.sha512",
+    "/Users/darren/.nuget/packages/system.diagnostics.diagnosticsource/6.0.0/system.diagnostics.diagnosticsource.6.0.0.nupkg.sha512",
+    "/Users/darren/.nuget/packages/system.identitymodel.tokens.jwt/7.0.3/system.identitymodel.tokens.jwt.7.0.3.nupkg.sha512",
+    "/Users/darren/.nuget/packages/system.runtime.compilerservices.unsafe/6.0.0/system.runtime.compilerservices.unsafe.6.0.0.nupkg.sha512",
+    "/Users/darren/.nuget/packages/system.text.encodings.web/8.0.0/system.text.encodings.web.8.0.0.nupkg.sha512",
+    "/Users/darren/.nuget/packages/system.text.json/8.0.0/system.text.json.8.0.0.nupkg.sha512",
+    "/Users/darren/.nuget/packages/yamldotnet/13.7.1/yamldotnet.13.7.1.nupkg.sha512"
+  ],
+  "logs": [
+    {
+      "code": "NU1902",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Package 'KubernetesClient' 13.0.1 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-w7r3-mgwf-4mqq",
+      "libraryId": "KubernetesClient",
+      "targetGraphs": [
+        "net8.0"
+      ]
+    },
+    {
+      "code": "NU1903",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Package 'System.Text.Json' 8.0.0 has a known high severity vulnerability, https://github.com/advisories/GHSA-8g4q-xg66-9fp4",
+      "libraryId": "System.Text.Json",
+      "targetGraphs": [
+        "net8.0"
+      ]
+    },
+    {
+      "code": "NU1903",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Package 'System.Text.Json' 8.0.0 has a known high severity vulnerability, https://github.com/advisories/GHSA-hh2w-p6rv-4g7w",
+      "libraryId": "System.Text.Json",
+      "targetGraphs": [
+        "net8.0"
+      ]
+    }
+  ]
+}

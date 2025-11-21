@@ -26,46 +26,665 @@ For each stage, we follow this systematic process:
 3. **Quality Gates**: All tests pass, coverage ≥90%
 
 ### AFTER Completion:
-1. **Create Stage Proof File**
-   - Copy `STAGE_PROOF_TEMPLATE.md` to `STAGE_X_PROOF.md` (where X = stage number)
-   - Fill in ALL sections with actual results:
-     - Test output (all tests passing)
-     - Coverage report (≥90%)
-     - Build verification (0 warnings)
-     - Working demonstrations
-     - Deliverables checklist
 
-2. **Integration Verification**
-   - Code compiles without warnings
-   - All dependencies resolved
-   - CI pipeline green (if configured)
-   - All tests passing (0 failures)
+**IMPORTANT:** Before following these steps, you MUST run all quality gates and follow the strict completion procedure detailed below.
 
-3. **Update CHANGELOG.md**
-   - Add stage completion entry with date
-   - Include summary of what was built
-   - Include test count, coverage percentage
-   - Include commit reference
+**Overview of completion steps:**
+1. **Run Quality Gates** - ALL 6 gates must pass (see "Stage Completion Quality Gates" section below)
+2. **Create Stage Proof File** - Fill with actual results (see "Proof File Completion Standards" section below)
+3. **Update CHANGELOG.md** - With actual metrics
+4. **Create Stage Completion Commit** - Following format guidelines
+5. **Tag the Commit** - With actual metrics in tag message
+6. **Final Verification** - Ensure everything is complete
 
-4. **Create Stage Completion Commit**
-   - Stage ALL code, tests, and proof files
-   - Use commit message format (see below)
-   - Include test results summary in commit message
-   - Commit and push
+**For detailed procedures, see:**
+- **Stage Completion Quality Gates (MANDATORY)** - Section below with 6 gates that must all pass
+- **Stage Completion Procedure (STRICT SEQUENTIAL ORDER)** - Section below with 7-step procedure
+- **Quality Gate Failure Procedures** - Section below with specific remediation steps
+- **Proof File Completion Standards** - Section below with validation requirements
 
-5. **Tag the Commit**
+**Quick Checklist (see sections below for details):**
+- [ ] Gate 1: Clean Release build (0 warnings, 0 errors)
+- [ ] Gate 2: All tests passing (0 failures, 0 skipped)
+- [ ] Gate 3: Coverage ≥90%
+- [ ] Gate 4: Zero security vulnerabilities
+- [ ] Gate 5: No template files (Class1.cs, UnitTest1.cs removed)
+- [ ] Gate 6: Proof file complete (no placeholders)
+- [ ] CHANGELOG.md updated with actual metrics
+- [ ] Commit created with comprehensive message
+- [ ] Tag created pointing to commit
+- [ ] Final verification passes
+
+**If all boxes are checked: ✅ STAGE IS COMPLETE**
+
+Otherwise, see detailed procedures below.
+
+---
+
+## Stage Completion Quality Gates (MANDATORY)
+
+**Before creating ANY stage completion commit or tag, you MUST run these checks in order.**
+
+Every gate must show ✅ PASS. If ANY gate fails, it is a **BLOCKER** - the stage is NOT complete.
+
+### Gate 1: Clean Build
+```bash
+# Clean the solution first
+dotnet clean
+
+# Build in Release mode - MUST show 0 warnings, 0 errors
+dotnet build --configuration Release
+```
+
+**Expected Output:**
+```
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+```
+
+**BLOCKER:** Any warnings or errors = STAGE NOT COMPLETE
+
+---
+
+### Gate 2: All Tests Passing
+```bash
+# Run all tests in Release configuration
+dotnet test --configuration Release
+```
+
+**Expected Output:**
+```
+Passed!  - Failed:     0, Passed:    N, Skipped:     0, Total:    N
+```
+
+**BLOCKER:** Any test failures or skipped tests = STAGE NOT COMPLETE
+
+---
+
+### Gate 3: Code Coverage ≥90%
+```bash
+# Generate coverage
+dotnet test --collect:"XPlat Code Coverage" --results-directory ./coverage
+
+# Install report generator (if not already installed)
+dotnet tool install --global dotnet-reportgenerator-globaltool
+export PATH="$PATH:$HOME/.dotnet/tools"
+
+# Generate human-readable report
+reportgenerator \
+  -reports:./coverage/**/coverage.cobertura.xml \
+  -targetdir:./coverage/report \
+  -reporttypes:"Html;TextSummary;Cobertura"
+
+# Check coverage percentage
+grep "Line coverage:" ./coverage/report/Summary.txt
+```
+
+**Expected Output:**
+```
+Line coverage: 91.8%   (or any value ≥90%)
+```
+
+**BLOCKER:** Coverage < 90% = STAGE NOT COMPLETE
+
+---
+
+### Gate 4: Zero Security Vulnerabilities
+```bash
+# Check for ALL vulnerabilities including transitive dependencies
+dotnet list package --vulnerable --include-transitive
+```
+
+**Expected Output:**
+```
+The given project has no vulnerable packages
+```
+
+**BLOCKER:** ANY vulnerabilities (HIGH, MODERATE, or LOW) = STAGE NOT COMPLETE
+
+---
+
+### Gate 5: No Template/Scaffolding Files
+```bash
+# Check for common template files that should have been removed
+find . -name "Class1.cs" -o -name "UnitTest1.cs" -o -name "WeatherForecast.cs"
+```
+
+**Expected Output:**
+```
+(empty - no files found)
+```
+
+**BLOCKER:** Any template files found = STAGE NOT COMPLETE
+
+---
+
+### Gate 6: Proof File Completeness
+```bash
+# Check proof file for placeholders (case-insensitive)
+grep -i -E "\[(TO BE|PLACEHOLDER|TBD|TODO|PENDING|STATUS|XXX|N/N|X%)\]" STAGE_*_PROOF.md
+```
+
+**Expected Output:**
+```
+(empty - no placeholders found)
+```
+
+**BLOCKER:** Any placeholders in proof file = STAGE NOT COMPLETE
+
+---
+
+## Stage Completion Procedure (STRICT SEQUENTIAL ORDER)
+
+**Follow these steps in EXACT order. Do not skip steps. If any step fails, fix the issue and restart from Step 1.**
+
+### Step 1: Run ALL Quality Gates
+- Execute each gate command (above) in order: Gate 1 → Gate 2 → Gate 3 → Gate 4 → Gate 5 → Gate 6
+- If ANY gate fails:
+  1. **STOP immediately**
+  2. Fix the issue (see "Quality Gate Failure Procedures" below)
+  3. **Restart from Gate 1** (dependency updates can break other gates)
+- Document actual output from each gate in `STAGE_X_PROOF.md`
+
+**Prerequisites to proceed:**
+- [ ] All 6 gates show ✅ PASS
+- [ ] All gate outputs copied to proof file
+
+---
+
+### Step 2: Fill Out Proof File COMPLETELY
+Open `STAGE_X_PROOF.md` and verify ALL sections are filled with actual data:
+
+**Required sections (NO placeholders allowed):**
+- [ ] Stage Summary table with actual numbers (e.g., `21/21`, `91.8%`, `0`)
+- [ ] Test results with actual output from `dotnet test`
+- [ ] Coverage percentage with actual number from `Summary.txt`
+- [ ] Build output showing `0 Warning(s), 0 Error(s)`
+- [ ] Security status showing `0 vulnerabilities` with verification date
+- [ ] Deliverables checklist with all items checked `[x]`
+- [ ] File structure tree with actual files
+- [ ] Commit hash (leave as placeholder, will be filled after Step 4)
+- [ ] Tag name specified
+
+**Verification command (MUST return empty):**
+```bash
+grep -i -E "\[(TO BE|PLACEHOLDER|TBD|TODO|PENDING|STATUS|XXX|N/N|X%)\]" STAGE_X_PROOF.md
+```
+
+**Prerequisites to proceed:**
+- [ ] Proof file verification command returns empty
+- [ ] All sections reviewed and contain actual data
+
+---
+
+### Step 3: Update CHANGELOG.md
+Update the changelog with actual metrics from the completed stage:
+
+**Required updates:**
+- [ ] Stage completion entry with actual date
+- [ ] Test count: actual numbers (e.g., `21/21`)
+- [ ] Coverage: actual percentage (e.g., `91.8%`)
+- [ ] Build warnings: actual count (should be `0`)
+- [ ] Deliverables: actual count (e.g., `17/17`)
+- [ ] Overall progress percentage updated
+- [ ] "Last Updated" date updated
+
+**Prerequisites to proceed:**
+- [ ] CHANGELOG.md contains actual metrics (no placeholders)
+- [ ] Overall progress percentage matches completed stages
+
+---
+
+### Step 4: Create Stage Completion Commit
+```bash
+# Stage only source files and documentation (NOT bin/obj directories)
+git add src/ tests/ *.md
+
+# Verify what's staged (review the list)
+git diff --cached --stat
+
+# Create commit with comprehensive message (use heredoc for formatting)
+git commit -m "$(cat <<'EOF'
+✅ Stage X Complete: [Stage Name]
+
+## Stage Summary
+- Duration: [actual time]
+- Tests: [N passing / 0 failing]
+- Coverage: [X.X%]
+- Deliverables: [N/N completed]
+
+## What Was Built
+1. [Deliverable 1]
+2. [Deliverable 2]
+...
+
+## Success Criteria Met
+✅ All tests passing: [N tests, 0 failures]
+✅ Code coverage: [X.X%] (target: ≥90%)
+✅ Build: 0 warnings, 0 errors
+✅ Security: 0 vulnerabilities
+✅ All deliverables: [N/N] complete
+
+## Value Delivered
+[1-2 sentence summary of what this enables]
+
+## Proof
+See STAGE_X_PROOF.md for complete results.
+
+## Ready for Next Stage
+All quality gates passed. CHANGELOG.md updated.
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+EOF
+)"
+```
+
+**Prerequisites to proceed:**
+- [ ] Commit created successfully
+- [ ] Commit message contains actual metrics (no placeholders)
+
+---
+
+### Step 5: Update Proof File with Commit Hash
+```bash
+# Get the commit hash
+git log -1 --format=%h
+
+# Edit STAGE_X_PROOF.md and replace commit hash placeholder with actual hash
+```
+
+**Prerequisites to proceed:**
+- [ ] Proof file contains actual commit hash
+
+---
+
+### Step 6: Create Git Tag
+```bash
+# Create annotated tag with actual metrics
+git tag -a stage-X-complete -m "Stage X: [Name] - N tests, XX% coverage, 0 vulnerabilities"
+
+# Verify tag points to correct commit
+git log --oneline --decorate -5
+```
+
+**Expected output:**
+```
+abc1234 (HEAD -> master, tag: stage-X-complete) ✅ Stage X Complete: [Name]
+```
+
+**Prerequisites to proceed:**
+- [ ] Tag created successfully
+- [ ] Tag points to stage completion commit
+- [ ] Tag message contains actual metrics
+
+---
+
+### Step 7: Final Verification
+```bash
+# Verify no uncommitted changes to source files
+git status src/ tests/ *.md
+
+# Verify all quality gates still pass (quick check)
+dotnet test && dotnet build --configuration Release
+```
+
+**Expected output:**
+```
+nothing to commit, working tree clean
+[tests pass, build succeeds]
+```
+
+**Stage completion checklist:**
+- [ ] All 6 quality gates pass
+- [ ] Proof file complete with actual results
+- [ ] CHANGELOG.md updated
+- [ ] Commit created with comprehensive message
+- [ ] Proof file updated with commit hash
+- [ ] Tag created pointing to commit
+- [ ] No uncommitted changes
+- [ ] Final verification passes
+
+**If all checkboxes are checked: ✅ STAGE IS COMPLETE**
+
+---
+
+## Quality Gate Failure Procedures
+
+**If any quality gate fails, follow these procedures. Do NOT create commit or tag until the issue is resolved.**
+
+### If Gate 1 Fails: Build Errors or Warnings
+
+**Symptoms:**
+```
+Build FAILED.
+    X Warning(s)
+    Y Error(s)
+```
+
+**Resolution Steps:**
+1. Review build output for specific errors/warnings
+2. Fix ALL errors first (code won't compile)
+3. Fix ALL warnings (zero tolerance - warnings become errors in production)
+4. Common causes:
+   - Unused variables: Remove them or use them
+   - Nullable reference warnings: Add null checks or use `!` operator if certain
+   - Deprecated APIs: Update to current APIs
+   - Missing dependencies: Add required package references
+5. Re-run: `dotnet build --configuration Release`
+6. **Restart from Gate 1** (code changes can affect tests)
+
+---
+
+### If Gate 2 Fails: Test Failures
+
+**Symptoms:**
+```
+Failed!  - Failed:     X, Passed:    Y, Skipped:     Z
+```
+
+**Resolution Steps:**
+1. Review test output for specific failures
+2. For each failing test:
+   - Read the failure message and stack trace
+   - Determine if implementation is wrong or test is wrong
+   - Fix the code (following TDD: make test green)
+3. If tests are skipped:
+   - Remove `Skip` attributes
+   - Or delete the test if it's no longer relevant
+4. Re-run: `dotnet test`
+5. **Restart from Gate 1** (code changes can introduce build warnings)
+
+---
+
+### If Gate 3 Fails: Coverage < 90%
+
+**Symptoms:**
+```
+Line coverage: 85.2%   (below 90% threshold)
+```
+
+**Resolution Steps:**
+1. Open HTML report: `open ./coverage/report/index.html`
+2. Identify uncovered lines (highlighted in red)
+3. For each uncovered section:
+   - Write additional test cases
+   - Ensure edge cases are covered
+   - Test error paths, not just happy paths
+4. Common uncovered areas:
+   - Exception handling blocks
+   - Validation logic
+   - Edge cases (null, empty, boundary values)
+5. Re-run: `dotnet test --collect:"XPlat Code Coverage"` and regenerate report
+6. **Restart from Gate 1** (new tests can fail or affect build)
+
+---
+
+### If Gate 4 Fails: Security Vulnerabilities
+
+**Symptoms:**
+```
+The following sources have vulnerable packages:
+   Project: WorkflowCore
+      [HIGH] System.Text.Json 8.0.0
+         CVE-2024-12345 ...
+```
+
+**Resolution Steps:**
+1. Note ALL vulnerabilities: package name, current version, CVE numbers, severity
+2. For each vulnerable package:
    ```bash
-   git tag -a stage-X-complete -m "Stage X: [Name] - [Tests] tests, [Coverage]% coverage"
-   git push --tags
+   # Update to latest version
+   dotnet add src/ProjectName package PackageName
+
+   # If dependency conflict occurs, update conflicting package first
+   dotnet add src/ProjectName package ConflictingPackage
+   ```
+3. Verify resolution:
+   ```bash
+   dotnet list package --vulnerable --include-transitive
+   ```
+4. Document ALL updates in `STAGE_X_PROOF.md` security section:
+   - Package name
+   - Version before → Version after
+   - CVE numbers resolved
+   - Severity level
+5. **Restart from Gate 1** (dependency updates can break tests or introduce warnings)
+
+---
+
+### If Gate 5 Fails: Template Files Found
+
+**Symptoms:**
+```
+./src/WorkflowCore/Class1.cs
+./tests/WorkflowCore.Tests/UnitTest1.cs
+```
+
+**Resolution Steps:**
+1. Remove ALL template files:
+   ```bash
+   rm -f src/*/Class1.cs
+   rm -f tests/*/UnitTest1.cs
+   rm -f src/*/WeatherForecast.cs
+   ```
+2. If any "tests" were in template files (like UnitTest1.cs):
+   - Update test count in success criteria
+   - Update proof file with correct test count
+3. Verify removal:
+   ```bash
+   find . -name "Class1.cs" -o -name "UnitTest1.cs"
+   # Should return empty
+   ```
+4. **Restart from Gate 1** (removing files changes test count)
+
+---
+
+### If Gate 6 Fails: Proof File Contains Placeholders
+
+**Symptoms:**
+```
+STAGE_1_PROOF.md:15:| Tests | [N/N] | ...
+STAGE_1_PROOF.md:42:Coverage: [XX%]
+STAGE_1_PROOF.md:58:[TO BE VERIFIED]
+```
+
+**Resolution Steps:**
+1. For each placeholder found:
+   - Run the corresponding command
+   - Copy actual output
+   - Replace placeholder with actual data
+2. Common placeholders to replace:
+   - `[N/N]` → actual test count (e.g., `21/21`)
+   - `[XX%]` → actual coverage (e.g., `91.8%`)
+   - `[TO BE VERIFIED]` → paste actual command output
+   - `[STATUS]` → `✅ PASS` or actual status
+   - `[TBD]` → actual data
+3. Re-run verification:
+   ```bash
+   grep -i -E "\[(TO BE|PLACEHOLDER|TBD|TODO|PENDING|STATUS|XXX|N/N|X%)\]" STAGE_*_PROOF.md
+   # Should return empty
+   ```
+4. No need to restart gates (documentation only)
+
+---
+
+## Proof File Completion Standards
+
+**A stage proof file is NOT complete until it meets ALL these standards.**
+
+### Definition of "Complete"
+
+A proof file is complete when:
+1. ✅ Every section has actual data (no placeholders)
+2. ✅ All metrics match actual command outputs
+3. ✅ All checkboxes are checked `[x]` (no `[ ]` for deliverables)
+4. ✅ Verification command returns empty (no placeholders detected)
+
+### Required Sections
+
+Every `STAGE_X_PROOF.md` must contain:
+
+**1. Stage Summary Table**
+```markdown
+| Metric | Target | Actual | Status |
+|--------|--------|--------|--------|
+| Tests Passing | 100% | 21/21 | ✅ PASS |   ← actual numbers
+| Coverage | ≥90% | 91.8% | ✅ PASS |        ← actual percentage
+| Build Warnings | 0 | 0 | ✅ PASS |          ← actual count
+```
+
+❌ Bad: `| Tests | [N/N] | [STATUS] |`
+✅ Good: `| Tests Passing | 100% | 21/21 | ✅ PASS |`
+
+---
+
+**2. Test Results with Actual Output**
+```markdown
+## Test Results
+Paste actual output from `dotnet test`:
+```
+Test run for /path/to/WorkflowCore.Tests.dll
+Passed!  - Failed:     0, Passed:    21, Skipped:     0, Total:    21
+```
+```
+
+❌ Bad: `[TO BE VERIFIED]`
+✅ Good: Paste the actual command output
+
+---
+
+**3. Coverage Report with Actual Percentage**
+```markdown
+## Code Coverage
+Line coverage: 91.8%   ← from Summary.txt
+Covered lines: 147
+Uncovered lines: 13
+```
+
+❌ Bad: `Coverage: [XX%]`
+✅ Good: `Coverage: 91.8%` (exact number from report)
+
+---
+
+**4. Build Output**
+```markdown
+## Build Quality
+dotnet build --configuration Release
+Build succeeded.
+    0 Warning(s)    ← actual count
+    0 Error(s)      ← actual count
+```
+
+❌ Bad: `Build: [STATUS]`
+✅ Good: Paste actual build output showing 0 warnings
+
+---
+
+**5. Security Status**
+```markdown
+## Security
+✅ All NuGet vulnerabilities resolved
+✅ System.Text.Json updated to 10.0.0 (from 8.0.0 - HIGH severity CVEs)
+✅ Verified: 2025-11-21    ← actual date
+
+Command: dotnet list package --vulnerable --include-transitive
+Result: The given project has no vulnerable packages
+```
+
+❌ Bad: `Security: [TO BE CHECKED]`
+✅ Good: Document actual packages updated and verification date
+
+---
+
+**6. Deliverables Checklist (All Checked)**
+```markdown
+## Deliverables
+- [x] Solution file created        ← all must be [x]
+- [x] WorkflowCore project created
+- [x] All tests implemented
+```
+
+❌ Bad: `- [ ] Feature coming soon`
+✅ Good: All items checked `[x]` before stage complete
+
+---
+
+### Validation Commands
+
+**Before considering stage complete, run these:**
+
+```bash
+# 1. Check for any placeholder patterns
+grep -i -E "\[(TO BE|PLACEHOLDER|TBD|TODO|PENDING|STATUS|XXX)\]" STAGE_*_PROOF.md
+
+# 2. Check for template metric placeholders
+grep -E "\[N/N\]|\[X%\]|\[XX%\]|\[N\]" STAGE_*_PROOF.md
+
+# 3. Check for unchecked deliverables
+grep "^- \[ \]" STAGE_*_PROOF.md
+
+# All three commands should return EMPTY
+```
+
+---
+
+### Common Mistakes to Avoid
+
+1. ❌ **Creating proof file with placeholders, planning to "fill later"**
+   - ✅ Run commands FIRST, then fill proof file with results
+
+2. ❌ **Copying test count from code without running tests**
+   - ✅ Run `dotnet test`, paste actual output
+
+3. ❌ **Estimating coverage percentage**
+   - ✅ Generate report, use exact number from `Summary.txt`
+
+4. ❌ **Assuming no vulnerabilities without scanning**
+   - ✅ Run `dotnet list package --vulnerable`, document results
+
+5. ❌ **Using previous stage's proof as template without updating**
+   - ✅ Use `STAGE_PROOF_TEMPLATE.md`, fill with current stage's data
+
+6. ❌ **Marking deliverables complete before they're implemented**
+   - ✅ Check `[x]` only when feature is coded, tested, and verified
+
+7. ❌ **Leaving commit hash as `[TO BE FILLED]` after committing**
+   - ✅ Update with actual commit hash from `git log`
+
+---
+
+### Correct Procedure for Proof Files
+
+**Step-by-step:**
+
+1. **Copy template:**
+   ```bash
+   cp STAGE_PROOF_TEMPLATE.md STAGE_X_PROOF.md
    ```
 
-6. **Stage Sign-Off**
-   - Deliverables checklist: ✅ ALL items complete
-   - Quality metrics met: ≥90% coverage, 0 test failures
-   - Proof file created and committed
-   - CHANGELOG.md updated
-   - Commit tagged
-   - Get explicit approval to proceed to next stage
+2. **Run quality gates** (all 6 gates)
+
+3. **Fill proof file with actual results:**
+   - Paste `dotnet test` output → Test Results section
+   - Paste coverage percentage from `Summary.txt` → Coverage section
+   - Paste `dotnet build` output → Build Quality section
+   - Document package updates → Security section
+   - Check deliverables one-by-one → Deliverables section
+
+4. **Verify no placeholders:**
+   ```bash
+   grep -i -E "\[(TO BE|TBD|TODO)\]" STAGE_X_PROOF.md
+   # Should return empty
+   ```
+
+5. **Only then create commit** (Step 4 of Stage Completion Procedure)
+
+---
+
+**Reference Example:** See `STAGE_1_PROOF.md` for a complete, properly-filled proof file.
 
 ---
 

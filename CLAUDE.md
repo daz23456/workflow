@@ -174,6 +174,35 @@ dotnet add reference ../../src/WorkflowCore/WorkflowCore.csproj
 </Project>
 ```
 
+### Task 1.1.1: Remove Template Files (MANDATORY)
+
+**Immediately after creating projects, remove ALL template files:**
+
+```bash
+# Remove template class files
+rm -f src/WorkflowCore/Class1.cs
+
+# Remove template test files
+rm -f tests/WorkflowCore.Tests/UnitTest1.cs
+
+# Verify removal (should return empty)
+find . -name "Class1.cs" -o -name "UnitTest1.cs"
+```
+
+**Why this is critical:**
+- Template files inflate test counts and create inaccurate metrics
+- They are not production code and serve no purpose
+- Leaving them in violates the "no template files" quality gate
+- **This is a BLOCKER for stage completion**
+
+**Verification:**
+```bash
+git status
+# Should show:
+# deleted:    src/WorkflowCore/Class1.cs
+# deleted:    tests/WorkflowCore.Tests/UnitTest1.cs
+```
+
 ### Task 1.2: Schema Models (TDD)
 
 **STEP 1: Write failing test FIRST**
@@ -1036,6 +1065,108 @@ public class ErrorMessageBuilderTests
 ```bash
 dotnet test tests/WorkflowCore.Tests
 ```
+
+### Task 1.X: Security Verification and Quality Gates (MANDATORY - Before Stage Completion)
+
+**IMPORTANT:** Before creating the stage completion commit and tag, you MUST run all quality gates.
+
+**See `STAGE_EXECUTION_FRAMEWORK.md` for complete details. Summary:**
+
+#### 1. Check for Security Vulnerabilities
+```bash
+# Check for ALL vulnerabilities including transitive dependencies
+dotnet list package --vulnerable --include-transitive
+
+# Expected output: "The given project has no vulnerable packages"
+```
+
+**If vulnerabilities found:**
+1. Note package name, current version, CVE numbers, severity
+2. Update vulnerable packages:
+   ```bash
+   dotnet add src/WorkflowCore package PackageName  # Uses latest version
+   ```
+3. Verify resolution and document in STAGE_1_PROOF.md
+4. Re-run ALL quality gates (dependency updates can break tests)
+
+**Example from Stage 1 security fixes:**
+```bash
+# Update vulnerable packages
+dotnet add src/WorkflowCore package System.Text.Json     # 8.0.0 → 10.0.0
+dotnet add src/WorkflowCore package KubernetesClient     # 13.0.1 → 18.0.5
+dotnet add src/WorkflowCore package YamlDotNet           # 13.7.1 → 16.3.0
+
+# Verify all resolved
+dotnet list package --vulnerable --include-transitive
+```
+
+#### 2. Run All Quality Gates
+```bash
+# Gate 1: Clean Release build (0 warnings, 0 errors)
+dotnet clean
+dotnet build --configuration Release
+
+# Gate 2: All tests passing (0 failures, 0 skipped)
+dotnet test --configuration Release
+
+# Gate 3: Coverage ≥90%
+dotnet test --collect:"XPlat Code Coverage" --results-directory ./coverage
+reportgenerator -reports:./coverage/**/coverage.cobertura.xml -targetdir:./coverage/report -reporttypes:"Html;TextSummary;Cobertura"
+grep "Line coverage:" ./coverage/report/Summary.txt
+
+# Gate 4: Zero security vulnerabilities (checked above)
+
+# Gate 5: No template files
+find . -name "Class1.cs" -o -name "UnitTest1.cs"  # Should return empty
+
+# Gate 6: Proof file complete (no placeholders)
+grep -i -E "\[(TO BE|TBD|TODO)\]" STAGE_*_PROOF.md  # Should return empty
+```
+
+**If ANY gate fails:** See "Quality Gate Failure Procedures" in STAGE_EXECUTION_FRAMEWORK.md
+
+#### 3. Fill Out STAGE_1_PROOF.md
+- Run each quality gate and copy actual output
+- Replace ALL placeholders with actual results
+- Verify no `[TO BE VERIFIED]`, `[N/N]`, `[XX%]`, etc. remain
+- Check all deliverables are marked `[x]`
+
+#### 4. Update CHANGELOG.md
+- Update Stage 1 entry with actual metrics
+- Update "Overall Progress" percentage
+- Update "Last Updated" date
+
+#### 5. Create Stage Completion Commit
+```bash
+git add src/ tests/ *.md
+git commit -m "$(cat <<'EOF'
+✅ Stage 1 Complete: Foundation
+
+## Stage Summary
+- Duration: [actual time]
+- Tests: [N passing / 0 failing]
+- Coverage: [X.X%]
+- Deliverables: [N/N completed]
+
+## Success Criteria Met
+✅ All tests passing
+✅ Code coverage ≥90%
+✅ Build: 0 warnings, 0 errors
+✅ Security: 0 vulnerabilities
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+EOF
+)"
+```
+
+#### 6. Create Tag
+```bash
+git tag -a stage-1-complete -m "Stage 1: Foundation - N tests, XX% coverage, 0 vulnerabilities"
+```
+
+**See STAGE_EXECUTION_FRAMEWORK.md for complete 7-step procedure with prerequisites and verification.**
 
 ---
 

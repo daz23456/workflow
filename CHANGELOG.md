@@ -9,11 +9,43 @@ The format is based on stage completion, and this project follows strict TDD and
 ## [Unreleased]
 
 ### Next Stage
-- Stage 3: Template Validation - Template parsing and validation with workflow orchestration
+- Stage 4: Execution Graph - Build dependency graphs and detect circular dependencies
 
 ---
 
 ## Stage Completion History
+
+### Stage 3: Template Validation - 2025-11-21
+**Duration:** Single session
+**Status:** ✅ Complete
+**Commit:** [TO BE ADDED]
+**Tag:** `stage-3-complete`
+**Proof:** See `STAGE_3_PROOF.md`
+
+**What Was Built:**
+- TemplateParseResult models (TemplateParseResult, TemplateExpression, TemplateExpressionType)
+- TemplateParser service (regex-based parsing with validation)
+- WorkflowValidator service (orchestrates all workflow validations)
+- Updated ErrorMessageBuilder (now returns ValidationError objects)
+- Updated TypeCompatibilityChecker (now uses PropertyDefinition)
+- Comprehensive test suite (9 new tests + 10 updated tests)
+
+**Metrics:**
+- Tests: 37/37 passing (0 failures) - 9 new tests added
+- Coverage: 90.9% - EXCEEDS TARGET of 90%
+- Build: 0 warnings, 0 errors - PERFECT
+- Security: 0 vulnerabilities - PERFECT
+- Deliverables: 5/5 complete
+
+**Value Delivered:**
+Template parsing and workflow validation enable design-time error detection. Users can wire tasks together dynamically using templates like `{{input.userId}}` and `{{tasks.fetch-user.output.id}}`. Type mismatches, invalid templates, and missing task references are caught before deployment, preventing runtime failures. Clear error messages guide users to fix issues immediately.
+
+**Enables:**
+- Stage 4: Execution Graph - Can build dependency graphs from validated workflows
+- Stage 5: Workflow Execution - Can execute validated workflows with confidence
+- Stage 7: API Gateway - Can validate workflows at API boundary
+
+---
 
 ### Stage 2: Schema Validation - 2025-11-21
 **Duration:** Single session
@@ -122,13 +154,13 @@ When a stage is completed, add an entry in this format:
 
 | Stage | Tests | Coverage | Warnings | Deliverables | Status |
 |-------|-------|----------|----------|--------------|--------|
-| 1: Foundation | 21/21 | 91.8% | 0 | 17/17 | ✅ |
+| 1: Foundation | 20/20 | 91.8% | 0 | 17/17 | ✅ |
 | 2: Schema Validation | 29/29 | 91.9% | 0 | 3/3 | ✅ |
-| 3: Template Validation | [N/N] | [X%] | [N] | [N/N] | - |
+| 3: Template Validation | 37/37 | 90.9% | 0 | 5/5 | ✅ |
 | 4: Execution Graph | [N/N] | [X%] | [N] | [N/N] | - |
 | ... | | | | | |
 
-**Overall Progress:** [2/12 stages complete] - [16.7%]
+**Overall Progress:** [3/12 stages complete] - [25%]
 
 ---
 
@@ -147,5 +179,5 @@ When a stage is completed, add an entry in this format:
 ---
 
 **Last Updated:** 2025-11-21
-**Current Stage:** Stage 2 - Schema Validation (✅ Complete)
-**Next Stage:** Stage 3 - Template Validation
+**Current Stage:** Stage 3 - Template Validation (✅ Complete)
+**Next Stage:** Stage 4 - Execution Graph

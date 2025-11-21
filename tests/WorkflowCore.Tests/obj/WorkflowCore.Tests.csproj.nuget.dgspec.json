@@ -49,7 +49,7 @@
             },
             "KubernetesClient": {
               "target": "Package",
-              "version": "[13.0.1, )"
+              "version": "[18.0.5, )"
             },
             "Serilog": {
               "target": "Package",
@@ -57,11 +57,11 @@
             },
             "System.Text.Json": {
               "target": "Package",
-              "version": "[8.0.0, )"
+              "version": "[10.0.0, )"
             },
             "YamlDotNet": {
               "target": "Package",
-              "version": "[13.7.1, )"
+              "version": "[16.3.0, )"
             }
           },
           "imports": [
@@ -138,6 +138,14 @@
             "Moq": {
               "target": "Package",
               "version": "[4.20.70, )"
+            },
+            "System.Net.Http": {
+              "target": "Package",
+              "version": "[4.3.4, )"
+            },
+            "System.Text.RegularExpressions": {
+              "target": "Package",
+              "version": "[4.3.1, )"
             },
             "coverlet.collector": {
               "target": "Package",

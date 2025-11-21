@@ -18,26 +18,11 @@ public class TypeCompatibilityCheckerTests
     public void CheckCompatibility_WithMatchingTypes_ShouldReturnSuccess()
     {
         // Arrange
-        var sourceSchema = new SchemaDefinition
-        {
-            Type = "object",
-            Properties = new Dictionary<string, PropertyDefinition>
-            {
-                ["userId"] = new PropertyDefinition { Type = "string" }
-            }
-        };
-
-        var targetSchema = new SchemaDefinition
-        {
-            Type = "object",
-            Properties = new Dictionary<string, PropertyDefinition>
-            {
-                ["userId"] = new PropertyDefinition { Type = "string" }
-            }
-        };
+        var sourceProperty = new PropertyDefinition { Type = "string" };
+        var targetProperty = new PropertyDefinition { Type = "string" };
 
         // Act
-        var result = _checker.CheckCompatibility(sourceSchema, targetSchema);
+        var result = _checker.CheckCompatibility(sourceProperty, targetProperty);
 
         // Assert
         result.IsCompatible.Should().BeTrue();
@@ -48,131 +33,81 @@ public class TypeCompatibilityCheckerTests
     public void CheckCompatibility_WithIncompatibleTypes_ShouldReturnError()
     {
         // Arrange
-        var sourceSchema = new SchemaDefinition
-        {
-            Type = "object",
-            Properties = new Dictionary<string, PropertyDefinition>
-            {
-                ["userId"] = new PropertyDefinition { Type = "string" }
-            }
-        };
-
-        var targetSchema = new SchemaDefinition
-        {
-            Type = "object",
-            Properties = new Dictionary<string, PropertyDefinition>
-            {
-                ["userId"] = new PropertyDefinition { Type = "integer" }
-            }
-        };
+        var sourceProperty = new PropertyDefinition { Type = "integer" };
+        var targetProperty = new PropertyDefinition { Type = "string" };
 
         // Act
-        var result = _checker.CheckCompatibility(sourceSchema, targetSchema);
+        var result = _checker.CheckCompatibility(sourceProperty, targetProperty);
 
         // Assert
         result.IsCompatible.Should().BeFalse();
-        result.Errors.Should().NotBeEmpty();
-        result.Errors.Should().Contain(e => e.Contains("userId") && e.Contains("type mismatch"));
+        result.Errors.Should().ContainSingle();
+        result.Errors[0].Message.Should().Contain("Type mismatch");
     }
 
     [Fact]
     public void CheckCompatibility_WithNestedObjects_ShouldValidateRecursively()
     {
         // Arrange
-        var sourceSchema = new SchemaDefinition
+        var sourceProperty = new PropertyDefinition
         {
             Type = "object",
             Properties = new Dictionary<string, PropertyDefinition>
             {
-                ["user"] = new PropertyDefinition
-                {
-                    Type = "object",
-                    Properties = new Dictionary<string, PropertyDefinition>
-                    {
-                        ["id"] = new PropertyDefinition { Type = "string" },
-                        ["name"] = new PropertyDefinition { Type = "string" }
-                    }
-                }
+                ["id"] = new PropertyDefinition { Type = "integer" },
+                ["age"] = new PropertyDefinition { Type = "integer" }
             }
         };
 
-        var targetSchema = new SchemaDefinition
+        var targetProperty = new PropertyDefinition
         {
             Type = "object",
             Properties = new Dictionary<string, PropertyDefinition>
             {
-                ["user"] = new PropertyDefinition
-                {
-                    Type = "object",
-                    Properties = new Dictionary<string, PropertyDefinition>
-                    {
-                        ["id"] = new PropertyDefinition { Type = "integer" }, // Type mismatch in nested object
-                        ["name"] = new PropertyDefinition { Type = "string" }
-                    }
-                }
+                ["id"] = new PropertyDefinition { Type = "string" },
+                ["age"] = new PropertyDefinition { Type = "integer" }
             }
         };
 
         // Act
-        var result = _checker.CheckCompatibility(sourceSchema, targetSchema);
+        var result = _checker.CheckCompatibility(sourceProperty, targetProperty);
 
         // Assert
         result.IsCompatible.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.Contains("user.id"));
+        result.Errors.Should().ContainSingle();
+        result.Errors[0].Field.Should().Be("id");
     }
 
     [Fact]
     public void CheckCompatibility_WithArrays_ShouldValidateItemTypes()
     {
         // Arrange
-        var sourceSchema = new SchemaDefinition
+        var sourceProperty = new PropertyDefinition
         {
-            Type = "object",
-            Properties = new Dictionary<string, PropertyDefinition>
-            {
-                ["tags"] = new PropertyDefinition
-                {
-                    Type = "array",
-                    Items = new PropertyDefinition { Type = "string" }
-                }
-            }
+            Type = "array",
+            Items = new PropertyDefinition { Type = "string" }
         };
 
-        var targetSchema = new SchemaDefinition
+        var targetProperty = new PropertyDefinition
         {
-            Type = "object",
-            Properties = new Dictionary<string, PropertyDefinition>
-            {
-                ["tags"] = new PropertyDefinition
-                {
-                    Type = "array",
-                    Items = new PropertyDefinition { Type = "integer" } // Item type mismatch
-                }
-            }
+            Type = "array",
+            Items = new PropertyDefinition { Type = "integer" }
         };
 
         // Act
-        var result = _checker.CheckCompatibility(sourceSchema, targetSchema);
+        var result = _checker.CheckCompatibility(sourceProperty, targetProperty);
 
         // Assert
         result.IsCompatible.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.Contains("tags") && e.Contains("array item"));
-    }
-
-    [Fact]
-    public void CheckCompatibility_WithNullSchemas_ShouldReturnCompatible()
-    {
-        // Act & Assert
-        _checker.CheckCompatibility(null, null).IsCompatible.Should().BeTrue();
-        _checker.CheckCompatibility(null, new SchemaDefinition()).IsCompatible.Should().BeTrue();
-        _checker.CheckCompatibility(new SchemaDefinition(), null).IsCompatible.Should().BeTrue();
+        result.Errors.Should().ContainSingle();
+        result.Errors[0].Field.Should().Contain("items");
     }
 
     [Fact]
     public void CheckCompatibility_WithMissingProperty_ShouldReturnError()
     {
         // Arrange
-        var sourceSchema = new SchemaDefinition
+        var sourceProperty = new PropertyDefinition
         {
             Type = "object",
             Properties = new Dictionary<string, PropertyDefinition>
@@ -181,21 +116,23 @@ public class TypeCompatibilityCheckerTests
             }
         };
 
-        var targetSchema = new SchemaDefinition
+        var targetProperty = new PropertyDefinition
         {
             Type = "object",
             Properties = new Dictionary<string, PropertyDefinition>
             {
                 ["name"] = new PropertyDefinition { Type = "string" },
-                ["age"] = new PropertyDefinition { Type = "integer" } // Missing in source
+                ["age"] = new PropertyDefinition { Type = "integer" }
             }
         };
 
         // Act
-        var result = _checker.CheckCompatibility(sourceSchema, targetSchema);
+        var result = _checker.CheckCompatibility(sourceProperty, targetProperty);
 
         // Assert
         result.IsCompatible.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.Contains("age") && e.Contains("Missing property"));
+        result.Errors.Should().ContainSingle();
+        result.Errors[0].Field.Should().Be("age");
+        result.Errors[0].Message.Should().Contain("Missing required property");
     }
 }

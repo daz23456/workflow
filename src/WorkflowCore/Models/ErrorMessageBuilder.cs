@@ -2,76 +2,68 @@ namespace WorkflowCore.Models;
 
 public static class ErrorMessageBuilder
 {
-    public static string TypeMismatch(string fieldName, string expectedType, string actualType)
+    public static ValidationError TypeMismatch(
+        string taskId,
+        string field,
+        string expected,
+        string actual,
+        string? suggestedFix = null)
     {
-        return $"Field '{fieldName}' has a type mismatch: expected '{expectedType}' but got '{actualType}'.";
+        return new ValidationError
+        {
+            TaskId = taskId,
+            Field = field,
+            Message = $"Type mismatch: expected '{expected}', got '{actual}'",
+            SuggestedFix = suggestedFix
+        };
     }
 
-    public static string MissingRequiredField(string taskId, string fieldName, List<string> availableFields)
+    public static ValidationError MissingRequiredField(
+        string taskId,
+        string field,
+        List<string>? availableFields = null)
     {
-        var message = $"Task '{taskId}' is missing required field '{fieldName}'.";
+        var message = $"Required field '{field}' is missing";
+        string? suggestion = null;
 
-        // Find similar fields (simple case-insensitive contains check for suggestions)
-        var suggestions = availableFields
-            .Where(f => f.Equals(fieldName, StringComparison.OrdinalIgnoreCase) ||
-                       LevenshteinDistance(f.ToLower(), fieldName.ToLower()) <= 2)
-            .ToList();
-
-        if (suggestions.Any())
+        if (availableFields?.Any() == true)
         {
-            message += $" Did you mean: {string.Join(", ", suggestions.Select(s => $"'{s}'"))}? (suggestion)";
-        }
-        else if (availableFields.Any())
-        {
-            message += $" Available fields: {string.Join(", ", availableFields.Select(f => $"'{f}'"))}.";
+            suggestion = $"Available fields: {string.Join(", ", availableFields)}";
         }
 
-        return message;
+        return new ValidationError
+        {
+            TaskId = taskId,
+            Field = field,
+            Message = message,
+            SuggestedFix = suggestion
+        };
     }
 
-    public static string CircularDependency(List<string> cyclePath)
+    public static ValidationError InvalidTemplate(
+        string taskId,
+        string field,
+        string template,
+        string reason)
     {
-        var cycle = string.Join(" -> ", cyclePath);
-        return $"Circular dependency detected: {cycle}";
+        return new ValidationError
+        {
+            TaskId = taskId,
+            Field = field,
+            Message = $"Invalid template '{template}': {reason}",
+            SuggestedFix = "Check template syntax: {{input.field}} or {{tasks.taskId.output.field}}"
+        };
     }
 
-    // Simple Levenshtein distance for field name suggestions
-    private static int LevenshteinDistance(string source, string target)
+    public static ValidationError CircularDependency(
+        string workflowId,
+        List<string> cyclePath)
     {
-        if (string.IsNullOrEmpty(source))
+        return new ValidationError
         {
-            return string.IsNullOrEmpty(target) ? 0 : target.Length;
-        }
-
-        if (string.IsNullOrEmpty(target))
-        {
-            return source.Length;
-        }
-
-        int[,] distance = new int[source.Length + 1, target.Length + 1];
-
-        for (int i = 0; i <= source.Length; i++)
-        {
-            distance[i, 0] = i;
-        }
-
-        for (int j = 0; j <= target.Length; j++)
-        {
-            distance[0, j] = j;
-        }
-
-        for (int i = 1; i <= source.Length; i++)
-        {
-            for (int j = 1; j <= target.Length; j++)
-            {
-                int cost = (target[j - 1] == source[i - 1]) ? 0 : 1;
-
-                distance[i, j] = Math.Min(
-                    Math.Min(distance[i - 1, j] + 1, distance[i, j - 1] + 1),
-                    distance[i - 1, j - 1] + cost);
-            }
-        }
-
-        return distance[source.Length, target.Length];
+            TaskId = workflowId,
+            Message = $"Circular dependency detected: {string.Join(" → ", cyclePath)}",
+            SuggestedFix = "Remove or reorder task dependencies to break the cycle"
+        };
     }
 }

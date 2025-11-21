@@ -4,32 +4,15 @@ namespace WorkflowCore.Services;
 
 public interface ITypeCompatibilityChecker
 {
-    CompatibilityResult CheckCompatibility(SchemaDefinition? sourceSchema, SchemaDefinition? targetSchema);
+    CompatibilityResult CheckCompatibility(PropertyDefinition source, PropertyDefinition target);
 }
 
 public class TypeCompatibilityChecker : ITypeCompatibilityChecker
 {
-    public CompatibilityResult CheckCompatibility(SchemaDefinition? sourceSchema, SchemaDefinition? targetSchema)
+    public CompatibilityResult CheckCompatibility(PropertyDefinition source, PropertyDefinition target)
     {
-        var errors = new List<string>();
-
-        if (sourceSchema == null || targetSchema == null)
-        {
-            return new CompatibilityResult { IsCompatible = true, Errors = errors };
-        }
-
-        // Check root type compatibility
-        if (sourceSchema.Type != targetSchema.Type)
-        {
-            errors.Add($"Root type mismatch: source is '{sourceSchema.Type}' but target expects '{targetSchema.Type}'");
-            return new CompatibilityResult { IsCompatible = false, Errors = errors };
-        }
-
-        // Check properties compatibility
-        if (sourceSchema.Type == "object" && sourceSchema.Properties != null && targetSchema.Properties != null)
-        {
-            CheckPropertiesCompatibility(sourceSchema.Properties, targetSchema.Properties, "", errors);
-        }
+        var errors = new List<CompatibilityError>();
+        CheckCompatibilityRecursive(source, target, "", errors);
 
         return new CompatibilityResult
         {
@@ -38,47 +21,58 @@ public class TypeCompatibilityChecker : ITypeCompatibilityChecker
         };
     }
 
-    private void CheckPropertiesCompatibility(
-        Dictionary<string, PropertyDefinition> sourceProps,
-        Dictionary<string, PropertyDefinition> targetProps,
+    private void CheckCompatibilityRecursive(
+        PropertyDefinition source,
+        PropertyDefinition target,
         string path,
-        List<string> errors)
+        List<CompatibilityError> errors)
     {
-        foreach (var targetProp in targetProps)
+        // Check basic type compatibility
+        if (source.Type != target.Type)
         {
-            var propName = targetProp.Key;
-            var fullPath = string.IsNullOrEmpty(path) ? propName : $"{path}.{propName}";
-
-            if (!sourceProps.ContainsKey(propName))
+            errors.Add(new CompatibilityError
             {
-                errors.Add($"Missing property '{fullPath}' in source schema");
-                continue;
-            }
+                Field = path,
+                Message = $"Type mismatch: expected '{target.Type}', got '{source.Type}'"
+            });
+            return;
+        }
 
-            var sourcePropDef = sourceProps[propName];
-            var targetPropDef = targetProp.Value;
-
-            // Check type compatibility
-            if (sourcePropDef.Type != targetPropDef.Type)
+        // For objects, validate nested properties
+        if (source.Type == "object" && source.Properties != null && target.Properties != null)
+        {
+            foreach (var (key, targetProp) in target.Properties)
             {
-                errors.Add($"Property '{fullPath}' type mismatch: source is '{sourcePropDef.Type}' but target expects '{targetPropDef.Type}'");
-                continue;
-            }
-
-            // Recursively check nested objects
-            if (sourcePropDef.Type == "object" && sourcePropDef.Properties != null && targetPropDef.Properties != null)
-            {
-                CheckPropertiesCompatibility(sourcePropDef.Properties, targetPropDef.Properties, fullPath, errors);
-            }
-
-            // Check array item types
-            if (sourcePropDef.Type == "array" && sourcePropDef.Items != null && targetPropDef.Items != null)
-            {
-                if (sourcePropDef.Items.Type != targetPropDef.Items.Type)
+                if (!source.Properties.ContainsKey(key))
                 {
-                    errors.Add($"Property '{fullPath}' array item type mismatch: source items are '{sourcePropDef.Items.Type}' but target expects '{targetPropDef.Items.Type}'");
+                    errors.Add(new CompatibilityError
+                    {
+                        Field = string.IsNullOrEmpty(path) ? key : $"{path}.{key}",
+                        Message = $"Missing required property '{key}'"
+                    });
+                    continue;
                 }
+
+                var sourceProp = source.Properties[key];
+                var nestedPath = string.IsNullOrEmpty(path) ? key : $"{path}.{key}";
+                CheckCompatibilityRecursive(sourceProp, targetProp, nestedPath, errors);
             }
+        }
+
+        // For arrays, validate item types
+        if (source.Type == "array")
+        {
+            if (source.Items == null || target.Items == null)
+            {
+                errors.Add(new CompatibilityError
+                {
+                    Field = $"{path}.items",
+                    Message = "Array items type not defined"
+                });
+                return;
+            }
+
+            CheckCompatibilityRecursive(source.Items, target.Items, $"{path}.items", errors);
         }
     }
 }

@@ -18,7 +18,7 @@ The format is based on stage completion, and this project follows strict TDD and
 ### Stage 2: Schema Validation - 2025-11-21
 **Duration:** Single session
 **Status:** ✅ Complete
-**Commit:** 075f8a9
+**Commit:** 3c2d8a0
 **Tag:** `stage-2-complete`
 **Proof:** See `STAGE_2_PROOF.md`
 

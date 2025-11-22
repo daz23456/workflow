@@ -44,8 +44,13 @@ public class ExecutionGraphBuilderTests
         // Assert
         result.IsValid.Should().BeTrue();
         result.Graph.Should().NotBeNull();
+        result.Errors.Should().BeEmpty();
         result.Graph!.Nodes.Should().HaveCount(2);
-        result.Graph.GetDependencies("task-2").Should().Contain("task-1");
+        result.Graph.Nodes.Should().Contain("task-1");
+        result.Graph.Nodes.Should().Contain("task-2");
+        result.Graph.GetDependencies("task-1").Should().BeEmpty();
+        result.Graph.GetDependencies("task-2").Should().ContainSingle()
+            .Which.Should().Be("task-1");
     }
 
     [Fact]
@@ -94,8 +99,11 @@ public class ExecutionGraphBuilderTests
 
         // Assert
         result.IsValid.Should().BeFalse();
+        result.Graph.Should().BeNull();
         result.Errors.Should().ContainSingle();
         result.Errors[0].Message.Should().Contain("Circular dependency");
+        // Verify cycle path is mentioned
+        result.Errors[0].Message.Should().ContainAny("task-a", "task-b", "task-c");
     }
 
     [Fact]
@@ -135,7 +143,10 @@ public class ExecutionGraphBuilderTests
 
         // Assert
         result.IsValid.Should().BeTrue();
-        result.Graph!.GetDependencies("task-1").Should().BeEmpty();
+        result.Graph.Should().NotBeNull();
+        result.Errors.Should().BeEmpty();
+        result.Graph!.Nodes.Should().HaveCount(2);
+        result.Graph.GetDependencies("task-1").Should().BeEmpty();
         result.Graph.GetDependencies("task-2").Should().BeEmpty();
     }
 
@@ -170,11 +181,18 @@ public class ExecutionGraphBuilderTests
         var executionOrder = result.Graph!.GetExecutionOrder();
 
         // Assert
+        result.IsValid.Should().BeTrue();
+        result.Graph.Should().NotBeNull();
+        executionOrder.Should().HaveCount(3);
+        executionOrder.Should().Contain("task-1");
+        executionOrder.Should().Contain("task-2");
+        executionOrder.Should().Contain("task-3");
+
         var task3Index = executionOrder.IndexOf("task-3");
         var task1Index = executionOrder.IndexOf("task-1");
         var task2Index = executionOrder.IndexOf("task-2");
 
-        task1Index.Should().BeLessThan(task3Index);
-        task2Index.Should().BeLessThan(task3Index);
+        task1Index.Should().BeGreaterOrEqualTo(0).And.BeLessThan(task3Index);
+        task2Index.Should().BeGreaterOrEqualTo(0).And.BeLessThan(task3Index);
     }
 }

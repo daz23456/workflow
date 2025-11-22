@@ -4,6 +4,9 @@ namespace WorkflowGateway.Models;
 
 public class WorkflowExecutionResponse
 {
+    [JsonPropertyName("workflowName")]
+    public string WorkflowName { get; set; } = string.Empty;
+
     [JsonPropertyName("success")]
     public bool Success { get; set; }
 

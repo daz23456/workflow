@@ -5,12 +5,15 @@
 For each stage, we follow this systematic process:
 
 ### BEFORE Starting:
+
 1. **Stage Declaration**
+
    - Stage number and name
    - Duration estimate
    - Dependencies (what must be completed first)
 
 2. **Objectives Statement**
+
    - What we will build (specific deliverables)
    - Why it matters (value to the project)
    - How it fits into the larger system
@@ -21,6 +24,7 @@ For each stage, we follow this systematic process:
    - Performance benchmarks (if applicable)
 
 ### DURING Execution:
+
 1. **Strict TDD**: RED → GREEN → REFACTOR for every feature
 2. **Progress Tracking**: Update checklist as tasks complete
 3. **Quality Gates**: All tests pass, coverage ≥90%
@@ -30,7 +34,8 @@ For each stage, we follow this systematic process:
 **IMPORTANT:** Before following these steps, you MUST run all quality gates and follow the strict completion procedure detailed below.
 
 **Overview of completion steps:**
-1. **Run Quality Gates** - ALL 6 gates must pass (see "Stage Completion Quality Gates" section below)
+
+1. **Run Quality Gates** - 6 mandatory gates + 1 recommended gate (see "Stage Completion Quality Gates" section below)
 2. **Create Stage Proof File** - Fill with actual results (see "Proof File Completion Standards" section below)
 3. **Update CHANGELOG.md** - With actual metrics
 4. **Create Stage Completion Commit** - Following format guidelines
@@ -38,18 +43,21 @@ For each stage, we follow this systematic process:
 6. **Final Verification** - Ensure everything is complete
 
 **For detailed procedures, see:**
-- **Stage Completion Quality Gates (MANDATORY)** - Section below with 6 gates that must all pass
+
+- **Stage Completion Quality Gates (MANDATORY)** - Section below with 6 required + 1 recommended gate
 - **Stage Completion Procedure (STRICT SEQUENTIAL ORDER)** - Section below with 7-step procedure
 - **Quality Gate Failure Procedures** - Section below with specific remediation steps
 - **Proof File Completion Standards** - Section below with validation requirements
 
 **Quick Checklist (see sections below for details):**
+
 - [ ] Gate 1: Clean Release build (0 warnings, 0 errors)
 - [ ] Gate 2: All tests passing (0 failures, 0 skipped)
 - [ ] Gate 3: Coverage ≥90%
 - [ ] Gate 4: Zero security vulnerabilities
 - [ ] Gate 5: No template files (Class1.cs, UnitTest1.cs removed)
 - [ ] Gate 6: Proof file complete (no placeholders)
+- [ ] Gate 7: Mutation testing ≥80%
 - [ ] CHANGELOG.md updated with actual metrics
 - [ ] Commit created with comprehensive message
 - [ ] Tag created pointing to commit
@@ -68,6 +76,7 @@ Otherwise, see detailed procedures below.
 Every gate must show ✅ PASS. If ANY gate fails, it is a **BLOCKER** - the stage is NOT complete.
 
 ### Gate 1: Clean Build
+
 ```bash
 # Clean the solution first
 dotnet clean
@@ -77,6 +86,7 @@ dotnet build --configuration Release
 ```
 
 **Expected Output:**
+
 ```
 Build succeeded.
     0 Warning(s)
@@ -88,12 +98,14 @@ Build succeeded.
 ---
 
 ### Gate 2: All Tests Passing
+
 ```bash
 # Run all tests in Release configuration
 dotnet test --configuration Release
 ```
 
 **Expected Output:**
+
 ```
 Passed!  - Failed:     0, Passed:    N, Skipped:     0, Total:    N
 ```
@@ -103,6 +115,7 @@ Passed!  - Failed:     0, Passed:    N, Skipped:     0, Total:    N
 ---
 
 ### Gate 3: Code Coverage ≥90%
+
 ```bash
 # Generate coverage
 dotnet test --collect:"XPlat Code Coverage" --results-directory ./coverage
@@ -122,6 +135,7 @@ grep "Line coverage:" ./coverage/report/Summary.txt
 ```
 
 **Expected Output:**
+
 ```
 Line coverage: 91.8%   (or any value ≥90%)
 ```
@@ -131,12 +145,14 @@ Line coverage: 91.8%   (or any value ≥90%)
 ---
 
 ### Gate 4: Zero Security Vulnerabilities
+
 ```bash
 # Check for ALL vulnerabilities including transitive dependencies
 dotnet list package --vulnerable --include-transitive
 ```
 
 **Expected Output:**
+
 ```
 The given project has no vulnerable packages
 ```
@@ -146,12 +162,14 @@ The given project has no vulnerable packages
 ---
 
 ### Gate 5: No Template/Scaffolding Files
+
 ```bash
 # Check for common template files that should have been removed
 find . -name "Class1.cs" -o -name "UnitTest1.cs" -o -name "WeatherForecast.cs"
 ```
 
 **Expected Output:**
+
 ```
 (empty - no files found)
 ```
@@ -161,12 +179,14 @@ find . -name "Class1.cs" -o -name "UnitTest1.cs" -o -name "WeatherForecast.cs"
 ---
 
 ### Gate 6: Proof File Completeness
+
 ```bash
 # Check proof file for placeholders (case-insensitive)
 grep -i -E "\[(TO BE|PLACEHOLDER|TBD|TODO|PENDING|STATUS|XXX|N/N|X%)\]" STAGE_*_PROOF.md
 ```
 
 **Expected Output:**
+
 ```
 (empty - no placeholders found)
 ```
@@ -175,28 +195,92 @@ grep -i -E "\[(TO BE|PLACEHOLDER|TBD|TODO|PENDING|STATUS|XXX|N/N|X%)\]" STAGE_*_
 
 ---
 
+### Gate 7: Mutation Testing Score ≥80%
+
+```bash
+# Install Stryker.NET (if not already installed)
+dotnet tool install --global dotnet-stryker
+
+# Run mutation testing on new/modified code for this stage
+cd tests/WorkflowCore.Tests
+dotnet stryker --config-file ../../stryker-config.json
+```
+
+**Expected Output:**
+
+```
+The final mutation score is 80.00% (or higher)
+```
+
+**Mutation Score Interpretation:**
+
+- **≥90%**: Excellent - Very strong test quality ✅
+- **≥80%**: Good - Tests catch most bugs ✅
+- **≥70%**: Acceptable - Consider strengthening critical code tests ⚠️
+- **<70%**: Weak - Tests may not catch bugs, improvement recommended ⚠️
+- **<60%**: Poor - Significant test quality issues ❌
+
+**This gate is RECOMMENDED but not strictly blocking:**
+
+- If mutation score < 80%, document the score in `STAGE_X_PROOF.md`
+- Consider adding tests for survived mutants in critical code paths
+- For complex algorithms (graphs, parsers, validators), aim for ≥80%
+- High code coverage + high mutation score = production-ready quality
+
+**Note:** Mutation testing takes longer than other gates. Run it last, and consider focusing on new code added in the current stage rather than all code.
+
+**Configuration Example (`stryker-config.json`):**
+
+```json
+{
+  "stryker-config": {
+    "project": "WorkflowCore.csproj",
+    "test-projects": ["WorkflowCore.Tests.csproj"],
+    "reporters": ["html", "progress", "cleartext"],
+    "thresholds": {
+      "high": 80,
+      "low": 60,
+      "break": 60
+    },
+    "concurrency": 4,
+    "mutate": ["**/YourNewCode.cs"]
+  }
+}
+```
+
+---
+
 ## Stage Completion Procedure (STRICT SEQUENTIAL ORDER)
 
 **Follow these steps in EXACT order. Do not skip steps. If any step fails, fix the issue and restart from Step 1.**
 
 ### Step 1: Run ALL Quality Gates
-- Execute each gate command (above) in order: Gate 1 → Gate 2 → Gate 3 → Gate 4 → Gate 5 → Gate 6
-- If ANY gate fails:
+
+- Execute each gate command (above) in order: Gate 1 → Gate 2 → Gate 3 → Gate 4 → Gate 5 → Gate 6 → Gate 7 (recommended)
+- If ANY of Gates 1-6 fail:
   1. **STOP immediately**
   2. Fix the issue (see "Quality Gate Failure Procedures" below)
   3. **Restart from Gate 1** (dependency updates can break other gates)
+- If Gate 7 (mutation testing) shows <80%:
+  1. Document the score in proof file
+  2. Consider adding tests for survived mutants
+  3. Not blocking, but improvement recommended for critical code
 - Document actual output from each gate in `STAGE_X_PROOF.md`
 
 **Prerequisites to proceed:**
-- [ ] All 6 gates show ✅ PASS
+
+- [ ] All 6 mandatory gates (1-6) show ✅ PASS
+- [ ] Gate 7 (mutation testing) run and score documented
 - [ ] All gate outputs copied to proof file
 
 ---
 
 ### Step 2: Fill Out Proof File COMPLETELY
+
 Open `STAGE_X_PROOF.md` and verify ALL sections are filled with actual data:
 
 **Required sections (NO placeholders allowed):**
+
 - [ ] Stage Summary table with actual numbers (e.g., `21/21`, `91.8%`, `0`)
 - [ ] Test results with actual output from `dotnet test`
 - [ ] Coverage percentage with actual number from `Summary.txt`
@@ -208,20 +292,24 @@ Open `STAGE_X_PROOF.md` and verify ALL sections are filled with actual data:
 - [ ] Tag name specified
 
 **Verification command (MUST return empty):**
+
 ```bash
 grep -i -E "\[(TO BE|PLACEHOLDER|TBD|TODO|PENDING|STATUS|XXX|N/N|X%)\]" STAGE_X_PROOF.md
 ```
 
 **Prerequisites to proceed:**
+
 - [ ] Proof file verification command returns empty
 - [ ] All sections reviewed and contain actual data
 
 ---
 
 ### Step 3: Update CHANGELOG.md
+
 Update the changelog with actual metrics from the completed stage:
 
 **Required updates:**
+
 - [ ] Stage completion entry with actual date
 - [ ] Test count: actual numbers (e.g., `21/21`)
 - [ ] Coverage: actual percentage (e.g., `91.8%`)
@@ -231,12 +319,14 @@ Update the changelog with actual metrics from the completed stage:
 - [ ] "Last Updated" date updated
 
 **Prerequisites to proceed:**
+
 - [ ] CHANGELOG.md contains actual metrics (no placeholders)
 - [ ] Overall progress percentage matches completed stages
 
 ---
 
 ### Step 4: Create Stage Completion Commit
+
 ```bash
 # Stage only source files and documentation (NOT bin/obj directories)
 git add src/ tests/ *.md
@@ -283,12 +373,14 @@ EOF
 ```
 
 **Prerequisites to proceed:**
+
 - [ ] Commit created successfully
 - [ ] Commit message contains actual metrics (no placeholders)
 
 ---
 
 ### Step 5: Update Proof File with Commit Hash
+
 ```bash
 # Get the commit hash
 git log -1 --format=%h
@@ -297,11 +389,13 @@ git log -1 --format=%h
 ```
 
 **Prerequisites to proceed:**
+
 - [ ] Proof file contains actual commit hash
 
 ---
 
 ### Step 6: Create Git Tag
+
 ```bash
 # Create annotated tag with actual metrics
 git tag -a stage-X-complete -m "Stage X: [Name] - N tests, XX% coverage, 0 vulnerabilities"
@@ -311,11 +405,13 @@ git log --oneline --decorate -5
 ```
 
 **Expected output:**
+
 ```
 abc1234 (HEAD -> master, tag: stage-X-complete) ✅ Stage X Complete: [Name]
 ```
 
 **Prerequisites to proceed:**
+
 - [ ] Tag created successfully
 - [ ] Tag points to stage completion commit
 - [ ] Tag message contains actual metrics
@@ -323,6 +419,7 @@ abc1234 (HEAD -> master, tag: stage-X-complete) ✅ Stage X Complete: [Name]
 ---
 
 ### Step 7: Final Verification
+
 ```bash
 # Verify no uncommitted changes to source files
 git status src/ tests/ *.md
@@ -332,12 +429,14 @@ dotnet test && dotnet build --configuration Release
 ```
 
 **Expected output:**
+
 ```
 nothing to commit, working tree clean
 [tests pass, build succeeds]
 ```
 
 **Stage completion checklist:**
+
 - [ ] All 6 quality gates pass
 - [ ] Proof file complete with actual results
 - [ ] CHANGELOG.md updated
@@ -358,6 +457,7 @@ nothing to commit, working tree clean
 ### If Gate 1 Fails: Build Errors or Warnings
 
 **Symptoms:**
+
 ```
 Build FAILED.
     X Warning(s)
@@ -365,6 +465,7 @@ Build FAILED.
 ```
 
 **Resolution Steps:**
+
 1. Review build output for specific errors/warnings
 2. Fix ALL errors first (code won't compile)
 3. Fix ALL warnings (zero tolerance - warnings become errors in production)
@@ -381,11 +482,13 @@ Build FAILED.
 ### If Gate 2 Fails: Test Failures
 
 **Symptoms:**
+
 ```
 Failed!  - Failed:     X, Passed:    Y, Skipped:     Z
 ```
 
 **Resolution Steps:**
+
 1. Review test output for specific failures
 2. For each failing test:
    - Read the failure message and stack trace
@@ -402,11 +505,13 @@ Failed!  - Failed:     X, Passed:    Y, Skipped:     Z
 ### If Gate 3 Fails: Coverage < 90%
 
 **Symptoms:**
+
 ```
 Line coverage: 85.2%   (below 90% threshold)
 ```
 
 **Resolution Steps:**
+
 1. Open HTML report: `open ./coverage/report/index.html`
 2. Identify uncovered lines (highlighted in red)
 3. For each uncovered section:
@@ -425,6 +530,7 @@ Line coverage: 85.2%   (below 90% threshold)
 ### If Gate 4 Fails: Security Vulnerabilities
 
 **Symptoms:**
+
 ```
 The following sources have vulnerable packages:
    Project: WorkflowCore
@@ -433,8 +539,10 @@ The following sources have vulnerable packages:
 ```
 
 **Resolution Steps:**
+
 1. Note ALL vulnerabilities: package name, current version, CVE numbers, severity
 2. For each vulnerable package:
+
    ```bash
    # Update to latest version
    dotnet add src/ProjectName package PackageName
@@ -442,6 +550,7 @@ The following sources have vulnerable packages:
    # If dependency conflict occurs, update conflicting package first
    dotnet add src/ProjectName package ConflictingPackage
    ```
+
 3. Verify resolution:
    ```bash
    dotnet list package --vulnerable --include-transitive
@@ -458,12 +567,14 @@ The following sources have vulnerable packages:
 ### If Gate 5 Fails: Template Files Found
 
 **Symptoms:**
+
 ```
 ./src/WorkflowCore/Class1.cs
 ./tests/WorkflowCore.Tests/UnitTest1.cs
 ```
 
 **Resolution Steps:**
+
 1. Remove ALL template files:
    ```bash
    rm -f src/*/Class1.cs
@@ -485,6 +596,7 @@ The following sources have vulnerable packages:
 ### If Gate 6 Fails: Proof File Contains Placeholders
 
 **Symptoms:**
+
 ```
 STAGE_1_PROOF.md:15:| Tests | [N/N] | ...
 STAGE_1_PROOF.md:42:Coverage: [XX%]
@@ -492,6 +604,7 @@ STAGE_1_PROOF.md:58:[TO BE VERIFIED]
 ```
 
 **Resolution Steps:**
+
 1. For each placeholder found:
    - Run the corresponding command
    - Copy actual output
@@ -518,6 +631,7 @@ STAGE_1_PROOF.md:58:[TO BE VERIFIED]
 ### Definition of "Complete"
 
 A proof file is complete when:
+
 1. ✅ Every section has actual data (no placeholders)
 2. ✅ All metrics match actual command outputs
 3. ✅ All checkboxes are checked `[x]` (no `[ ]` for deliverables)
@@ -528,12 +642,13 @@ A proof file is complete when:
 Every `STAGE_X_PROOF.md` must contain:
 
 **1. Stage Summary Table**
+
 ```markdown
-| Metric | Target | Actual | Status |
-|--------|--------|--------|--------|
-| Tests Passing | 100% | 21/21 | ✅ PASS |   ← actual numbers
-| Coverage | ≥90% | 91.8% | ✅ PASS |        ← actual percentage
-| Build Warnings | 0 | 0 | ✅ PASS |          ← actual count
+| Metric         | Target | Actual | Status  |
+| -------------- | ------ | ------ | ------- | ------------------- |
+| Tests Passing  | 100%   | 21/21  | ✅ PASS | ← actual numbers    |
+| Coverage       | ≥90%   | 91.8%  | ✅ PASS | ← actual percentage |
+| Build Warnings | 0      | 0      | ✅ PASS | ← actual count      |
 ```
 
 ❌ Bad: `| Tests | [N/N] | [STATUS] |`
@@ -542,13 +657,18 @@ Every `STAGE_X_PROOF.md` must contain:
 ---
 
 **2. Test Results with Actual Output**
+
 ```markdown
 ## Test Results
+
 Paste actual output from `dotnet test`:
 ```
+
 Test run for /path/to/WorkflowCore.Tests.dll
-Passed!  - Failed:     0, Passed:    21, Skipped:     0, Total:    21
+Passed! - Failed: 0, Passed: 21, Skipped: 0, Total: 21
+
 ```
+
 ```
 
 ❌ Bad: `[TO BE VERIFIED]`
@@ -557,9 +677,11 @@ Passed!  - Failed:     0, Passed:    21, Skipped:     0, Total:    21
 ---
 
 **3. Coverage Report with Actual Percentage**
+
 ```markdown
 ## Code Coverage
-Line coverage: 91.8%   ← from Summary.txt
+
+Line coverage: 91.8% ← from Summary.txt
 Covered lines: 147
 Uncovered lines: 13
 ```
@@ -570,12 +692,14 @@ Uncovered lines: 13
 ---
 
 **4. Build Output**
+
 ```markdown
 ## Build Quality
+
 dotnet build --configuration Release
 Build succeeded.
-    0 Warning(s)    ← actual count
-    0 Error(s)      ← actual count
+0 Warning(s) ← actual count
+0 Error(s) ← actual count
 ```
 
 ❌ Bad: `Build: [STATUS]`
@@ -584,11 +708,13 @@ Build succeeded.
 ---
 
 **5. Security Status**
+
 ```markdown
 ## Security
+
 ✅ All NuGet vulnerabilities resolved
 ✅ System.Text.Json updated to 10.0.0 (from 8.0.0 - HIGH severity CVEs)
-✅ Verified: 2025-11-21    ← actual date
+✅ Verified: 2025-11-21 ← actual date
 
 Command: dotnet list package --vulnerable --include-transitive
 Result: The given project has no vulnerable packages
@@ -600,9 +726,11 @@ Result: The given project has no vulnerable packages
 ---
 
 **6. Deliverables Checklist (All Checked)**
+
 ```markdown
 ## Deliverables
-- [x] Solution file created        ← all must be [x]
+
+- [x] Solution file created ← all must be [x]
 - [x] WorkflowCore project created
 - [x] All tests implemented
 ```
@@ -634,21 +762,27 @@ grep "^- \[ \]" STAGE_*_PROOF.md
 ### Common Mistakes to Avoid
 
 1. ❌ **Creating proof file with placeholders, planning to "fill later"**
+
    - ✅ Run commands FIRST, then fill proof file with results
 
 2. ❌ **Copying test count from code without running tests**
+
    - ✅ Run `dotnet test`, paste actual output
 
 3. ❌ **Estimating coverage percentage**
+
    - ✅ Generate report, use exact number from `Summary.txt`
 
 4. ❌ **Assuming no vulnerabilities without scanning**
+
    - ✅ Run `dotnet list package --vulnerable`, document results
 
 5. ❌ **Using previous stage's proof as template without updating**
+
    - ✅ Use `STAGE_PROOF_TEMPLATE.md`, fill with current stage's data
 
 6. ❌ **Marking deliverables complete before they're implemented**
+
    - ✅ Check `[x]` only when feature is coded, tested, and verified
 
 7. ❌ **Leaving commit hash as `[TO BE FILLED]` after committing**
@@ -661,6 +795,7 @@ grep "^- \[ \]" STAGE_*_PROOF.md
 **Step-by-step:**
 
 1. **Copy template:**
+
    ```bash
    cp STAGE_PROOF_TEMPLATE.md STAGE_X_PROOF.md
    ```
@@ -668,6 +803,7 @@ grep "^- \[ \]" STAGE_*_PROOF.md
 2. **Run quality gates** (all 6 gates)
 
 3. **Fill proof file with actual results:**
+
    - Paste `dotnet test` output → Test Results section
    - Paste coverage percentage from `Summary.txt` → Coverage section
    - Paste `dotnet build` output → Build Quality section
@@ -675,6 +811,7 @@ grep "^- \[ \]" STAGE_*_PROOF.md
    - Check deliverables one-by-one → Deliverables section
 
 4. **Verify no placeholders:**
+
    ```bash
    grep -i -E "\[(TO BE|TBD|TODO)\]" STAGE_X_PROOF.md
    # Should return empty
@@ -737,32 +874,39 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 ### 🎯 OBJECTIVES
 
 #### What We Will Build:
+
 1. **Project Structure**
+
    - .NET 8 solution with WorkflowCore library
    - Test project with xUnit, Moq, FluentAssertions
    - All NuGet dependencies configured
 
 2. **Schema Models** (Task 1.2)
+
    - `SchemaDefinition` - JSON Schema representation
    - `PropertyDefinition` - Schema property with nested support
    - Full serialization/deserialization support
 
 3. **CRD Models** (Task 1.3)
+
    - `WorkflowTaskResource` - Kubernetes CRD for tasks
    - `WorkflowTaskSpec` - Task specification with schemas
    - `HttpRequestDefinition` - HTTP task configuration
 
 4. **Schema Parser** (Task 1.4)
+
    - `ISchemaParser` interface
    - `SchemaParser` implementation using JsonSchema.Net
    - Convert SchemaDefinition to JsonSchema objects
 
 5. **Type Compatibility Checker** (Task 1.5)
+
    - `ITypeCompatibilityChecker` interface
    - `TypeCompatibilityChecker` with recursive validation
    - `CompatibilityResult` with detailed error reporting
 
 6. **Workflow Models** (Task 1.6)
+
    - `WorkflowResource` - Kubernetes CRD for workflows
    - `WorkflowSpec` - Workflow definition with tasks
    - `WorkflowTaskStep` - Individual task in workflow
@@ -775,26 +919,31 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 #### Why It Matters (Value to Project):
 
 **1. Type Safety Foundation**
+
 - Prevents runtime errors by catching type mismatches at design time
 - Reduces debugging time and production incidents
 - **Value**: Users can't deploy workflows with incompatible task chains
 
 **2. Schema Validation Core**
+
 - Ensures data integrity throughout the workflow
 - Validates inputs before execution
 - **Value**: Garbage in = rejected at the door, not propagated
 
 **3. Developer Experience**
+
 - Clear, consistent error messages guide users to solutions
 - Suggested fixes reduce friction
 - **Value**: Developers succeed faster, less support burden
 
 **4. Kubernetes-Native Design**
+
 - CRDs allow declarative workflow definition
 - Fits naturally into K8s ecosystem
 - **Value**: Familiar patterns for K8s users, GitOps-ready
 
 **5. Testability from Day One**
+
 - Every component has interfaces
 - TDD ensures quality
 - **Value**: Confidence in changes, safe refactoring, regression protection
@@ -851,7 +1000,9 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 ### ✅ SUCCESS CRITERIA
 
 #### Must Achieve:
+
 1. **All Tests Passing**
+
    - SchemaDefinitionTests: 3 tests passing
    - WorkflowTaskResourceTests: 1 test passing
    - SchemaParserTests: 2 tests passing
@@ -861,11 +1012,13 @@ Co-Authored-By: Claude <noreply@anthropic.com>
    - **Total: 14 tests, 0 failures**
 
 2. **Code Coverage**
+
    - Line coverage ≥ 90%
    - Branch coverage ≥ 85%
    - Coverage report generated
 
 3. **Build Quality**
+
    - `dotnet build` succeeds with 0 warnings
    - All dependencies resolved
    - Solution structure matches specification
@@ -879,6 +1032,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>
    - CRDs can be deserialized from YAML
 
 #### Deliverables Checklist:
+
 - [ ] Solution file created: `WorkflowOperator.sln`
 - [ ] WorkflowCore project created with all dependencies
 - [ ] WorkflowCore.Tests project created with test dependencies
@@ -900,12 +1054,14 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 ### 📊 PROOF OF ACHIEVEMENT (To be completed after execution)
 
 #### Test Results:
+
 ```
 [To be filled with actual test output]
 dotnet test --logger "console;verbosity=detailed"
 ```
 
 #### Coverage Report:
+
 ```
 [To be filled with coverage report]
 dotnet test --collect:"XPlat Code Coverage"
@@ -913,18 +1069,21 @@ reportgenerator -reports:coverage/**/coverage.cobertura.xml -targetdir:coverage/
 ```
 
 #### Build Output:
+
 ```
 [To be filled with build output]
 dotnet build --configuration Release
 ```
 
 #### File Structure Verification:
+
 ```
 [To be filled with directory tree]
 tree src/ tests/
 ```
 
 #### Demonstration:
+
 ```
 [To be filled with code examples showing:]
 1. Schema serialization working

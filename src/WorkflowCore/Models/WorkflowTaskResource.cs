@@ -15,6 +15,9 @@ public class WorkflowTaskResource
 
     [YamlMember(Alias = "spec")]
     public WorkflowTaskSpec Spec { get; set; } = new();
+
+    [YamlMember(Alias = "status")]
+    public WorkflowTaskStatus? Status { get; set; }
 }
 
 public class ResourceMetadata
@@ -57,4 +60,13 @@ public class HttpRequestDefinition
 
     [YamlMember(Alias = "body")]
     public string? Body { get; set; }
+}
+
+public class WorkflowTaskStatus
+{
+    [YamlMember(Alias = "usageCount")]
+    public int UsageCount { get; set; }
+
+    [YamlMember(Alias = "lastUpdated")]
+    public DateTime LastUpdated { get; set; }
 }

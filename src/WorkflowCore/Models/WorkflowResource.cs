@@ -15,6 +15,9 @@ public class WorkflowResource
 
     [YamlMember(Alias = "spec")]
     public WorkflowSpec Spec { get; set; } = new();
+
+    [YamlMember(Alias = "status")]
+    public WorkflowStatus? Status { get; set; }
 }
 
 public class WorkflowSpec
@@ -36,4 +39,19 @@ public class WorkflowTaskStep
 
     [YamlMember(Alias = "condition")]
     public string? Condition { get; set; }
+}
+
+public class WorkflowStatus
+{
+    [YamlMember(Alias = "phase")]
+    public string Phase { get; set; } = "Pending";
+
+    [YamlMember(Alias = "executionCount")]
+    public int ExecutionCount { get; set; }
+
+    [YamlMember(Alias = "lastExecuted")]
+    public DateTime LastExecuted { get; set; }
+
+    [YamlMember(Alias = "validationErrors")]
+    public List<string> ValidationErrors { get; set; } = new();
 }

@@ -135,4 +135,63 @@ public class RetryPolicyTests
         // Assert
         shouldRetry.Should().BeTrue();
     }
+
+    [Fact]
+    public void CalculateDelay_WithZeroOrNegativeAttempt_ShouldReturnZero()
+    {
+        // Arrange
+        var policy = new RetryPolicy(new RetryPolicyOptions
+        {
+            InitialDelayMilliseconds = 100,
+            MaxDelayMilliseconds = 30000,
+            BackoffMultiplier = 2.0
+        });
+
+        // Act & Assert
+        policy.CalculateDelay(0).Should().Be(TimeSpan.Zero);
+        policy.CalculateDelay(-1).Should().Be(TimeSpan.Zero);
+    }
+
+    [Fact]
+    public void ShouldRetry_WithNonRetryableException_ShouldReturnFalse()
+    {
+        // Arrange
+        var policy = new RetryPolicy(new RetryPolicyOptions { MaxRetryCount = 3 });
+        var exception = new InvalidOperationException("Invalid state");
+
+        // Act
+        var shouldRetry = policy.ShouldRetry(exception, attemptNumber: 1);
+
+        // Assert
+        shouldRetry.Should().BeFalse(); // Not a retryable exception type
+    }
+
+    [Fact]
+    public void ShouldRetry_AtExactMaxRetryBoundary_ShouldReturnFalse()
+    {
+        // Arrange
+        var policy = new RetryPolicy(new RetryPolicyOptions { MaxRetryCount = 3 });
+        var exception = new HttpRequestException("Network error");
+
+        // Act & Assert
+        policy.ShouldRetry(exception, 3).Should().BeTrue();  // At max
+        policy.ShouldRetry(exception, 4).Should().BeFalse(); // Exceeds max
+    }
+
+    [Fact]
+    public void CalculateDelay_WithDifferentMultiplier_ShouldCalculateCorrectly()
+    {
+        // Arrange
+        var policy = new RetryPolicy(new RetryPolicyOptions
+        {
+            InitialDelayMilliseconds = 100,
+            MaxDelayMilliseconds = 50000,
+            BackoffMultiplier = 3.0  // Triple each time
+        });
+
+        // Act & Assert
+        policy.CalculateDelay(1).Should().Be(TimeSpan.FromMilliseconds(100));   // 100 * 3^0 = 100
+        policy.CalculateDelay(2).Should().Be(TimeSpan.FromMilliseconds(300));   // 100 * 3^1 = 300
+        policy.CalculateDelay(3).Should().Be(TimeSpan.FromMilliseconds(900));   // 100 * 3^2 = 900
+    }
 }

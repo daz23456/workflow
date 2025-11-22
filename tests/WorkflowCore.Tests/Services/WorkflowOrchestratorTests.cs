@@ -513,4 +513,312 @@ public class WorkflowOrchestratorTests
         result.TaskResults["task-1"].Success.Should().BeFalse();
         result.TaskResults["task-1"].Errors.Should().Contain(e => e.Contains("not found"));
     }
+
+    [Fact]
+    public async Task ExecuteAsync_WithNullGraph_ShouldReturnError()
+    {
+        // Arrange
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "task-1", TaskRef = "ref-1" }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>();
+        var inputs = new Dictionary<string, object>();
+
+        _graphBuilderMock.Setup(x => x.Build(workflow))
+            .Returns(new ExecutionGraphResult
+            {
+                IsValid = true,
+                Graph = null // Null graph
+            });
+
+        // Act
+        var result = await _orchestrator.ExecuteAsync(workflow, tasks, inputs, CancellationToken.None);
+
+        // Assert
+        result.Success.Should().BeFalse();
+        result.Errors.Should().ContainSingle();
+        result.Errors[0].Should().Be("Execution graph is null");
+        result.TotalDuration.Should().BeGreaterThan(TimeSpan.Zero);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithSuccessfulTaskExecution_ShouldUpdateContextBetweenTasks()
+    {
+        // Arrange - Test that context is properly maintained and updated
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "task-1", TaskRef = "ref-1" },
+                    new WorkflowTaskStep { Id = "task-2", TaskRef = "ref-2" }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["ref-1"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } },
+            ["ref-2"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } }
+        };
+
+        var inputs = new Dictionary<string, object> { ["userId"] = "123" };
+
+        var graph = new ExecutionGraph();
+        graph.AddNode("task-1");
+        graph.AddNode("task-2");
+
+        _graphBuilderMock.Setup(x => x.Build(workflow))
+            .Returns(new ExecutionGraphResult
+            {
+                IsValid = true,
+                Graph = graph
+            });
+
+        _taskExecutorMock.Setup(x => x.ExecuteAsync(
+            It.IsAny<WorkflowTaskSpec>(),
+            It.IsAny<TemplateContext>(),
+            It.IsAny<CancellationToken>()))
+            .ReturnsAsync((WorkflowTaskSpec spec, TemplateContext context, CancellationToken ct) =>
+            {
+                // Verify context has input
+                context.Input.Should().ContainKey("userId");
+
+                return new TaskExecutionResult
+                {
+                    Success = true,
+                    Output = new Dictionary<string, object> { ["data"] = "test" }
+                };
+            });
+
+        // Act
+        var result = await _orchestrator.ExecuteAsync(workflow, tasks, inputs, CancellationToken.None);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        result.TaskResults.Should().HaveCount(2);
+        // Verify executor was called twice
+        _taskExecutorMock.Verify(x => x.ExecuteAsync(
+            It.IsAny<WorkflowTaskSpec>(),
+            It.IsAny<TemplateContext>(),
+            It.IsAny<CancellationToken>()), Times.Exactly(2));
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithMultipleFailures_ShouldCollectAllErrors()
+    {
+        // Arrange
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "task-1", TaskRef = "missing-ref-1" },
+                    new WorkflowTaskStep { Id = "task-2", TaskRef = "missing-ref-2" }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>(); // All refs missing
+        var inputs = new Dictionary<string, object>();
+
+        var graph = new ExecutionGraph();
+        graph.AddNode("task-1");
+        graph.AddNode("task-2");
+
+        _graphBuilderMock.Setup(x => x.Build(workflow))
+            .Returns(new ExecutionGraphResult
+            {
+                IsValid = true,
+                Graph = graph
+            });
+
+        // Act
+        var result = await _orchestrator.ExecuteAsync(workflow, tasks, inputs, CancellationToken.None);
+
+        // Assert
+        result.Success.Should().BeFalse();
+        result.Errors.Should().HaveCount(2);
+        result.Errors.Should().Contain(e => e.Contains("task-1") && e.Contains("missing-ref-1"));
+        result.Errors.Should().Contain(e => e.Contains("task-2") && e.Contains("missing-ref-2"));
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ShouldAlwaysPopulateTotalDuration()
+    {
+        // Arrange
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "task-1", TaskRef = "ref-1" }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["ref-1"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } }
+        };
+
+        var inputs = new Dictionary<string, object>();
+
+        var graph = new ExecutionGraph();
+        graph.AddNode("task-1");
+
+        _graphBuilderMock.Setup(x => x.Build(workflow))
+            .Returns(new ExecutionGraphResult
+            {
+                IsValid = true,
+                Graph = graph
+            });
+
+        _taskExecutorMock.Setup(x => x.ExecuteAsync(
+            It.IsAny<WorkflowTaskSpec>(),
+            It.IsAny<TemplateContext>(),
+            It.IsAny<CancellationToken>()))
+            .Returns(async () =>
+            {
+                await Task.Delay(50); // Simulate work
+                return new TaskExecutionResult
+                {
+                    Success = true,
+                    Output = new Dictionary<string, object>()
+                };
+            });
+
+        // Act
+        var result = await _orchestrator.ExecuteAsync(workflow, tasks, inputs, CancellationToken.None);
+
+        // Assert
+        result.TotalDuration.Should().BeGreaterThan(TimeSpan.FromMilliseconds(40));
+        result.TotalDuration.Should().BeLessThan(TimeSpan.FromSeconds(2));
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithSkippedTask_ShouldHaveExactErrorMessage()
+    {
+        // Arrange
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "task-1", TaskRef = "ref-1" },
+                    new WorkflowTaskStep
+                    {
+                        Id = "task-2",
+                        TaskRef = "ref-2",
+                        Input = new Dictionary<string, string> { ["data"] = "{{tasks.task-1.output.id}}" }
+                    }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["ref-1"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } },
+            ["ref-2"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } }
+        };
+
+        var inputs = new Dictionary<string, object>();
+
+        var graph = new ExecutionGraph();
+        graph.AddDependency("task-2", "task-1");
+
+        _graphBuilderMock.Setup(x => x.Build(workflow))
+            .Returns(new ExecutionGraphResult
+            {
+                IsValid = true,
+                Graph = graph
+            });
+
+        _taskExecutorMock.Setup(x => x.ExecuteAsync(
+            It.IsAny<WorkflowTaskSpec>(),
+            It.Is<TemplateContext>(c => c.TaskOutputs.Count == 0),
+            It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new TaskExecutionResult
+            {
+                Success = false,
+                Errors = new List<string> { "HTTP request failed" }
+            });
+
+        // Act
+        var result = await _orchestrator.ExecuteAsync(workflow, tasks, inputs, CancellationToken.None);
+
+        // Assert
+        result.TaskResults["task-2"].Errors.Should().ContainSingle();
+        result.TaskResults["task-2"].Errors[0].Should().Be("Task skipped due to failed dependency");
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithTaskOutputWithoutOutput_ShouldNotAddToContext()
+    {
+        // Arrange - Test that null output doesn't get added to context
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "task-1", TaskRef = "ref-1" },
+                    new WorkflowTaskStep { Id = "task-2", TaskRef = "ref-2" }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["ref-1"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } },
+            ["ref-2"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } }
+        };
+
+        var inputs = new Dictionary<string, object>();
+
+        var graph = new ExecutionGraph();
+        graph.AddNode("task-1");
+        graph.AddNode("task-2");
+
+        _graphBuilderMock.Setup(x => x.Build(workflow))
+            .Returns(new ExecutionGraphResult
+            {
+                IsValid = true,
+                Graph = graph
+            });
+
+        _taskExecutorMock.Setup(x => x.ExecuteAsync(
+            It.IsAny<WorkflowTaskSpec>(),
+            It.IsAny<TemplateContext>(),
+            It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new TaskExecutionResult
+            {
+                Success = true,
+                Output = null // No output
+            });
+
+        // Act
+        var result = await _orchestrator.ExecuteAsync(workflow, tasks, inputs, CancellationToken.None);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        result.TaskResults.Should().HaveCount(2);
+        // Both tasks succeeded but had no output, so context should remain empty
+        _taskExecutorMock.Verify(x => x.ExecuteAsync(
+            It.IsAny<WorkflowTaskSpec>(),
+            It.Is<TemplateContext>(c => c.TaskOutputs.Count == 0),
+            It.IsAny<CancellationToken>()), Times.Exactly(2));
+    }
 }

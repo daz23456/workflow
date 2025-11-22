@@ -288,4 +288,170 @@ public class TemplateResolverTests
         // Assert
         result.Should().Be("True");
     }
+
+    [Fact]
+    public async Task ResolveAsync_WithNullTemplate_ShouldReturnNull()
+    {
+        // Arrange
+        string? template = null;
+        var context = new TemplateContext();
+
+        // Act
+        var result = await _resolver.ResolveAsync(template!, context);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task ResolveAsync_WithEmptyTemplate_ShouldReturnEmpty()
+    {
+        // Arrange
+        var template = "";
+        var context = new TemplateContext();
+
+        // Act
+        var result = await _resolver.ResolveAsync(template, context);
+
+        // Assert
+        result.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ResolveAsync_WithTasksButNotOutput_ShouldThrowException()
+    {
+        // Arrange - tasks.taskId.wrongKeyword instead of tasks.taskId.output
+        var template = "{{tasks.fetch-user.result.data}}";
+        var context = new TemplateContext
+        {
+            TaskOutputs = new Dictionary<string, Dictionary<string, object>>
+            {
+                ["fetch-user"] = new Dictionary<string, object> { ["result"] = "value" }
+            }
+        };
+
+        // Act & Assert
+        await Assert.ThrowsAsync<TemplateResolutionException>(
+            async () => await _resolver.ResolveAsync(template, context));
+    }
+
+    [Fact]
+    public async Task ResolveAsync_WithDecimalValue_ShouldConvertToString()
+    {
+        // Arrange
+        var template = "{{input.price}}";
+        var context = new TemplateContext
+        {
+            Input = new Dictionary<string, object>
+            {
+                ["price"] = 19.99m
+            }
+        };
+
+        // Act
+        var result = await _resolver.ResolveAsync(template, context);
+
+        // Assert
+        result.Should().Be("19.99");
+    }
+
+    [Fact]
+    public async Task ResolveAsync_WithLongValue_ShouldConvertToString()
+    {
+        // Arrange
+        var template = "{{input.userId}}";
+        var context = new TemplateContext
+        {
+            Input = new Dictionary<string, object>
+            {
+                ["userId"] = 9876543210L
+            }
+        };
+
+        // Act
+        var result = await _resolver.ResolveAsync(template, context);
+
+        // Assert
+        result.Should().Be("9876543210");
+    }
+
+    [Fact]
+    public async Task ResolveAsync_WithDoubleValue_ShouldConvertToString()
+    {
+        // Arrange
+        var template = "{{input.rating}}";
+        var context = new TemplateContext
+        {
+            Input = new Dictionary<string, object>
+            {
+                ["rating"] = 4.5
+            }
+        };
+
+        // Act
+        var result = await _resolver.ResolveAsync(template, context);
+
+        // Assert
+        result.Should().Be("4.5");
+    }
+
+    [Fact]
+    public async Task ResolveAsync_WithFloatValue_ShouldConvertToString()
+    {
+        // Arrange
+        var template = "{{input.score}}";
+        var context = new TemplateContext
+        {
+            Input = new Dictionary<string, object>
+            {
+                ["score"] = 98.5f
+            }
+        };
+
+        // Act
+        var result = await _resolver.ResolveAsync(template, context);
+
+        // Assert
+        result.Should().Be("98.5");
+    }
+
+    [Fact]
+    public async Task ResolveAsync_WithDeeplyNestedObjectPath_ShouldResolveCorrectly()
+    {
+        // Arrange
+        var template = "{{tasks.fetch-user.output.user.address.city}}";
+        var addressObject = new { city = "San Francisco", state = "CA" };
+        var userObject = new { name = "Alice", address = addressObject };
+        var context = new TemplateContext
+        {
+            TaskOutputs = new Dictionary<string, Dictionary<string, object>>
+            {
+                ["fetch-user"] = new Dictionary<string, object>
+                {
+                    ["user"] = userObject
+                }
+            }
+        };
+
+        // Act
+        var result = await _resolver.ResolveAsync(template, context);
+
+        // Assert
+        result.Should().Be("San Francisco");
+    }
+
+    [Fact]
+    public async Task ResolveAsync_WithExactErrorMessage_ShouldContainTemplatePath()
+    {
+        // Arrange
+        var template = "{{tasks.nonExistent.output.field}}";
+        var context = new TemplateContext();
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<TemplateResolutionException>(
+            async () => await _resolver.ResolveAsync(template, context));
+
+        exception.TemplatePath.Should().Be("tasks.nonExistent.output.field");
+        exception.Message.Should().Contain("nonExistent");
+    }
 }

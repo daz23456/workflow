@@ -37,4 +37,10 @@ public class EnhancedExecutionPlan
     /// Null if no historical data is available.
     /// </summary>
     public long? EstimatedDurationMs { get; set; }
+
+    /// <summary>
+    /// Template previews for each task, showing resolved input values and task output placeholders.
+    /// Key: task ID, Value: dictionary of template expressions to resolved values.
+    /// </summary>
+    public Dictionary<string, Dictionary<string, string>> TemplatePreviews { get; set; } = new Dictionary<string, Dictionary<string, string>>();
 }

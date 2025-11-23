@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 using WorkflowCore.Data.Repositories;
 using WorkflowCore.Models;
 using WorkflowCore.Services;
@@ -16,19 +17,22 @@ public class DynamicWorkflowController : ControllerBase
     private readonly IWorkflowExecutionService _executionService;
     private readonly IExecutionGraphBuilder _graphBuilder;
     private readonly IExecutionRepository _executionRepository;
+    private readonly ITemplatePreviewService _templatePreviewService;
 
     public DynamicWorkflowController(
         IWorkflowDiscoveryService discoveryService,
         IInputValidationService validationService,
         IWorkflowExecutionService executionService,
         IExecutionGraphBuilder graphBuilder,
-        IExecutionRepository executionRepository)
+        IExecutionRepository executionRepository,
+        ITemplatePreviewService templatePreviewService)
     {
         _discoveryService = discoveryService ?? throw new ArgumentNullException(nameof(discoveryService));
         _validationService = validationService ?? throw new ArgumentNullException(nameof(validationService));
         _executionService = executionService ?? throw new ArgumentNullException(nameof(executionService));
         _graphBuilder = graphBuilder ?? throw new ArgumentNullException(nameof(graphBuilder));
         _executionRepository = executionRepository ?? throw new ArgumentNullException(nameof(executionRepository));
+        _templatePreviewService = templatePreviewService ?? throw new ArgumentNullException(nameof(templatePreviewService));
     }
 
     /// <summary>
@@ -167,13 +171,46 @@ public class DynamicWorkflowController : ControllerBase
                         }
                     }
 
+                    // Get historical task durations for time estimation
+                    var historicalDurations = await _executionRepository.GetAverageTaskDurationsAsync(workflowName, 30);
+
+                    // Calculate estimated total duration by summing average durations
+                    long? estimatedDurationMs = null;
+                    if (historicalDurations.Any())
+                    {
+                        estimatedDurationMs = historicalDurations.Values.Sum();
+                    }
+
+                    // Generate template previews for each task
+                    var templatePreviews = new Dictionary<string, Dictionary<string, string>>();
+                    var inputElement = JsonSerializer.SerializeToElement(request.Input);
+
+                    foreach (var taskStep in workflow.Spec.Tasks ?? Enumerable.Empty<WorkflowTaskStep>())
+                    {
+                        var taskPreviews = new Dictionary<string, string>();
+
+                        // Preview each input template for this task
+                        foreach (var inputKvp in taskStep.Input)
+                        {
+                            var templatePreview = _templatePreviewService.PreviewTemplate(inputKvp.Value, inputElement);
+                            foreach (var previewKvp in templatePreview)
+                            {
+                                taskPreviews[previewKvp.Key] = previewKvp.Value;
+                            }
+                        }
+
+                        templatePreviews[taskStep.Id] = taskPreviews;
+                    }
+
                     executionPlan = new EnhancedExecutionPlan
                     {
                         Nodes = nodes,
                         Edges = edges,
                         ParallelGroups = parallelGroups,
                         ExecutionOrder = graph.GetExecutionOrder(),
-                        ValidationResult = validationResult
+                        ValidationResult = validationResult,
+                        EstimatedDurationMs = estimatedDurationMs,
+                        TemplatePreviews = templatePreviews
                     };
                 }
                 else

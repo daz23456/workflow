@@ -2,6 +2,7 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
+using System.Text.Json;
 using WorkflowCore.Data.Repositories;
 using WorkflowCore.Models;
 using WorkflowCore.Services;
@@ -19,6 +20,7 @@ public class DynamicWorkflowControllerTests
     private readonly Mock<IWorkflowExecutionService> _executionServiceMock;
     private readonly Mock<IExecutionGraphBuilder> _graphBuilderMock;
     private readonly Mock<IExecutionRepository> _executionRepositoryMock;
+    private readonly Mock<ITemplatePreviewService> _templatePreviewServiceMock;
     private readonly DynamicWorkflowController _controller;
 
     public DynamicWorkflowControllerTests()
@@ -28,13 +30,24 @@ public class DynamicWorkflowControllerTests
         _executionServiceMock = new Mock<IWorkflowExecutionService>();
         _graphBuilderMock = new Mock<IExecutionGraphBuilder>();
         _executionRepositoryMock = new Mock<IExecutionRepository>();
+        _templatePreviewServiceMock = new Mock<ITemplatePreviewService>();
+
+        // Setup default mocks for new functionality (can be overridden in tests)
+        _executionRepositoryMock
+            .Setup(r => r.GetAverageTaskDurationsAsync(It.IsAny<string>(), It.IsAny<int>()))
+            .ReturnsAsync(new Dictionary<string, long>());
+
+        _templatePreviewServiceMock
+            .Setup(s => s.PreviewTemplate(It.IsAny<string>(), It.IsAny<JsonElement>()))
+            .Returns(new Dictionary<string, string>());
 
         _controller = new DynamicWorkflowController(
             _discoveryServiceMock.Object,
             _validationServiceMock.Object,
             _executionServiceMock.Object,
             _graphBuilderMock.Object,
-            _executionRepositoryMock.Object);
+            _executionRepositoryMock.Object,
+            _templatePreviewServiceMock.Object);
     }
 
     [Fact]
@@ -46,7 +59,8 @@ public class DynamicWorkflowControllerTests
             _validationServiceMock.Object,
             _executionServiceMock.Object,
             _graphBuilderMock.Object,
-            _executionRepositoryMock.Object));
+            _executionRepositoryMock.Object,
+            _templatePreviewServiceMock.Object));
     }
 
     [Fact]
@@ -58,7 +72,8 @@ public class DynamicWorkflowControllerTests
             null!,
             _executionServiceMock.Object,
             _graphBuilderMock.Object,
-            _executionRepositoryMock.Object));
+            _executionRepositoryMock.Object,
+            _templatePreviewServiceMock.Object));
     }
 
     [Fact]
@@ -70,7 +85,8 @@ public class DynamicWorkflowControllerTests
             _validationServiceMock.Object,
             null!,
             _graphBuilderMock.Object,
-            _executionRepositoryMock.Object));
+            _executionRepositoryMock.Object,
+            _templatePreviewServiceMock.Object));
     }
 
     [Fact]
@@ -82,7 +98,8 @@ public class DynamicWorkflowControllerTests
             _validationServiceMock.Object,
             _executionServiceMock.Object,
             null!,
-            _executionRepositoryMock.Object));
+            _executionRepositoryMock.Object,
+            _templatePreviewServiceMock.Object));
     }
 
     [Fact]
@@ -94,6 +111,20 @@ public class DynamicWorkflowControllerTests
             _validationServiceMock.Object,
             _executionServiceMock.Object,
             _graphBuilderMock.Object,
+            null!,
+            _templatePreviewServiceMock.Object));
+    }
+
+    [Fact]
+    public void Constructor_WithNullTemplatePreviewService_ShouldThrowArgumentNullException()
+    {
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() => new DynamicWorkflowController(
+            _discoveryServiceMock.Object,
+            _validationServiceMock.Object,
+            _executionServiceMock.Object,
+            _graphBuilderMock.Object,
+            _executionRepositoryMock.Object,
             null!));
     }
 

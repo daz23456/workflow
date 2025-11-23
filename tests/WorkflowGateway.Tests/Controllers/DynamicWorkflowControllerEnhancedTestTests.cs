@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
+using System.Text.Json;
 using WorkflowCore.Data.Repositories;
 using WorkflowCore.Models;
 using WorkflowCore.Services;
@@ -18,6 +19,7 @@ public class DynamicWorkflowControllerEnhancedTestTests
     private readonly Mock<IWorkflowExecutionService> _mockExecutionService;
     private readonly Mock<IExecutionGraphBuilder> _mockGraphBuilder;
     private readonly Mock<IExecutionRepository> _mockExecutionRepository;
+    private readonly Mock<ITemplatePreviewService> _mockTemplatePreviewService;
     private readonly DynamicWorkflowController _controller;
 
     public DynamicWorkflowControllerEnhancedTestTests()
@@ -27,13 +29,24 @@ public class DynamicWorkflowControllerEnhancedTestTests
         _mockExecutionService = new Mock<IWorkflowExecutionService>();
         _mockGraphBuilder = new Mock<IExecutionGraphBuilder>();
         _mockExecutionRepository = new Mock<IExecutionRepository>();
+        _mockTemplatePreviewService = new Mock<ITemplatePreviewService>();
+
+        // Setup default mocks for new functionality (can be overridden in tests)
+        _mockExecutionRepository
+            .Setup(r => r.GetAverageTaskDurationsAsync(It.IsAny<string>(), It.IsAny<int>()))
+            .ReturnsAsync(new Dictionary<string, long>());
+
+        _mockTemplatePreviewService
+            .Setup(s => s.PreviewTemplate(It.IsAny<string>(), It.IsAny<JsonElement>()))
+            .Returns(new Dictionary<string, string>());
 
         _controller = new DynamicWorkflowController(
             _mockDiscoveryService.Object,
             _mockValidationService.Object,
             _mockExecutionService.Object,
             _mockGraphBuilder.Object,
-            _mockExecutionRepository.Object
+            _mockExecutionRepository.Object,
+            _mockTemplatePreviewService.Object
         );
     }
 
@@ -253,6 +266,220 @@ public class DynamicWorkflowControllerEnhancedTestTests
         response.ValidationErrors.Should().Contain("Invalid input");
     }
 
+    [Fact]
+    public async Task Test_ShouldIncludeEstimatedDuration_FromHistoricalData()
+    {
+        // Arrange
+        var workflowName = "timed-workflow";
+        var workflow = CreateWorkflowWithTasks();
+        var request = new WorkflowTestRequest
+        {
+            Input = new Dictionary<string, object> { ["userId"] = 123 }
+        };
+
+        _mockDiscoveryService.Setup(s => s.GetWorkflowByNameAsync(workflowName, null))
+            .ReturnsAsync(workflow);
+        _mockValidationService.Setup(s => s.ValidateAsync(workflow, request.Input))
+            .ReturnsAsync(new ValidationResult { IsValid = true });
+
+        var graph = new ExecutionGraph();
+        graph.AddNode("fetch-user");
+        graph.AddNode("process-user");
+
+        _mockGraphBuilder.Setup(b => b.Build(workflow))
+            .Returns(new ExecutionGraphResult { IsValid = true, Graph = graph });
+
+        // Mock historical duration data: fetch-user takes 100ms, process-user takes 250ms
+        var historicalDurations = new Dictionary<string, long>
+        {
+            ["fetch-user-task"] = 100,
+            ["process-user-task"] = 250
+        };
+
+        _mockExecutionRepository.Setup(r => r.GetAverageTaskDurationsAsync(workflowName, 30))
+            .ReturnsAsync(historicalDurations);
+
+        // Act
+        var result = await _controller.Test(workflowName, request);
+
+        // Assert
+        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
+        var response = okResult.Value.Should().BeAssignableTo<WorkflowTestResponse>().Subject;
+        var enhancedPlan = response.ExecutionPlan.Should().BeOfType<EnhancedExecutionPlan>().Subject;
+
+        enhancedPlan.EstimatedDurationMs.Should().Be(350); // 100 + 250
+    }
+
+    [Fact]
+    public async Task Test_ShouldIncludeTemplatePreview_ForAllTasks()
+    {
+        // Arrange
+        var workflowName = "template-preview-workflow";
+        var workflow = CreateWorkflowWithTemplates();
+        var inputData = new Dictionary<string, object> { ["userId"] = 123, ["email"] = "test@example.com" };
+        var request = new WorkflowTestRequest { Input = inputData };
+
+        _mockDiscoveryService.Setup(s => s.GetWorkflowByNameAsync(workflowName, null))
+            .ReturnsAsync(workflow);
+        _mockValidationService.Setup(s => s.ValidateAsync(workflow, request.Input))
+            .ReturnsAsync(new ValidationResult { IsValid = true });
+
+        var graph = new ExecutionGraph();
+        graph.AddNode("task1");
+        graph.AddNode("task2");
+
+        _mockGraphBuilder.Setup(b => b.Build(workflow))
+            .Returns(new ExecutionGraphResult { IsValid = true, Graph = graph });
+
+        _mockExecutionRepository.Setup(r => r.GetAverageTaskDurationsAsync(workflowName, 30))
+            .ReturnsAsync(new Dictionary<string, long>());
+
+        // Mock template preview responses
+        _mockTemplatePreviewService.Setup(s => s.PreviewTemplate(
+            It.Is<string>(str => str.Contains("{{input.userId}}")),
+            It.IsAny<JsonElement>()))
+            .Returns(new Dictionary<string, string> { ["{{input.userId}}"] = "123" });
+
+        _mockTemplatePreviewService.Setup(s => s.PreviewTemplate(
+            It.Is<string>(str => str.Contains("{{tasks.task1.output.data}}")),
+            It.IsAny<JsonElement>()))
+            .Returns(new Dictionary<string, string> { ["{{tasks.task1.output.data}}"] = "<will-resolve-from-task1.output.data>" });
+
+        // Act
+        var result = await _controller.Test(workflowName, request);
+
+        // Assert
+        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
+        var response = okResult.Value.Should().BeAssignableTo<WorkflowTestResponse>().Subject;
+        var enhancedPlan = response.ExecutionPlan.Should().BeOfType<EnhancedExecutionPlan>().Subject;
+
+        enhancedPlan.TemplatePreviews.Should().ContainKey("task1");
+        enhancedPlan.TemplatePreviews.Should().ContainKey("task2");
+        enhancedPlan.TemplatePreviews.Count.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task Test_EstimatedDuration_ShouldBeNull_WhenNoHistoricalData()
+    {
+        // Arrange
+        var workflowName = "new-workflow";
+        var workflow = CreateWorkflowWithTasks();
+        var request = new WorkflowTestRequest
+        {
+            Input = new Dictionary<string, object> { ["userId"] = 123 }
+        };
+
+        _mockDiscoveryService.Setup(s => s.GetWorkflowByNameAsync(workflowName, null))
+            .ReturnsAsync(workflow);
+        _mockValidationService.Setup(s => s.ValidateAsync(workflow, request.Input))
+            .ReturnsAsync(new ValidationResult { IsValid = true });
+
+        var graph = new ExecutionGraph();
+        graph.AddNode("fetch-user");
+        graph.AddNode("process-user");
+
+        _mockGraphBuilder.Setup(b => b.Build(workflow))
+            .Returns(new ExecutionGraphResult { IsValid = true, Graph = graph });
+
+        // No historical data available
+        _mockExecutionRepository.Setup(r => r.GetAverageTaskDurationsAsync(workflowName, 30))
+            .ReturnsAsync(new Dictionary<string, long>());
+
+        // Act
+        var result = await _controller.Test(workflowName, request);
+
+        // Assert
+        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
+        var response = okResult.Value.Should().BeAssignableTo<WorkflowTestResponse>().Subject;
+        var enhancedPlan = response.ExecutionPlan.Should().BeOfType<EnhancedExecutionPlan>().Subject;
+
+        enhancedPlan.EstimatedDurationMs.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task Test_TemplatePreview_ShouldResolveInputTemplates()
+    {
+        // Arrange
+        var workflowName = "input-template-workflow";
+        var workflow = CreateWorkflowWithInputTemplate();
+        var inputData = new Dictionary<string, object> { ["userId"] = 999 };
+        var request = new WorkflowTestRequest { Input = inputData };
+
+        _mockDiscoveryService.Setup(s => s.GetWorkflowByNameAsync(workflowName, null))
+            .ReturnsAsync(workflow);
+        _mockValidationService.Setup(s => s.ValidateAsync(workflow, request.Input))
+            .ReturnsAsync(new ValidationResult { IsValid = true });
+
+        var graph = new ExecutionGraph();
+        graph.AddNode("fetch-task");
+
+        _mockGraphBuilder.Setup(b => b.Build(workflow))
+            .Returns(new ExecutionGraphResult { IsValid = true, Graph = graph });
+
+        _mockExecutionRepository.Setup(r => r.GetAverageTaskDurationsAsync(workflowName, 30))
+            .ReturnsAsync(new Dictionary<string, long>());
+
+        // Mock template preview to return resolved input value
+        _mockTemplatePreviewService.Setup(s => s.PreviewTemplate(
+            "{{input.userId}}",
+            It.IsAny<JsonElement>()))
+            .Returns(new Dictionary<string, string> { ["{{input.userId}}"] = "999" });
+
+        // Act
+        var result = await _controller.Test(workflowName, request);
+
+        // Assert
+        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
+        var response = okResult.Value.Should().BeAssignableTo<WorkflowTestResponse>().Subject;
+        var enhancedPlan = response.ExecutionPlan.Should().BeOfType<EnhancedExecutionPlan>().Subject;
+
+        enhancedPlan.TemplatePreviews.Should().ContainKey("fetch-task");
+        enhancedPlan.TemplatePreviews["fetch-task"].Should().ContainKey("{{input.userId}}");
+        enhancedPlan.TemplatePreviews["fetch-task"]["{{input.userId}}"].Should().Be("999");
+    }
+
+    [Fact]
+    public async Task Test_TemplatePreview_ShouldShowPlaceholders_ForTaskOutputs()
+    {
+        // Arrange
+        var workflowName = "task-output-template-workflow";
+        var workflow = CreateWorkflowWithTaskOutputTemplate();
+        var request = new WorkflowTestRequest { Input = new Dictionary<string, object>() };
+
+        _mockDiscoveryService.Setup(s => s.GetWorkflowByNameAsync(workflowName, null))
+            .ReturnsAsync(workflow);
+        _mockValidationService.Setup(s => s.ValidateAsync(workflow, request.Input))
+            .ReturnsAsync(new ValidationResult { IsValid = true });
+
+        var graph = new ExecutionGraph();
+        graph.AddNode("task1");
+        graph.AddNode("task2");
+
+        _mockGraphBuilder.Setup(b => b.Build(workflow))
+            .Returns(new ExecutionGraphResult { IsValid = true, Graph = graph });
+
+        _mockExecutionRepository.Setup(r => r.GetAverageTaskDurationsAsync(workflowName, 30))
+            .ReturnsAsync(new Dictionary<string, long>());
+
+        // Mock template preview to return placeholder for task output
+        _mockTemplatePreviewService.Setup(s => s.PreviewTemplate(
+            "{{tasks.task1.output.result}}",
+            It.IsAny<JsonElement>()))
+            .Returns(new Dictionary<string, string> { ["{{tasks.task1.output.result}}"] = "<will-resolve-from-task1.output.result>" });
+
+        // Act
+        var result = await _controller.Test(workflowName, request);
+
+        // Assert
+        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
+        var response = okResult.Value.Should().BeAssignableTo<WorkflowTestResponse>().Subject;
+        var enhancedPlan = response.ExecutionPlan.Should().BeOfType<EnhancedExecutionPlan>().Subject;
+
+        enhancedPlan.TemplatePreviews.Should().ContainKey("task2");
+        enhancedPlan.TemplatePreviews["task2"].Should().ContainKey("{{tasks.task1.output.result}}");
+        enhancedPlan.TemplatePreviews["task2"]["{{tasks.task1.output.result}}"].Should().Be("<will-resolve-from-task1.output.result>");
+    }
+
     private WorkflowResource CreateTestWorkflow(string name)
     {
         return new WorkflowResource
@@ -279,6 +506,89 @@ public class DynamicWorkflowControllerEnhancedTestTests
                 {
                     new WorkflowTaskStep { Id = "step1", TaskRef = "fetch-user" },
                     new WorkflowTaskStep { Id = "step2", TaskRef = "process-user" }
+                }
+            }
+        };
+    }
+
+    private WorkflowResource CreateWorkflowWithTasks()
+    {
+        return new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = "workflow-with-tasks", Namespace = "default" },
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "fetch-user", TaskRef = "fetch-user-task" },
+                    new WorkflowTaskStep { Id = "process-user", TaskRef = "process-user-task" }
+                }
+            }
+        };
+    }
+
+    private WorkflowResource CreateWorkflowWithTemplates()
+    {
+        return new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = "template-workflow", Namespace = "default" },
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep
+                    {
+                        Id = "task1",
+                        TaskRef = "test-task",
+                        Input = new Dictionary<string, string> { ["userId"] = "{{input.userId}}" }
+                    },
+                    new WorkflowTaskStep
+                    {
+                        Id = "task2",
+                        TaskRef = "test-task",
+                        Input = new Dictionary<string, string> { ["data"] = "{{tasks.task1.output.data}}" }
+                    }
+                }
+            }
+        };
+    }
+
+    private WorkflowResource CreateWorkflowWithInputTemplate()
+    {
+        return new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = "input-template-workflow", Namespace = "default" },
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep
+                    {
+                        Id = "fetch-task",
+                        TaskRef = "fetch-task",
+                        Input = new Dictionary<string, string> { ["userId"] = "{{input.userId}}" }
+                    }
+                }
+            }
+        };
+    }
+
+    private WorkflowResource CreateWorkflowWithTaskOutputTemplate()
+    {
+        return new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = "task-output-workflow", Namespace = "default" },
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "task1", TaskRef = "first-task" },
+                    new WorkflowTaskStep
+                    {
+                        Id = "task2",
+                        TaskRef = "second-task",
+                        Input = new Dictionary<string, string> { ["result"] = "{{tasks.task1.output.result}}" }
+                    }
                 }
             }
         };

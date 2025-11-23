@@ -1,0 +1,17 @@
+{
+  "$schema": "https://raw.githubusercontent.com/stryker-mutator/stryker-net/master/src/Stryker.CLI/Stryker.CLI/schema.json",
+  "stryker-config": {
+    "project": "WorkflowOperator.csproj",
+    "test-projects": ["WorkflowOperator.Tests.csproj"],
+    "reporters": ["progress", "json"],
+    "thresholds": {
+      "high": 80,
+      "low": 60,
+      "break": 0
+    },
+    "concurrency": 2,
+    "mutate": [
+      "**/Controllers/WorkflowTaskController.cs"
+    ]
+  }
+}

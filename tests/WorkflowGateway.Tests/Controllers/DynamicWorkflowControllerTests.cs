@@ -34,6 +34,50 @@ public class DynamicWorkflowControllerTests
     }
 
     [Fact]
+    public void Constructor_WithNullDiscoveryService_ShouldThrowArgumentNullException()
+    {
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() => new DynamicWorkflowController(
+            null!,
+            _validationServiceMock.Object,
+            _executionServiceMock.Object,
+            _graphBuilderMock.Object));
+    }
+
+    [Fact]
+    public void Constructor_WithNullValidationService_ShouldThrowArgumentNullException()
+    {
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() => new DynamicWorkflowController(
+            _discoveryServiceMock.Object,
+            null!,
+            _executionServiceMock.Object,
+            _graphBuilderMock.Object));
+    }
+
+    [Fact]
+    public void Constructor_WithNullExecutionService_ShouldThrowArgumentNullException()
+    {
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() => new DynamicWorkflowController(
+            _discoveryServiceMock.Object,
+            _validationServiceMock.Object,
+            null!,
+            _graphBuilderMock.Object));
+    }
+
+    [Fact]
+    public void Constructor_WithNullGraphBuilder_ShouldThrowArgumentNullException()
+    {
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() => new DynamicWorkflowController(
+            _discoveryServiceMock.Object,
+            _validationServiceMock.Object,
+            _executionServiceMock.Object,
+            null!));
+    }
+
+    [Fact]
     public async Task Execute_WithValidInput_ShouldReturnSuccess()
     {
         // Arrange
@@ -343,5 +387,484 @@ public class DynamicWorkflowControllerTests
         problem.Should().NotBeNull();
         problem!.Title.Should().Be("Workflow not found");
         problem.Detail.Should().Contain("missing-workflow");
+    }
+
+    [Fact]
+    public async Task GetDetails_WithNoInputSchema_ShouldReturnNullInputSchema()
+    {
+        // Arrange
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = "simple-workflow", Namespace = "default" },
+            Spec = new WorkflowSpec
+            {
+                Input = null,
+                Tasks = new List<WorkflowTaskStep>()
+            }
+        };
+
+        _discoveryServiceMock
+            .Setup(x => x.GetWorkflowByNameAsync("simple-workflow", null))
+            .ReturnsAsync(workflow);
+
+        // Act
+        var result = await _controller.GetDetails("simple-workflow");
+
+        // Assert
+        result.Should().BeOfType<OkObjectResult>();
+        var okResult = result as OkObjectResult;
+        var response = okResult!.Value as WorkflowDetailResponse;
+        response.Should().NotBeNull();
+        response!.InputSchema.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetDetails_WithEmptyInputSchema_ShouldReturnNullInputSchema()
+    {
+        // Arrange
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = "simple-workflow", Namespace = "default" },
+            Spec = new WorkflowSpec
+            {
+                Input = new Dictionary<string, WorkflowInputParameter>(),
+                Tasks = new List<WorkflowTaskStep>()
+            }
+        };
+
+        _discoveryServiceMock
+            .Setup(x => x.GetWorkflowByNameAsync("simple-workflow", null))
+            .ReturnsAsync(workflow);
+
+        // Act
+        var result = await _controller.GetDetails("simple-workflow");
+
+        // Assert
+        result.Should().BeOfType<OkObjectResult>();
+        var okResult = result as OkObjectResult;
+        var response = okResult!.Value as WorkflowDetailResponse;
+        response.Should().NotBeNull();
+        response!.InputSchema.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetDetails_WithCustomNamespace_ShouldPassNamespaceToService()
+    {
+        // Arrange
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = "prod-workflow", Namespace = "production" },
+            Spec = new WorkflowSpec()
+        };
+
+        _discoveryServiceMock
+            .Setup(x => x.GetWorkflowByNameAsync("prod-workflow", "production"))
+            .ReturnsAsync(workflow);
+
+        // Act
+        var result = await _controller.GetDetails("prod-workflow", "production");
+
+        // Assert
+        result.Should().BeOfType<OkObjectResult>();
+        _discoveryServiceMock.Verify(x => x.GetWorkflowByNameAsync("prod-workflow", "production"), Times.Once);
+    }
+
+    [Fact]
+    public async Task Execute_WithCustomNamespace_ShouldPassNamespaceToService()
+    {
+        // Arrange
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = "prod-workflow", Namespace = "production" },
+            Spec = new WorkflowSpec()
+        };
+
+        var request = new WorkflowExecutionRequest
+        {
+            Input = new Dictionary<string, object>()
+        };
+
+        _discoveryServiceMock
+            .Setup(x => x.GetWorkflowByNameAsync("prod-workflow", "production"))
+            .ReturnsAsync(workflow);
+
+        _validationServiceMock
+            .Setup(x => x.ValidateAsync(workflow, request.Input))
+            .ReturnsAsync(new ValidationResult { IsValid = true });
+
+        _executionServiceMock
+            .Setup(x => x.ExecuteAsync(workflow, request.Input, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new WorkflowExecutionResponse { Success = true });
+
+        // Act
+        var result = await _controller.Execute("prod-workflow", request, "production");
+
+        // Assert
+        result.Should().BeOfType<OkObjectResult>();
+        _discoveryServiceMock.Verify(x => x.GetWorkflowByNameAsync("prod-workflow", "production"), Times.Once);
+    }
+
+    [Fact]
+    public async Task Test_WithNoTasks_ShouldReturnValidResponseWithoutExecutionPlan()
+    {
+        // Arrange
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = "empty-workflow", Namespace = "default" },
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>()
+            }
+        };
+
+        var request = new WorkflowTestRequest
+        {
+            Input = new Dictionary<string, object>()
+        };
+
+        _discoveryServiceMock
+            .Setup(x => x.GetWorkflowByNameAsync("empty-workflow", null))
+            .ReturnsAsync(workflow);
+
+        _validationServiceMock
+            .Setup(x => x.ValidateAsync(workflow, request.Input))
+            .ReturnsAsync(new ValidationResult { IsValid = true });
+
+        // Act
+        var result = await _controller.Test("empty-workflow", request);
+
+        // Assert
+        result.Should().BeOfType<OkObjectResult>();
+        var okResult = result as OkObjectResult;
+        var response = okResult!.Value as WorkflowTestResponse;
+        response.Should().NotBeNull();
+        response!.Valid.Should().BeTrue();
+        response.ExecutionPlan.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task Test_WithGraphBuildException_ShouldReturnValidationError()
+    {
+        // Arrange
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = "invalid-workflow", Namespace = "default" },
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "task1", TaskRef = "fetch-user" }
+                }
+            }
+        };
+
+        var request = new WorkflowTestRequest
+        {
+            Input = new Dictionary<string, object>()
+        };
+
+        _discoveryServiceMock
+            .Setup(x => x.GetWorkflowByNameAsync("invalid-workflow", null))
+            .ReturnsAsync(workflow);
+
+        _validationServiceMock
+            .Setup(x => x.ValidateAsync(workflow, request.Input))
+            .ReturnsAsync(new ValidationResult { IsValid = true });
+
+        _graphBuilderMock
+            .Setup(x => x.Build(workflow))
+            .Throws(new InvalidOperationException("Circular dependency detected"));
+
+        // Act
+        var result = await _controller.Test("invalid-workflow", request);
+
+        // Assert
+        result.Should().BeOfType<OkObjectResult>();
+        var okResult = result as OkObjectResult;
+        var response = okResult!.Value as WorkflowTestResponse;
+        response.Should().NotBeNull();
+        response!.Valid.Should().BeFalse();
+        response.ValidationErrors.Should().Contain(e => e.Contains("Failed to build execution plan"));
+        response.ValidationErrors.Should().Contain(e => e.Contains("Circular dependency detected"));
+    }
+
+    [Fact]
+    public async Task Test_WithInvalidGraphResult_ShouldReturnGraphValidationErrors()
+    {
+        // Arrange
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = "invalid-graph", Namespace = "default" },
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "task1", TaskRef = "fetch-user" }
+                }
+            }
+        };
+
+        var request = new WorkflowTestRequest
+        {
+            Input = new Dictionary<string, object>()
+        };
+
+        var graphResult = new ExecutionGraphResult
+        {
+            IsValid = false,
+            Errors = new List<ValidationError>
+            {
+                new ValidationError { Message = "Task 'task2' referenced but not defined" }
+            }
+        };
+
+        _discoveryServiceMock
+            .Setup(x => x.GetWorkflowByNameAsync("invalid-graph", null))
+            .ReturnsAsync(workflow);
+
+        _validationServiceMock
+            .Setup(x => x.ValidateAsync(workflow, request.Input))
+            .ReturnsAsync(new ValidationResult { IsValid = true });
+
+        _graphBuilderMock
+            .Setup(x => x.Build(workflow))
+            .Returns(graphResult);
+
+        // Act
+        var result = await _controller.Test("invalid-graph", request);
+
+        // Assert
+        result.Should().BeOfType<OkObjectResult>();
+        var okResult = result as OkObjectResult;
+        var response = okResult!.Value as WorkflowTestResponse;
+        response.Should().NotBeNull();
+        response!.Valid.Should().BeFalse();
+        response.ValidationErrors.Should().Contain("Task 'task2' referenced but not defined");
+    }
+
+    [Fact]
+    public async Task Execute_WithMultipleValidationErrors_ShouldReturnAllErrors()
+    {
+        // Arrange
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = "test-workflow", Namespace = "default" },
+            Spec = new WorkflowSpec()
+        };
+
+        var request = new WorkflowExecutionRequest
+        {
+            Input = new Dictionary<string, object>()
+        };
+
+        var validationResult = new ValidationResult
+        {
+            IsValid = false,
+            Errors = new List<ValidationError>
+            {
+                new ValidationError { Message = "Field 'userId' is required" },
+                new ValidationError { Message = "Field 'email' is required" },
+                new ValidationError { Message = "Field 'name' must be a string" }
+            }
+        };
+
+        _discoveryServiceMock
+            .Setup(x => x.GetWorkflowByNameAsync("test-workflow", null))
+            .ReturnsAsync(workflow);
+
+        _validationServiceMock
+            .Setup(x => x.ValidateAsync(workflow, request.Input))
+            .ReturnsAsync(validationResult);
+
+        // Act
+        var result = await _controller.Execute("test-workflow", request);
+
+        // Assert
+        result.Should().BeOfType<BadRequestObjectResult>();
+        var badRequestResult = result as BadRequestObjectResult;
+        var problem = badRequestResult!.Value as ProblemDetails;
+        problem.Should().NotBeNull();
+        problem!.Detail.Should().Contain("userId");
+        problem.Detail.Should().Contain("email");
+        problem.Detail.Should().Contain("name");
+    }
+
+    [Fact]
+    public async Task Test_WithNullTasks_ShouldNotBuildExecutionPlan()
+    {
+        // Arrange - Tests line 117: workflow.Spec.Tasks?.Any() == true - null path
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = "workflow-no-tasks", Namespace = "default" },
+            Spec = new WorkflowSpec
+            {
+                Tasks = null // No tasks
+            }
+        };
+
+        var request = new WorkflowTestRequest
+        {
+            Input = new Dictionary<string, object>()
+        };
+
+        _discoveryServiceMock
+            .Setup(x => x.GetWorkflowByNameAsync("workflow-no-tasks", null))
+            .ReturnsAsync(workflow);
+
+        _validationServiceMock
+            .Setup(x => x.ValidateAsync(workflow, request.Input))
+            .ReturnsAsync(new ValidationResult { IsValid = true });
+
+        // Act
+        var result = await _controller.Test("workflow-no-tasks", request);
+
+        // Assert
+        result.Should().BeOfType<OkObjectResult>();
+        var okResult = result as OkObjectResult;
+        var response = okResult!.Value as WorkflowTestResponse;
+        response.Should().NotBeNull();
+        response!.ExecutionPlan.Should().BeNull(); // No execution plan without tasks
+
+        // Verify graph builder was NOT called
+        _graphBuilderMock.Verify(
+            x => x.Build(It.IsAny<WorkflowResource>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task GetDetails_WithNullOutputSchema_ShouldReturnNullOutput()
+    {
+        // Arrange - Tests line 196: workflow.Spec.Output null path
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = "no-output-workflow", Namespace = "default" },
+            Spec = new WorkflowSpec
+            {
+                Output = null, // No output schema
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "task1", TaskRef = "ref1" }
+                }
+            }
+        };
+
+        _discoveryServiceMock
+            .Setup(x => x.GetWorkflowByNameAsync("no-output-workflow", null))
+            .ReturnsAsync(workflow);
+
+        // Act
+        var result = await _controller.GetDetails("no-output-workflow");
+
+        // Assert
+        result.Should().BeOfType<OkObjectResult>();
+        var okResult = result as OkObjectResult;
+        var response = okResult!.Value as WorkflowDetailResponse;
+        response.Should().NotBeNull();
+        response!.OutputSchema.Should().BeNull(); // Output schema should be null
+    }
+
+    [Fact]
+    public async Task GetDetails_WithNullTasks_ShouldReturnEmptyTasksList()
+    {
+        // Arrange - Tests line 197: workflow.Spec.Tasks null path
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = "no-tasks-workflow", Namespace = "default" },
+            Spec = new WorkflowSpec
+            {
+                Tasks = null // No tasks
+            }
+        };
+
+        _discoveryServiceMock
+            .Setup(x => x.GetWorkflowByNameAsync("no-tasks-workflow", null))
+            .ReturnsAsync(workflow);
+
+        // Act
+        var result = await _controller.GetDetails("no-tasks-workflow");
+
+        // Assert
+        result.Should().BeOfType<OkObjectResult>();
+        var okResult = result as OkObjectResult;
+        var response = okResult!.Value as WorkflowDetailResponse;
+        response.Should().NotBeNull();
+        response!.Tasks.Should().BeEmpty(); // Tasks list should be empty
+    }
+
+    [Fact]
+    public async Task GetDetails_WithNullMetadata_ShouldUseDefaultValues()
+    {
+        // Arrange - Tests lines 193-194: null metadata handling
+        var workflow = new WorkflowResource
+        {
+            Metadata = null, // Null metadata
+            Spec = new WorkflowSpec()
+        };
+
+        _discoveryServiceMock
+            .Setup(x => x.GetWorkflowByNameAsync("test-workflow", null))
+            .ReturnsAsync(workflow);
+
+        // Act
+        var result = await _controller.GetDetails("test-workflow");
+
+        // Assert
+        result.Should().BeOfType<OkObjectResult>();
+        var okResult = result as OkObjectResult;
+        var response = okResult!.Value as WorkflowDetailResponse;
+        response.Should().NotBeNull();
+        response!.Name.Should().Be(""); // Should use empty string for null metadata name
+        response.Namespace.Should().Be("default"); // Should use default namespace
+    }
+
+    [Fact]
+    public async Task Test_WithCustomNamespace_ShouldPassNamespaceToService()
+    {
+        // Arrange - Tests custom namespace parameter
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = "prod-workflow", Namespace = "production" },
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "task1", TaskRef = "ref1" }
+                }
+            }
+        };
+
+        var request = new WorkflowTestRequest
+        {
+            Input = new Dictionary<string, object>()
+        };
+
+        var executionGraph = new ExecutionGraph();
+        executionGraph.AddNode("task1");
+        var graphResult = new ExecutionGraphResult
+        {
+            IsValid = true,
+            Graph = executionGraph
+        };
+
+        _discoveryServiceMock
+            .Setup(x => x.GetWorkflowByNameAsync("prod-workflow", "production"))
+            .ReturnsAsync(workflow);
+
+        _validationServiceMock
+            .Setup(x => x.ValidateAsync(workflow, request.Input))
+            .ReturnsAsync(new ValidationResult { IsValid = true });
+
+        _graphBuilderMock
+            .Setup(x => x.Build(workflow))
+            .Returns(graphResult);
+
+        // Act
+        var result = await _controller.Test("prod-workflow", request, "production");
+
+        // Assert
+        result.Should().BeOfType<OkObjectResult>();
+        _discoveryServiceMock.Verify(
+            x => x.GetWorkflowByNameAsync("prod-workflow", "production"),
+            Times.Once);
     }
 }

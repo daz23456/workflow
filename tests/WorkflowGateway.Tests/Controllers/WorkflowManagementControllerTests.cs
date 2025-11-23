@@ -23,6 +23,24 @@ public class WorkflowManagementControllerTests
     }
 
     [Fact]
+    public void Constructor_WithNullDiscoveryService_ShouldThrowArgumentNullException()
+    {
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() => new WorkflowManagementController(
+            null!,
+            _endpointServiceMock.Object));
+    }
+
+    [Fact]
+    public void Constructor_WithNullEndpointService_ShouldThrowArgumentNullException()
+    {
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() => new WorkflowManagementController(
+            _discoveryServiceMock.Object,
+            null!));
+    }
+
+    [Fact]
     public async Task GetWorkflows_ShouldReturnAllWorkflows()
     {
         // Arrange
@@ -227,5 +245,169 @@ public class WorkflowManagementControllerTests
 
         // Verify discovery service was called (caching happens in the service layer)
         _discoveryServiceMock.Verify(x => x.DiscoverWorkflowsAsync(null), Times.Exactly(2));
+    }
+
+    [Fact]
+    public async Task GetWorkflows_WithEmptyResults_ShouldReturnEmptyList()
+    {
+        // Arrange
+        _discoveryServiceMock
+            .Setup(x => x.DiscoverWorkflowsAsync(null))
+            .ReturnsAsync(new List<WorkflowResource>());
+
+        // Act
+        var result = await _controller.GetWorkflows();
+
+        // Assert
+        result.Should().BeOfType<OkObjectResult>();
+        var okResult = result as OkObjectResult;
+        var response = okResult!.Value as WorkflowListResponse;
+        response.Should().NotBeNull();
+        response!.Workflows.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GetTasks_WithEmptyResults_ShouldReturnEmptyList()
+    {
+        // Arrange
+        _discoveryServiceMock
+            .Setup(x => x.DiscoverTasksAsync(null))
+            .ReturnsAsync(new List<WorkflowTaskResource>());
+
+        // Act
+        var result = await _controller.GetTasks();
+
+        // Assert
+        result.Should().BeOfType<OkObjectResult>();
+        var okResult = result as OkObjectResult;
+        var response = okResult!.Value as TaskListResponse;
+        response.Should().NotBeNull();
+        response!.Tasks.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GetWorkflows_WithNullMetadata_ShouldHandleGracefully()
+    {
+        // Arrange
+        var workflows = new List<WorkflowResource>
+        {
+            new WorkflowResource
+            {
+                Metadata = null,
+                Spec = new WorkflowSpec()
+            }
+        };
+
+        _discoveryServiceMock
+            .Setup(x => x.DiscoverWorkflowsAsync(null))
+            .ReturnsAsync(workflows);
+
+        // Act
+        var result = await _controller.GetWorkflows();
+
+        // Assert
+        result.Should().BeOfType<OkObjectResult>();
+        var okResult = result as OkObjectResult;
+        var response = okResult!.Value as WorkflowListResponse;
+        response.Should().NotBeNull();
+        response!.Workflows.Should().HaveCount(1);
+        response.Workflows[0].Name.Should().Be("");
+        response.Workflows[0].Namespace.Should().Be("default");
+    }
+
+    [Fact]
+    public async Task GetTasks_WithNullMetadata_ShouldHandleGracefully()
+    {
+        // Arrange
+        var tasks = new List<WorkflowTaskResource>
+        {
+            new WorkflowTaskResource
+            {
+                Metadata = null,
+                Spec = new WorkflowTaskSpec { Type = "http" }
+            }
+        };
+
+        _discoveryServiceMock
+            .Setup(x => x.DiscoverTasksAsync(null))
+            .ReturnsAsync(tasks);
+
+        // Act
+        var result = await _controller.GetTasks();
+
+        // Assert
+        result.Should().BeOfType<OkObjectResult>();
+        var okResult = result as OkObjectResult;
+        var response = okResult!.Value as TaskListResponse;
+        response.Should().NotBeNull();
+        response!.Tasks.Should().HaveCount(1);
+        response.Tasks[0].Name.Should().Be("");
+        response.Tasks[0].Namespace.Should().Be("default");
+    }
+
+    [Fact]
+    public async Task GetWorkflows_WithNullSpec_ShouldHandleGracefully()
+    {
+        // Arrange
+        var workflows = new List<WorkflowResource>
+        {
+            new WorkflowResource
+            {
+                Metadata = new ResourceMetadata { Name = "workflow-1", Namespace = "default" },
+                Spec = new WorkflowSpec { Tasks = null }
+            }
+        };
+
+        _discoveryServiceMock
+            .Setup(x => x.DiscoverWorkflowsAsync(null))
+            .ReturnsAsync(workflows);
+
+        // Act
+        var result = await _controller.GetWorkflows();
+
+        // Assert
+        result.Should().BeOfType<OkObjectResult>();
+        var okResult = result as OkObjectResult;
+        var response = okResult!.Value as WorkflowListResponse;
+        response.Should().NotBeNull();
+        response!.Workflows.Should().HaveCount(1);
+        response.Workflows[0].TaskCount.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task GetWorkflows_WithTasksList_ShouldCountTasks()
+    {
+        // Arrange
+        var workflows = new List<WorkflowResource>
+        {
+            new WorkflowResource
+            {
+                Metadata = new ResourceMetadata { Name = "multi-task-workflow", Namespace = "default" },
+                Spec = new WorkflowSpec
+                {
+                    Tasks = new List<WorkflowTaskStep>
+                    {
+                        new WorkflowTaskStep { Id = "task1", TaskRef = "ref1" },
+                        new WorkflowTaskStep { Id = "task2", TaskRef = "ref2" },
+                        new WorkflowTaskStep { Id = "task3", TaskRef = "ref3" }
+                    }
+                }
+            }
+        };
+
+        _discoveryServiceMock
+            .Setup(x => x.DiscoverWorkflowsAsync(null))
+            .ReturnsAsync(workflows);
+
+        // Act
+        var result = await _controller.GetWorkflows();
+
+        // Assert
+        result.Should().BeOfType<OkObjectResult>();
+        var okResult = result as OkObjectResult;
+        var response = okResult!.Value as WorkflowListResponse;
+        response.Should().NotBeNull();
+        response!.Workflows.Should().HaveCount(1);
+        response.Workflows[0].TaskCount.Should().Be(3);
     }
 }

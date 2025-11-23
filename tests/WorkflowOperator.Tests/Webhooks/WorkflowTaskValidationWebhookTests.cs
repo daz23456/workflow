@@ -163,4 +163,320 @@ public class WorkflowTaskValidationWebhookTests
         result.Allowed.Should().BeFalse();
         result.Message.Should().Contain("HTTP tasks must have a URL");
     }
+
+    [Fact]
+    public async Task ValidateAsync_WithNullUrl_ShouldReturnDenied()
+    {
+        // Arrange
+        var task = new WorkflowTaskResource
+        {
+            Metadata = new ResourceMetadata { Name = "http-task" },
+            Spec = new WorkflowTaskSpec
+            {
+                Type = "http",
+                Request = new HttpRequestDefinition
+                {
+                    Method = "GET",
+                    Url = null! // Null URL
+                }
+            }
+        };
+
+        // Act
+        var result = await _webhook.ValidateAsync(task);
+
+        // Assert
+        result.Allowed.Should().BeFalse();
+        result.Message.Should().Contain("HTTP tasks must have a URL");
+    }
+
+    [Fact]
+    public async Task ValidateAsync_WithWhitespaceUrl_ShouldReturnDenied()
+    {
+        // Arrange
+        var task = new WorkflowTaskResource
+        {
+            Metadata = new ResourceMetadata { Name = "http-task" },
+            Spec = new WorkflowTaskSpec
+            {
+                Type = "http",
+                Request = new HttpRequestDefinition
+                {
+                    Method = "GET",
+                    Url = "   " // Whitespace only
+                }
+            }
+        };
+
+        // Act
+        var result = await _webhook.ValidateAsync(task);
+
+        // Assert
+        result.Allowed.Should().BeFalse();
+        result.Message.Should().Contain("HTTP tasks must have a URL");
+    }
+
+    [Fact]
+    public async Task ValidateAsync_WithNullMethod_ShouldReturnDenied()
+    {
+        // Arrange
+        var task = new WorkflowTaskResource
+        {
+            Metadata = new ResourceMetadata { Name = "http-task" },
+            Spec = new WorkflowTaskSpec
+            {
+                Type = "http",
+                Request = new HttpRequestDefinition
+                {
+                    Method = null!, // Null method
+                    Url = "https://api.example.com"
+                }
+            }
+        };
+
+        // Act
+        var result = await _webhook.ValidateAsync(task);
+
+        // Assert
+        result.Allowed.Should().BeFalse();
+        result.Message.Should().Contain("Invalid HTTP method");
+    }
+
+    [Fact]
+    public async Task ValidateAsync_WithLowercaseMethod_ShouldReturnAllowed()
+    {
+        // Arrange
+        var task = new WorkflowTaskResource
+        {
+            Metadata = new ResourceMetadata { Name = "http-task" },
+            Spec = new WorkflowTaskSpec
+            {
+                Type = "http",
+                Request = new HttpRequestDefinition
+                {
+                    Method = "get", // Lowercase - should be normalized
+                    Url = "https://api.example.com"
+                }
+            }
+        };
+
+        // Act
+        var result = await _webhook.ValidateAsync(task);
+
+        // Assert
+        result.Allowed.Should().BeTrue();
+    }
+
+    [Theory]
+    [InlineData("GET")]
+    [InlineData("POST")]
+    [InlineData("PUT")]
+    [InlineData("DELETE")]
+    [InlineData("PATCH")]
+    public async Task ValidateAsync_WithAllAllowedMethods_ShouldReturnAllowed(string method)
+    {
+        // Arrange
+        var task = new WorkflowTaskResource
+        {
+            Metadata = new ResourceMetadata { Name = "http-task" },
+            Spec = new WorkflowTaskSpec
+            {
+                Type = "http",
+                Request = new HttpRequestDefinition
+                {
+                    Method = method,
+                    Url = "https://api.example.com"
+                }
+            }
+        };
+
+        // Act
+        var result = await _webhook.ValidateAsync(task);
+
+        // Assert
+        result.Allowed.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ValidateAsync_WithWhitespaceType_ShouldReturnDenied()
+    {
+        // Arrange
+        var task = new WorkflowTaskResource
+        {
+            Metadata = new ResourceMetadata { Name = "task" },
+            Spec = new WorkflowTaskSpec
+            {
+                Type = "   " // Whitespace
+            }
+        };
+
+        // Act
+        var result = await _webhook.ValidateAsync(task);
+
+        // Assert
+        result.Allowed.Should().BeFalse();
+        result.Message.Should().Contain("Task type is required");
+    }
+
+    [Fact]
+    public async Task ValidateAsync_WithNullType_ShouldReturnDenied()
+    {
+        // Arrange
+        var task = new WorkflowTaskResource
+        {
+            Metadata = new ResourceMetadata { Name = "task" },
+            Spec = new WorkflowTaskSpec
+            {
+                Type = null! // Null type
+            }
+        };
+
+        // Act
+        var result = await _webhook.ValidateAsync(task);
+
+        // Assert
+        result.Allowed.Should().BeFalse();
+        result.Message.Should().Contain("Task type is required");
+    }
+
+    [Fact]
+    public async Task ValidateAsync_WithComplexInputSchema_ShouldReturnAllowed()
+    {
+        // Arrange
+        var task = new WorkflowTaskResource
+        {
+            Metadata = new ResourceMetadata { Name = "complex-task" },
+            Spec = new WorkflowTaskSpec
+            {
+                Type = "http",
+                InputSchema = new SchemaDefinition
+                {
+                    Type = "object",
+                    Properties = new Dictionary<string, PropertyDefinition>
+                    {
+                        ["nested"] = new PropertyDefinition
+                        {
+                            Type = "object",
+                            Properties = new Dictionary<string, PropertyDefinition>
+                            {
+                                ["deep"] = new PropertyDefinition { Type = "string" }
+                            }
+                        }
+                    }
+                },
+                Request = new HttpRequestDefinition
+                {
+                    Method = "POST",
+                    Url = "https://api.example.com"
+                }
+            }
+        };
+
+        // Act
+        var result = await _webhook.ValidateAsync(task);
+
+        // Assert
+        result.Allowed.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ValidateAsync_WithOutputSchema_ShouldReturnAllowed()
+    {
+        // Arrange
+        var task = new WorkflowTaskResource
+        {
+            Metadata = new ResourceMetadata { Name = "task-with-output" },
+            Spec = new WorkflowTaskSpec
+            {
+                Type = "http",
+                OutputSchema = new SchemaDefinition
+                {
+                    Type = "object",
+                    Properties = new Dictionary<string, PropertyDefinition>
+                    {
+                        ["result"] = new PropertyDefinition { Type = "string" }
+                    }
+                },
+                Request = new HttpRequestDefinition
+                {
+                    Method = "GET",
+                    Url = "https://api.example.com"
+                }
+            }
+        };
+
+        // Act
+        var result = await _webhook.ValidateAsync(task);
+
+        // Assert
+        result.Allowed.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ValidateAsync_WithHeadersAndBody_ShouldReturnAllowed()
+    {
+        // Arrange
+        var task = new WorkflowTaskResource
+        {
+            Metadata = new ResourceMetadata { Name = "full-request-task" },
+            Spec = new WorkflowTaskSpec
+            {
+                Type = "http",
+                Request = new HttpRequestDefinition
+                {
+                    Method = "POST",
+                    Url = "https://api.example.com/resource",
+                    Headers = new Dictionary<string, string>
+                    {
+                        ["Authorization"] = "Bearer {{input.token}}",
+                        ["Content-Type"] = "application/json",
+                        ["X-Custom-Header"] = "value"
+                    },
+                    Body = "{\"key\": \"{{input.value}}\"}"
+                }
+            }
+        };
+
+        // Act
+        var result = await _webhook.ValidateAsync(task);
+
+        // Assert
+        result.Allowed.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Constructor_WithNullSchemaValidator_ShouldThrowArgumentNullException()
+    {
+        // Act
+        Action act = () => new WorkflowTaskValidationWebhook(null!);
+
+        // Assert
+        act.Should().Throw<ArgumentNullException>()
+            .WithMessage("*schemaValidator*");
+    }
+
+    [Fact]
+    public void AdmissionResult_Allow_ShouldCreateAllowedResult()
+    {
+        // Act
+        var result = AdmissionResult.Allow();
+
+        // Assert
+        result.Allowed.Should().BeTrue();
+        result.Message.Should().BeNull();
+    }
+
+    [Fact]
+    public void AdmissionResult_Deny_ShouldCreateDeniedResult()
+    {
+        // Arrange
+        var message = "Test error message";
+
+        // Act
+        var result = AdmissionResult.Deny(message);
+
+        // Assert
+        result.Allowed.Should().BeFalse();
+        result.Message.Should().Be(message);
+    }
 }

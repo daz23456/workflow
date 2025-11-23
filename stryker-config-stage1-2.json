@@ -1,0 +1,18 @@
+{
+  "$schema": "https://raw.githubusercontent.com/stryker-mutator/stryker-net/master/src/Stryker.CLI/Stryker.CLI/schema.json",
+  "stryker-config": {
+    "project": "WorkflowCore.csproj",
+    "test-projects": ["WorkflowCore.Tests.csproj"],
+    "reporters": ["html", "progress", "cleartext"],
+    "thresholds": {
+      "high": 80,
+      "low": 60,
+      "break": 60
+    },
+    "concurrency": 4,
+    "mutate": [
+      "**/SchemaValidator.cs",
+      "**/TypeCompatibilityChecker.cs"
+    ]
+  }
+}

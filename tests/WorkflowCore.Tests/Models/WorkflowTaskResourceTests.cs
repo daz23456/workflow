@@ -115,4 +115,100 @@ spec:
         step.Input.Should().ContainKey("key");
         step.Condition.Should().NotBeNullOrEmpty();
     }
+
+    [Fact]
+    public void WorkflowTaskResource_ShouldInitializeWithDefaultValues()
+    {
+        // Act
+        var resource = new WorkflowTaskResource();
+
+        // Assert
+        resource.ApiVersion.Should().Be(string.Empty);
+        resource.Kind.Should().Be(string.Empty);
+        resource.Metadata.Should().NotBeNull();
+        resource.Spec.Should().NotBeNull();
+        resource.Status.Should().BeNull();
+    }
+
+    [Fact]
+    public void ResourceMetadata_ShouldInitializeWithDefaultValues()
+    {
+        // Act
+        var metadata = new ResourceMetadata();
+
+        // Assert
+        metadata.Name.Should().Be(string.Empty);
+        metadata.Namespace.Should().Be(string.Empty);
+    }
+
+    [Fact]
+    public void ResourceMetadata_ShouldAllowSettingProperties()
+    {
+        // Act
+        var metadata = new ResourceMetadata
+        {
+            Name = "test-resource",
+            Namespace = "production"
+        };
+
+        // Assert
+        metadata.Name.Should().Be("test-resource");
+        metadata.Namespace.Should().Be("production");
+    }
+
+    [Fact]
+    public void WorkflowTaskSpec_ShouldInitializeWithDefaultValues()
+    {
+        // Act
+        var spec = new WorkflowTaskSpec();
+
+        // Assert
+        spec.Type.Should().Be(string.Empty);
+        spec.InputSchema.Should().BeNull();
+        spec.OutputSchema.Should().BeNull();
+        spec.Request.Should().BeNull();
+        spec.Timeout.Should().BeNull();
+    }
+
+    [Fact]
+    public void HttpRequestDefinition_ShouldInitializeWithDefaultValues()
+    {
+        // Act
+        var request = new HttpRequestDefinition();
+
+        // Assert
+        request.Method.Should().Be(string.Empty);
+        request.Url.Should().Be(string.Empty);
+        request.Headers.Should().BeNull();
+        request.Body.Should().BeNull();
+    }
+
+    [Fact]
+    public void WorkflowTaskStatus_ShouldInitializeWithDefaultValues()
+    {
+        // Act
+        var status = new WorkflowTaskStatus();
+
+        // Assert
+        status.UsageCount.Should().Be(0);
+        status.LastUpdated.Should().Be(default(DateTime));
+    }
+
+    [Fact]
+    public void WorkflowTaskStatus_ShouldAllowSettingProperties()
+    {
+        // Arrange
+        var now = DateTime.UtcNow;
+
+        // Act
+        var status = new WorkflowTaskStatus
+        {
+            UsageCount = 150,
+            LastUpdated = now
+        };
+
+        // Assert
+        status.UsageCount.Should().Be(150);
+        status.LastUpdated.Should().Be(now);
+    }
 }

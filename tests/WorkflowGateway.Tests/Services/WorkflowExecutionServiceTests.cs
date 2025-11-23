@@ -252,4 +252,252 @@ public class WorkflowExecutionServiceTests
         cancellationTokenReceived.Should().BeTrue();
         result.Success.Should().BeFalse();
     }
+
+    [Fact]
+    public void Constructor_WithNullOrchestrator_ShouldThrowArgumentNullException()
+    {
+        // Act
+        Action act = () => new WorkflowExecutionService(null!, _discoveryServiceMock.Object);
+
+        // Assert
+        act.Should().Throw<ArgumentNullException>()
+            .WithMessage("*orchestrator*");
+    }
+
+    [Fact]
+    public void Constructor_WithNullDiscoveryService_ShouldThrowArgumentNullException()
+    {
+        // Act
+        Action act = () => new WorkflowExecutionService(_orchestratorMock.Object, null!);
+
+        // Assert
+        act.Should().Throw<ArgumentNullException>()
+            .WithMessage("*discoveryService*");
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithNullWorkflowMetadata_ShouldUseUnknownAsName()
+    {
+        // Arrange - Tests line 38: workflow.Metadata?.Name ?? "unknown"
+        var workflow = new WorkflowResource
+        {
+            Metadata = null,
+            Spec = new WorkflowSpec()
+        };
+
+        _orchestratorMock
+            .Setup(x => x.ExecuteAsync(It.IsAny<WorkflowResource>(), It.IsAny<Dictionary<string, WorkflowTaskResource>>(), It.IsAny<Dictionary<string, object>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new WorkflowExecutionResult { Success = true });
+
+        // Act
+        var result = await _service.ExecuteAsync(workflow, new Dictionary<string, object>());
+
+        // Assert
+        result.WorkflowName.Should().Be("unknown");
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithNullNamespace_ShouldUseDefaultNamespace()
+    {
+        // Arrange - Tests line 46: workflow.Metadata?.Namespace ?? "default"
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = "test", Namespace = null },
+            Spec = new WorkflowSpec()
+        };
+
+        _orchestratorMock
+            .Setup(x => x.ExecuteAsync(It.IsAny<WorkflowResource>(), It.IsAny<Dictionary<string, WorkflowTaskResource>>(), It.IsAny<Dictionary<string, object>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new WorkflowExecutionResult { Success = true });
+
+        // Act
+        await _service.ExecuteAsync(workflow, new Dictionary<string, object>());
+
+        // Assert
+        _discoveryServiceMock.Verify(x => x.DiscoverTasksAsync("default"), Times.Once);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithTasksHavingNullMetadata_ShouldUseEmptyStringAsKey()
+    {
+        // Arrange - Tests line 48: t.Metadata?.Name ?? ""
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = "test" },
+            Spec = new WorkflowSpec()
+        };
+
+        var tasks = new List<WorkflowTaskResource>
+        {
+            new WorkflowTaskResource { Metadata = null, Spec = new WorkflowTaskSpec { Type = "http" } }
+        };
+
+        _discoveryServiceMock
+            .Setup(x => x.DiscoverTasksAsync(It.IsAny<string>()))
+            .ReturnsAsync(tasks);
+
+        _orchestratorMock
+            .Setup(x => x.ExecuteAsync(It.IsAny<WorkflowResource>(), It.Is<Dictionary<string, WorkflowTaskResource>>(d => d.ContainsKey("")), It.IsAny<Dictionary<string, object>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new WorkflowExecutionResult { Success = true });
+
+        // Act
+        await _service.ExecuteAsync(workflow, new Dictionary<string, object>());
+
+        // Assert
+        _orchestratorMock.Verify(x => x.ExecuteAsync(
+            It.IsAny<WorkflowResource>(),
+            It.Is<Dictionary<string, WorkflowTaskResource>>(d => d.ContainsKey("")),
+            It.IsAny<Dictionary<string, object>>(),
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithOrchestratorErrors_ShouldJoinErrorMessages()
+    {
+        // Arrange - Tests line 61: string.Join("; ", result.Errors)
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = "test" },
+            Spec = new WorkflowSpec()
+        };
+
+        _orchestratorMock
+            .Setup(x => x.ExecuteAsync(It.IsAny<WorkflowResource>(), It.IsAny<Dictionary<string, WorkflowTaskResource>>(), It.IsAny<Dictionary<string, object>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new WorkflowExecutionResult
+            {
+                Success = false,
+                Errors = new List<string> { "Error 1", "Error 2", "Error 3" }
+            });
+
+        // Act
+        var result = await _service.ExecuteAsync(workflow, new Dictionary<string, object>());
+
+        // Assert
+        result.Error.Should().Be("Error 1; Error 2; Error 3");
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithNoErrors_ShouldHaveNullError()
+    {
+        // Arrange - Tests line 61: result.Errors.Any() returning false
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = "test" },
+            Spec = new WorkflowSpec()
+        };
+
+        _orchestratorMock
+            .Setup(x => x.ExecuteAsync(It.IsAny<WorkflowResource>(), It.IsAny<Dictionary<string, WorkflowTaskResource>>(), It.IsAny<Dictionary<string, object>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new WorkflowExecutionResult { Success = true, Errors = new List<string>() });
+
+        // Act
+        var result = await _service.ExecuteAsync(workflow, new Dictionary<string, object>());
+
+        // Assert
+        result.Error.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithUserCancellation_ShouldReturnCancellationError()
+    {
+        // Arrange - Tests lines 77-89: User cancellation (not timeout)
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = "canceled" },
+            Spec = new WorkflowSpec()
+        };
+
+        var cts = new CancellationTokenSource();
+
+        _orchestratorMock
+            .Setup(x => x.ExecuteAsync(It.IsAny<WorkflowResource>(), It.IsAny<Dictionary<string, WorkflowTaskResource>>(), It.IsAny<Dictionary<string, object>>(), It.IsAny<CancellationToken>()))
+            .Returns(async (WorkflowResource w, Dictionary<string, WorkflowTaskResource> t, Dictionary<string, object> i, CancellationToken ct) =>
+            {
+                cts.Cancel();
+                ct.ThrowIfCancellationRequested();
+                return new WorkflowExecutionResult { Success = true };
+            });
+
+        // Act
+        var result = await _service.ExecuteAsync(workflow, new Dictionary<string, object>(), cts.Token);
+
+        // Assert
+        result.Success.Should().BeFalse();
+        result.Error.Should().Be("Workflow execution was canceled");
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithOrchestratorException_ShouldReturnErrorResponse()
+    {
+        // Arrange - Tests lines 90-101: Generic exception handling
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = "failing" },
+            Spec = new WorkflowSpec()
+        };
+
+        _orchestratorMock
+            .Setup(x => x.ExecuteAsync(It.IsAny<WorkflowResource>(), It.IsAny<Dictionary<string, WorkflowTaskResource>>(), It.IsAny<Dictionary<string, object>>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("Orchestrator failed"));
+
+        // Act
+        var result = await _service.ExecuteAsync(workflow, new Dictionary<string, object>());
+
+        // Assert
+        result.Success.Should().BeFalse();
+        result.Error.Should().Contain("Unexpected error during workflow execution: Orchestrator failed");
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithDiscoveryServiceException_ShouldReturnErrorResponse()
+    {
+        // Arrange
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = "discovery-error" },
+            Spec = new WorkflowSpec()
+        };
+
+        _discoveryServiceMock
+            .Setup(x => x.DiscoverTasksAsync(It.IsAny<string>()))
+            .ThrowsAsync(new InvalidOperationException("Discovery failed"));
+
+        // Act
+        var result = await _service.ExecuteAsync(workflow, new Dictionary<string, object>());
+
+        // Assert
+        result.Success.Should().BeFalse();
+        result.Error.Should().Contain("Unexpected error during workflow execution: Discovery failed");
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithExecutedTasks_ShouldReturnTaskList()
+    {
+        // Arrange
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = "multi-task" },
+            Spec = new WorkflowSpec()
+        };
+
+        _orchestratorMock
+            .Setup(x => x.ExecuteAsync(It.IsAny<WorkflowResource>(), It.IsAny<Dictionary<string, WorkflowTaskResource>>(), It.IsAny<Dictionary<string, object>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new WorkflowExecutionResult
+            {
+                Success = true,
+                TaskResults = new Dictionary<string, TaskExecutionResult>
+                {
+                    ["task-1"] = new TaskExecutionResult { Success = true },
+                    ["task-2"] = new TaskExecutionResult { Success = true },
+                    ["task-3"] = new TaskExecutionResult { Success = true }
+                }
+            });
+
+        // Act
+        var result = await _service.ExecuteAsync(workflow, new Dictionary<string, object>());
+
+        // Assert
+        result.ExecutedTasks.Should().HaveCount(3);
+        result.ExecutedTasks.Should().Contain(new[] { "task-1", "task-2", "task-3" });
+    }
 }

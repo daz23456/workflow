@@ -249,4 +249,369 @@ public class WorkflowValidationWebhookTests
         result.Allowed.Should().BeFalse();
         result.Message.Should().Contain("Circular dependency detected");
     }
+
+    [Fact]
+    public async Task ValidateAsync_WithNullTasks_ShouldReturnDenied()
+    {
+        // Arrange
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = "null-tasks" },
+            Spec = new WorkflowSpec
+            {
+                Tasks = null! // Null tasks
+            }
+        };
+
+        var availableTasks = new List<WorkflowTaskResource>();
+
+        // Act
+        var result = await _webhook.ValidateAsync(workflow, availableTasks);
+
+        // Assert
+        result.Allowed.Should().BeFalse();
+        result.Message.Should().Contain("Workflow must have at least one task");
+    }
+
+    [Fact]
+    public async Task ValidateAsync_WithMultipleTasksValid_ShouldReturnAllowed()
+    {
+        // Arrange
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = "multi-task-workflow" },
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "t1", TaskRef = "task1", Input = new Dictionary<string, string>() },
+                    new WorkflowTaskStep { Id = "t2", TaskRef = "task2", Input = new Dictionary<string, string>() },
+                    new WorkflowTaskStep { Id = "t3", TaskRef = "task3", Input = new Dictionary<string, string>() }
+                }
+            }
+        };
+
+        _templateParserMock.Setup(x => x.Parse(It.IsAny<string>()))
+            .Returns(new TemplateParseResult { IsValid = true });
+
+        _graphBuilderMock.Setup(x => x.Build(It.IsAny<WorkflowResource>()))
+            .Returns(new ExecutionGraphResult
+            {
+                IsValid = true,
+                Graph = new ExecutionGraph()
+            });
+
+        var availableTasks = new List<WorkflowTaskResource>
+        {
+            new WorkflowTaskResource { Metadata = new ResourceMetadata { Name = "task1" }, Spec = new WorkflowTaskSpec { Type = "http" } },
+            new WorkflowTaskResource { Metadata = new ResourceMetadata { Name = "task2" }, Spec = new WorkflowTaskSpec { Type = "http" } },
+            new WorkflowTaskResource { Metadata = new ResourceMetadata { Name = "task3" }, Spec = new WorkflowTaskSpec { Type = "http" } }
+        };
+
+        // Act
+        var result = await _webhook.ValidateAsync(workflow, availableTasks);
+
+        // Assert
+        result.Allowed.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ValidateAsync_WithTaskNoInput_ShouldReturnAllowed()
+    {
+        // Arrange
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = "no-input-workflow" },
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep
+                    {
+                        Id = "simple-task",
+                        TaskRef = "simple",
+                        Input = new Dictionary<string, string>() // Empty input
+                    }
+                }
+            }
+        };
+
+        _graphBuilderMock.Setup(x => x.Build(It.IsAny<WorkflowResource>()))
+            .Returns(new ExecutionGraphResult { IsValid = true, Graph = new ExecutionGraph() });
+
+        var availableTasks = new List<WorkflowTaskResource>
+        {
+            new WorkflowTaskResource { Metadata = new ResourceMetadata { Name = "simple" }, Spec = new WorkflowTaskSpec { Type = "http" } }
+        };
+
+        // Act
+        var result = await _webhook.ValidateAsync(workflow, availableTasks);
+
+        // Assert
+        result.Allowed.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ValidateAsync_WithMultipleTemplateErrors_ShouldReturnFirstError()
+    {
+        // Arrange
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = "multi-error-workflow" },
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep
+                    {
+                        Id = "task1",
+                        TaskRef = "ref1",
+                        Input = new Dictionary<string, string>
+                        {
+                            ["field1"] = "{{invalid1",
+                            ["field2"] = "{{invalid2"
+                        }
+                    }
+                }
+            }
+        };
+
+        _templateParserMock.Setup(x => x.Parse("{{invalid1"))
+            .Returns(new TemplateParseResult { IsValid = false, Errors = new List<string> { "First error" } });
+
+        var availableTasks = new List<WorkflowTaskResource>
+        {
+            new WorkflowTaskResource { Metadata = new ResourceMetadata { Name = "ref1" }, Spec = new WorkflowTaskSpec { Type = "http" } }
+        };
+
+        // Act
+        var result = await _webhook.ValidateAsync(workflow, availableTasks);
+
+        // Assert
+        result.Allowed.Should().BeFalse();
+        result.Message.Should().Contain("First error");
+    }
+
+    [Fact]
+    public async Task ValidateAsync_WithEmptyAvailableTasks_AndMissingRef_ShouldReturnDenied()
+    {
+        // Arrange
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = "workflow" },
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "t1", TaskRef = "missing" }
+                }
+            }
+        };
+
+        var availableTasks = new List<WorkflowTaskResource>(); // Empty
+
+        // Act
+        var result = await _webhook.ValidateAsync(workflow, availableTasks);
+
+        // Assert
+        result.Allowed.Should().BeFalse();
+        result.Message.Should().Contain("Task reference 'missing' not found");
+        result.Message.Should().Contain("Available tasks:");
+    }
+
+    [Fact]
+    public async Task ValidateAsync_WithComplexTemplates_ShouldValidateAll()
+    {
+        // Arrange
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = "complex-template-workflow" },
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep
+                    {
+                        Id = "task1",
+                        TaskRef = "ref1",
+                        Input = new Dictionary<string, string>
+                        {
+                            ["userId"] = "{{input.userId}}",
+                            ["action"] = "{{input.action}}",
+                            ["data"] = "{{tasks.previous.output.result}}"
+                        }
+                    }
+                }
+            }
+        };
+
+        int parseCount = 0;
+        _templateParserMock.Setup(x => x.Parse(It.IsAny<string>()))
+            .Returns(new TemplateParseResult { IsValid = true })
+            .Callback(() => parseCount++);
+
+        _graphBuilderMock.Setup(x => x.Build(It.IsAny<WorkflowResource>()))
+            .Returns(new ExecutionGraphResult { IsValid = true, Graph = new ExecutionGraph() });
+
+        var availableTasks = new List<WorkflowTaskResource>
+        {
+            new WorkflowTaskResource { Metadata = new ResourceMetadata { Name = "ref1" }, Spec = new WorkflowTaskSpec { Type = "http" } }
+        };
+
+        // Act
+        var result = await _webhook.ValidateAsync(workflow, availableTasks);
+
+        // Assert
+        result.Allowed.Should().BeTrue();
+        parseCount.Should().Be(3); // All 3 templates validated
+    }
+
+    [Fact]
+    public async Task ValidateAsync_WithGraphBuildingMultipleErrors_ShouldCombineErrors()
+    {
+        // Arrange
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = "multi-graph-error" },
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "t1", TaskRef = "ref1", Input = new Dictionary<string, string>() }
+                }
+            }
+        };
+
+        _templateParserMock.Setup(x => x.Parse(It.IsAny<string>()))
+            .Returns(new TemplateParseResult { IsValid = true });
+
+        _graphBuilderMock.Setup(x => x.Build(It.IsAny<WorkflowResource>()))
+            .Returns(new ExecutionGraphResult
+            {
+                IsValid = false,
+                Errors = new List<ValidationError>
+                {
+                    new ValidationError { Message = "Error 1" },
+                    new ValidationError { Message = "Error 2" }
+                }
+            });
+
+        var availableTasks = new List<WorkflowTaskResource>
+        {
+            new WorkflowTaskResource { Metadata = new ResourceMetadata { Name = "ref1" }, Spec = new WorkflowTaskSpec { Type = "http" } }
+        };
+
+        // Act
+        var result = await _webhook.ValidateAsync(workflow, availableTasks);
+
+        // Assert
+        result.Allowed.Should().BeFalse();
+        result.Message.Should().Contain("Error 1");
+        result.Message.Should().Contain("Error 2");
+    }
+
+    [Fact]
+    public void Constructor_WithNullTemplateParser_ShouldThrowArgumentNullException()
+    {
+        // Act
+        Action act = () => new WorkflowValidationWebhook(null!, _graphBuilderMock.Object);
+
+        // Assert
+        act.Should().Throw<ArgumentNullException>()
+            .WithMessage("*templateParser*");
+    }
+
+    [Fact]
+    public void Constructor_WithNullGraphBuilder_ShouldThrowArgumentNullException()
+    {
+        // Act
+        Action act = () => new WorkflowValidationWebhook(_templateParserMock.Object, null!);
+
+        // Assert
+        act.Should().Throw<ArgumentNullException>()
+            .WithMessage("*graphBuilder*");
+    }
+
+    [Fact]
+    public async Task ValidateAsync_WithWorkflowInputSchema_ShouldReturnAllowed()
+    {
+        // Arrange
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = "workflow-with-input" },
+            Spec = new WorkflowSpec
+            {
+                Input = new Dictionary<string, WorkflowInputParameter>
+                {
+                    ["userId"] = new WorkflowInputParameter { Type = "string", Required = true },
+                    ["action"] = new WorkflowInputParameter { Type = "string", Required = false }
+                },
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep
+                    {
+                        Id = "task1",
+                        TaskRef = "ref1",
+                        Input = new Dictionary<string, string>
+                        {
+                            ["userId"] = "{{input.userId}}"
+                        }
+                    }
+                }
+            }
+        };
+
+        _templateParserMock.Setup(x => x.Parse(It.IsAny<string>()))
+            .Returns(new TemplateParseResult { IsValid = true });
+
+        _graphBuilderMock.Setup(x => x.Build(It.IsAny<WorkflowResource>()))
+            .Returns(new ExecutionGraphResult { IsValid = true, Graph = new ExecutionGraph() });
+
+        var availableTasks = new List<WorkflowTaskResource>
+        {
+            new WorkflowTaskResource { Metadata = new ResourceMetadata { Name = "ref1" }, Spec = new WorkflowTaskSpec { Type = "http" } }
+        };
+
+        // Act
+        var result = await _webhook.ValidateAsync(workflow, availableTasks);
+
+        // Assert
+        result.Allowed.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ValidateAsync_WithDuplicateTaskIds_ShouldAllowIfGraphAccepts()
+    {
+        // Arrange - Note: Graph builder should detect duplicate IDs, but we test webhook behavior
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = "duplicate-ids" },
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "task1", TaskRef = "ref1", Input = new Dictionary<string, string>() },
+                    new WorkflowTaskStep { Id = "task1", TaskRef = "ref2", Input = new Dictionary<string, string>() }
+                }
+            }
+        };
+
+        _templateParserMock.Setup(x => x.Parse(It.IsAny<string>()))
+            .Returns(new TemplateParseResult { IsValid = true });
+
+        _graphBuilderMock.Setup(x => x.Build(It.IsAny<WorkflowResource>()))
+            .Returns(new ExecutionGraphResult { IsValid = true, Graph = new ExecutionGraph() });
+
+        var availableTasks = new List<WorkflowTaskResource>
+        {
+            new WorkflowTaskResource { Metadata = new ResourceMetadata { Name = "ref1" }, Spec = new WorkflowTaskSpec { Type = "http" } },
+            new WorkflowTaskResource { Metadata = new ResourceMetadata { Name = "ref2" }, Spec = new WorkflowTaskSpec { Type = "http" } }
+        };
+
+        // Act
+        var result = await _webhook.ValidateAsync(workflow, availableTasks);
+
+        // Assert
+        result.Allowed.Should().BeTrue(); // Webhook doesn't check duplicates, graph builder does
+    }
 }

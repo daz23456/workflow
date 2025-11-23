@@ -22,8 +22,29 @@ public class WorkflowResource
 
 public class WorkflowSpec
 {
+    [YamlMember(Alias = "input")]
+    public Dictionary<string, WorkflowInputParameter> Input { get; set; } = new();
+
     [YamlMember(Alias = "tasks")]
     public List<WorkflowTaskStep> Tasks { get; set; } = new();
+
+    [YamlMember(Alias = "output")]
+    public Dictionary<string, string>? Output { get; set; }
+}
+
+public class WorkflowInputParameter
+{
+    [YamlMember(Alias = "type")]
+    public string Type { get; set; } = string.Empty;
+
+    [YamlMember(Alias = "required")]
+    public bool Required { get; set; }
+
+    [YamlMember(Alias = "description")]
+    public string? Description { get; set; }
+
+    [YamlMember(Alias = "default")]
+    public object? Default { get; set; }
 }
 
 public class WorkflowTaskStep

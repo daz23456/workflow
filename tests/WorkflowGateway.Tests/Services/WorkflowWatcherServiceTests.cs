@@ -206,4 +206,551 @@ public class WorkflowWatcherServiceTests
         // Assert - Service should have tried multiple times despite the error
         _discoveryServiceMock.Verify(x => x.DiscoverWorkflowsAsync(null), Times.AtLeast(2));
     }
+
+    [Fact]
+    public void Constructor_WithNullDiscoveryService_ShouldThrowArgumentNullException()
+    {
+        // Act
+        Action act = () => new WorkflowWatcherService(
+            null!,
+            _endpointServiceMock.Object,
+            _loggerMock.Object);
+
+        // Assert
+        act.Should().Throw<ArgumentNullException>()
+            .WithMessage("*discoveryService*");
+    }
+
+    [Fact]
+    public void Constructor_WithNullEndpointService_ShouldThrowArgumentNullException()
+    {
+        // Act
+        Action act = () => new WorkflowWatcherService(
+            _discoveryServiceMock.Object,
+            null!,
+            _loggerMock.Object);
+
+        // Assert
+        act.Should().Throw<ArgumentNullException>()
+            .WithMessage("*endpointService*");
+    }
+
+    [Fact]
+    public void Constructor_WithNullLogger_ShouldThrowArgumentNullException()
+    {
+        // Act
+        Action act = () => new WorkflowWatcherService(
+            _discoveryServiceMock.Object,
+            _endpointServiceMock.Object,
+            null!);
+
+        // Assert
+        act.Should().Throw<ArgumentNullException>()
+            .WithMessage("*logger*");
+    }
+
+    [Fact]
+    public async Task Service_WithWorkflowsHavingNullMetadata_ShouldFilterThemOut()
+    {
+        // Arrange - Tests line 63: w.Metadata?.Name ?? ""
+        var workflows = new List<WorkflowResource>
+        {
+            new WorkflowResource
+            {
+                Metadata = null, // Null metadata should be filtered
+                Spec = new WorkflowSpec()
+            },
+            new WorkflowResource
+            {
+                Metadata = new ResourceMetadata { Name = "valid-workflow" },
+                Spec = new WorkflowSpec()
+            }
+        };
+
+        _discoveryServiceMock
+            .Setup(x => x.DiscoverWorkflowsAsync(null))
+            .ReturnsAsync(workflows);
+
+        var service = new WorkflowWatcherService(
+            _discoveryServiceMock.Object,
+            _endpointServiceMock.Object,
+            _loggerMock.Object,
+            pollingIntervalSeconds: 10);
+
+        using var cts = new CancellationTokenSource();
+
+        // Act
+        await service.StartAsync(cts.Token);
+        await Task.Delay(100);
+        cts.Cancel();
+        await service.StopAsync(CancellationToken.None);
+
+        // Assert - Only "valid-workflow" should be in added workflows
+        _endpointServiceMock.Verify(
+            x => x.OnWorkflowsChangedAsync(
+                It.Is<List<string>>(list => list.Count == 1 && list.Contains("valid-workflow")),
+                It.IsAny<List<string>>(),
+                null),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task Service_WithWorkflowsHavingEmptyName_ShouldFilterThemOut()
+    {
+        // Arrange - Tests line 63: Where(n => !string.IsNullOrEmpty(n))
+        var workflows = new List<WorkflowResource>
+        {
+            new WorkflowResource
+            {
+                Metadata = new ResourceMetadata { Name = "" }, // Empty name should be filtered
+                Spec = new WorkflowSpec()
+            },
+            new WorkflowResource
+            {
+                Metadata = new ResourceMetadata { Name = "valid-workflow" },
+                Spec = new WorkflowSpec()
+            }
+        };
+
+        _discoveryServiceMock
+            .Setup(x => x.DiscoverWorkflowsAsync(null))
+            .ReturnsAsync(workflows);
+
+        var service = new WorkflowWatcherService(
+            _discoveryServiceMock.Object,
+            _endpointServiceMock.Object,
+            _loggerMock.Object,
+            pollingIntervalSeconds: 10);
+
+        using var cts = new CancellationTokenSource();
+
+        // Act
+        await service.StartAsync(cts.Token);
+        await Task.Delay(100);
+        cts.Cancel();
+        await service.StopAsync(CancellationToken.None);
+
+        // Assert - Only "valid-workflow" should be in added workflows
+        _endpointServiceMock.Verify(
+            x => x.OnWorkflowsChangedAsync(
+                It.Is<List<string>>(list => list.Count == 1 && list.Contains("valid-workflow")),
+                It.IsAny<List<string>>(),
+                null),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task Service_WithNoChanges_ShouldNotNotifyEndpointService()
+    {
+        // Arrange - Tests line 87-90: else block with LogDebug
+        var workflows = new List<WorkflowResource>
+        {
+            new WorkflowResource
+            {
+                Metadata = new ResourceMetadata { Name = "workflow-1" },
+                Spec = new WorkflowSpec()
+            }
+        };
+
+        _discoveryServiceMock
+            .Setup(x => x.DiscoverWorkflowsAsync(null))
+            .ReturnsAsync(workflows);
+
+        var service = new WorkflowWatcherService(
+            _discoveryServiceMock.Object,
+            _endpointServiceMock.Object,
+            _loggerMock.Object,
+            pollingIntervalSeconds: 1);
+
+        using var cts = new CancellationTokenSource();
+
+        // Act
+        await service.StartAsync(cts.Token);
+        await Task.Delay(100); // Initial sync
+
+        // Clear invocations from initial sync
+        _endpointServiceMock.Invocations.Clear();
+
+        // Wait for second polling cycle (no changes)
+        await Task.Delay(1100);
+        cts.Cancel();
+        await service.StopAsync(CancellationToken.None);
+
+        // Assert - EndpointService should not be called on second sync (no changes)
+        _endpointServiceMock.Verify(
+            x => x.OnWorkflowsChangedAsync(It.IsAny<List<string>>(), It.IsAny<List<string>>(), null),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task Service_WithChanges_ShouldUpdatePreviousWorkflows()
+    {
+        // Arrange - Tests line 83: _previousWorkflows = currentWorkflowNames
+        var firstWorkflows = new List<WorkflowResource>
+        {
+            new WorkflowResource
+            {
+                Metadata = new ResourceMetadata { Name = "workflow-1" },
+                Spec = new WorkflowSpec()
+            }
+        };
+
+        var secondWorkflows = new List<WorkflowResource>
+        {
+            new WorkflowResource
+            {
+                Metadata = new ResourceMetadata { Name = "workflow-1" },
+                Spec = new WorkflowSpec()
+            },
+            new WorkflowResource
+            {
+                Metadata = new ResourceMetadata { Name = "workflow-2" },
+                Spec = new WorkflowSpec()
+            }
+        };
+
+        var callCount = 0;
+        _discoveryServiceMock
+            .Setup(x => x.DiscoverWorkflowsAsync(null))
+            .ReturnsAsync(() => callCount++ == 0 ? firstWorkflows : secondWorkflows);
+
+        var service = new WorkflowWatcherService(
+            _discoveryServiceMock.Object,
+            _endpointServiceMock.Object,
+            _loggerMock.Object,
+            pollingIntervalSeconds: 1);
+
+        using var cts = new CancellationTokenSource();
+
+        // Act
+        await service.StartAsync(cts.Token);
+        await Task.Delay(1600); // Wait for at least one polling cycle
+
+        // Clear invocations
+        _endpointServiceMock.Invocations.Clear();
+
+        // Wait for third polling cycle (should have no changes since state was updated)
+        await Task.Delay(1100);
+        cts.Cancel();
+        await service.StopAsync(CancellationToken.None);
+
+        // Assert - No changes on third cycle because _previousWorkflows was updated
+        _endpointServiceMock.Verify(
+            x => x.OnWorkflowsChangedAsync(It.IsAny<List<string>>(), It.IsAny<List<string>>(), null),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task Service_WithBothAddedAndRemovedWorkflows_ShouldDetectBoth()
+    {
+        // Arrange - Tests line 72: if (addedWorkflows.Any() || removedWorkflows.Any())
+        var firstWorkflows = new List<WorkflowResource>
+        {
+            new WorkflowResource
+            {
+                Metadata = new ResourceMetadata { Name = "old-workflow" },
+                Spec = new WorkflowSpec()
+            }
+        };
+
+        var secondWorkflows = new List<WorkflowResource>
+        {
+            new WorkflowResource
+            {
+                Metadata = new ResourceMetadata { Name = "new-workflow" },
+                Spec = new WorkflowSpec()
+            }
+        };
+
+        var callCount = 0;
+        _discoveryServiceMock
+            .Setup(x => x.DiscoverWorkflowsAsync(null))
+            .ReturnsAsync(() => callCount++ == 0 ? firstWorkflows : secondWorkflows);
+
+        var service = new WorkflowWatcherService(
+            _discoveryServiceMock.Object,
+            _endpointServiceMock.Object,
+            _loggerMock.Object,
+            pollingIntervalSeconds: 1);
+
+        using var cts = new CancellationTokenSource();
+
+        // Act
+        await service.StartAsync(cts.Token);
+        await Task.Delay(1600); // Wait for second sync
+        cts.Cancel();
+        await service.StopAsync(CancellationToken.None);
+
+        // Assert - Should detect both added and removed
+        _endpointServiceMock.Verify(
+            x => x.OnWorkflowsChangedAsync(
+                It.Is<List<string>>(added => added.Contains("new-workflow")),
+                It.Is<List<string>>(removed => removed.Contains("old-workflow")),
+                null),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task StopAsync_ShouldCallBaseStopAsync()
+    {
+        // Arrange
+        var service = new WorkflowWatcherService(
+            _discoveryServiceMock.Object,
+            _endpointServiceMock.Object,
+            _loggerMock.Object,
+            pollingIntervalSeconds: 10);
+
+        using var cts = new CancellationTokenSource();
+
+        await service.StartAsync(cts.Token);
+        await Task.Delay(100);
+
+        // Act
+        await service.StopAsync(CancellationToken.None);
+
+        // Assert - Verify the service has stopped (IsCompleted should be true)
+        // This indirectly tests that base.StopAsync was called
+        cts.Cancel();
+
+        // Verify logger was called for graceful stop
+        _loggerMock.Verify(
+            x => x.Log(
+                LogLevel.Information,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("stopping gracefully")),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.AtLeastOnce);
+    }
+
+    [Fact]
+    public async Task Service_WithPollingIntervalParameter_ShouldUseSpecifiedInterval()
+    {
+        // Arrange - Tests line 24: _pollingInterval = TimeSpan.FromSeconds(pollingIntervalSeconds)
+        var service = new WorkflowWatcherService(
+            _discoveryServiceMock.Object,
+            _endpointServiceMock.Object,
+            _loggerMock.Object,
+            pollingIntervalSeconds: 2); // 2 seconds
+
+        using var cts = new CancellationTokenSource();
+
+        // Act
+        await service.StartAsync(cts.Token);
+        await Task.Delay(100); // Initial sync
+
+        var callCountAfterInitial = _discoveryServiceMock.Invocations.Count;
+
+        // Wait less than polling interval
+        await Task.Delay(1000); // 1 second < 2 second interval
+
+        var callCountAfter1Second = _discoveryServiceMock.Invocations.Count;
+
+        cts.Cancel();
+        await service.StopAsync(CancellationToken.None);
+
+        // Assert - Should not have polled again in 1 second (interval is 2 seconds)
+        callCountAfter1Second.Should().Be(callCountAfterInitial);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ShouldLogStartMessage()
+    {
+        // Arrange
+        var service = new WorkflowWatcherService(
+            _discoveryServiceMock.Object,
+            _endpointServiceMock.Object,
+            _loggerMock.Object,
+            pollingIntervalSeconds: 10);
+
+        using var cts = new CancellationTokenSource();
+
+        // Act
+        await service.StartAsync(cts.Token);
+        await Task.Delay(100);
+        cts.Cancel();
+        await service.StopAsync(CancellationToken.None);
+
+        // Assert - Verify logging of start message with polling interval
+        _loggerMock.Verify(
+            x => x.Log(
+                LogLevel.Information,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("started") && v.ToString()!.Contains("10")),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.AtLeastOnce);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_OnCancellation_ShouldLogStoppingMessage()
+    {
+        // Arrange
+        var service = new WorkflowWatcherService(
+            _discoveryServiceMock.Object,
+            _endpointServiceMock.Object,
+            _loggerMock.Object,
+            pollingIntervalSeconds: 10);
+
+        using var cts = new CancellationTokenSource();
+
+        // Act
+        await service.StartAsync(cts.Token);
+        await Task.Delay(100);
+        cts.Cancel();
+        await service.StopAsync(CancellationToken.None);
+
+        // Assert - Verify logging of stopping message
+        _loggerMock.Verify(
+            x => x.Log(
+                LogLevel.Information,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("stopping") || v.ToString()!.Contains("stopped")),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.AtLeastOnce);
+    }
+
+    [Fact]
+    public async Task SyncWorkflowsAsync_WithException_ShouldLogErrorAndContinue()
+    {
+        // Arrange - Tests lines 92-96: catch with LogError and throw
+        // and lines 46-50: exception handling in ExecuteAsync loop
+        var callCount = 0;
+        _discoveryServiceMock
+            .Setup(x => x.DiscoverWorkflowsAsync(null))
+            .ReturnsAsync(() =>
+            {
+                callCount++;
+                // Initial sync succeeds, second sync throws
+                if (callCount == 2)
+                {
+                    throw new InvalidOperationException("Test exception");
+                }
+                return new List<WorkflowResource>();
+            });
+
+        var service = new WorkflowWatcherService(
+            _discoveryServiceMock.Object,
+            _endpointServiceMock.Object,
+            _loggerMock.Object,
+            pollingIntervalSeconds: 1);
+
+        using var cts = new CancellationTokenSource();
+
+        // Act
+        await service.StartAsync(cts.Token);
+        await Task.Delay(1600); // Wait for second sync with error
+        cts.Cancel();
+        await service.StopAsync(CancellationToken.None);
+
+        // Assert - Verify error was logged (from lines 92-96 and 46-50)
+        _loggerMock.Verify(
+            x => x.Log(
+                LogLevel.Error,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Failed to sync workflows") || v.ToString()!.Contains("Error occurred while syncing")),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.AtLeastOnce);
+    }
+
+    [Fact]
+    public async Task Service_WithMultipleWorkflowChanges_ShouldLogCorrectCounts()
+    {
+        // Arrange - Tests lines 74-77: LogInformation with counts
+        var firstWorkflows = new List<WorkflowResource>
+        {
+            new WorkflowResource
+            {
+                Metadata = new ResourceMetadata { Name = "workflow-1" },
+                Spec = new WorkflowSpec()
+            }
+        };
+
+        var secondWorkflows = new List<WorkflowResource>
+        {
+            new WorkflowResource
+            {
+                Metadata = new ResourceMetadata { Name = "workflow-2" },
+                Spec = new WorkflowSpec()
+            },
+            new WorkflowResource
+            {
+                Metadata = new ResourceMetadata { Name = "workflow-3" },
+                Spec = new WorkflowSpec()
+            }
+        };
+
+        var callCount = 0;
+        _discoveryServiceMock
+            .Setup(x => x.DiscoverWorkflowsAsync(null))
+            .ReturnsAsync(() => callCount++ == 0 ? firstWorkflows : secondWorkflows);
+
+        var service = new WorkflowWatcherService(
+            _discoveryServiceMock.Object,
+            _endpointServiceMock.Object,
+            _loggerMock.Object,
+            pollingIntervalSeconds: 1);
+
+        using var cts = new CancellationTokenSource();
+
+        // Act
+        await service.StartAsync(cts.Token);
+        await Task.Delay(1600);
+        cts.Cancel();
+        await service.StopAsync(CancellationToken.None);
+
+        // Assert - Verify logging includes counts (2 added, 1 removed)
+        _loggerMock.Verify(
+            x => x.Log(
+                LogLevel.Information,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("changes detected") || v.ToString()!.Contains("Added:") || v.ToString()!.Contains("Removed:")),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.AtLeastOnce);
+    }
+
+    [Fact]
+    public async Task SyncWorkflowsAsync_AfterSuccessfulSync_ShouldLogSuccess()
+    {
+        // Arrange - Tests line 85: LogInformation for success
+        var workflows = new List<WorkflowResource>
+        {
+            new WorkflowResource
+            {
+                Metadata = new ResourceMetadata { Name = "workflow-1" },
+                Spec = new WorkflowSpec()
+            }
+        };
+
+        _discoveryServiceMock
+            .Setup(x => x.DiscoverWorkflowsAsync(null))
+            .ReturnsAsync(workflows);
+
+        var service = new WorkflowWatcherService(
+            _discoveryServiceMock.Object,
+            _endpointServiceMock.Object,
+            _loggerMock.Object,
+            pollingIntervalSeconds: 10);
+
+        using var cts = new CancellationTokenSource();
+
+        // Act
+        await service.StartAsync(cts.Token);
+        await Task.Delay(100);
+        cts.Cancel();
+        await service.StopAsync(CancellationToken.None);
+
+        // Assert - Verify success logging
+        _loggerMock.Verify(
+            x => x.Log(
+                LogLevel.Information,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("updated successfully")),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.AtLeastOnce);
+    }
 }

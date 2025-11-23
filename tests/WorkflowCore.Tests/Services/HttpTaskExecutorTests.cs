@@ -620,4 +620,491 @@ public class HttpTaskExecutorTests
         result.Errors.Should().ContainSingle();
         result.Errors[0].Should().NotBeNullOrEmpty();
     }
+
+    [Fact]
+    public async Task ExecuteAsync_WithEmptyJsonObjectResponse_ShouldReturnEmptyDictionary()
+    {
+        // Arrange - Test empty JSON object response
+        var taskSpec = new WorkflowTaskSpec
+        {
+            Type = "http",
+            Request = new HttpRequestDefinition
+            {
+                Method = "GET",
+                Url = "https://api.example.com/data"
+            }
+        };
+
+        var context = new TemplateContext();
+
+        _templateResolverMock.Setup(x => x.ResolveAsync(It.IsAny<string>(), context))
+            .ReturnsAsync("https://api.example.com/data");
+
+        _httpClientMock.Setup(x => x.SendAsync(
+            It.IsAny<HttpRequestMessage>(),
+            It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent("{}") // Empty JSON object
+            });
+
+        // Act
+        var result = await _executor.ExecuteAsync(taskSpec, context, CancellationToken.None);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        result.Output.Should().NotBeNull();
+        result.Output.Should().BeEmpty(); // Empty dictionary
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithPutMethod_ShouldSendPutRequest()
+    {
+        // Arrange - Test PUT method
+        var taskSpec = new WorkflowTaskSpec
+        {
+            Type = "http",
+            Request = new HttpRequestDefinition
+            {
+                Method = "PUT",
+                Url = "https://api.example.com/users/123",
+                Body = "{\"name\":\"Updated\"}"
+            }
+        };
+
+        var context = new TemplateContext();
+
+        _templateResolverMock.Setup(x => x.ResolveAsync(It.IsAny<string>(), context))
+            .Returns<string, TemplateContext>((template, _) => Task.FromResult(template));
+
+        _httpClientMock.Setup(x => x.SendAsync(
+            It.Is<HttpRequestMessage>(r => r.Method == HttpMethod.Put && r.Content != null),
+            It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent("{}")
+            });
+
+        _schemaValidatorMock.Setup(x => x.ValidateAsync(
+            It.IsAny<SchemaDefinition>(), It.IsAny<object>()))
+            .ReturnsAsync(new ValidationResult { IsValid = true });
+
+        // Act
+        var result = await _executor.ExecuteAsync(taskSpec, context, CancellationToken.None);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        _httpClientMock.Verify(x => x.SendAsync(
+            It.Is<HttpRequestMessage>(r => r.Method == HttpMethod.Put),
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithPatchMethod_ShouldSendPatchRequest()
+    {
+        // Arrange - Test PATCH method
+        var taskSpec = new WorkflowTaskSpec
+        {
+            Type = "http",
+            Request = new HttpRequestDefinition
+            {
+                Method = "PATCH",
+                Url = "https://api.example.com/users/123",
+                Body = "{\"status\":\"active\"}"
+            }
+        };
+
+        var context = new TemplateContext();
+
+        _templateResolverMock.Setup(x => x.ResolveAsync(It.IsAny<string>(), context))
+            .Returns<string, TemplateContext>((template, _) => Task.FromResult(template));
+
+        _httpClientMock.Setup(x => x.SendAsync(
+            It.Is<HttpRequestMessage>(r => r.Method == HttpMethod.Patch && r.Content != null),
+            It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent("{}")
+            });
+
+        _schemaValidatorMock.Setup(x => x.ValidateAsync(
+            It.IsAny<SchemaDefinition>(), It.IsAny<object>()))
+            .ReturnsAsync(new ValidationResult { IsValid = true });
+
+        // Act
+        var result = await _executor.ExecuteAsync(taskSpec, context, CancellationToken.None);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        _httpClientMock.Verify(x => x.SendAsync(
+            It.Is<HttpRequestMessage>(r => r.Method == HttpMethod.Patch),
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithDeleteMethod_ShouldSendDeleteRequest()
+    {
+        // Arrange - Test DELETE method
+        var taskSpec = new WorkflowTaskSpec
+        {
+            Type = "http",
+            Request = new HttpRequestDefinition
+            {
+                Method = "DELETE",
+                Url = "https://api.example.com/users/123"
+            }
+        };
+
+        var context = new TemplateContext();
+
+        _templateResolverMock.Setup(x => x.ResolveAsync(It.IsAny<string>(), context))
+            .ReturnsAsync("https://api.example.com/users/123");
+
+        _httpClientMock.Setup(x => x.SendAsync(
+            It.Is<HttpRequestMessage>(r => r.Method == HttpMethod.Delete),
+            It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.NoContent,
+                Content = new StringContent("{}") // Valid empty JSON
+            });
+
+        // Act
+        var result = await _executor.ExecuteAsync(taskSpec, context, CancellationToken.None);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        _httpClientMock.Verify(x => x.SendAsync(
+            It.Is<HttpRequestMessage>(r => r.Method == HttpMethod.Delete),
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithZeroRetries_ShouldFailImmediately()
+    {
+        // Arrange - Test retry boundary: 0 retries
+        var taskSpec = new WorkflowTaskSpec
+        {
+            Type = "http",
+            Request = new HttpRequestDefinition
+            {
+                Method = "GET",
+                Url = "https://api.example.com/data"
+            }
+        };
+
+        var context = new TemplateContext();
+        var exception = new HttpRequestException("Connection failed");
+
+        _templateResolverMock.Setup(x => x.ResolveAsync(It.IsAny<string>(), context))
+            .ReturnsAsync("https://api.example.com/data");
+
+        _httpClientMock.Setup(x => x.SendAsync(
+            It.IsAny<HttpRequestMessage>(),
+            It.IsAny<CancellationToken>()))
+            .ThrowsAsync(exception);
+
+        _retryPolicyMock.Setup(x => x.ShouldRetry(exception, 1))
+            .Returns(false); // Don't retry on first failure
+
+        // Act
+        var result = await _executor.ExecuteAsync(taskSpec, context, CancellationToken.None);
+
+        // Assert
+        result.Success.Should().BeFalse();
+        result.RetryCount.Should().Be(0); // No retries
+        _httpClientMock.Verify(x => x.SendAsync(
+            It.IsAny<HttpRequestMessage>(),
+            It.IsAny<CancellationToken>()), Times.Once); // Only called once
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithOneRetry_ShouldRetryOnce()
+    {
+        // Arrange - Test retry boundary: 1 retry
+        var taskSpec = new WorkflowTaskSpec
+        {
+            Type = "http",
+            Request = new HttpRequestDefinition
+            {
+                Method = "GET",
+                Url = "https://api.example.com/data"
+            }
+        };
+
+        var context = new TemplateContext();
+        var exception = new HttpRequestException("Temporary failure");
+
+        _templateResolverMock.Setup(x => x.ResolveAsync(It.IsAny<string>(), context))
+            .ReturnsAsync("https://api.example.com/data");
+
+        _httpClientMock.Setup(x => x.SendAsync(
+            It.IsAny<HttpRequestMessage>(),
+            It.IsAny<CancellationToken>()))
+            .ThrowsAsync(exception);
+
+        _retryPolicyMock.SetupSequence(x => x.ShouldRetry(exception, It.IsAny<int>()))
+            .Returns(true)  // Retry after first failure
+            .Returns(false); // Don't retry after second failure
+
+        _retryPolicyMock.Setup(x => x.CalculateDelay(It.IsAny<int>()))
+            .Returns(TimeSpan.FromMilliseconds(1));
+
+        // Act
+        var result = await _executor.ExecuteAsync(taskSpec, context, CancellationToken.None);
+
+        // Assert
+        result.Success.Should().BeFalse();
+        result.RetryCount.Should().Be(1); // Exactly 1 retry
+        _httpClientMock.Verify(x => x.SendAsync(
+            It.IsAny<HttpRequestMessage>(),
+            It.IsAny<CancellationToken>()), Times.Exactly(2)); // Original + 1 retry
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithOperationCanceledException_ShouldHandleGracefully()
+    {
+        // Arrange - Test OperationCanceledException handling
+        var taskSpec = new WorkflowTaskSpec
+        {
+            Type = "http",
+            Request = new HttpRequestDefinition
+            {
+                Method = "GET",
+                Url = "https://api.example.com/data"
+            }
+        };
+
+        var context = new TemplateContext();
+        var exception = new OperationCanceledException("Operation cancelled");
+
+        _templateResolverMock.Setup(x => x.ResolveAsync(It.IsAny<string>(), context))
+            .ReturnsAsync("https://api.example.com/data");
+
+        _httpClientMock.Setup(x => x.SendAsync(
+            It.IsAny<HttpRequestMessage>(),
+            It.IsAny<CancellationToken>()))
+            .ThrowsAsync(exception);
+
+        _retryPolicyMock.Setup(x => x.ShouldRetry(exception, It.IsAny<int>()))
+            .Returns(false);
+
+        // Act
+        var result = await _executor.ExecuteAsync(taskSpec, context, CancellationToken.None);
+
+        // Assert
+        result.Success.Should().BeFalse();
+        result.Errors.Should().ContainSingle();
+        result.Errors[0].Should().Contain("cancelled");
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithNullOutputSchemaAndValidResponse_ShouldSucceed()
+    {
+        // Arrange - Test null output schema (no validation)
+        var taskSpec = new WorkflowTaskSpec
+        {
+            Type = "http",
+            Request = new HttpRequestDefinition
+            {
+                Method = "GET",
+                Url = "https://api.example.com/data"
+            },
+            OutputSchema = null // No output schema validation
+        };
+
+        var context = new TemplateContext();
+
+        _templateResolverMock.Setup(x => x.ResolveAsync(It.IsAny<string>(), context))
+            .ReturnsAsync("https://api.example.com/data");
+
+        _httpClientMock.Setup(x => x.SendAsync(
+            It.IsAny<HttpRequestMessage>(),
+            It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent("{\"any\":\"data\"}")
+            });
+
+        // Act
+        var result = await _executor.ExecuteAsync(taskSpec, context, CancellationToken.None);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        result.Output.Should().NotBeNull();
+        _schemaValidatorMock.Verify(x => x.ValidateAsync(
+            It.IsAny<SchemaDefinition>(), It.IsAny<object>()), Times.Never); // No validation
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithEmptyHeaders_ShouldNotIncludeHeaders()
+    {
+        // Arrange - Test with null headers
+        var taskSpec = new WorkflowTaskSpec
+        {
+            Type = "http",
+            Request = new HttpRequestDefinition
+            {
+                Method = "GET",
+                Url = "https://api.example.com/data",
+                Headers = null // No headers
+            }
+        };
+
+        var context = new TemplateContext();
+
+        _templateResolverMock.Setup(x => x.ResolveAsync(It.IsAny<string>(), context))
+            .ReturnsAsync("https://api.example.com/data");
+
+        _httpClientMock.Setup(x => x.SendAsync(
+            It.IsAny<HttpRequestMessage>(),
+            It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent("{}")
+            });
+
+        _schemaValidatorMock.Setup(x => x.ValidateAsync(
+            It.IsAny<SchemaDefinition>(), It.IsAny<object>()))
+            .ReturnsAsync(new ValidationResult { IsValid = true });
+
+        // Act
+        var result = await _executor.ExecuteAsync(taskSpec, context, CancellationToken.None);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        _templateResolverMock.Verify(x => x.ResolveAsync(
+            It.Is<string>(s => s != "https://api.example.com/data"),
+            It.IsAny<TemplateContext>()), Times.Never); // Should not resolve any header templates
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithNullBodyInPostRequest_ShouldNotIncludeBody()
+    {
+        // Arrange - Test POST with null body
+        var taskSpec = new WorkflowTaskSpec
+        {
+            Type = "http",
+            Request = new HttpRequestDefinition
+            {
+                Method = "POST",
+                Url = "https://api.example.com/data",
+                Body = null // No body
+            }
+        };
+
+        var context = new TemplateContext();
+
+        _templateResolverMock.Setup(x => x.ResolveAsync(It.IsAny<string>(), context))
+            .ReturnsAsync("https://api.example.com/data");
+
+        _httpClientMock.Setup(x => x.SendAsync(
+            It.Is<HttpRequestMessage>(r => r.Method == HttpMethod.Post && r.Content == null),
+            It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent("{}")
+            });
+
+        _schemaValidatorMock.Setup(x => x.ValidateAsync(
+            It.IsAny<SchemaDefinition>(), It.IsAny<object>()))
+            .ReturnsAsync(new ValidationResult { IsValid = true });
+
+        // Act
+        var result = await _executor.ExecuteAsync(taskSpec, context, CancellationToken.None);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        _httpClientMock.Verify(x => x.SendAsync(
+            It.Is<HttpRequestMessage>(r => r.Content == null),
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Theory]
+    [InlineData("get")] // Lowercase
+    [InlineData("Get")] // Mixed case
+    [InlineData("GET")] // Uppercase
+    public async Task ExecuteAsync_WithMixedCaseHttpMethod_ShouldNormalize(string method)
+    {
+        // Arrange - Test case-insensitive HTTP method handling via ToUpperInvariant
+        var taskSpec = new WorkflowTaskSpec
+        {
+            Type = "http",
+            Request = new HttpRequestDefinition
+            {
+                Method = method,
+                Url = "https://api.example.com/data"
+            }
+        };
+
+        var context = new TemplateContext();
+
+        _templateResolverMock.Setup(x => x.ResolveAsync(It.IsAny<string>(), context))
+            .ReturnsAsync("https://api.example.com/data");
+
+        _httpClientMock.Setup(x => x.SendAsync(
+            It.Is<HttpRequestMessage>(r => r.Method == HttpMethod.Get),
+            It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent("{}")
+            });
+
+        _schemaValidatorMock.Setup(x => x.ValidateAsync(
+            It.IsAny<SchemaDefinition>(), It.IsAny<object>()))
+            .ReturnsAsync(new ValidationResult { IsValid = true });
+
+        // Act
+        var result = await _executor.ExecuteAsync(taskSpec, context, CancellationToken.None);
+
+        // Assert
+        result.Success.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithNullDeserializedOutput_ShouldNotValidateSchema()
+    {
+        // Arrange - Test when response deserializes to null
+        var taskSpec = new WorkflowTaskSpec
+        {
+            Type = "http",
+            Request = new HttpRequestDefinition
+            {
+                Method = "GET",
+                Url = "https://api.example.com/data"
+            },
+            OutputSchema = new SchemaDefinition { Type = "object" }
+        };
+
+        var context = new TemplateContext();
+
+        _templateResolverMock.Setup(x => x.ResolveAsync(It.IsAny<string>(), context))
+            .ReturnsAsync("https://api.example.com/data");
+
+        _httpClientMock.Setup(x => x.SendAsync(
+            It.IsAny<HttpRequestMessage>(),
+            It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent("null") // JSON null
+            });
+
+        // Act
+        var result = await _executor.ExecuteAsync(taskSpec, context, CancellationToken.None);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        result.Output.Should().BeNull();
+        // Should not validate schema when output is null
+        _schemaValidatorMock.Verify(x => x.ValidateAsync(
+            It.IsAny<SchemaDefinition>(), It.IsAny<object>()), Times.Never);
+    }
 }

@@ -1,3 +1,6 @@
+using Microsoft.EntityFrameworkCore;
+using WorkflowCore.Data;
+using WorkflowCore.Data.Repositories;
 using WorkflowCore.Services;
 using WorkflowGateway.Services;
 
@@ -14,6 +17,27 @@ builder.Services.AddSwaggerGen();
 var workflowConfig = builder.Configuration.GetSection("Workflow");
 var executionTimeout = workflowConfig.GetValue<int>("ExecutionTimeoutSeconds", 30);
 var watcherInterval = workflowConfig.GetValue<int>("WatcherIntervalSeconds", 30);
+
+// Register database services
+var connectionString = builder.Configuration.GetConnectionString("WorkflowDatabase");
+if (!string.IsNullOrEmpty(connectionString))
+{
+    builder.Services.AddDbContext<WorkflowDbContext>(options =>
+        options.UseNpgsql(connectionString));
+
+    builder.Services.AddScoped<IExecutionRepository, ExecutionRepository>();
+    builder.Services.AddScoped<ITaskExecutionRepository, TaskExecutionRepository>();
+    builder.Services.AddScoped<IWorkflowVersionRepository, WorkflowVersionRepository>();
+
+    // Add health checks
+    builder.Services.AddHealthChecks()
+        .AddDbContextCheck<WorkflowDbContext>("database", tags: new[] { "ready" });
+}
+else
+{
+    // For testing: Add health checks without database
+    builder.Services.AddHealthChecks();
+}
 
 // Register WorkflowCore services
 builder.Services.AddSingleton<ISchemaParser, SchemaParser>();
@@ -46,6 +70,28 @@ builder.Services.AddHostedService(sp => sp.GetRequiredService<WorkflowWatcherSer
 
 var app = builder.Build();
 
+// Apply database migrations on startup (only if connection string configured)
+if (!string.IsNullOrEmpty(connectionString))
+{
+    using (var scope = app.Services.CreateScope())
+    {
+        var dbContext = scope.ServiceProvider.GetRequiredService<WorkflowDbContext>();
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+
+        try
+        {
+            logger.LogInformation("Applying database migrations...");
+            await dbContext.Database.MigrateAsync();
+            logger.LogInformation("Database migrations applied successfully");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error applying database migrations");
+            throw;
+        }
+    }
+}
+
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
@@ -61,4 +107,18 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
 
+// Map health check endpoints
+app.MapHealthChecks("/health");
+app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains("ready")
+});
+app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    Predicate = _ => false // No checks, just returns 200 if app is running
+});
+
 app.Run();
+
+// Make Program accessible for testing
+public partial class Program { }

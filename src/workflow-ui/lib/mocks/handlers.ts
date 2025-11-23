@@ -21,11 +21,46 @@ export const handlers = [
   // ============================================================================
 
   // GET /api/v1/workflows - List all workflows
-  http.get('/api/v1/workflows', async () => {
+  http.get('/api/v1/workflows', async ({ request }) => {
     await delay(300); // Simulate network latency
+
+    const url = new URL(request.url);
+    const search = url.searchParams.get('search')?.toLowerCase();
+    const namespace = url.searchParams.get('namespace');
+    const sort = url.searchParams.get('sort');
+
+    // Filter workflows
+    let filtered = [...mockWorkflowList];
+
+    // Apply search filter (searches name and description)
+    if (search) {
+      filtered = filtered.filter(
+        (w) =>
+          w.name.toLowerCase().includes(search) ||
+          w.description.toLowerCase().includes(search)
+      );
+    }
+
+    // Apply namespace filter
+    if (namespace) {
+      filtered = filtered.filter((w) => w.namespace === namespace);
+    }
+
+    // Apply sorting
+    if (sort === 'name') {
+      filtered.sort((a, b) => a.name.localeCompare(b.name));
+    } else if (sort === 'success-rate') {
+      filtered.sort((a, b) => b.stats.successRate - a.stats.successRate);
+    } else if (sort === 'executions') {
+      filtered.sort((a, b) => b.stats.totalExecutions - a.stats.totalExecutions);
+    } else {
+      // Default sort: alphabetically by name
+      filtered.sort((a, b) => a.name.localeCompare(b.name));
+    }
+
     return HttpResponse.json({
-      workflows: mockWorkflowList,
-      total: mockWorkflowList.length,
+      workflows: filtered,
+      total: filtered.length,
     });
   }),
 

@@ -284,4 +284,226 @@ public class ExecutionHistoryControllerTests
         act.Should().Throw<ArgumentNullException>()
             .WithMessage("*executionRepository*");
     }
+
+    [Fact]
+    public async Task ListExecutions_ShouldReturnExecutionList_WithDefaultPagination()
+    {
+        // Arrange
+        var workflowName = "user-workflow";
+        var executions = new List<ExecutionRecord>
+        {
+            new ExecutionRecord
+            {
+                Id = Guid.NewGuid(),
+                WorkflowName = workflowName,
+                Status = ExecutionStatus.Succeeded,
+                StartedAt = DateTime.UtcNow.AddHours(-2),
+                CompletedAt = DateTime.UtcNow.AddHours(-1),
+                Duration = TimeSpan.FromHours(1)
+            },
+            new ExecutionRecord
+            {
+                Id = Guid.NewGuid(),
+                WorkflowName = workflowName,
+                Status = ExecutionStatus.Running,
+                StartedAt = DateTime.UtcNow.AddMinutes(-30),
+                CompletedAt = null,
+                Duration = null
+            }
+        };
+
+        _repositoryMock
+            .Setup(x => x.ListExecutionsAsync(workflowName, null, 0, 20))
+            .ReturnsAsync(executions);
+
+        // Act
+        var result = await _controller.ListExecutions(workflowName);
+
+        // Assert
+        result.Should().BeOfType<OkObjectResult>();
+        var okResult = (OkObjectResult)result;
+        var response = okResult.Value.Should().BeOfType<ExecutionListResponse>().Subject;
+
+        response.WorkflowName.Should().Be(workflowName);
+        response.Executions.Should().HaveCount(2);
+        response.TotalCount.Should().Be(2);
+        response.Skip.Should().Be(0);
+        response.Take.Should().Be(20);
+    }
+
+    [Fact]
+    public async Task ListExecutions_ShouldFilterByStatus_WhenStatusProvided()
+    {
+        // Arrange
+        var workflowName = "user-workflow";
+        var status = ExecutionStatus.Succeeded;
+        var executions = new List<ExecutionRecord>
+        {
+            new ExecutionRecord
+            {
+                Id = Guid.NewGuid(),
+                WorkflowName = workflowName,
+                Status = ExecutionStatus.Succeeded,
+                StartedAt = DateTime.UtcNow.AddHours(-2),
+                CompletedAt = DateTime.UtcNow.AddHours(-1),
+                Duration = TimeSpan.FromHours(1)
+            }
+        };
+
+        _repositoryMock
+            .Setup(x => x.ListExecutionsAsync(workflowName, status, 0, 20))
+            .ReturnsAsync(executions);
+
+        // Act
+        var result = await _controller.ListExecutions(workflowName, status);
+
+        // Assert
+        result.Should().BeOfType<OkObjectResult>();
+        var okResult = (OkObjectResult)result;
+        var response = okResult.Value.Should().BeOfType<ExecutionListResponse>().Subject;
+
+        response.Executions.Should().HaveCount(1);
+        response.Executions[0].Status.Should().Be("Succeeded");
+    }
+
+    [Fact]
+    public async Task ListExecutions_ShouldSupportPagination()
+    {
+        // Arrange
+        var workflowName = "user-workflow";
+        var skip = 10;
+        var take = 5;
+        var executions = new List<ExecutionRecord>
+        {
+            new ExecutionRecord
+            {
+                Id = Guid.NewGuid(),
+                WorkflowName = workflowName,
+                Status = ExecutionStatus.Succeeded,
+                StartedAt = DateTime.UtcNow,
+                CompletedAt = DateTime.UtcNow,
+                Duration = TimeSpan.FromSeconds(1)
+            }
+        };
+
+        _repositoryMock
+            .Setup(x => x.ListExecutionsAsync(workflowName, null, skip, take))
+            .ReturnsAsync(executions);
+
+        // Act
+        var result = await _controller.ListExecutions(workflowName, null, skip, take);
+
+        // Assert
+        result.Should().BeOfType<OkObjectResult>();
+        var okResult = (OkObjectResult)result;
+        var response = okResult.Value.Should().BeOfType<ExecutionListResponse>().Subject;
+
+        response.Skip.Should().Be(skip);
+        response.Take.Should().Be(take);
+        _repositoryMock.Verify(x => x.ListExecutionsAsync(workflowName, null, skip, take), Times.Once);
+    }
+
+    [Fact]
+    public async Task ListExecutions_ShouldReturnEmptyList_WhenNoExecutionsFound()
+    {
+        // Arrange
+        var workflowName = "non-existent-workflow";
+        var executions = new List<ExecutionRecord>();
+
+        _repositoryMock
+            .Setup(x => x.ListExecutionsAsync(workflowName, null, 0, 20))
+            .ReturnsAsync(executions);
+
+        // Act
+        var result = await _controller.ListExecutions(workflowName);
+
+        // Assert
+        result.Should().BeOfType<OkObjectResult>();
+        var okResult = (OkObjectResult)result;
+        var response = okResult.Value.Should().BeOfType<ExecutionListResponse>().Subject;
+
+        response.Executions.Should().BeEmpty();
+        response.TotalCount.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task ListExecutions_ShouldMapExecutionRecords_ToExecutionSummaries()
+    {
+        // Arrange
+        var workflowName = "user-workflow";
+        var executionId = Guid.NewGuid();
+        var startedAt = DateTime.UtcNow.AddHours(-1);
+        var completedAt = DateTime.UtcNow;
+        var duration = TimeSpan.FromHours(1);
+
+        var executions = new List<ExecutionRecord>
+        {
+            new ExecutionRecord
+            {
+                Id = executionId,
+                WorkflowName = workflowName,
+                Status = ExecutionStatus.Succeeded,
+                StartedAt = startedAt,
+                CompletedAt = completedAt,
+                Duration = duration
+            }
+        };
+
+        _repositoryMock
+            .Setup(x => x.ListExecutionsAsync(workflowName, null, 0, 20))
+            .ReturnsAsync(executions);
+
+        // Act
+        var result = await _controller.ListExecutions(workflowName);
+
+        // Assert
+        result.Should().BeOfType<OkObjectResult>();
+        var okResult = (OkObjectResult)result;
+        var response = okResult.Value.Should().BeOfType<ExecutionListResponse>().Subject;
+
+        response.Executions.Should().HaveCount(1);
+        var summary = response.Executions[0];
+        summary.Id.Should().Be(executionId);
+        summary.WorkflowName.Should().Be(workflowName);
+        summary.Status.Should().Be("Succeeded");
+        summary.StartedAt.Should().Be(startedAt);
+        summary.CompletedAt.Should().Be(completedAt);
+        summary.DurationMs.Should().Be((long)duration.TotalMilliseconds);
+    }
+
+    [Fact]
+    public async Task ListExecutions_ShouldHandleRunningExecutions_WithNullDuration()
+    {
+        // Arrange
+        var workflowName = "long-running-workflow";
+        var executions = new List<ExecutionRecord>
+        {
+            new ExecutionRecord
+            {
+                Id = Guid.NewGuid(),
+                WorkflowName = workflowName,
+                Status = ExecutionStatus.Running,
+                StartedAt = DateTime.UtcNow.AddMinutes(-30),
+                CompletedAt = null,
+                Duration = null
+            }
+        };
+
+        _repositoryMock
+            .Setup(x => x.ListExecutionsAsync(workflowName, null, 0, 20))
+            .ReturnsAsync(executions);
+
+        // Act
+        var result = await _controller.ListExecutions(workflowName);
+
+        // Assert
+        result.Should().BeOfType<OkObjectResult>();
+        var okResult = (OkObjectResult)result;
+        var response = okResult.Value.Should().BeOfType<ExecutionListResponse>().Subject;
+
+        var summary = response.Executions[0];
+        summary.Status.Should().Be("Running");
+        summary.CompletedAt.Should().BeNull();
+        summary.DurationMs.Should().BeNull();
+    }
 }

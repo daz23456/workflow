@@ -44,7 +44,6 @@ const userSignupDetail: WorkflowDetail = {
   tasks: [
     {
       id: 'validate-email',
-      name: 'validate-email',
       taskRef: 'email-validator',
       description: 'Validate email format and check if already exists',
       timeout: '5s',
@@ -52,15 +51,15 @@ const userSignupDetail: WorkflowDetail = {
       inputMapping: {
         email: '{{input.email}}',
       },
-      outputSchema: {
+      outputSchema: { type: "object", properties: {
         valid: { type: 'boolean' },
         reason: { type: 'string' },
+      },
       },
       dependencies: [],
     },
     {
       id: 'create-user',
-      name: 'create-user',
       taskRef: 'user-service',
       description: 'Create user account in database',
       timeout: '10s',
@@ -70,15 +69,15 @@ const userSignupDetail: WorkflowDetail = {
         password: '{{input.password}}',
         username: '{{input.username}}',
       },
-      outputSchema: {
+      outputSchema: { type: "object", properties: {
         id: { type: 'string' },
         createdAt: { type: 'string' },
+      },
       },
       dependencies: ['validate-email'],
     },
     {
       id: 'send-email',
-      name: 'send-email',
       taskRef: 'email-sender',
       description: 'Send verification email to user',
       timeout: '15s',
@@ -88,9 +87,10 @@ const userSignupDetail: WorkflowDetail = {
         userId: '{{tasks.create-user.output.id}}',
         username: '{{input.username}}',
       },
-      outputSchema: {
+      outputSchema: { type: "object", properties: {
         token: { type: 'string' },
         sentAt: { type: 'string' },
+      },
       },
       dependencies: ['create-user'],
     },
@@ -166,7 +166,6 @@ const orderProcessingDetail: WorkflowDetail = {
   tasks: [
     {
       id: 'validate-order',
-      name: 'validate-order',
       taskRef: 'order-validator',
       description: 'Validate order data and business rules',
       timeout: '5s',
@@ -175,14 +174,14 @@ const orderProcessingDetail: WorkflowDetail = {
         orderId: '{{input.orderId}}',
         items: '{{input.items}}',
       },
-      outputSchema: {
+      outputSchema: { type: "object", properties: {
         valid: { type: 'boolean' },
+      },
       },
       dependencies: [],
     },
     {
       id: 'check-inventory',
-      name: 'check-inventory',
       taskRef: 'inventory-service',
       description: 'Check product availability',
       timeout: '10s',
@@ -190,15 +189,15 @@ const orderProcessingDetail: WorkflowDetail = {
       inputMapping: {
         items: '{{input.items}}',
       },
-      outputSchema: {
+      outputSchema: { type: "object", properties: {
         available: { type: 'boolean' },
         reservationId: { type: 'string' },
+      },
       },
       dependencies: ['validate-order'],
     },
     {
       id: 'process-payment',
-      name: 'process-payment',
       taskRef: 'payment-gateway',
       description: 'Process payment via selected method',
       timeout: '30s',
@@ -207,15 +206,15 @@ const orderProcessingDetail: WorkflowDetail = {
         orderId: '{{input.orderId}}',
         method: '{{input.paymentMethod}}',
       },
-      outputSchema: {
+      outputSchema: { type: "object", properties: {
         transactionId: { type: 'string' },
         status: { type: 'string' },
+      },
       },
       dependencies: ['validate-order'],
     },
     {
       id: 'confirm-order',
-      name: 'confirm-order',
       taskRef: 'order-service',
       description: 'Confirm order after inventory and payment',
       timeout: '5s',
@@ -225,15 +224,15 @@ const orderProcessingDetail: WorkflowDetail = {
         reservationId: '{{tasks.check-inventory.output.reservationId}}',
         transactionId: '{{tasks.process-payment.output.transactionId}}',
       },
-      outputSchema: {
+      outputSchema: { type: "object", properties: {
         status: { type: 'string' },
         confirmedAt: { type: 'string' },
+      },
       },
       dependencies: ['check-inventory', 'process-payment'],
     },
     {
       id: 'send-confirmation',
-      name: 'send-confirmation',
       taskRef: 'email-sender',
       description: 'Send order confirmation email',
       timeout: '15s',
@@ -242,14 +241,14 @@ const orderProcessingDetail: WorkflowDetail = {
         orderId: '{{input.orderId}}',
         status: '{{tasks.confirm-order.output.status}}',
       },
-      outputSchema: {
+      outputSchema: { type: "object", properties: {
         sent: { type: 'boolean' },
+      },
       },
       dependencies: ['confirm-order'],
     },
     {
       id: 'ship-order',
-      name: 'ship-order',
       taskRef: 'shipping-service',
       description: 'Create shipping label and schedule pickup',
       timeout: '20s',
@@ -257,8 +256,9 @@ const orderProcessingDetail: WorkflowDetail = {
       inputMapping: {
         orderId: '{{input.orderId}}',
       },
-      outputSchema: {
+      outputSchema: { type: "object", properties: {
         trackingNumber: { type: 'string' },
+      },
       },
       dependencies: ['confirm-order'],
     },
@@ -333,7 +333,6 @@ const dataPipelineDetail: WorkflowDetail = {
   tasks: [
     {
       id: 'fetch-data',
-      name: 'fetch-data',
       taskRef: 'http-fetcher',
       description: 'Download data from source URL',
       timeout: '2m',
@@ -341,15 +340,15 @@ const dataPipelineDetail: WorkflowDetail = {
       inputMapping: {
         url: '{{input.sourceUrl}}',
       },
-      outputSchema: {
+      outputSchema: { type: "object", properties: {
         data: { type: 'string' },
         size: { type: 'integer' },
+      },
       },
       dependencies: [],
     },
     {
       id: 'parse-data',
-      name: 'parse-data',
       taskRef: 'data-parser',
       description: 'Parse data according to format',
       timeout: '1m',
@@ -358,14 +357,14 @@ const dataPipelineDetail: WorkflowDetail = {
         data: '{{tasks.fetch-data.output.data}}',
         format: '{{input.format}}',
       },
-      outputSchema: {
+      outputSchema: { type: "object", properties: {
         records: { type: 'array' },
+      },
       },
       dependencies: ['fetch-data'],
     },
     {
       id: 'validate-schema',
-      name: 'validate-schema',
       taskRef: 'schema-validator',
       description: 'Validate data against schema rules',
       timeout: '30s',
@@ -374,15 +373,15 @@ const dataPipelineDetail: WorkflowDetail = {
         records: '{{tasks.parse-data.output.records}}',
         rules: '{{input.validationRules}}',
       },
-      outputSchema: {
+      outputSchema: { type: "object", properties: {
         valid: { type: 'boolean' },
         errors: { type: 'array' },
+      },
       },
       dependencies: ['parse-data'],
     },
     {
       id: 'transform-data',
-      name: 'transform-data',
       taskRef: 'data-transformer',
       description: 'Apply transformations to records',
       timeout: '5m',
@@ -390,14 +389,14 @@ const dataPipelineDetail: WorkflowDetail = {
       inputMapping: {
         records: '{{tasks.parse-data.output.records}}',
       },
-      outputSchema: {
+      outputSchema: { type: "object", properties: {
         transformed: { type: 'array' },
+      },
       },
       dependencies: ['validate-schema'],
     },
     {
       id: 'enrich-data',
-      name: 'enrich-data',
       taskRef: 'data-enricher',
       description: 'Enrich records with external data',
       timeout: '3m',
@@ -405,14 +404,14 @@ const dataPipelineDetail: WorkflowDetail = {
       inputMapping: {
         records: '{{tasks.transform-data.output.transformed}}',
       },
-      outputSchema: {
+      outputSchema: { type: "object", properties: {
         enriched: { type: 'array' },
+      },
       },
       dependencies: ['transform-data'],
     },
     {
       id: 'deduplicate',
-      name: 'deduplicate',
       taskRef: 'deduplicator',
       description: 'Remove duplicate records',
       timeout: '1m',
@@ -420,14 +419,14 @@ const dataPipelineDetail: WorkflowDetail = {
       inputMapping: {
         records: '{{tasks.enrich-data.output.enriched}}',
       },
-      outputSchema: {
+      outputSchema: { type: "object", properties: {
         unique: { type: 'array' },
+      },
       },
       dependencies: ['enrich-data'],
     },
     {
       id: 'generate-report',
-      name: 'generate-report',
       taskRef: 'report-generator',
       description: 'Generate processing summary report',
       timeout: '30s',
@@ -435,15 +434,15 @@ const dataPipelineDetail: WorkflowDetail = {
       inputMapping: {
         records: '{{tasks.deduplicate.output.unique}}',
       },
-      outputSchema: {
+      outputSchema: { type: "object", properties: {
         totalRecords: { type: 'integer' },
         report: { type: 'object' },
+      },
       },
       dependencies: ['deduplicate'],
     },
     {
       id: 'upload-results',
-      name: 'upload-results',
       taskRef: 's3-uploader',
       description: 'Upload processed data to S3',
       timeout: '2m',
@@ -452,8 +451,9 @@ const dataPipelineDetail: WorkflowDetail = {
         data: '{{tasks.deduplicate.output.unique}}',
         report: '{{tasks.generate-report.output.report}}',
       },
-      outputSchema: {
+      outputSchema: { type: "object", properties: {
         url: { type: 'string' },
+      },
       },
       dependencies: ['generate-report'],
     },
@@ -540,7 +540,6 @@ const userOnboardingDetail: WorkflowDetail = {
   tasks: [
     {
       id: 'create-profile',
-      name: 'create-profile',
       taskRef: 'profile-service',
       description: 'Create user profile',
       timeout: '10s',
@@ -549,15 +548,15 @@ const userOnboardingDetail: WorkflowDetail = {
         userId: '{{input.userId}}',
         preferences: '{{input.preferences}}',
       },
-      outputSchema: {
+      outputSchema: { type: "object", properties: {
         profileId: { type: 'string' },
         settings: { type: 'object' },
+      },
       },
       dependencies: [],
     },
     {
       id: 'setup-billing',
-      name: 'setup-billing',
       taskRef: 'billing-service',
       description: 'Initialize billing account',
       timeout: '15s',
@@ -568,15 +567,15 @@ const userOnboardingDetail: WorkflowDetail = {
         // SCHEMA MISMATCH: Output is 'profileId' but we reference 'accountId'
         accountId: '{{tasks.create-profile.output.accountId}}',
       },
-      outputSchema: {
+      outputSchema: { type: "object", properties: {
         billingId: { type: 'string' },
         nextBillingDate: { type: 'string' },
+      },
       },
       dependencies: ['create-profile'],
     },
     {
       id: 'assign-resources',
-      name: 'assign-resources',
       taskRef: 'resource-allocator',
       description: 'Allocate resources based on plan',
       timeout: '10s',
@@ -585,16 +584,16 @@ const userOnboardingDetail: WorkflowDetail = {
         plan: '{{input.plan}}',
         billingId: '{{tasks.setup-billing.output.billingId}}',
       },
-      outputSchema: {
+      outputSchema: { type: "object", properties: {
         resources: { type: 'array' },
         // SCHEMA MISMATCH: Outputs 'limits' as object but next task expects array
         limits: { type: 'object' },
+      },
       },
       dependencies: ['setup-billing'],
     },
     {
       id: 'send-welcome',
-      name: 'send-welcome',
       taskRef: 'email-sender',
       description: 'Send welcome email with onboarding guide',
       timeout: '15s',
@@ -605,8 +604,9 @@ const userOnboardingDetail: WorkflowDetail = {
         // SCHEMA MISMATCH: Expects array but gets object
         limits: '{{tasks.assign-resources.output.limits}}',
       },
-      outputSchema: {
+      outputSchema: { type: "object", properties: {
         sent: { type: 'boolean' },
+      },
       },
       dependencies: ['assign-resources'],
     },
@@ -677,7 +677,6 @@ const paymentFlowDetail: WorkflowDetail = {
   tasks: [
     {
       id: 'fraud-check',
-      name: 'fraud-check',
       taskRef: 'fraud-detector',
       description: 'Check transaction for fraud indicators',
       timeout: '5s',
@@ -686,15 +685,15 @@ const paymentFlowDetail: WorkflowDetail = {
         amount: '{{input.amount}}',
         customerId: '{{input.customerId}}',
       },
-      outputSchema: {
+      outputSchema: { type: "object", properties: {
         riskScore: { type: 'number' },
         approved: { type: 'boolean' },
+      },
       },
       dependencies: [],
     },
     {
       id: 'verify-3ds',
-      name: 'verify-3ds',
       taskRef: '3ds-verifier',
       description: '3D Secure verification if required',
       timeout: '30s',
@@ -703,15 +702,15 @@ const paymentFlowDetail: WorkflowDetail = {
         cardToken: '{{input.cardToken}}',
         amount: '{{input.amount}}',
       },
-      outputSchema: {
+      outputSchema: { type: "object", properties: {
         verified: { type: 'boolean' },
         authToken: { type: 'string' },
+      },
       },
       dependencies: ['fraud-check'],
     },
     {
       id: 'authorize-payment',
-      name: 'authorize-payment',
       taskRef: 'payment-gateway',
       description: 'Authorize payment with card issuer',
       timeout: '20s',
@@ -722,15 +721,15 @@ const paymentFlowDetail: WorkflowDetail = {
         cardToken: '{{input.cardToken}}',
         authToken: '{{tasks.verify-3ds.output.authToken}}',
       },
-      outputSchema: {
+      outputSchema: { type: "object", properties: {
         authorizationId: { type: 'string' },
         status: { type: 'string' },
+      },
       },
       dependencies: ['verify-3ds'],
     },
     {
       id: 'update-ledger',
-      name: 'update-ledger',
       taskRef: 'ledger-service',
       description: 'Record transaction in ledger',
       timeout: '10s',
@@ -740,14 +739,14 @@ const paymentFlowDetail: WorkflowDetail = {
         amount: '{{input.amount}}',
         authorizationId: '{{tasks.authorize-payment.output.authorizationId}}',
       },
-      outputSchema: {
+      outputSchema: { type: "object", properties: {
         ledgerEntryId: { type: 'string' },
+      },
       },
       dependencies: ['authorize-payment'],
     },
     {
       id: 'capture-payment',
-      name: 'capture-payment',
       taskRef: 'payment-gateway',
       description: 'Capture authorized payment',
       timeout: '15s',
@@ -755,9 +754,10 @@ const paymentFlowDetail: WorkflowDetail = {
       inputMapping: {
         authorizationId: '{{tasks.authorize-payment.output.authorizationId}}',
       },
-      outputSchema: {
+      outputSchema: { type: "object", properties: {
         transactionId: { type: 'string' },
         status: { type: 'string' },
+      },
       },
       dependencies: ['update-ledger'],
     },

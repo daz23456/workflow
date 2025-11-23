@@ -39,6 +39,90 @@ describe('MSW Handlers', () => {
       expect(workflow.stats).toHaveProperty('successRate');
       expect(workflow.stats).toHaveProperty('avgDurationMs');
     });
+
+    it('filters workflows by search query (name)', async () => {
+      const response = await fetch('/api/v1/workflows?search=user');
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.workflows.length).toBe(2); // user-signup, user-onboarding
+      expect(data.workflows.every((w: { name: string }) => w.name.includes('user'))).toBe(true);
+      expect(data.total).toBe(2);
+    });
+
+    it('filters workflows by search query (description)', async () => {
+      const response = await fetch('/api/v1/workflows?search=payment');
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.workflows.length).toBeGreaterThan(0);
+      expect(
+        data.workflows.some((w: { description: string }) =>
+          w.description.toLowerCase().includes('payment')
+        )
+      ).toBe(true);
+    });
+
+    it('filters workflows by namespace', async () => {
+      const response = await fetch('/api/v1/workflows?namespace=production');
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.workflows.every((w: { namespace: string }) => w.namespace === 'production')).toBe(true);
+    });
+
+    it('sorts workflows by name (ascending)', async () => {
+      const response = await fetch('/api/v1/workflows?sort=name');
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      const names = data.workflows.map((w: { name: string }) => w.name);
+      const sortedNames = [...names].sort();
+      expect(names).toEqual(sortedNames);
+    });
+
+    it('sorts workflows by success rate (descending)', async () => {
+      const response = await fetch('/api/v1/workflows?sort=success-rate');
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      const rates = data.workflows.map((w: { stats: { successRate: number } }) => w.stats.successRate);
+      for (let i = 0; i < rates.length - 1; i++) {
+        expect(rates[i]).toBeGreaterThanOrEqual(rates[i + 1]);
+      }
+    });
+
+    it('sorts workflows by total executions (descending)', async () => {
+      const response = await fetch('/api/v1/workflows?sort=executions');
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      const executions = data.workflows.map((w: { stats: { totalExecutions: number } }) => w.stats.totalExecutions);
+      for (let i = 0; i < executions.length - 1; i++) {
+        expect(executions[i]).toBeGreaterThanOrEqual(executions[i + 1]);
+      }
+    });
+
+    it('combines search and namespace filters', async () => {
+      const response = await fetch('/api/v1/workflows?search=order&namespace=production');
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(
+        data.workflows.every((w: { name: string; namespace: string }) =>
+          w.name.includes('order') && w.namespace === 'production'
+        )
+      ).toBe(true);
+    });
+
+    it('returns empty array when no workflows match filters', async () => {
+      const response = await fetch('/api/v1/workflows?search=nonexistent');
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.workflows).toEqual([]);
+      expect(data.total).toBe(0);
+    });
   });
 
   describe('GET /api/v1/workflows/:name', () => {

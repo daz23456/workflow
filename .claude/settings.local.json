@@ -39,7 +39,11 @@
       "Bash(npx msw:*)",
       "Bash(npm run test:*)",
       "Bash(npm run type-check:*)",
-      "Bash(npm run test:coverage:*)"
+      "Bash(npm run test:coverage:*)",
+      "Bash(open:*)",
+      "Bash(xargs basename:*)",
+      "Bash(npm run build:*)",
+      "Bash(python3:*)"
     ],
     "deny": [],
     "ask": []

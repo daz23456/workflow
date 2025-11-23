@@ -68,7 +68,8 @@ async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
 // ============================================================================
 
 export const queryKeys = {
-  workflows: ['workflows'] as const,
+  workflows: (filters?: { search?: string; namespace?: string; sort?: string }) =>
+    ['workflows', filters] as const,
   workflowDetail: (name: string) => ['workflows', name] as const,
   workflowExecutions: (name: string, filters?: { status?: string; limit?: number; offset?: number }) =>
     ['workflows', name, 'executions', filters] as const,
@@ -81,15 +82,26 @@ export const queryKeys = {
 // ============================================================================
 
 /**
- * Fetch all workflows
+ * Fetch all workflows with optional filters
  */
-export function useWorkflows() {
+export function useWorkflows(filters?: {
+  search?: string;
+  namespace?: string;
+  sort?: string;
+}) {
   return useQuery({
-    queryKey: queryKeys.workflows,
+    queryKey: queryKeys.workflows(filters),
     queryFn: async () => {
-      const data = await fetchJson<{ workflows: WorkflowListItem[]; total: number }>(
-        `${API_BASE_URL}/workflows`
-      );
+      const params = new URLSearchParams();
+      if (filters?.search) params.append('search', filters.search);
+      if (filters?.namespace) params.append('namespace', filters.namespace);
+      if (filters?.sort) params.append('sort', filters.sort);
+
+      const url = params.toString()
+        ? `${API_BASE_URL}/workflows?${params}`
+        : `${API_BASE_URL}/workflows`;
+
+      const data = await fetchJson<{ workflows: WorkflowListItem[]; total: number }>(url);
       return data;
     },
     staleTime: 30000, // Consider data fresh for 30 seconds
@@ -193,9 +205,9 @@ export function useExecuteWorkflow(name: string) {
       queryClient.invalidateQueries({
         queryKey: queryKeys.workflowExecutions(name),
       });
-      // Invalidate workflow list to update stats
+      // Invalidate workflow list to update stats (all filters)
       queryClient.invalidateQueries({
-        queryKey: queryKeys.workflows,
+        queryKey: ['workflows'],
       });
     },
   });
@@ -275,6 +287,6 @@ export function useInvalidateWorkflows() {
   const queryClient = useQueryClient();
 
   return () => {
-    queryClient.invalidateQueries({ queryKey: queryKeys.workflows });
+    queryClient.invalidateQueries({ queryKey: ['workflows'] });
   };
 }

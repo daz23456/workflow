@@ -36,13 +36,33 @@ export interface ExecutionHistoryItem {
   durationMs: number;
   inputSnapshot: Record<string, any>;
   outputSnapshot?: Record<string, any>;
+  error?: string;
+}
+
+export interface ValidationError {
+  taskId: string;
+  field: string;
+  message: string;
+  suggestion?: string;
 }
 
 export interface WorkflowTestResponse {
   valid: boolean;
-  validationErrors: string[];
+  validationErrors: Array<string | ValidationError>;
   executionPlan: {
     taskOrder: string[];
     parallelizable: string[][];
+    totalTasks?: number;
+    estimatedDurationMs?: number;
+    parallelGroups?: Array<{ level: number; taskIds: string[] }>;
+    executionOrder?: string[];
+    graph?: {
+      nodes: Array<{ id: string; label: string; level: number; error?: boolean }>;
+      edges: Array<{ source: string; target: string; error?: boolean }>;
+    };
   };
+  templateResolution?: Record<string, Record<string, { template: string; resolved: string; source?: string }>>;
 }
+
+// Alias for backwards compatibility
+export type DryRunResponse = WorkflowTestResponse;

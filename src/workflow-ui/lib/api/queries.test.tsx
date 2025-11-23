@@ -91,6 +91,108 @@ describe('TanStack Query Hooks', () => {
       expect(workflow).toHaveProperty('taskCount');
       expect(workflow).toHaveProperty('stats');
     });
+
+    it('filters workflows by search query', async () => {
+      const { result } = renderHook(() => useWorkflows({ search: 'user' }), {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      expect(result.current.data).toBeDefined();
+      expect(result.current.data!.workflows.length).toBe(2); // user-signup, user-onboarding
+      expect(result.current.data!.total).toBe(2);
+    });
+
+    it('filters workflows by namespace', async () => {
+      const { result } = renderHook(
+        () => useWorkflows({ namespace: 'production' }),
+        {
+          wrapper: createWrapper(),
+        }
+      );
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      expect(result.current.data).toBeDefined();
+      result.current.data!.workflows.forEach((w) => {
+        expect(w.namespace).toBe('production');
+      });
+    });
+
+    it('sorts workflows by name', async () => {
+      const { result } = renderHook(() => useWorkflows({ sort: 'name' }), {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      const names = result.current.data!.workflows.map((w) => w.name);
+      const sortedNames = [...names].sort();
+      expect(names).toEqual(sortedNames);
+    });
+
+    it('combines multiple filters', async () => {
+      const { result } = renderHook(
+        () =>
+          useWorkflows({
+            search: 'order',
+            namespace: 'production',
+            sort: 'name',
+          }),
+        {
+          wrapper: createWrapper(),
+        }
+      );
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      expect(result.current.data).toBeDefined();
+      result.current.data!.workflows.forEach((w) => {
+        expect(w.name).toContain('order');
+        expect(w.namespace).toBe('production');
+      });
+    });
+
+    it('uses different cache keys for different filters', async () => {
+      const wrapper = createWrapper();
+
+      // First query with no filters
+      const { result: result1 } = renderHook(() => useWorkflows(), {
+        wrapper,
+      });
+
+      await waitFor(() => {
+        expect(result1.current.isSuccess).toBe(true);
+      });
+
+      const totalWithoutFilter = result1.current.data!.total;
+
+      // Second query with filter (should be separate cache entry)
+      const { result: result2 } = renderHook(
+        () => useWorkflows({ search: 'user' }),
+        {
+          wrapper,
+        }
+      );
+
+      await waitFor(() => {
+        expect(result2.current.isSuccess).toBe(true);
+      });
+
+      const totalWithFilter = result2.current.data!.total;
+
+      // Should be different results due to different cache keys
+      expect(totalWithFilter).toBeLessThan(totalWithoutFilter);
+    });
   });
 
   describe('useWorkflowDetail', () => {

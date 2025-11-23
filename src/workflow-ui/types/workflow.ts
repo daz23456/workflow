@@ -61,6 +61,12 @@ export interface PropertyDefinition {
   description?: string;
   format?: string;
   default?: any;
+  minLength?: number;
+  maxLength?: number;
+  minimum?: number;
+  maximum?: number;
+  pattern?: string;
+  enum?: string[];
 }
 
 export interface GraphNode {

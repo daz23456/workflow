@@ -26,9 +26,8 @@ export const mockSuccessfulExecutions: Record<string, WorkflowExecutionResponse>
     tasks: [
       {
         taskId: 'validate-email',
-        name: 'validate-email',
         taskRef: 'email-validator',
-        status: 'succeeded',
+        status: 'success',
         output: {
           valid: true,
           reason: 'Email format valid and not in use',
@@ -36,13 +35,12 @@ export const mockSuccessfulExecutions: Record<string, WorkflowExecutionResponse>
         startedAt: '2025-11-23T10:30:00.000Z',
         completedAt: '2025-11-23T10:30:00.234Z',
         durationMs: 234,
-        retries: 0,
+        retryCount: 0,
       },
       {
         taskId: 'create-user',
-        name: 'create-user',
         taskRef: 'user-service',
-        status: 'succeeded',
+        status: 'success',
         output: {
           id: 'user-123456',
           createdAt: '2025-11-23T10:30:00.500Z',
@@ -50,13 +48,12 @@ export const mockSuccessfulExecutions: Record<string, WorkflowExecutionResponse>
         startedAt: '2025-11-23T10:30:00.234Z',
         completedAt: '2025-11-23T10:30:00.680Z',
         durationMs: 446,
-        retries: 0,
+        retryCount: 0,
       },
       {
         taskId: 'send-email',
-        name: 'send-email',
         taskRef: 'email-sender',
-        status: 'succeeded',
+        status: 'success',
         output: {
           token: 'tok-verify-abc123',
           sentAt: '2025-11-23T10:30:01.100Z',
@@ -64,7 +61,7 @@ export const mockSuccessfulExecutions: Record<string, WorkflowExecutionResponse>
         startedAt: '2025-11-23T10:30:00.680Z',
         completedAt: '2025-11-23T10:30:01.100Z',
         durationMs: 420,
-        retries: 0,
+        retryCount: 0,
       },
     ],
     executionTimeMs: 1100,
@@ -83,20 +80,18 @@ export const mockSuccessfulExecutions: Record<string, WorkflowExecutionResponse>
     tasks: [
       {
         taskId: 'validate-order',
-        name: 'validate-order',
         taskRef: 'order-validator',
-        status: 'succeeded',
+        status: 'success',
         output: { valid: true },
         startedAt: '2025-11-23T11:45:00.000Z',
         completedAt: '2025-11-23T11:45:00.150Z',
         durationMs: 150,
-        retries: 0,
+        retryCount: 0,
       },
       {
         taskId: 'check-inventory',
-        name: 'check-inventory',
         taskRef: 'inventory-service',
-        status: 'succeeded',
+        status: 'success',
         output: {
           available: true,
           reservationId: 'res-inv-456',
@@ -104,13 +99,12 @@ export const mockSuccessfulExecutions: Record<string, WorkflowExecutionResponse>
         startedAt: '2025-11-23T11:45:00.150Z',
         completedAt: '2025-11-23T11:45:00.680Z',
         durationMs: 530,
-        retries: 0,
+        retryCount: 0,
       },
       {
         taskId: 'process-payment',
-        name: 'process-payment',
         taskRef: 'payment-gateway',
-        status: 'succeeded',
+        status: 'success',
         output: {
           transactionId: 'txn-pay-789',
           status: 'authorized',
@@ -118,13 +112,12 @@ export const mockSuccessfulExecutions: Record<string, WorkflowExecutionResponse>
         startedAt: '2025-11-23T11:45:00.150Z',
         completedAt: '2025-11-23T11:45:01.450Z',
         durationMs: 1300,
-        retries: 0,
+        retryCount: 0,
       },
       {
         taskId: 'confirm-order',
-        name: 'confirm-order',
         taskRef: 'order-service',
-        status: 'succeeded',
+        status: 'success',
         output: {
           status: 'confirmed',
           confirmedAt: '2025-11-23T11:45:01.680Z',
@@ -132,29 +125,27 @@ export const mockSuccessfulExecutions: Record<string, WorkflowExecutionResponse>
         startedAt: '2025-11-23T11:45:01.450Z',
         completedAt: '2025-11-23T11:45:01.680Z',
         durationMs: 230,
-        retries: 0,
+        retryCount: 0,
       },
       {
         taskId: 'send-confirmation',
-        name: 'send-confirmation',
         taskRef: 'email-sender',
-        status: 'succeeded',
+        status: 'success',
         output: { sent: true },
         startedAt: '2025-11-23T11:45:01.680Z',
         completedAt: '2025-11-23T11:45:02.100Z',
         durationMs: 420,
-        retries: 0,
+        retryCount: 0,
       },
       {
         taskId: 'ship-order',
-        name: 'ship-order',
         taskRef: 'shipping-service',
-        status: 'succeeded',
+        status: 'success',
         output: { trackingNumber: 'TRACK-789XYZ' },
         startedAt: '2025-11-23T11:45:01.680Z',
         completedAt: '2025-11-23T11:45:02.300Z',
         durationMs: 620,
-        retries: 0,
+        retryCount: 0,
       },
     ],
     executionTimeMs: 2300,
@@ -176,9 +167,8 @@ export const mockFailedExecutions: Record<string, WorkflowExecutionResponse> = {
     tasks: [
       {
         taskId: 'fraud-check',
-        name: 'fraud-check',
         taskRef: 'fraud-detector',
-        status: 'succeeded',
+        status: 'success',
         output: {
           riskScore: 0.15,
           approved: true,
@@ -186,13 +176,12 @@ export const mockFailedExecutions: Record<string, WorkflowExecutionResponse> = {
         startedAt: '2025-11-23T11:50:00.000Z',
         completedAt: '2025-11-23T11:50:00.300Z',
         durationMs: 300,
-        retries: 0,
+        retryCount: 0,
       },
       {
         taskId: 'verify-3ds',
-        name: 'verify-3ds',
         taskRef: '3ds-verifier',
-        status: 'succeeded',
+        status: 'success',
         output: {
           verified: true,
           authToken: 'auth-3ds-xyz',
@@ -200,11 +189,10 @@ export const mockFailedExecutions: Record<string, WorkflowExecutionResponse> = {
         startedAt: '2025-11-23T11:50:00.300Z',
         completedAt: '2025-11-23T11:50:02.100Z',
         durationMs: 1800,
-        retries: 0,
+        retryCount: 0,
       },
       {
         taskId: 'authorize-payment',
-        name: 'authorize-payment',
         taskRef: 'payment-gateway',
         status: 'failed',
         output: {},
@@ -212,7 +200,7 @@ export const mockFailedExecutions: Record<string, WorkflowExecutionResponse> = {
         startedAt: '2025-11-23T11:50:02.100Z',
         completedAt: '2025-11-23T11:50:03.500Z',
         durationMs: 1400,
-        retries: 2,
+        retryCount: 2,
       },
     ],
     executionTimeMs: 3500,
@@ -229,9 +217,8 @@ export const mockFailedExecutions: Record<string, WorkflowExecutionResponse> = {
     tasks: [
       {
         taskId: 'create-profile',
-        name: 'create-profile',
         taskRef: 'profile-service',
-        status: 'succeeded',
+        status: 'success',
         output: {
           profileId: 'prof-123',
           settings: { theme: 'dark', notifications: true },
@@ -239,11 +226,10 @@ export const mockFailedExecutions: Record<string, WorkflowExecutionResponse> = {
         startedAt: '2025-11-23T08:20:00.000Z',
         completedAt: '2025-11-23T08:20:00.500Z',
         durationMs: 500,
-        retries: 0,
+        retryCount: 0,
       },
       {
         taskId: 'setup-billing',
-        name: 'setup-billing',
         taskRef: 'billing-service',
         status: 'failed',
         output: {},
@@ -251,7 +237,7 @@ export const mockFailedExecutions: Record<string, WorkflowExecutionResponse> = {
         startedAt: '2025-11-23T08:20:00.500Z',
         completedAt: '2025-11-23T08:20:00.520Z',
         durationMs: 20,
-        retries: 0,
+        retryCount: 0,
       },
     ],
     executionTimeMs: 520,
@@ -268,7 +254,10 @@ export const mockFailedExecutions: Record<string, WorkflowExecutionResponse> = {
 export const mockDryRunResponses: Record<string, DryRunResponse> = {
   'user-signup': {
     valid: true,
+    validationErrors: [],
     executionPlan: {
+      taskOrder: ['validate-email', 'create-user', 'send-email'],
+      parallelizable: [],
       totalTasks: 3,
       estimatedDurationMs: 850,
       parallelGroups: [
@@ -336,7 +325,20 @@ export const mockDryRunResponses: Record<string, DryRunResponse> = {
 
   'order-processing': {
     valid: true,
+    validationErrors: [],
     executionPlan: {
+      taskOrder: [
+        'validate-order',
+        'check-inventory',
+        'process-payment',
+        'confirm-order',
+        'send-confirmation',
+        'ship-order',
+      ],
+      parallelizable: [
+        ['check-inventory', 'process-payment'],
+        ['send-confirmation', 'ship-order'],
+      ],
       totalTasks: 6,
       estimatedDurationMs: 2300,
       parallelGroups: [
@@ -468,6 +470,8 @@ export const mockDryRunResponses: Record<string, DryRunResponse> = {
       },
     ],
     executionPlan: {
+      taskOrder: ['create-profile', 'setup-billing', 'assign-resources', 'send-welcome'],
+      parallelizable: [],
       totalTasks: 4,
       estimatedDurationMs: 3200,
       parallelGroups: [
@@ -504,11 +508,11 @@ export const mockExecutionHistory: Record<string, ExecutionHistoryItem[]> = {
     {
       executionId: 'exec-signup-001',
       workflowName: 'user-signup',
-      status: 'succeeded',
+      status: 'success',
       startedAt: '2025-11-23T10:30:00Z',
       completedAt: '2025-11-23T10:30:01Z',
       durationMs: 1100,
-      input: {
+      inputSnapshot: {
         email: 'user@example.com',
         username: 'johndoe',
       },
@@ -516,11 +520,11 @@ export const mockExecutionHistory: Record<string, ExecutionHistoryItem[]> = {
     {
       executionId: 'exec-signup-002',
       workflowName: 'user-signup',
-      status: 'succeeded',
+      status: 'success',
       startedAt: '2025-11-23T09:15:00Z',
       completedAt: '2025-11-23T09:15:01Z',
       durationMs: 950,
-      input: {
+      inputSnapshot: {
         email: 'jane@example.com',
         username: 'janedoe',
       },
@@ -532,7 +536,7 @@ export const mockExecutionHistory: Record<string, ExecutionHistoryItem[]> = {
       startedAt: '2025-11-23T08:45:00Z',
       completedAt: '2025-11-23T08:45:00Z',
       durationMs: 450,
-      input: {
+      inputSnapshot: {
         email: 'duplicate@example.com',
         username: 'duplicate',
       },
@@ -544,22 +548,22 @@ export const mockExecutionHistory: Record<string, ExecutionHistoryItem[]> = {
     {
       executionId: 'exec-order-001',
       workflowName: 'order-processing',
-      status: 'succeeded',
+      status: 'success',
       startedAt: '2025-11-23T11:45:00Z',
       completedAt: '2025-11-23T11:45:02Z',
       durationMs: 2300,
-      input: {
+      inputSnapshot: {
         orderId: 'order-12345',
       },
     },
     {
       executionId: 'exec-order-002',
       workflowName: 'order-processing',
-      status: 'succeeded',
+      status: 'success',
       startedAt: '2025-11-23T11:30:00Z',
       completedAt: '2025-11-23T11:30:02Z',
       durationMs: 2100,
-      input: {
+      inputSnapshot: {
         orderId: 'order-12346',
       },
     },
@@ -573,7 +577,7 @@ export const mockExecutionHistory: Record<string, ExecutionHistoryItem[]> = {
       startedAt: '2025-11-23T11:50:00Z',
       completedAt: '2025-11-23T11:50:03Z',
       durationMs: 3500,
-      input: {
+      inputSnapshot: {
         amount: 99.99,
         currency: 'USD',
       },
@@ -582,11 +586,11 @@ export const mockExecutionHistory: Record<string, ExecutionHistoryItem[]> = {
     {
       executionId: 'exec-payment-002',
       workflowName: 'payment-flow',
-      status: 'succeeded',
+      status: 'success',
       startedAt: '2025-11-23T11:40:00Z',
       completedAt: '2025-11-23T11:40:04Z',
       durationMs: 4200,
-      input: {
+      inputSnapshot: {
         amount: 49.99,
         currency: 'USD',
       },

@@ -17,6 +17,37 @@ public class ExecutionHistoryController : ControllerBase
         _executionRepository = executionRepository ?? throw new ArgumentNullException(nameof(executionRepository));
     }
 
+    [HttpGet("workflows/{workflowName}/list")]
+    public async Task<IActionResult> ListExecutions(
+        string workflowName,
+        [FromQuery] ExecutionStatus? status = null,
+        [FromQuery] int skip = 0,
+        [FromQuery] int take = 20)
+    {
+        var executions = await _executionRepository.ListExecutionsAsync(workflowName, status, skip, take);
+
+        var summaries = executions.Select(e => new ExecutionSummary
+        {
+            Id = e.Id,
+            WorkflowName = e.WorkflowName,
+            Status = e.Status.ToString(),
+            StartedAt = e.StartedAt,
+            CompletedAt = e.CompletedAt,
+            DurationMs = e.Duration.HasValue ? (long?)e.Duration.Value.TotalMilliseconds : null
+        }).ToList();
+
+        var response = new ExecutionListResponse
+        {
+            WorkflowName = workflowName,
+            Executions = summaries,
+            TotalCount = summaries.Count,
+            Skip = skip,
+            Take = take
+        };
+
+        return Ok(response);
+    }
+
     [HttpGet("{id}")]
     public async Task<IActionResult> GetExecutionDetails(Guid id)
     {

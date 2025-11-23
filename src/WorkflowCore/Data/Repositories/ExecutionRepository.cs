@@ -68,4 +68,26 @@ public class ExecutionRepository : IExecutionRepository
             .Take(take)
             .ToListAsync();
     }
+
+    /// <inheritdoc />
+    public async Task<Dictionary<string, long>> GetAverageTaskDurationsAsync(string workflowName, int daysBack = 30)
+    {
+        var cutoffDate = DateTime.UtcNow.AddDays(-daysBack);
+
+        var taskDurations = await _context.ExecutionRecords
+            .Where(e => e.WorkflowName == workflowName
+                        && e.Status == ExecutionStatus.Succeeded
+                        && e.StartedAt >= cutoffDate)
+            .SelectMany(e => e.TaskExecutionRecords!)
+            .Where(t => t.Status == "Succeeded" && t.Duration.HasValue)
+            .GroupBy(t => t.TaskRef)
+            .Select(g => new
+            {
+                TaskRef = g.Key!,
+                AverageDurationMs = (long)g.Average(t => t.Duration!.Value.TotalMilliseconds)
+            })
+            .ToListAsync();
+
+        return taskDurations.ToDictionary(x => x.TaskRef, x => x.AverageDurationMs);
+    }
 }

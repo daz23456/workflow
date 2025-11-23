@@ -35,4 +35,13 @@ public interface IExecutionRepository
         ExecutionStatus? status,
         int skip,
         int take);
+
+    /// <summary>
+    /// Gets average task durations from historical successful executions.
+    /// Filters to the specified time window and only includes successful executions.
+    /// </summary>
+    /// <param name="workflowName">The workflow name to filter by.</param>
+    /// <param name="daysBack">Number of days to look back (default: 30).</param>
+    /// <returns>Dictionary mapping task reference name to average duration in milliseconds.</returns>
+    Task<Dictionary<string, long>> GetAverageTaskDurationsAsync(string workflowName, int daysBack = 30);
 }

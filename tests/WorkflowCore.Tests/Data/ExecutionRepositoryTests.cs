@@ -421,4 +421,258 @@ public class ExecutionRepositoryTests
             results.Should().BeEmpty();
         }
     }
+
+    [Fact]
+    public async Task GetAverageTaskDurationsAsync_WithNoData_ShouldReturnEmptyDictionary()
+    {
+        // Arrange
+        var options = new DbContextOptionsBuilder<WorkflowDbContext>()
+            .UseInMemoryDatabase(databaseName: "TestDb_AvgDurationsNoData")
+            .Options;
+
+        // Act
+        using (var context = new WorkflowDbContext(options))
+        {
+            var repository = new ExecutionRepository(context);
+            var result = await repository.GetAverageTaskDurationsAsync("workflow-1", 30);
+
+            // Assert
+            result.Should().BeEmpty();
+        }
+    }
+
+    [Fact]
+    public async Task GetAverageTaskDurationsAsync_WithSuccessfulTasks_ShouldReturnAverages()
+    {
+        // Arrange
+        var options = new DbContextOptionsBuilder<WorkflowDbContext>()
+            .UseInMemoryDatabase(databaseName: "TestDb_AvgDurationsSuccess")
+            .Options;
+
+        using (var context = new WorkflowDbContext(options))
+        {
+            // Create execution records with task execution records
+            var execution1 = new ExecutionRecord
+            {
+                WorkflowName = "workflow-1",
+                Status = ExecutionStatus.Succeeded,
+                StartedAt = DateTime.UtcNow.AddDays(-5),
+                TaskExecutionRecords = new List<TaskExecutionRecord>
+                {
+                    new TaskExecutionRecord { TaskRef = "task-1", Status = "Succeeded", Duration = TimeSpan.FromSeconds(10) },
+                    new TaskExecutionRecord { TaskRef = "task-2", Status = "Succeeded", Duration = TimeSpan.FromSeconds(20) }
+                }
+            };
+
+            var execution2 = new ExecutionRecord
+            {
+                WorkflowName = "workflow-1",
+                Status = ExecutionStatus.Succeeded,
+                StartedAt = DateTime.UtcNow.AddDays(-3),
+                TaskExecutionRecords = new List<TaskExecutionRecord>
+                {
+                    new TaskExecutionRecord { TaskRef = "task-1", Status = "Succeeded", Duration = TimeSpan.FromSeconds(12) },
+                    new TaskExecutionRecord { TaskRef = "task-2", Status = "Succeeded", Duration = TimeSpan.FromSeconds(18) }
+                }
+            };
+
+            context.ExecutionRecords.AddRange(execution1, execution2);
+            await context.SaveChangesAsync();
+        }
+
+        // Act
+        using (var context = new WorkflowDbContext(options))
+        {
+            var repository = new ExecutionRepository(context);
+            var result = await repository.GetAverageTaskDurationsAsync("workflow-1", 30);
+
+            // Assert
+            result.Should().HaveCount(2);
+            result["task-1"].Should().Be(11000); // Average of 10s and 12s = 11s = 11000ms
+            result["task-2"].Should().Be(19000); // Average of 20s and 18s = 19s = 19000ms
+        }
+    }
+
+    [Fact]
+    public async Task GetAverageTaskDurationsAsync_ShouldFilterByWorkflowName()
+    {
+        // Arrange
+        var options = new DbContextOptionsBuilder<WorkflowDbContext>()
+            .UseInMemoryDatabase(databaseName: "TestDb_AvgDurationsFilterWorkflow")
+            .Options;
+
+        using (var context = new WorkflowDbContext(options))
+        {
+            var execution1 = new ExecutionRecord
+            {
+                WorkflowName = "workflow-1",
+                Status = ExecutionStatus.Succeeded,
+                StartedAt = DateTime.UtcNow.AddDays(-5),
+                TaskExecutionRecords = new List<TaskExecutionRecord>
+                {
+                    new TaskExecutionRecord { TaskRef = "task-1", Status = "Succeeded", Duration = TimeSpan.FromSeconds(10) }
+                }
+            };
+
+            var execution2 = new ExecutionRecord
+            {
+                WorkflowName = "workflow-2",
+                Status = ExecutionStatus.Succeeded,
+                StartedAt = DateTime.UtcNow.AddDays(-3),
+                TaskExecutionRecords = new List<TaskExecutionRecord>
+                {
+                    new TaskExecutionRecord { TaskRef = "task-1", Status = "Succeeded", Duration = TimeSpan.FromSeconds(100) }
+                }
+            };
+
+            context.ExecutionRecords.AddRange(execution1, execution2);
+            await context.SaveChangesAsync();
+        }
+
+        // Act
+        using (var context = new WorkflowDbContext(options))
+        {
+            var repository = new ExecutionRepository(context);
+            var result = await repository.GetAverageTaskDurationsAsync("workflow-1", 30);
+
+            // Assert
+            result.Should().ContainKey("task-1");
+            result["task-1"].Should().Be(10000); // Only workflow-1 task should be included
+        }
+    }
+
+    [Fact]
+    public async Task GetAverageTaskDurationsAsync_ShouldFilterByDateRange()
+    {
+        // Arrange
+        var options = new DbContextOptionsBuilder<WorkflowDbContext>()
+            .UseInMemoryDatabase(databaseName: "TestDb_AvgDurationsFilterDate")
+            .Options;
+
+        using (var context = new WorkflowDbContext(options))
+        {
+            var executionOld = new ExecutionRecord
+            {
+                WorkflowName = "workflow-1",
+                Status = ExecutionStatus.Succeeded,
+                StartedAt = DateTime.UtcNow.AddDays(-40), // Outside 30 day window
+                TaskExecutionRecords = new List<TaskExecutionRecord>
+                {
+                    new TaskExecutionRecord { TaskRef = "task-1", Status = "Succeeded", Duration = TimeSpan.FromSeconds(100) }
+                }
+            };
+
+            var executionRecent = new ExecutionRecord
+            {
+                WorkflowName = "workflow-1",
+                Status = ExecutionStatus.Succeeded,
+                StartedAt = DateTime.UtcNow.AddDays(-5), // Within 30 day window
+                TaskExecutionRecords = new List<TaskExecutionRecord>
+                {
+                    new TaskExecutionRecord { TaskRef = "task-1", Status = "Succeeded", Duration = TimeSpan.FromSeconds(10) }
+                }
+            };
+
+            context.ExecutionRecords.AddRange(executionOld, executionRecent);
+            await context.SaveChangesAsync();
+        }
+
+        // Act
+        using (var context = new WorkflowDbContext(options))
+        {
+            var repository = new ExecutionRepository(context);
+            var result = await repository.GetAverageTaskDurationsAsync("workflow-1", 30);
+
+            // Assert
+            result.Should().ContainKey("task-1");
+            result["task-1"].Should().Be(10000); // Only recent execution should be included
+        }
+    }
+
+    [Fact]
+    public async Task GetAverageTaskDurationsAsync_ShouldOnlyIncludeSucceededExecutions()
+    {
+        // Arrange
+        var options = new DbContextOptionsBuilder<WorkflowDbContext>()
+            .UseInMemoryDatabase(databaseName: "TestDb_AvgDurationsOnlySucceeded")
+            .Options;
+
+        using (var context = new WorkflowDbContext(options))
+        {
+            var executionFailed = new ExecutionRecord
+            {
+                WorkflowName = "workflow-1",
+                Status = ExecutionStatus.Failed,
+                StartedAt = DateTime.UtcNow.AddDays(-5),
+                TaskExecutionRecords = new List<TaskExecutionRecord>
+                {
+                    new TaskExecutionRecord { TaskRef = "task-1", Status = "Failed", Duration = TimeSpan.FromSeconds(100) }
+                }
+            };
+
+            var executionSuccess = new ExecutionRecord
+            {
+                WorkflowName = "workflow-1",
+                Status = ExecutionStatus.Succeeded,
+                StartedAt = DateTime.UtcNow.AddDays(-3),
+                TaskExecutionRecords = new List<TaskExecutionRecord>
+                {
+                    new TaskExecutionRecord { TaskRef = "task-1", Status = "Succeeded", Duration = TimeSpan.FromSeconds(10) }
+                }
+            };
+
+            context.ExecutionRecords.AddRange(executionFailed, executionSuccess);
+            await context.SaveChangesAsync();
+        }
+
+        // Act
+        using (var context = new WorkflowDbContext(options))
+        {
+            var repository = new ExecutionRepository(context);
+            var result = await repository.GetAverageTaskDurationsAsync("workflow-1", 30);
+
+            // Assert
+            result.Should().ContainKey("task-1");
+            result["task-1"].Should().Be(10000); // Only succeeded execution should be included
+        }
+    }
+
+    [Fact]
+    public async Task GetAverageTaskDurationsAsync_ShouldHandleNullDurations()
+    {
+        // Arrange
+        var options = new DbContextOptionsBuilder<WorkflowDbContext>()
+            .UseInMemoryDatabase(databaseName: "TestDb_AvgDurationsNullDuration")
+            .Options;
+
+        using (var context = new WorkflowDbContext(options))
+        {
+            var execution = new ExecutionRecord
+            {
+                WorkflowName = "workflow-1",
+                Status = ExecutionStatus.Succeeded,
+                StartedAt = DateTime.UtcNow.AddDays(-5),
+                TaskExecutionRecords = new List<TaskExecutionRecord>
+                {
+                    new TaskExecutionRecord { TaskRef = "task-1", Status = "Succeeded", Duration = null }, // Null duration
+                    new TaskExecutionRecord { TaskRef = "task-2", Status = "Succeeded", Duration = TimeSpan.FromSeconds(10) }
+                }
+            };
+
+            context.ExecutionRecords.Add(execution);
+            await context.SaveChangesAsync();
+        }
+
+        // Act
+        using (var context = new WorkflowDbContext(options))
+        {
+            var repository = new ExecutionRepository(context);
+            var result = await repository.GetAverageTaskDurationsAsync("workflow-1", 30);
+
+            // Assert
+            result.Should().NotContainKey("task-1"); // Task with null duration should be excluded
+            result.Should().ContainKey("task-2");
+            result["task-2"].Should().Be(10000);
+        }
+    }
 }

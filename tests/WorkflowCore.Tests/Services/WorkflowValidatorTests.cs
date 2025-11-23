@@ -686,4 +686,90 @@ public class WorkflowValidatorTests
         // Assert
         result.IsValid.Should().BeTrue();
     }
+
+    [Fact]
+    public async Task ValidateAsync_WithInvalidOutputMapping_ShouldReturnError()
+    {
+        // Arrange
+        var workflow = new WorkflowResource
+        {
+            Metadata = new() { Name = "test-workflow" },
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep
+                    {
+                        Id = "task-1",
+                        TaskRef = "task-ref-1",
+                        Input = new Dictionary<string, string>()
+                    }
+                },
+                Output = new Dictionary<string, string>
+                {
+                    ["userId"] = "{{tasks.non-existent-task.output.id}}",
+                    ["userName"] = "{{tasks.task-1.output.name}}"
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["task-ref-1"] = new WorkflowTaskResource
+            {
+                Spec = new WorkflowTaskSpec
+                {
+                    Type = "http",
+                    OutputSchema = new SchemaDefinition
+                    {
+                        Type = "object",
+                        Properties = new Dictionary<string, PropertyDefinition>
+                        {
+                            ["name"] = new PropertyDefinition { Type = "string" }
+                        }
+                    }
+                }
+            }
+        };
+
+        // Setup template parser to parse output mappings
+        _templateParserMock.Setup(x => x.Parse("{{tasks.non-existent-task.output.id}}"))
+            .Returns(new TemplateParseResult
+            {
+                IsValid = true,
+                Expressions = new List<TemplateExpression>
+                {
+                    new TemplateExpression
+                    {
+                        Type = TemplateExpressionType.TaskOutput,
+                        TaskId = "non-existent-task",
+                        Path = "id"
+                    }
+                }
+            });
+
+        _templateParserMock.Setup(x => x.Parse("{{tasks.task-1.output.name}}"))
+            .Returns(new TemplateParseResult
+            {
+                IsValid = true,
+                Expressions = new List<TemplateExpression>
+                {
+                    new TemplateExpression
+                    {
+                        Type = TemplateExpressionType.TaskOutput,
+                        TaskId = "task-1",
+                        Path = "name"
+                    }
+                }
+            });
+
+        // Act
+        var result = await _validator.ValidateAsync(workflow, tasks);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().Contain(e =>
+            e.Field == "userId" &&
+            e.Message.Contains("non-existent-task"));
+    }
 }

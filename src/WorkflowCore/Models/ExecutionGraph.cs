@@ -85,6 +85,13 @@ public class ExecutionGraph
         return false;
     }
 
+    public List<string> GetIndependentTasks()
+    {
+        return Nodes
+            .Where(node => GetDependencies(node).Count == 0)
+            .ToList();
+    }
+
     public List<string> GetExecutionOrder()
     {
         var result = new List<string>();

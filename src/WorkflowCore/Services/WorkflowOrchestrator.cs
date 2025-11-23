@@ -139,8 +139,21 @@ public class WorkflowOrchestrator : IWorkflowOrchestrator
 
             // Build workflow output based on output mapping
             var workflowOutput = new Dictionary<string, object>();
-            // For now, return all task outputs
-            // In a real implementation, this would use workflow.Spec.Output mapping
+            if (workflow.Spec.Output != null && workflow.Spec.Output.Count > 0)
+            {
+                foreach (var outputMapping in workflow.Spec.Output)
+                {
+                    try
+                    {
+                        var resolvedValue = ResolveOutputExpression(outputMapping.Value, context);
+                        workflowOutput[outputMapping.Key] = resolvedValue;
+                    }
+                    catch (Exception ex)
+                    {
+                        errors.Add($"Failed to resolve output '{outputMapping.Key}': {ex.Message}");
+                    }
+                }
+            }
 
             stopwatch.Stop();
 
@@ -175,5 +188,69 @@ public class WorkflowOrchestrator : IWorkflowOrchestrator
                 TotalDuration = stopwatch.Elapsed
             };
         }
+    }
+
+    private object ResolveOutputExpression(string expression, TemplateContext context)
+    {
+        // Remove {{ and }} if present
+        var cleanExpression = expression.Trim();
+        if (cleanExpression.StartsWith("{{") && cleanExpression.EndsWith("}}"))
+        {
+            cleanExpression = cleanExpression.Substring(2, cleanExpression.Length - 4).Trim();
+        }
+
+        var parts = cleanExpression.Split('.');
+
+        if (parts.Length < 2)
+        {
+            throw new InvalidOperationException($"Invalid output expression: {expression}");
+        }
+
+        // Handle {{input.fieldName}} or {{input.nested.field}}
+        if (parts[0] == "input")
+        {
+            var path = parts.Skip(1).ToArray();
+            return ResolvePathInDictionary(path, context.Input, expression);
+        }
+
+        // Handle {{tasks.taskId.output.fieldName}} or {{tasks.taskId.output.nested.field}}
+        if (parts[0] == "tasks" && parts.Length >= 3 && parts[2] == "output")
+        {
+            var taskId = parts[1];
+
+            if (!context.TaskOutputs.ContainsKey(taskId))
+            {
+                throw new InvalidOperationException($"Task '{taskId}' output not found in execution context for expression: {expression}");
+            }
+
+            var taskOutput = context.TaskOutputs[taskId];
+            var path = parts.Skip(3).ToArray();
+            return ResolvePathInDictionary(path, taskOutput, expression);
+        }
+
+        throw new InvalidOperationException($"Unknown output expression type: {expression}");
+    }
+
+    private object ResolvePathInDictionary(string[] path, Dictionary<string, object> data, string originalExpression)
+    {
+        object current = data;
+
+        foreach (var part in path)
+        {
+            if (current is Dictionary<string, object> dict)
+            {
+                if (!dict.ContainsKey(part))
+                {
+                    throw new InvalidOperationException($"Field '{part}' not found for expression: {originalExpression}");
+                }
+                current = dict[part];
+            }
+            else
+            {
+                throw new InvalidOperationException($"Cannot navigate path '{string.Join(".", path)}' in expression: {originalExpression}");
+            }
+        }
+
+        return current;
     }
 }

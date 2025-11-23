@@ -821,4 +821,165 @@ public class WorkflowOrchestratorTests
             It.Is<TemplateContext>(c => c.TaskOutputs.Count == 0),
             It.IsAny<CancellationToken>()), Times.Exactly(2));
     }
+
+    [Fact]
+    public async Task ExecuteAsync_WithOutputMapping_ShouldMapTaskOutputsToWorkflowOutput()
+    {
+        // Arrange
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "fetch-user", TaskRef = "fetch-user-task" },
+                    new WorkflowTaskStep { Id = "fetch-orders", TaskRef = "fetch-orders-task" }
+                },
+                Output = new Dictionary<string, string>
+                {
+                    ["userId"] = "{{tasks.fetch-user.output.id}}",
+                    ["userName"] = "{{tasks.fetch-user.output.name}}",
+                    ["orderCount"] = "{{tasks.fetch-orders.output.count}}"
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["fetch-user-task"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } },
+            ["fetch-orders-task"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } }
+        };
+
+        var graph = new ExecutionGraph();
+        graph.AddNode("fetch-user");
+        graph.AddNode("fetch-orders");
+
+        _graphBuilderMock.Setup(x => x.Build(workflow))
+            .Returns(new ExecutionGraphResult
+            {
+                IsValid = true,
+                Graph = graph
+            });
+
+        var userOutput = new Dictionary<string, object>
+        {
+            ["id"] = "user-123",
+            ["name"] = "John Doe"
+        };
+
+        var ordersOutput = new Dictionary<string, object>
+        {
+            ["count"] = 5
+        };
+
+        _taskExecutorMock.SetupSequence(x => x.ExecuteAsync(
+                It.IsAny<WorkflowTaskSpec>(),
+                It.IsAny<TemplateContext>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new TaskExecutionResult
+            {
+                Success = true,
+                Output = userOutput
+            })
+            .ReturnsAsync(new TaskExecutionResult
+            {
+                Success = true,
+                Output = ordersOutput
+            });
+
+        var inputs = new Dictionary<string, object>();
+
+        // Act
+        var result = await _orchestrator.ExecuteAsync(workflow, tasks, inputs, CancellationToken.None);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        result.Output.Should().NotBeNull();
+        result.Output.Should().ContainKey("userId");
+        result.Output["userId"].Should().Be("user-123");
+        result.Output.Should().ContainKey("userName");
+        result.Output["userName"].Should().Be("John Doe");
+        result.Output.Should().ContainKey("orderCount");
+        result.Output["orderCount"].Should().Be(5);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithIndependentTasks_ShouldExecuteAllSuccessfully()
+    {
+        // Arrange - Diamond pattern where task-2 and task-3 can run in parallel
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "task-1", TaskRef = "task-ref-1" },
+                    new WorkflowTaskStep { Id = "task-2", TaskRef = "task-ref-2" },
+                    new WorkflowTaskStep { Id = "task-3", TaskRef = "task-ref-3" },
+                    new WorkflowTaskStep { Id = "task-4", TaskRef = "task-ref-4" }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["task-ref-1"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } },
+            ["task-ref-2"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } },
+            ["task-ref-3"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } },
+            ["task-ref-4"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } }
+        };
+
+        // Build graph: task-1 is independent
+        //              task-2 and task-3 depend on task-1 (can run in parallel)
+        //              task-4 depends on task-2 and task-3
+        var graph = new ExecutionGraph();
+        graph.AddNode("task-1");
+        graph.AddNode("task-2");
+        graph.AddNode("task-3");
+        graph.AddNode("task-4");
+        graph.AddDependency("task-2", "task-1");
+        graph.AddDependency("task-3", "task-1");
+        graph.AddDependency("task-4", "task-2");
+        graph.AddDependency("task-4", "task-3");
+
+        _graphBuilderMock.Setup(x => x.Build(workflow))
+            .Returns(new ExecutionGraphResult
+            {
+                IsValid = true,
+                Graph = graph
+            });
+
+        // Simple mock - just return success for all tasks
+        _taskExecutorMock.Setup(x => x.ExecuteAsync(
+                It.IsAny<WorkflowTaskSpec>(),
+                It.IsAny<TemplateContext>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync((WorkflowTaskSpec spec, TemplateContext ctx, CancellationToken ct) =>
+            {
+                return new TaskExecutionResult
+                {
+                    Success = true,
+                    Output = new Dictionary<string, object> { ["result"] = "output" }
+                };
+            });
+
+        var inputs = new Dictionary<string, object>();
+
+        // Act
+        var result = await _orchestrator.ExecuteAsync(workflow, tasks, inputs, CancellationToken.None);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        result.TaskResults.Should().HaveCount(4);
+        result.TaskResults["task-1"].Success.Should().BeTrue();
+        result.TaskResults["task-2"].Success.Should().BeTrue();
+        result.TaskResults["task-3"].Success.Should().BeTrue();
+        result.TaskResults["task-4"].Success.Should().BeTrue();
+
+        // Verify task executor was called 4 times (once for each task)
+        _taskExecutorMock.Verify(x => x.ExecuteAsync(
+            It.IsAny<WorkflowTaskSpec>(),
+            It.IsAny<TemplateContext>(),
+            It.IsAny<CancellationToken>()), Times.Exactly(4));
+    }
 }

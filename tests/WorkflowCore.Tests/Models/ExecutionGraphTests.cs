@@ -324,4 +324,111 @@ public class ExecutionGraphTests
         nodes.Should().Contain("task-2");
         nodes.Should().Contain("task-3");
     }
+
+    [Fact]
+    public void GetIndependentTasks_WithEmptyGraph_ShouldReturnEmptyList()
+    {
+        // Arrange
+        var graph = new ExecutionGraph();
+
+        // Act
+        var independentTasks = graph.GetIndependentTasks();
+
+        // Assert
+        independentTasks.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void GetIndependentTasks_WithSingleNode_ShouldReturnThatNode()
+    {
+        // Arrange
+        var graph = new ExecutionGraph();
+        graph.AddNode("task-1");
+
+        // Act
+        var independentTasks = graph.GetIndependentTasks();
+
+        // Assert
+        independentTasks.Should().ContainSingle()
+            .Which.Should().Be("task-1");
+    }
+
+    [Fact]
+    public void GetIndependentTasks_WithMultipleIndependentNodes_ShouldReturnAllIndependent()
+    {
+        // Arrange
+        var graph = new ExecutionGraph();
+        graph.AddNode("task-1");
+        graph.AddNode("task-2");
+        graph.AddNode("task-3");
+
+        // Act
+        var independentTasks = graph.GetIndependentTasks();
+
+        // Assert
+        independentTasks.Should().HaveCount(3);
+        independentTasks.Should().Contain("task-1");
+        independentTasks.Should().Contain("task-2");
+        independentTasks.Should().Contain("task-3");
+    }
+
+    [Fact]
+    public void GetIndependentTasks_WithDependencies_ShouldReturnOnlyIndependent()
+    {
+        // Arrange - task-2 depends on task-1, task-3 depends on task-2
+        var graph = new ExecutionGraph();
+        graph.AddNode("task-1");
+        graph.AddNode("task-2");
+        graph.AddNode("task-3");
+        graph.AddDependency("task-2", "task-1");
+        graph.AddDependency("task-3", "task-2");
+
+        // Act
+        var independentTasks = graph.GetIndependentTasks();
+
+        // Assert
+        independentTasks.Should().ContainSingle()
+            .Which.Should().Be("task-1");
+    }
+
+    [Fact]
+    public void GetIndependentTasks_WithDiamondDependencies_ShouldReturnOnlyRootNode()
+    {
+        // Arrange - Diamond: task-4 depends on task-2 and task-3, both depend on task-1
+        var graph = new ExecutionGraph();
+        graph.AddNode("task-1");
+        graph.AddNode("task-2");
+        graph.AddNode("task-3");
+        graph.AddNode("task-4");
+        graph.AddDependency("task-2", "task-1");
+        graph.AddDependency("task-3", "task-1");
+        graph.AddDependency("task-4", "task-2");
+        graph.AddDependency("task-4", "task-3");
+
+        // Act
+        var independentTasks = graph.GetIndependentTasks();
+
+        // Assert
+        independentTasks.Should().ContainSingle()
+            .Which.Should().Be("task-1");
+    }
+
+    [Fact]
+    public void GetIndependentTasks_WithMixedGraph_ShouldReturnAllIndependent()
+    {
+        // Arrange - task-1 independent, task-2 independent, task-3 depends on task-2
+        var graph = new ExecutionGraph();
+        graph.AddNode("task-1");
+        graph.AddNode("task-2");
+        graph.AddNode("task-3");
+        graph.AddDependency("task-3", "task-2");
+
+        // Act
+        var independentTasks = graph.GetIndependentTasks();
+
+        // Assert
+        independentTasks.Should().HaveCount(2);
+        independentTasks.Should().Contain("task-1");
+        independentTasks.Should().Contain("task-2");
+    }
 }

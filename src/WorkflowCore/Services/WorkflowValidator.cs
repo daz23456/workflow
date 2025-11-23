@@ -82,6 +82,40 @@ public class WorkflowValidator : IWorkflowValidator
             }
         }
 
+        // Validate output mappings
+        if (workflow.Spec.Output != null)
+        {
+            foreach (var (outputKey, outputTemplate) in workflow.Spec.Output)
+            {
+                var parseResult = _templateParser.Parse(outputTemplate);
+                if (!parseResult.IsValid)
+                {
+                    errors.AddRange(parseResult.Errors.Select(e =>
+                        ErrorMessageBuilder.InvalidTemplate("output", outputKey, outputTemplate, e)));
+                    continue;
+                }
+
+                // Validate that task references in output exist
+                foreach (var expr in parseResult.Expressions)
+                {
+                    if (expr.Type == TemplateExpressionType.TaskOutput && expr.TaskId != null)
+                    {
+                        var taskExists = workflow.Spec.Tasks.Any(t => t.Id == expr.TaskId);
+                        if (!taskExists)
+                        {
+                            errors.Add(new ValidationError
+                            {
+                                TaskId = "output",
+                                Field = outputKey,
+                                Message = $"Output mapping references non-existent task '{expr.TaskId}'",
+                                SuggestedFix = $"Ensure task '{expr.TaskId}' is defined in the workflow tasks"
+                            });
+                        }
+                    }
+                }
+            }
+        }
+
         return Task.FromResult(new ValidationResult
         {
             IsValid = errors.Count == 0,

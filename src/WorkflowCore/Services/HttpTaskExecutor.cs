@@ -51,17 +51,32 @@ public class HttpTaskExecutor : IHttpTaskExecutor
         var attemptNumber = 0;
         Exception? lastException = null;
 
-        while (true)
+        // Parse and apply timeout if specified
+        var timeout = TimeoutParser.Parse(taskSpec.Timeout);
+        var timeoutCts = timeout.HasValue
+            ? CancellationTokenSource.CreateLinkedTokenSource(cancellationToken)
+            : null;
+
+        if (timeoutCts != null)
         {
-            attemptNumber++;
+            timeoutCts.CancelAfter(timeout!.Value);
+        }
 
-            try
+        var effectiveToken = timeoutCts?.Token ?? cancellationToken;
+
+        try
+        {
+            while (true)
             {
-                // Build HTTP request with resolved templates
-                var request = await BuildHttpRequestAsync(taskSpec.Request, context, cancellationToken);
+                attemptNumber++;
 
-                // Execute HTTP request
-                var response = await _httpClient.SendAsync(request, cancellationToken);
+                try
+                {
+                    // Build HTTP request with resolved templates
+                    var request = await BuildHttpRequestAsync(taskSpec.Request, context, effectiveToken);
+
+                    // Execute HTTP request
+                    var response = await _httpClient.SendAsync(request, effectiveToken);
                 response.EnsureSuccessStatusCode();
 
                 // Parse response
@@ -112,20 +127,25 @@ public class HttpTaskExecutor : IHttpTaskExecutor
                 var delay = _retryPolicy.CalculateDelay(attemptNumber);
                 await Task.Delay(delay, cancellationToken);
             }
-        }
+            }
 
-        // All retries exhausted or non-retryable error
-        stopwatch.Stop();
-        return new TaskExecutionResult
-        {
-            Success = false,
-            Errors = new List<string>
+            // All retries exhausted or non-retryable error
+            stopwatch.Stop();
+            return new TaskExecutionResult
             {
-                lastException?.Message ?? "Unknown error occurred"
-            },
-            RetryCount = attemptNumber - 1,
-            Duration = stopwatch.Elapsed
-        };
+                Success = false,
+                Errors = new List<string>
+                {
+                    lastException?.Message ?? "Unknown error occurred"
+                },
+                RetryCount = attemptNumber - 1,
+                Duration = stopwatch.Elapsed
+            };
+        }
+        finally
+        {
+            timeoutCts?.Dispose();
+        }
     }
 
     private async Task<HttpRequestMessage> BuildHttpRequestAsync(

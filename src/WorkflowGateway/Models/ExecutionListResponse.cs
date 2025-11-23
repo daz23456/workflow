@@ -6,6 +6,11 @@ namespace WorkflowGateway.Models;
 public class ExecutionListResponse
 {
     /// <summary>
+    /// Name of the workflow these executions belong to.
+    /// </summary>
+    public string? WorkflowName { get; set; }
+
+    /// <summary>
     /// List of execution summaries.
     /// </summary>
     public List<ExecutionSummary> Executions { get; set; } = new();

@@ -2,6 +2,7 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
+using WorkflowCore.Data.Repositories;
 using WorkflowCore.Models;
 using WorkflowCore.Services;
 using WorkflowGateway.Controllers;
@@ -17,6 +18,7 @@ public class DynamicWorkflowControllerTests
     private readonly Mock<IInputValidationService> _validationServiceMock;
     private readonly Mock<IWorkflowExecutionService> _executionServiceMock;
     private readonly Mock<IExecutionGraphBuilder> _graphBuilderMock;
+    private readonly Mock<IExecutionRepository> _executionRepositoryMock;
     private readonly DynamicWorkflowController _controller;
 
     public DynamicWorkflowControllerTests()
@@ -25,12 +27,14 @@ public class DynamicWorkflowControllerTests
         _validationServiceMock = new Mock<IInputValidationService>();
         _executionServiceMock = new Mock<IWorkflowExecutionService>();
         _graphBuilderMock = new Mock<IExecutionGraphBuilder>();
+        _executionRepositoryMock = new Mock<IExecutionRepository>();
 
         _controller = new DynamicWorkflowController(
             _discoveryServiceMock.Object,
             _validationServiceMock.Object,
             _executionServiceMock.Object,
-            _graphBuilderMock.Object);
+            _graphBuilderMock.Object,
+            _executionRepositoryMock.Object);
     }
 
     [Fact]
@@ -41,7 +45,8 @@ public class DynamicWorkflowControllerTests
             null!,
             _validationServiceMock.Object,
             _executionServiceMock.Object,
-            _graphBuilderMock.Object));
+            _graphBuilderMock.Object,
+            _executionRepositoryMock.Object));
     }
 
     [Fact]
@@ -52,7 +57,8 @@ public class DynamicWorkflowControllerTests
             _discoveryServiceMock.Object,
             null!,
             _executionServiceMock.Object,
-            _graphBuilderMock.Object));
+            _graphBuilderMock.Object,
+            _executionRepositoryMock.Object));
     }
 
     [Fact]
@@ -63,7 +69,8 @@ public class DynamicWorkflowControllerTests
             _discoveryServiceMock.Object,
             _validationServiceMock.Object,
             null!,
-            _graphBuilderMock.Object));
+            _graphBuilderMock.Object,
+            _executionRepositoryMock.Object));
     }
 
     [Fact]
@@ -74,6 +81,19 @@ public class DynamicWorkflowControllerTests
             _discoveryServiceMock.Object,
             _validationServiceMock.Object,
             _executionServiceMock.Object,
+            null!,
+            _executionRepositoryMock.Object));
+    }
+
+    [Fact]
+    public void Constructor_WithNullExecutionRepository_ShouldThrowArgumentNullException()
+    {
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() => new DynamicWorkflowController(
+            _discoveryServiceMock.Object,
+            _validationServiceMock.Object,
+            _executionServiceMock.Object,
+            _graphBuilderMock.Object,
             null!));
     }
 
@@ -866,5 +886,220 @@ public class DynamicWorkflowControllerTests
         _discoveryServiceMock.Verify(
             x => x.GetWorkflowByNameAsync("prod-workflow", "production"),
             Times.Once);
+    }
+
+    // ==================== List Executions Tests ====================
+
+    [Fact]
+    public async Task ListExecutions_ShouldReturn404_WhenWorkflowNotFound()
+    {
+        // Arrange
+        _discoveryServiceMock
+            .Setup(x => x.GetWorkflowByNameAsync("unknown-workflow", null))
+            .ReturnsAsync((WorkflowResource?)null);
+
+        // Act
+        var result = await _controller.ListExecutions("unknown-workflow");
+
+        // Assert
+        result.Should().BeOfType<NotFoundObjectResult>();
+        var notFoundResult = (NotFoundObjectResult)result;
+        var problemDetails = notFoundResult.Value as ProblemDetails;
+        problemDetails.Should().NotBeNull();
+        problemDetails!.Title.Should().Be("Workflow not found");
+    }
+
+    [Fact]
+    public async Task ListExecutions_ShouldReturnEmptyList_WhenNoExecutions()
+    {
+        // Arrange
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = "test-workflow" }
+        };
+
+        _discoveryServiceMock
+            .Setup(x => x.GetWorkflowByNameAsync("test-workflow", null))
+            .ReturnsAsync(workflow);
+
+        _executionRepositoryMock
+            .Setup(x => x.ListExecutionsAsync("test-workflow", null, 0, 50))
+            .ReturnsAsync(new List<ExecutionRecord>());
+
+        // Act
+        var result = await _controller.ListExecutions("test-workflow");
+
+        // Assert
+        result.Should().BeOfType<OkObjectResult>();
+        var okResult = (OkObjectResult)result;
+        var response = okResult.Value.Should().BeOfType<ExecutionListResponse>().Subject;
+        response.Executions.Should().BeEmpty();
+        response.WorkflowName.Should().Be("test-workflow");
+        response.TotalCount.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task ListExecutions_ShouldReturnExecutionList_WhenExecutionsExist()
+    {
+        // Arrange
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = "user-workflow" }
+        };
+
+        var execution1 = new ExecutionRecord
+        {
+            Id = Guid.NewGuid(),
+            WorkflowName = "user-workflow",
+            Status = ExecutionStatus.Succeeded,
+            StartedAt = DateTime.UtcNow.AddMinutes(-10),
+            CompletedAt = DateTime.UtcNow.AddMinutes(-8),
+            Duration = TimeSpan.FromMinutes(2)
+        };
+
+        var execution2 = new ExecutionRecord
+        {
+            Id = Guid.NewGuid(),
+            WorkflowName = "user-workflow",
+            Status = ExecutionStatus.Failed,
+            StartedAt = DateTime.UtcNow.AddMinutes(-5),
+            CompletedAt = DateTime.UtcNow.AddMinutes(-4),
+            Duration = TimeSpan.FromMinutes(1)
+        };
+
+        _discoveryServiceMock
+            .Setup(x => x.GetWorkflowByNameAsync("user-workflow", null))
+            .ReturnsAsync(workflow);
+
+        _executionRepositoryMock
+            .Setup(x => x.ListExecutionsAsync("user-workflow", null, 0, 50))
+            .ReturnsAsync(new List<ExecutionRecord> { execution1, execution2 });
+
+        // Act
+        var result = await _controller.ListExecutions("user-workflow");
+
+        // Assert
+        result.Should().BeOfType<OkObjectResult>();
+        var okResult = (OkObjectResult)result;
+        var response = okResult.Value.Should().BeOfType<ExecutionListResponse>().Subject;
+
+        response.WorkflowName.Should().Be("user-workflow");
+        response.TotalCount.Should().Be(2);
+        response.Executions.Should().HaveCount(2);
+
+        var summary1 = response.Executions[0];
+        summary1.Id.Should().Be(execution1.Id);
+        summary1.Status.Should().Be("Succeeded");
+        summary1.DurationMs.Should().Be((long)TimeSpan.FromMinutes(2).TotalMilliseconds);
+
+        var summary2 = response.Executions[1];
+        summary2.Id.Should().Be(execution2.Id);
+        summary2.Status.Should().Be("Failed");
+    }
+
+    [Fact]
+    public async Task ListExecutions_ShouldApplyStatusFilter_WhenProvided()
+    {
+        // Arrange
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = "test-workflow" }
+        };
+
+        var execution = new ExecutionRecord
+        {
+            Id = Guid.NewGuid(),
+            WorkflowName = "test-workflow",
+            Status = ExecutionStatus.Failed,
+            StartedAt = DateTime.UtcNow,
+            CompletedAt = DateTime.UtcNow,
+            Duration = TimeSpan.FromSeconds(30)
+        };
+
+        _discoveryServiceMock
+            .Setup(x => x.GetWorkflowByNameAsync("test-workflow", null))
+            .ReturnsAsync(workflow);
+
+        _executionRepositoryMock
+            .Setup(x => x.ListExecutionsAsync("test-workflow", ExecutionStatus.Failed, 0, 50))
+            .ReturnsAsync(new List<ExecutionRecord> { execution });
+
+        // Act
+        var result = await _controller.ListExecutions("test-workflow", status: "Failed");
+
+        // Assert
+        result.Should().BeOfType<OkObjectResult>();
+        _executionRepositoryMock.Verify(
+            x => x.ListExecutionsAsync("test-workflow", ExecutionStatus.Failed, 0, 50),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task ListExecutions_ShouldApplyPagination_WhenProvided()
+    {
+        // Arrange
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = "test-workflow" }
+        };
+
+        _discoveryServiceMock
+            .Setup(x => x.GetWorkflowByNameAsync("test-workflow", null))
+            .ReturnsAsync(workflow);
+
+        _executionRepositoryMock
+            .Setup(x => x.ListExecutionsAsync("test-workflow", null, 10, 20))
+            .ReturnsAsync(new List<ExecutionRecord>());
+
+        // Act
+        var result = await _controller.ListExecutions("test-workflow", skip: 10, take: 20);
+
+        // Assert
+        result.Should().BeOfType<OkObjectResult>();
+        _executionRepositoryMock.Verify(
+            x => x.ListExecutionsAsync("test-workflow", null, 10, 20),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task ListExecutions_ShouldHandleRunningExecutions_WithoutCompletedAt()
+    {
+        // Arrange
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = "long-running-workflow" }
+        };
+
+        var runningExecution = new ExecutionRecord
+        {
+            Id = Guid.NewGuid(),
+            WorkflowName = "long-running-workflow",
+            Status = ExecutionStatus.Running,
+            StartedAt = DateTime.UtcNow.AddMinutes(-30),
+            CompletedAt = null,
+            Duration = null
+        };
+
+        _discoveryServiceMock
+            .Setup(x => x.GetWorkflowByNameAsync("long-running-workflow", null))
+            .ReturnsAsync(workflow);
+
+        _executionRepositoryMock
+            .Setup(x => x.ListExecutionsAsync("long-running-workflow", null, 0, 50))
+            .ReturnsAsync(new List<ExecutionRecord> { runningExecution });
+
+        // Act
+        var result = await _controller.ListExecutions("long-running-workflow");
+
+        // Assert
+        result.Should().BeOfType<OkObjectResult>();
+        var okResult = (OkObjectResult)result;
+        var response = okResult.Value.Should().BeOfType<ExecutionListResponse>().Subject;
+
+        response.Executions.Should().HaveCount(1);
+        var summary = response.Executions[0];
+        summary.Status.Should().Be("Running");
+        summary.CompletedAt.Should().BeNull();
+        summary.DurationMs.Should().BeNull();
     }
 }

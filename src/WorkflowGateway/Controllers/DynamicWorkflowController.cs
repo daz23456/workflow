@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using WorkflowCore.Data.Repositories;
 using WorkflowCore.Models;
 using WorkflowCore.Services;
 using WorkflowGateway.Models;
@@ -14,17 +15,20 @@ public class DynamicWorkflowController : ControllerBase
     private readonly IInputValidationService _validationService;
     private readonly IWorkflowExecutionService _executionService;
     private readonly IExecutionGraphBuilder _graphBuilder;
+    private readonly IExecutionRepository _executionRepository;
 
     public DynamicWorkflowController(
         IWorkflowDiscoveryService discoveryService,
         IInputValidationService validationService,
         IWorkflowExecutionService executionService,
-        IExecutionGraphBuilder graphBuilder)
+        IExecutionGraphBuilder graphBuilder,
+        IExecutionRepository executionRepository)
     {
         _discoveryService = discoveryService ?? throw new ArgumentNullException(nameof(discoveryService));
         _validationService = validationService ?? throw new ArgumentNullException(nameof(validationService));
         _executionService = executionService ?? throw new ArgumentNullException(nameof(executionService));
         _graphBuilder = graphBuilder ?? throw new ArgumentNullException(nameof(graphBuilder));
+        _executionRepository = executionRepository ?? throw new ArgumentNullException(nameof(executionRepository));
     }
 
     /// <summary>
@@ -201,6 +205,78 @@ public class DynamicWorkflowController : ControllerBase
                 Test = $"/api/v1/workflows/{workflowName}/test",
                 Details = $"/api/v1/workflows/{workflowName}"
             }
+        };
+
+        return Ok(response);
+    }
+
+    /// <summary>
+    /// List executions for a specific workflow
+    /// </summary>
+    /// <param name="workflowName">Name of the workflow</param>
+    /// <param name="namespace">Optional namespace filter</param>
+    /// <param name="status">Optional status filter (Running, Succeeded, Failed, Cancelled)</param>
+    /// <param name="skip">Number of executions to skip (pagination)</param>
+    /// <param name="take">Number of executions to return (page size, max 100)</param>
+    /// <returns>List of execution summaries with pagination info</returns>
+    [HttpGet("{workflowName}/executions")]
+    [ProducesResponseType(typeof(ExecutionListResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ListExecutions(
+        string workflowName,
+        [FromQuery] string? @namespace = null,
+        [FromQuery] string? status = null,
+        [FromQuery] int? skip = null,
+        [FromQuery] int? take = null)
+    {
+        // Verify workflow exists
+        var workflow = await _discoveryService.GetWorkflowByNameAsync(workflowName, @namespace);
+        if (workflow == null)
+        {
+            return NotFound(new ProblemDetails
+            {
+                Title = "Workflow not found",
+                Detail = $"Workflow '{workflowName}' does not exist in namespace '{@namespace ?? "default"}'",
+                Status = StatusCodes.Status404NotFound
+            });
+        }
+
+        // Apply defaults for pagination
+        var skipValue = skip ?? 0;
+        var takeValue = Math.Min(take ?? 50, 100); // Default 50, max 100
+
+        // Parse status filter
+        ExecutionStatus? statusFilter = null;
+        if (!string.IsNullOrEmpty(status) && Enum.TryParse<ExecutionStatus>(status, out var parsedStatus))
+        {
+            statusFilter = parsedStatus;
+        }
+
+        // Fetch executions from repository
+        var executions = await _executionRepository.ListExecutionsAsync(
+            workflowName,
+            statusFilter,
+            skipValue,
+            takeValue);
+
+        // Map to ExecutionSummary
+        var summaries = executions.Select(e => new ExecutionSummary
+        {
+            Id = e.Id,
+            WorkflowName = e.WorkflowName,
+            Status = e.Status.ToString(),
+            StartedAt = e.StartedAt,
+            CompletedAt = e.CompletedAt,
+            DurationMs = e.Duration.HasValue ? (long?)e.Duration.Value.TotalMilliseconds : null
+        }).ToList();
+
+        var response = new ExecutionListResponse
+        {
+            WorkflowName = workflowName,
+            Executions = summaries,
+            TotalCount = summaries.Count(),
+            Skip = skipValue,
+            Take = takeValue
         };
 
         return Ok(response);

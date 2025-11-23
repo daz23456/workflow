@@ -96,6 +96,40 @@ describe('MSW Handlers', () => {
       expect(data).toHaveProperty('output');
     });
 
+    it('simulates payment failure for high amounts', async () => {
+      const response = await fetch('/api/v1/workflows/payment-flow/execute', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: 150, // > 100 triggers failure
+          currency: 'USD',
+          cardToken: 'tok_123',
+          customerId: 'cust_123',
+        }),
+      });
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.success).toBe(false);
+      expect(data.error).toContain('Card declined');
+    });
+
+    it('returns fallback execution for workflows without mock data', async () => {
+      const response = await fetch('/api/v1/workflows/data-pipeline/execute', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sourceUrl: 'https://example.com/data.csv',
+          format: 'csv',
+        }),
+      });
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.success).toBe(true);
+      expect(data.executionId).toMatch(/^exec-data-pipeline-/);
+    });
+
     it('returns 404 for non-existent workflow', async () => {
       const response = await fetch('/api/v1/workflows/non-existent/execute', {
         method: 'POST',
@@ -222,6 +256,23 @@ describe('MSW Handlers', () => {
       expect(typeof data.templateResolution).toBe('object');
       // Should have resolution for each task
       expect(Object.keys(data.templateResolution).length).toBeGreaterThan(0);
+    });
+
+    it('returns fallback dry-run for workflows without mock data', async () => {
+      const response = await fetch('/api/v1/workflows/data-pipeline/test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sourceUrl: 'https://example.com/data.csv',
+          format: 'csv',
+        }),
+      });
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.valid).toBe(true);
+      expect(data.executionPlan).toBeDefined();
+      expect(data.executionPlan.totalTasks).toBe(0);
     });
   });
 

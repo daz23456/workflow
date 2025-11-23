@@ -9,7 +9,14 @@ The format is based on stage completion, and this project follows strict TDD and
 ## [Unreleased]
 
 ### Next Stage
-- Stage 8: UI Backend & Frontend
+- Stage 7.85: Enhanced Dry-Run Visualization
+
+### Recent Changes
+- **2025-11-23**: Coverage remediation for TimeoutParser and TemplateResolutionException
+  - Added 32 TimeoutParser tests (coverage: 37.1% → 71.4%)
+  - Added 8 TemplateResolutionException tests (coverage: 55.5% → 88.8%)
+  - Overall filtered coverage: 96.0% → 96.8%
+  - Total tests: 511 → 551 (+40 tests)
 
 ---
 

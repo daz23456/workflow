@@ -16,13 +16,22 @@ public class WorkflowOrchestrator : IWorkflowOrchestrator
 {
     private readonly IExecutionGraphBuilder _graphBuilder;
     private readonly IHttpTaskExecutor _taskExecutor;
+    private readonly SemaphoreSlim _semaphore;
 
     public WorkflowOrchestrator(
         IExecutionGraphBuilder graphBuilder,
-        IHttpTaskExecutor taskExecutor)
+        IHttpTaskExecutor taskExecutor,
+        int maxConcurrentTasks = int.MaxValue)
     {
         _graphBuilder = graphBuilder ?? throw new ArgumentNullException(nameof(graphBuilder));
         _taskExecutor = taskExecutor ?? throw new ArgumentNullException(nameof(taskExecutor));
+
+        if (maxConcurrentTasks <= 0)
+        {
+            throw new ArgumentException("maxConcurrentTasks must be greater than 0", nameof(maxConcurrentTasks));
+        }
+
+        _semaphore = new SemaphoreSlim(maxConcurrentTasks, maxConcurrentTasks);
     }
 
     public async Task<WorkflowExecutionResult> ExecuteAsync(
@@ -142,9 +151,17 @@ public class WorkflowOrchestrator : IWorkflowOrchestrator
 
                     var taskSpec = availableTasks[taskStep.TaskRef].Spec;
 
-                    // Execute task
-                    var taskResult = await _taskExecutor.ExecuteAsync(taskSpec, context, cancellationToken);
-                    return (taskId, taskResult);
+                    // Execute task with concurrency control
+                    await _semaphore.WaitAsync(cancellationToken);
+                    try
+                    {
+                        var taskResult = await _taskExecutor.ExecuteAsync(taskSpec, context, cancellationToken);
+                        return (taskId, taskResult);
+                    }
+                    finally
+                    {
+                        _semaphore.Release();
+                    }
                 }).ToList();
 
                 // Wait for all parallel tasks to complete

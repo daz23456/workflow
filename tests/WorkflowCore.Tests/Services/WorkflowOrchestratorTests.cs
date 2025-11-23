@@ -982,4 +982,202 @@ public class WorkflowOrchestratorTests
             It.IsAny<TemplateContext>(),
             It.IsAny<CancellationToken>()), Times.Exactly(4));
     }
+
+    [Fact]
+    public async Task ExecuteAsync_WithParallelismLimit_ShouldRespectMaxConcurrentTasks()
+    {
+        // Arrange - Create 4 independent tasks with a limit of 2 concurrent executions
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "task-1", TaskRef = "task-ref-1" },
+                    new WorkflowTaskStep { Id = "task-2", TaskRef = "task-ref-2" },
+                    new WorkflowTaskStep { Id = "task-3", TaskRef = "task-ref-3" },
+                    new WorkflowTaskStep { Id = "task-4", TaskRef = "task-ref-4" }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["task-ref-1"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } },
+            ["task-ref-2"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } },
+            ["task-ref-3"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } },
+            ["task-ref-4"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } }
+        };
+
+        // Build graph with all independent tasks
+        var graph = new ExecutionGraph();
+        graph.AddNode("task-1");
+        graph.AddNode("task-2");
+        graph.AddNode("task-3");
+        graph.AddNode("task-4");
+
+        _graphBuilderMock.Setup(x => x.Build(workflow))
+            .Returns(new ExecutionGraphResult
+            {
+                IsValid = true,
+                Graph = graph
+            });
+
+        // Track concurrent execution
+        var currentConcurrent = 0;
+        var maxConcurrent = 0;
+        var lockObj = new object();
+
+        _taskExecutorMock.Setup(x => x.ExecuteAsync(
+                It.IsAny<WorkflowTaskSpec>(),
+                It.IsAny<TemplateContext>(),
+                It.IsAny<CancellationToken>()))
+            .Returns(async () =>
+            {
+                lock (lockObj)
+                {
+                    currentConcurrent++;
+                    if (currentConcurrent > maxConcurrent)
+                    {
+                        maxConcurrent = currentConcurrent;
+                    }
+                }
+
+                await Task.Delay(50); // Simulate work
+
+                lock (lockObj)
+                {
+                    currentConcurrent--;
+                }
+
+                return new TaskExecutionResult
+                {
+                    Success = true,
+                    Output = new Dictionary<string, object> { ["result"] = "output" }
+                };
+            });
+
+        var inputs = new Dictionary<string, object>();
+
+        // Create orchestrator with maxConcurrentTasks = 2
+        var orchestratorWithLimit = new WorkflowOrchestrator(
+            _graphBuilderMock.Object,
+            _taskExecutorMock.Object,
+            maxConcurrentTasks: 2);
+
+        // Act
+        var result = await orchestratorWithLimit.ExecuteAsync(workflow, tasks, inputs, CancellationToken.None);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        result.TaskResults.Should().HaveCount(4);
+        result.TaskResults.Values.Should().OnlyContain(r => r.Success);
+
+        // Verify that at most 2 tasks executed concurrently
+        maxConcurrent.Should().BeLessOrEqualTo(2);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithMaxConcurrentTasks1_ShouldExecuteSequentially()
+    {
+        // Arrange - 3 independent tasks with maxConcurrentTasks=1 (sequential execution)
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "task-1", TaskRef = "task-ref-1" },
+                    new WorkflowTaskStep { Id = "task-2", TaskRef = "task-ref-2" },
+                    new WorkflowTaskStep { Id = "task-3", TaskRef = "task-ref-3" }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["task-ref-1"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } },
+            ["task-ref-2"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } },
+            ["task-ref-3"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } }
+        };
+
+        var graph = new ExecutionGraph();
+        graph.AddNode("task-1");
+        graph.AddNode("task-2");
+        graph.AddNode("task-3");
+
+        _graphBuilderMock.Setup(x => x.Build(workflow))
+            .Returns(new ExecutionGraphResult { IsValid = true, Graph = graph });
+
+        var currentConcurrent = 0;
+        var maxConcurrent = 0;
+        var lockObj = new object();
+
+        _taskExecutorMock.Setup(x => x.ExecuteAsync(
+                It.IsAny<WorkflowTaskSpec>(),
+                It.IsAny<TemplateContext>(),
+                It.IsAny<CancellationToken>()))
+            .Returns(async () =>
+            {
+                lock (lockObj)
+                {
+                    currentConcurrent++;
+                    if (currentConcurrent > maxConcurrent)
+                    {
+                        maxConcurrent = currentConcurrent;
+                    }
+                }
+
+                await Task.Delay(50);
+
+                lock (lockObj)
+                {
+                    currentConcurrent--;
+                }
+
+                return new TaskExecutionResult
+                {
+                    Success = true,
+                    Output = new Dictionary<string, object> { ["result"] = "output" }
+                };
+            });
+
+        var orchestratorWithLimit = new WorkflowOrchestrator(
+            _graphBuilderMock.Object,
+            _taskExecutorMock.Object,
+            maxConcurrentTasks: 1);
+
+        // Act
+        var result = await orchestratorWithLimit.ExecuteAsync(workflow, tasks, new Dictionary<string, object>(), CancellationToken.None);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        maxConcurrent.Should().Be(1); // Strictly sequential
+    }
+
+    [Fact]
+    public void Constructor_WithInvalidMaxConcurrentTasks_ShouldThrowArgumentException()
+    {
+        // Arrange & Act & Assert
+        var act = () => new WorkflowOrchestrator(
+            _graphBuilderMock.Object,
+            _taskExecutorMock.Object,
+            maxConcurrentTasks: 0);
+
+        act.Should().Throw<ArgumentException>()
+            .WithMessage("maxConcurrentTasks must be greater than 0*");
+    }
+
+    [Fact]
+    public void Constructor_WithNegativeMaxConcurrentTasks_ShouldThrowArgumentException()
+    {
+        // Arrange & Act & Assert
+        var act = () => new WorkflowOrchestrator(
+            _graphBuilderMock.Object,
+            _taskExecutorMock.Object,
+            maxConcurrentTasks: -1);
+
+        act.Should().Throw<ArgumentException>()
+            .WithMessage("maxConcurrentTasks must be greater than 0*");
+    }
 }

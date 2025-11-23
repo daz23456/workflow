@@ -12,7 +12,19 @@
       "Bash(dotnet remove:*)",
       "Bash(dotnet tool install:*)",
       "Bash(export PATH=\"$PATH:/Users/darren/.dotnet/tools\")",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(dotnet list:*)",
+      "Bash(git commit:*)",
+      "Bash(git tag:*)",
+      "Bash(dotnet stryker:*)",
+      "Bash(cat:*)",
+      "Bash(reportgenerator:*)",
+      "Bash(dotnet tool list:*)",
+      "Bash(pkill:*)",
+      "Bash(lsof:*)",
+      "Bash(xargs kill:*)",
+      "Bash(timeout 60 dotnet stryker:*)",
+      "Bash(export PATH=$PATH:/Users/darren/.dotnet/tools)"
     ],
     "deny": [],
     "ask": []

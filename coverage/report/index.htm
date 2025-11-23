@@ -17,23 +17,23 @@
 <table>
 <tr>
 <th>Parser:</th>
-<td class="limit-width " title="Cobertura">Cobertura</td>
+<td class="limit-width " title="MultiReport (3x Cobertura)">MultiReport (3x Cobertura)</td>
 </tr>
 <tr>
 <th>Assemblies:</th>
-<td class="limit-width right" title="1">1</td>
+<td class="limit-width right" title="2">2</td>
 </tr>
 <tr>
 <th>Classes:</th>
-<td class="limit-width right" title="14">14</td>
+<td class="limit-width right" title="44">44</td>
 </tr>
 <tr>
 <th>Files:</th>
-<td class="limit-width right" title="7">7</td>
+<td class="limit-width right" title="28">28</td>
 </tr>
 <tr>
 <th>Coverage date:</th>
-<td class="limit-width " title="21/11/2025 - 21:16:07">21/11/2025 - 21:16:07</td>
+<td class="limit-width " title="22/11/2025 - 10:03:14 - 22/11/2025 - 13:41:10">22/11/2025 - 10:03:14 - 22/11/2025 - 13:41:10</td>
 </tr>
 </table>
 </div>
@@ -42,28 +42,28 @@
 <div class="card">
 <div class="card-header">Line coverage</div>
 <div class="card-body">
-<div class="large cardpercentagebar cardpercentagebar8">91%</div>
+<div class="large cardpercentagebar cardpercentagebar9">91%</div>
 <div class="table">
 <table>
 <tr>
 <th>Covered lines:</th>
-<td class="limit-width right" title="147">147</td>
+<td class="limit-width right" title="855">855</td>
 </tr>
 <tr>
 <th>Uncovered lines:</th>
-<td class="limit-width right" title="13">13</td>
+<td class="limit-width right" title="82">82</td>
 </tr>
 <tr>
 <th>Coverable lines:</th>
-<td class="limit-width right" title="160">160</td>
+<td class="limit-width right" title="937">937</td>
 </tr>
 <tr>
 <th>Total lines:</th>
-<td class="limit-width right" title="371">371</td>
+<td class="limit-width right" title="1752">1752</td>
 </tr>
 <tr>
 <th>Line coverage:</th>
-<td class="limit-width right" title="147 of 160">91.8%</td>
+<td class="limit-width right" title="855 of 937">91.2%</td>
 </tr>
 </table>
 </div>
@@ -72,20 +72,20 @@
 <div class="card">
 <div class="card-header">Branch coverage</div>
 <div class="card-body">
-<div class="large cardpercentagebar cardpercentagebar12">87%</div>
+<div class="large cardpercentagebar cardpercentagebar18">82%</div>
 <div class="table">
 <table>
 <tr>
 <th>Covered branches:</th>
-<td class="limit-width right" title="51">51</td>
+<td class="limit-width right" title="269">269</td>
 </tr>
 <tr>
 <th>Total branches:</th>
-<td class="limit-width right" title="58">58</td>
+<td class="limit-width right" title="326">326</td>
 </tr>
 <tr>
 <th>Branch coverage:</th>
-<td class="limit-width right" title="51 of 58">87.9%</td>
+<td class="limit-width right" title="269 of 326">82.5%</td>
 </tr>
 </table>
 </div>
@@ -121,14 +121,104 @@
 <tbody>
 <tr>
 <td>WorkflowCore</td>
-<td><a href="WorkflowCore_TypeCompatibilityChecker.html">WorkflowCore.Services.TypeCompatibilityChecker</a></td>
-<td title="CheckPropertiesCompatibility(System.Collections.Generic.Dictionary`2&lt;System.String,WorkflowCore.Models.PropertyDefinition&gt;,System.Collections.Generic.Dictionary`2&lt;System.String,WorkflowCore.Models.PropertyDefinition&gt;,System.String,System.Collections.Generic.List`1&lt;System.String&gt;)"><a href="WorkflowCore_TypeCompatibilityChecker.html#file0_line46">CheckPropertiesCompatibility(...)</a></td><td class="lightgreen right">22</td>
+<td><a href="WorkflowCore_WorkflowValidator.html">WorkflowCore.Services.WorkflowValidator</a></td>
+<td title="GetPropertyAtPath(WorkflowCore.Models.SchemaDefinition,System.String)"><a href="WorkflowCore_WorkflowValidator.html#file0_line111">GetPropertyAtPath(...)</a></td><td class="lightred right">35</td>
+<td class="lightred right">16</td>
+</tr>
+<tr>
+<td>WorkflowCore</td>
+<td><a href="WorkflowCore_WorkflowValidator.html">WorkflowCore.Services.WorkflowValidator</a></td>
+<td title="GetPropertyAtPath(WorkflowCore.Models.SchemaDefinition,System.String)"><a href="WorkflowCore_WorkflowValidator.html#file0_line112">GetPropertyAtPath(...)</a></td><td class="lightred right">31</td>
+<td class="lightred right">16</td>
+</tr>
+<tr>
+<td>WorkflowCore</td>
+<td><a href="WorkflowCore_TemplateResolver.html">WorkflowCore.Services.TemplateResolver</a></td>
+<td title="ResolveInputPath(System.String,System.Collections.Generic.Dictionary`2&lt;System.String,System.Object&gt;,System.String)"><a href="WorkflowCore_TemplateResolver.html#file0_line73">ResolveInputPath(...)</a></td><td class="lightgreen right">28</td>
+<td class="lightred right">28</td>
+</tr>
+<tr>
+<td>WorkflowCore</td>
+<td><a href="WorkflowCore_TemplateResolver.html">WorkflowCore.Services.TemplateResolver</a></td>
+<td title="ResolveInputPath(System.String,System.Collections.Generic.Dictionary`2&lt;System.String,System.Object&gt;,System.String)"><a href="WorkflowCore_TemplateResolver.html#file0_line74">ResolveInputPath(...)</a></td><td class="lightgreen right">28</td>
+<td class="lightred right">28</td>
+</tr>
+<tr>
+<td>WorkflowCore</td>
+<td><a href="WorkflowCore_HttpTaskExecutor.html">WorkflowCore.Services.HttpTaskExecutor</a></td>
+<td title="BuildHttpRequestAsync()"><a href="WorkflowCore_HttpTaskExecutor.html#file0_line135">BuildHttpRequestAsync()</a></td><td class="lightgreen right">23</td>
 <td class="lightred right">22</td>
 </tr>
 <tr>
 <td>WorkflowCore</td>
-<td><a href="WorkflowCore_ErrorMessageBuilder.html">WorkflowCore.Models.ErrorMessageBuilder</a></td>
-<td title="LevenshteinDistance(System.String,System.String)"><a href="WorkflowCore_ErrorMessageBuilder.html#file0_line40">LevenshteinDistance(...)</a></td><td class="lightgreen right">17</td>
+<td><a href="WorkflowCore_HttpTaskExecutor.html">WorkflowCore.Services.HttpTaskExecutor</a></td>
+<td title="BuildHttpRequestAsync()"><a href="WorkflowCore_HttpTaskExecutor.html#file0_line137">BuildHttpRequestAsync()</a></td><td class="lightgreen right">23</td>
+<td class="lightred right">22</td>
+</tr>
+<tr>
+<td>WorkflowCore</td>
+<td><a href="WorkflowCore_TypeCompatibilityChecker.html">WorkflowCore.Services.TypeCompatibilityChecker</a></td>
+<td title="CheckCompatibilityRecursive(WorkflowCore.Models.PropertyDefinition,WorkflowCore.Models.PropertyDefinition,System.String,System.Collections.Generic.List`1&lt;WorkflowCore.Models.CompatibilityError&gt;)"><a href="WorkflowCore_TypeCompatibilityChecker.html#file0_line29">CheckCompatibilityRecursive(...)</a></td><td class="lightgreen right">25</td>
+<td class="lightred right">22</td>
+</tr>
+<tr>
+<td>WorkflowCore</td>
+<td><a href="WorkflowCore_TypeCompatibilityChecker.html">WorkflowCore.Services.TypeCompatibilityChecker</a></td>
+<td title="CheckCompatibilityRecursive(WorkflowCore.Models.PropertyDefinition,WorkflowCore.Models.PropertyDefinition,System.String,System.Collections.Generic.List`1&lt;WorkflowCore.Models.CompatibilityError&gt;)"><a href="WorkflowCore_TypeCompatibilityChecker.html#file0_line31">CheckCompatibilityRecursive(...)</a></td><td class="lightgreen right">26</td>
+<td class="lightred right">22</td>
+</tr>
+<tr>
+<td>WorkflowCore</td>
+<td><a href="WorkflowCore_WorkflowValidator.html">WorkflowCore.Services.WorkflowValidator</a></td>
+<td title="ValidateAsync(WorkflowCore.Models.WorkflowResource,System.Collections.Generic.Dictionary`2&lt;System.String,WorkflowCore.Models.WorkflowTaskResource&gt;)"><a href="WorkflowCore_WorkflowValidator.html#file0_line28">ValidateAsync(...)</a></td><td class="lightgreen right">22</td>
+<td class="lightred right">22</td>
+</tr>
+<tr>
+<td>WorkflowCore</td>
+<td><a href="WorkflowCore_WorkflowValidator.html">WorkflowCore.Services.WorkflowValidator</a></td>
+<td title="ValidateAsync(WorkflowCore.Models.WorkflowResource,System.Collections.Generic.Dictionary`2&lt;System.String,WorkflowCore.Models.WorkflowTaskResource&gt;)"><a href="WorkflowCore_WorkflowValidator.html#file0_line29">ValidateAsync(...)</a></td><td class="lightgreen right">22</td>
+<td class="lightred right">22</td>
+</tr>
+<tr>
+<td>WorkflowCore</td>
+<td><a href="WorkflowCore_SchemaValidator.html">WorkflowCore.Services.SchemaValidator</a></td>
+<td title="ValidateAsync()"><a href="WorkflowCore_SchemaValidator.html#file0_line23">ValidateAsync()</a></td><td class="lightgreen right">18</td>
+<td class="lightred right">18</td>
+</tr>
+<tr>
+<td>WorkflowCore</td>
+<td><a href="WorkflowCore_SchemaValidator.html">WorkflowCore.Services.SchemaValidator</a></td>
+<td title="ValidateAsync()"><a href="WorkflowCore_SchemaValidator.html#file0_line24">ValidateAsync()</a></td><td class="lightgreen right">18</td>
+<td class="lightred right">18</td>
+</tr>
+<tr>
+<td>WorkflowCore</td>
+<td><a href="WorkflowCore_WorkflowOrchestrator.html">WorkflowCore.Services.WorkflowOrchestrator</a></td>
+<td title="ExecuteAsync()"><a href="WorkflowCore_WorkflowOrchestrator.html#file0_line33">ExecuteAsync()</a></td><td class="lightgreen right">18</td>
+<td class="lightred right">18</td>
+</tr>
+<tr>
+<td>WorkflowCore</td>
+<td><a href="WorkflowCore_WorkflowOrchestrator.html">WorkflowCore.Services.WorkflowOrchestrator</a></td>
+<td title="ExecuteAsync()"><a href="WorkflowCore_WorkflowOrchestrator.html#file0_line34">ExecuteAsync()</a></td><td class="lightgreen right">18</td>
+<td class="lightred right">18</td>
+</tr>
+<tr>
+<td>WorkflowCore</td>
+<td><a href="WorkflowCore_ExecutionGraphBuilder.html">WorkflowCore.Services.ExecutionGraphBuilder</a></td>
+<td title="Build(WorkflowCore.Models.WorkflowResource)"><a href="WorkflowCore_ExecutionGraphBuilder.html#file0_line16">Build(...)</a></td><td class="lightgreen right">16</td>
+<td class="lightred right">16</td>
+</tr>
+<tr>
+<td>WorkflowCore</td>
+<td><a href="WorkflowCore_ExecutionGraphBuilder.html">WorkflowCore.Services.ExecutionGraphBuilder</a></td>
+<td title="Build(WorkflowCore.Models.WorkflowResource)"><a href="WorkflowCore_ExecutionGraphBuilder.html#file0_line17">Build(...)</a></td><td class="lightgreen right">16</td>
+<td class="lightred right">16</td>
+</tr>
+<tr>
+<td>WorkflowOperator</td>
+<td><a href="WorkflowOperator_WorkflowTaskValidationWebhook.html">WorkflowOperator.Webhooks.WorkflowTaskValidationWebhook</a></td>
+<td title="ValidateAsync()"><a href="WorkflowOperator_WorkflowTaskValidationWebhook.html#file0_line20">ValidateAsync()</a></td><td class="lightgreen right">16</td>
 <td class="lightred right">16</td>
 </tr>
 </tbody>
@@ -156,26 +246,57 @@
 <tr class="header"><th></th><th colspan="6" class="center">Line coverage</th><th colspan="4" class="center">Branch coverage</th></tr>
 <tr><th>Name</th><th class="right">Covered</th><th class="right">Uncovered</th><th class="right">Coverable</th><th class="right">Total</th><th class="center" colspan="2">Percentage</th><th class="right">Covered</th><th class="right">Total</th><th class="center" colspan="2">Percentage</th></tr></thead>
 <tbody>
-<tr><th>WorkflowCore</th><th class="right">147</th><th class="right">13</th><th class="right">160</th><th class="right">733</th><th title="147/160" class="right">91.8%</th><th><table class="coverage"><tr><td class="green covered92">&nbsp;</td><td class="red covered8">&nbsp;</td></tr></table></th><th class="right">51</th><th class="right">58</th><th class="right" title="51/58">87.9%</th><th><table class="coverage"><tr><td class="green covered88">&nbsp;</td><td class="red covered12">&nbsp;</td></tr></table></th></tr>
-<tr><td><a href="WorkflowCore_CompatibilityResult.html">WorkflowCore.Models.CompatibilityResult</a></td><td class="right">2</td><td class="right">0</td><td class="right">2</td><td class="right">7</td><td title="2/2" class="right">100%</td><td><table class="coverage"><tr><td class="green covered100">&nbsp;</td></tr></table></td><td class="right">0</td><td class="right">0</td><td class="right" title="-"></td><td><table class="coverage"><tr><td class="gray covered100">&nbsp;</td></tr></table></td></tr>
-<tr><td><a href="WorkflowCore_ErrorMessageBuilder.html">WorkflowCore.Models.ErrorMessageBuilder</a></td><td class="right">47</td><td class="right">4</td><td class="right">51</td><td class="right">77</td><td title="47/51" class="right">92.1%</td><td><table class="coverage"><tr><td class="green covered92">&nbsp;</td><td class="red covered8">&nbsp;</td></tr></table></td><td class="right">18</td><td class="right">22</td><td class="right" title="18/22">81.8%</td><td><table class="coverage"><tr><td class="green covered82">&nbsp;</td><td class="red covered18">&nbsp;</td></tr></table></td></tr>
-<tr><td><a href="WorkflowCore_HttpRequestDefinition.html">WorkflowCore.Models.HttpRequestDefinition</a></td><td class="right">4</td><td class="right">0</td><td class="right">4</td><td class="right">60</td><td title="4/4" class="right">100%</td><td><table class="coverage"><tr><td class="green covered100">&nbsp;</td></tr></table></td><td class="right">0</td><td class="right">0</td><td class="right" title="-"></td><td><table class="coverage"><tr><td class="gray covered100">&nbsp;</td></tr></table></td></tr>
+<tr><th>WorkflowCore</th><th class="right">786</th><th class="right">52</th><th class="right">838</th><th class="right">2277</th><th title="786/838" class="right">93.7%</th><th><table class="coverage"><tr><td class="green covered94">&nbsp;</td><td class="red covered6">&nbsp;</td></tr></table></th><th class="right">233</th><th class="right">280</th><th class="right" title="233/280">83.2%</th><th><table class="coverage"><tr><td class="green covered83">&nbsp;</td><td class="red covered17">&nbsp;</td></tr></table></th></tr>
+<tr><td><a href="WorkflowCore_CompatibilityError.html">WorkflowCore.Models.CompatibilityError</a></td><td class="right">3</td><td class="right">0</td><td class="right">3</td><td class="right">14</td><td title="3/3" class="right">100%</td><td><table class="coverage"><tr><td class="green covered100">&nbsp;</td></tr></table></td><td class="right">0</td><td class="right">0</td><td class="right" title="-"></td><td><table class="coverage"><tr><td class="gray covered100">&nbsp;</td></tr></table></td></tr>
+<tr><td><a href="WorkflowCore_CompatibilityResult.html">WorkflowCore.Models.CompatibilityResult</a></td><td class="right">2</td><td class="right">0</td><td class="right">2</td><td class="right">14</td><td title="2/2" class="right">100%</td><td><table class="coverage"><tr><td class="green covered100">&nbsp;</td></tr></table></td><td class="right">0</td><td class="right">0</td><td class="right" title="-"></td><td><table class="coverage"><tr><td class="gray covered100">&nbsp;</td></tr></table></td></tr>
+<tr><td><a href="WorkflowCore_ErrorMessageBuilder.html">WorkflowCore.Models.ErrorMessageBuilder</a></td><td class="right">41</td><td class="right">0</td><td class="right">41</td><td class="right">69</td><td title="41/41" class="right">100%</td><td><table class="coverage"><tr><td class="green covered100">&nbsp;</td></tr></table></td><td class="right">4</td><td class="right">4</td><td class="right" title="4/4">100%</td><td><table class="coverage"><tr><td class="green covered100">&nbsp;</td></tr></table></td></tr>
+<tr><td><a href="WorkflowCore_ExecutionGraph.html">WorkflowCore.Models.ExecutionGraph</a></td><td class="right">81</td><td class="right">0</td><td class="right">81</td><td class="right">125</td><td title="81/81" class="right">100%</td><td><table class="coverage"><tr><td class="green covered100">&nbsp;</td></tr></table></td><td class="right">26</td><td class="right">26</td><td class="right" title="26/26">100%</td><td><table class="coverage"><tr><td class="green covered100">&nbsp;</td></tr></table></td></tr>
+<tr><td><a href="WorkflowCore_ExecutionGraphResult.html">WorkflowCore.Models.ExecutionGraphResult</a></td><td class="right">3</td><td class="right">0</td><td class="right">3</td><td class="right">125</td><td title="3/3" class="right">100%</td><td><table class="coverage"><tr><td class="green covered100">&nbsp;</td></tr></table></td><td class="right">0</td><td class="right">0</td><td class="right" title="-"></td><td><table class="coverage"><tr><td class="gray covered100">&nbsp;</td></tr></table></td></tr>
+<tr><td><a href="WorkflowCore_HttpRequestDefinition.html">WorkflowCore.Models.HttpRequestDefinition</a></td><td class="right">5</td><td class="right">0</td><td class="right">5</td><td class="right">72</td><td title="5/5" class="right">100%</td><td><table class="coverage"><tr><td class="green covered100">&nbsp;</td></tr></table></td><td class="right">0</td><td class="right">0</td><td class="right" title="-"></td><td><table class="coverage"><tr><td class="gray covered100">&nbsp;</td></tr></table></td></tr>
 <tr><td><a href="WorkflowCore_PropertyDefinition.html">WorkflowCore.Models.PropertyDefinition</a></td><td class="right">10</td><td class="right">0</td><td class="right">10</td><td class="right">56</td><td title="10/10" class="right">100%</td><td><table class="coverage"><tr><td class="green covered100">&nbsp;</td></tr></table></td><td class="right">0</td><td class="right">0</td><td class="right" title="-"></td><td><table class="coverage"><tr><td class="gray covered100">&nbsp;</td></tr></table></td></tr>
-<tr><td><a href="WorkflowCore_ResourceMetadata.html">WorkflowCore.Models.ResourceMetadata</a></td><td class="right">2</td><td class="right">0</td><td class="right">2</td><td class="right">60</td><td title="2/2" class="right">100%</td><td><table class="coverage"><tr><td class="green covered100">&nbsp;</td></tr></table></td><td class="right">0</td><td class="right">0</td><td class="right" title="-"></td><td><table class="coverage"><tr><td class="gray covered100">&nbsp;</td></tr></table></td></tr>
+<tr><td><a href="WorkflowCore_ResourceMetadata.html">WorkflowCore.Models.ResourceMetadata</a></td><td class="right">3</td><td class="right">0</td><td class="right">3</td><td class="right">72</td><td title="3/3" class="right">100%</td><td><table class="coverage"><tr><td class="green covered100">&nbsp;</td></tr></table></td><td class="right">0</td><td class="right">0</td><td class="right" title="-"></td><td><table class="coverage"><tr><td class="gray covered100">&nbsp;</td></tr></table></td></tr>
+<tr><td><a href="WorkflowCore_RetryPolicyOptions.html">WorkflowCore.Models.RetryPolicyOptions</a></td><td class="right">4</td><td class="right">0</td><td class="right">4</td><td class="right">9</td><td title="4/4" class="right">100%</td><td><table class="coverage"><tr><td class="green covered100">&nbsp;</td></tr></table></td><td class="right">0</td><td class="right">0</td><td class="right" title="-"></td><td><table class="coverage"><tr><td class="gray covered100">&nbsp;</td></tr></table></td></tr>
 <tr><td><a href="WorkflowCore_SchemaDefinition.html">WorkflowCore.Models.SchemaDefinition</a></td><td class="right">7</td><td class="right">0</td><td class="right">7</td><td class="right">56</td><td title="7/7" class="right">100%</td><td><table class="coverage"><tr><td class="green covered100">&nbsp;</td></tr></table></td><td class="right">0</td><td class="right">0</td><td class="right" title="-"></td><td><table class="coverage"><tr><td class="gray covered100">&nbsp;</td></tr></table></td></tr>
-<tr><td><a href="WorkflowCore_WorkflowResource.html">WorkflowCore.Models.WorkflowResource</a></td><td class="right">4</td><td class="right">0</td><td class="right">4</td><td class="right">39</td><td title="4/4" class="right">100%</td><td><table class="coverage"><tr><td class="green covered100">&nbsp;</td></tr></table></td><td class="right">0</td><td class="right">0</td><td class="right" title="-"></td><td><table class="coverage"><tr><td class="gray covered100">&nbsp;</td></tr></table></td></tr>
-<tr><td><a href="WorkflowCore_WorkflowSpec.html">WorkflowCore.Models.WorkflowSpec</a></td><td class="right">1</td><td class="right">0</td><td class="right">1</td><td class="right">39</td><td title="1/1" class="right">100%</td><td><table class="coverage"><tr><td class="green covered100">&nbsp;</td></tr></table></td><td class="right">0</td><td class="right">0</td><td class="right" title="-"></td><td><table class="coverage"><tr><td class="gray covered100">&nbsp;</td></tr></table></td></tr>
-<tr><td><a href="WorkflowCore_WorkflowTaskResource.html">WorkflowCore.Models.WorkflowTaskResource</a></td><td class="right">4</td><td class="right">0</td><td class="right">4</td><td class="right">60</td><td title="4/4" class="right">100%</td><td><table class="coverage"><tr><td class="green covered100">&nbsp;</td></tr></table></td><td class="right">0</td><td class="right">0</td><td class="right" title="-"></td><td><table class="coverage"><tr><td class="gray covered100">&nbsp;</td></tr></table></td></tr>
-<tr><td><a href="WorkflowCore_WorkflowTaskSpec.html">WorkflowCore.Models.WorkflowTaskSpec</a></td><td class="right">5</td><td class="right">0</td><td class="right">5</td><td class="right">60</td><td title="5/5" class="right">100%</td><td><table class="coverage"><tr><td class="green covered100">&nbsp;</td></tr></table></td><td class="right">0</td><td class="right">0</td><td class="right" title="-"></td><td><table class="coverage"><tr><td class="gray covered100">&nbsp;</td></tr></table></td></tr>
-<tr><td><a href="WorkflowCore_WorkflowTaskStep.html">WorkflowCore.Models.WorkflowTaskStep</a></td><td class="right">4</td><td class="right">0</td><td class="right">4</td><td class="right">39</td><td title="4/4" class="right">100%</td><td><table class="coverage"><tr><td class="green covered100">&nbsp;</td></tr></table></td><td class="right">0</td><td class="right">0</td><td class="right" title="-"></td><td><table class="coverage"><tr><td class="gray covered100">&nbsp;</td></tr></table></td></tr>
+<tr><td><a href="WorkflowCore_TaskExecutionResult.html">WorkflowCore.Models.TaskExecutionResult</a></td><td class="right">5</td><td class="right">0</td><td class="right">5</td><td class="right">10</td><td title="5/5" class="right">100%</td><td><table class="coverage"><tr><td class="green covered100">&nbsp;</td></tr></table></td><td class="right">0</td><td class="right">0</td><td class="right" title="-"></td><td><table class="coverage"><tr><td class="gray covered100">&nbsp;</td></tr></table></td></tr>
+<tr><td><a href="WorkflowCore_TemplateContext.html">WorkflowCore.Models.TemplateContext</a></td><td class="right">2</td><td class="right">0</td><td class="right">2</td><td class="right">24</td><td title="2/2" class="right">100%</td><td><table class="coverage"><tr><td class="green covered100">&nbsp;</td></tr></table></td><td class="right">0</td><td class="right">0</td><td class="right" title="-"></td><td><table class="coverage"><tr><td class="gray covered100">&nbsp;</td></tr></table></td></tr>
+<tr><td><a href="WorkflowCore_TemplateExpression.html">WorkflowCore.Models.TemplateExpression</a></td><td class="right">3</td><td class="right">0</td><td class="right">3</td><td class="right">21</td><td title="3/3" class="right">100%</td><td><table class="coverage"><tr><td class="green covered100">&nbsp;</td></tr></table></td><td class="right">0</td><td class="right">0</td><td class="right" title="-"></td><td><table class="coverage"><tr><td class="gray covered100">&nbsp;</td></tr></table></td></tr>
+<tr><td><a href="WorkflowCore_TemplateParseResult.html">WorkflowCore.Models.TemplateParseResult</a></td><td class="right">3</td><td class="right">0</td><td class="right">3</td><td class="right">21</td><td title="3/3" class="right">100%</td><td><table class="coverage"><tr><td class="green covered100">&nbsp;</td></tr></table></td><td class="right">0</td><td class="right">0</td><td class="right" title="-"></td><td><table class="coverage"><tr><td class="gray covered100">&nbsp;</td></tr></table></td></tr>
+<tr><td><a href="WorkflowCore_TemplateResolutionException.html">WorkflowCore.Models.TemplateResolutionException</a></td><td class="right">5</td><td class="right">4</td><td class="right">9</td><td class="right">24</td><td title="5/9" class="right">55.5%</td><td><table class="coverage"><tr><td class="green covered56">&nbsp;</td><td class="red covered44">&nbsp;</td></tr></table></td><td class="right">0</td><td class="right">0</td><td class="right" title="-"></td><td><table class="coverage"><tr><td class="gray covered100">&nbsp;</td></tr></table></td></tr>
+<tr><td><a href="WorkflowCore_ValidationError.html">WorkflowCore.Models.ValidationError</a></td><td class="right">4</td><td class="right">0</td><td class="right">4</td><td class="right">15</td><td title="4/4" class="right">100%</td><td><table class="coverage"><tr><td class="green covered100">&nbsp;</td></tr></table></td><td class="right">0</td><td class="right">0</td><td class="right" title="-"></td><td><table class="coverage"><tr><td class="gray covered100">&nbsp;</td></tr></table></td></tr>
+<tr><td><a href="WorkflowCore_ValidationResult.html">WorkflowCore.Models.ValidationResult</a></td><td class="right">2</td><td class="right">0</td><td class="right">2</td><td class="right">15</td><td title="2/2" class="right">100%</td><td><table class="coverage"><tr><td class="green covered100">&nbsp;</td></tr></table></td><td class="right">0</td><td class="right">0</td><td class="right" title="-"></td><td><table class="coverage"><tr><td class="gray covered100">&nbsp;</td></tr></table></td></tr>
+<tr><td><a href="WorkflowCore_WorkflowExecutionResult.html">WorkflowCore.Models.WorkflowExecutionResult</a></td><td class="right">5</td><td class="right">0</td><td class="right">5</td><td class="right">10</td><td title="5/5" class="right">100%</td><td><table class="coverage"><tr><td class="green covered100">&nbsp;</td></tr></table></td><td class="right">0</td><td class="right">0</td><td class="right" title="-"></td><td><table class="coverage"><tr><td class="gray covered100">&nbsp;</td></tr></table></td></tr>
+<tr><td><a href="WorkflowCore_WorkflowResource.html">WorkflowCore.Models.WorkflowResource</a></td><td class="right">5</td><td class="right">0</td><td class="right">5</td><td class="right">57</td><td title="5/5" class="right">100%</td><td><table class="coverage"><tr><td class="green covered100">&nbsp;</td></tr></table></td><td class="right">0</td><td class="right">0</td><td class="right" title="-"></td><td><table class="coverage"><tr><td class="gray covered100">&nbsp;</td></tr></table></td></tr>
+<tr><td><a href="WorkflowCore_WorkflowSpec.html">WorkflowCore.Models.WorkflowSpec</a></td><td class="right">2</td><td class="right">0</td><td class="right">2</td><td class="right">57</td><td title="2/2" class="right">100%</td><td><table class="coverage"><tr><td class="green covered100">&nbsp;</td></tr></table></td><td class="right">0</td><td class="right">0</td><td class="right" title="-"></td><td><table class="coverage"><tr><td class="gray covered100">&nbsp;</td></tr></table></td></tr>
+<tr><td><a href="WorkflowCore_WorkflowStatus.html">WorkflowCore.Models.WorkflowStatus</a></td><td class="right">4</td><td class="right">0</td><td class="right">4</td><td class="right">57</td><td title="4/4" class="right">100%</td><td><table class="coverage"><tr><td class="green covered100">&nbsp;</td></tr></table></td><td class="right">0</td><td class="right">0</td><td class="right" title="-"></td><td><table class="coverage"><tr><td class="gray covered100">&nbsp;</td></tr></table></td></tr>
+<tr><td><a href="WorkflowCore_WorkflowTaskResource.html">WorkflowCore.Models.WorkflowTaskResource</a></td><td class="right">5</td><td class="right">0</td><td class="right">5</td><td class="right">72</td><td title="5/5" class="right">100%</td><td><table class="coverage"><tr><td class="green covered100">&nbsp;</td></tr></table></td><td class="right">0</td><td class="right">0</td><td class="right" title="-"></td><td><table class="coverage"><tr><td class="gray covered100">&nbsp;</td></tr></table></td></tr>
+<tr><td><a href="WorkflowCore_WorkflowTaskSpec.html">WorkflowCore.Models.WorkflowTaskSpec</a></td><td class="right">6</td><td class="right">0</td><td class="right">6</td><td class="right">72</td><td title="6/6" class="right">100%</td><td><table class="coverage"><tr><td class="green covered100">&nbsp;</td></tr></table></td><td class="right">0</td><td class="right">0</td><td class="right" title="-"></td><td><table class="coverage"><tr><td class="gray covered100">&nbsp;</td></tr></table></td></tr>
+<tr><td><a href="WorkflowCore_WorkflowTaskStatus.html">WorkflowCore.Models.WorkflowTaskStatus</a></td><td class="right">2</td><td class="right">0</td><td class="right">2</td><td class="right">72</td><td title="2/2" class="right">100%</td><td><table class="coverage"><tr><td class="green covered100">&nbsp;</td></tr></table></td><td class="right">0</td><td class="right">0</td><td class="right" title="-"></td><td><table class="coverage"><tr><td class="gray covered100">&nbsp;</td></tr></table></td></tr>
+<tr><td><a href="WorkflowCore_WorkflowTaskStep.html">WorkflowCore.Models.WorkflowTaskStep</a></td><td class="right">5</td><td class="right">0</td><td class="right">5</td><td class="right">57</td><td title="5/5" class="right">100%</td><td><table class="coverage"><tr><td class="green covered100">&nbsp;</td></tr></table></td><td class="right">0</td><td class="right">0</td><td class="right" title="-"></td><td><table class="coverage"><tr><td class="gray covered100">&nbsp;</td></tr></table></td></tr>
+<tr><td><a href="WorkflowCore_ExecutionGraphBuilder.html">WorkflowCore.Services.ExecutionGraphBuilder</a></td><td class="right">34</td><td class="right">0</td><td class="right">34</td><td class="right">56</td><td title="34/34" class="right">100%</td><td><table class="coverage"><tr><td class="green covered100">&nbsp;</td></tr></table></td><td class="right">14</td><td class="right">16</td><td class="right" title="14/16">87.5%</td><td><table class="coverage"><tr><td class="green covered88">&nbsp;</td><td class="red covered12">&nbsp;</td></tr></table></td></tr>
+<tr><td><a href="WorkflowCore_HttpClientWrapper.html">WorkflowCore.Services.HttpClientWrapper</a></td><td class="right">0</td><td class="right">7</td><td class="right">7</td><td class="right">21</td><td title="0/7" class="right">0%</td><td><table class="coverage"><tr><td class="red covered100">&nbsp;</td></tr></table></td><td class="right">0</td><td class="right">2</td><td class="right" title="0/2">0%</td><td><table class="coverage"><tr><td class="red covered100">&nbsp;</td></tr></table></td></tr>
+<tr><td><a href="WorkflowCore_HttpTaskExecutor.html">WorkflowCore.Services.HttpTaskExecutor</a></td><td class="right">102</td><td class="right">4</td><td class="right">106</td><td class="right">172</td><td title="102/106" class="right">96.2%</td><td><table class="coverage"><tr><td class="green covered96">&nbsp;</td><td class="red covered4">&nbsp;</td></tr></table></td><td class="right">35</td><td class="right">44</td><td class="right" title="35/44">79.5%</td><td><table class="coverage"><tr><td class="green covered80">&nbsp;</td><td class="red covered20">&nbsp;</td></tr></table></td></tr>
+<tr><td><a href="WorkflowCore_RetryPolicy.html">WorkflowCore.Services.RetryPolicy</a></td><td class="right">24</td><td class="right">1</td><td class="right">25</td><td class="right">60</td><td title="24/25" class="right">96%</td><td><table class="coverage"><tr><td class="green covered96">&nbsp;</td><td class="red covered4">&nbsp;</td></tr></table></td><td class="right">13</td><td class="right">14</td><td class="right" title="13/14">92.8%</td><td><table class="coverage"><tr><td class="green covered93">&nbsp;</td><td class="red covered7">&nbsp;</td></tr></table></td></tr>
 <tr><td><a href="WorkflowCore_SchemaParseException.html">WorkflowCore.Services.SchemaParseException</a></td><td class="right">0</td><td class="right">3</td><td class="right">3</td><td class="right">48</td><td title="0/3" class="right">0%</td><td><table class="coverage"><tr><td class="red covered100">&nbsp;</td></tr></table></td><td class="right">0</td><td class="right">0</td><td class="right" title="-"></td><td><table class="coverage"><tr><td class="gray covered100">&nbsp;</td></tr></table></td></tr>
 <tr><td><a href="WorkflowCore_SchemaParser.html">WorkflowCore.Services.SchemaParser</a></td><td class="right">13</td><td class="right">3</td><td class="right">16</td><td class="right">48</td><td title="13/16" class="right">81.2%</td><td><table class="coverage"><tr><td class="green covered81">&nbsp;</td><td class="red covered19">&nbsp;</td></tr></table></td><td class="right">2</td><td class="right">2</td><td class="right" title="2/2">100%</td><td><table class="coverage"><tr><td class="green covered100">&nbsp;</td></tr></table></td></tr>
-<tr><td><a href="WorkflowCore_TypeCompatibilityChecker.html">WorkflowCore.Services.TypeCompatibilityChecker</a></td><td class="right">44</td><td class="right">3</td><td class="right">47</td><td class="right">84</td><td title="44/47" class="right">93.6%</td><td><table class="coverage"><tr><td class="green covered94">&nbsp;</td><td class="red covered6">&nbsp;</td></tr></table></td><td class="right">31</td><td class="right">34</td><td class="right" title="31/34">91.1%</td><td><table class="coverage"><tr><td class="green covered91">&nbsp;</td><td class="red covered9">&nbsp;</td></tr></table></td></tr>
+<tr><td><a href="WorkflowCore_SchemaValidator.html">WorkflowCore.Services.SchemaValidator</a></td><td class="right">43</td><td class="right">2</td><td class="right">45</td><td class="right">73</td><td title="43/45" class="right">95.5%</td><td><table class="coverage"><tr><td class="green covered96">&nbsp;</td><td class="red covered4">&nbsp;</td></tr></table></td><td class="right">17</td><td class="right">20</td><td class="right" title="17/20">85%</td><td><table class="coverage"><tr><td class="green covered85">&nbsp;</td><td class="red covered15">&nbsp;</td></tr></table></td></tr>
+<tr><td><a href="WorkflowCore_TemplateParser.html">WorkflowCore.Services.TemplateParser</a></td><td class="right">48</td><td class="right">7</td><td class="right">55</td><td class="right">87</td><td title="48/55" class="right">87.2%</td><td><table class="coverage"><tr><td class="green covered87">&nbsp;</td><td class="red covered13">&nbsp;</td></tr></table></td><td class="right">13</td><td class="right">18</td><td class="right" title="13/18">72.2%</td><td><table class="coverage"><tr><td class="green covered72">&nbsp;</td><td class="red covered28">&nbsp;</td></tr></table></td></tr>
+<tr><td><a href="WorkflowCore_TemplateResolver.html">WorkflowCore.Services.TemplateResolver</a></td><td class="right">69</td><td class="right">1</td><td class="right">70</td><td class="right">117</td><td title="69/70" class="right">98.5%</td><td><table class="coverage"><tr><td class="green covered98">&nbsp;</td><td class="red covered2">&nbsp;</td></tr></table></td><td class="right">40</td><td class="right">42</td><td class="right" title="40/42">95.2%</td><td><table class="coverage"><tr><td class="green covered95">&nbsp;</td><td class="red covered5">&nbsp;</td></tr></table></td></tr>
+<tr><td><a href="WorkflowCore_TypeCompatibilityChecker.html">WorkflowCore.Services.TypeCompatibilityChecker</a></td><td class="right">41</td><td class="right">7</td><td class="right">48</td><td class="right">78</td><td title="41/48" class="right">85.4%</td><td><table class="coverage"><tr><td class="green covered85">&nbsp;</td><td class="red covered15">&nbsp;</td></tr></table></td><td class="right">18</td><td class="right">22</td><td class="right" title="18/22">81.8%</td><td><table class="coverage"><tr><td class="green covered82">&nbsp;</td><td class="red covered18">&nbsp;</td></tr></table></td></tr>
+<tr><td><a href="WorkflowCore_WorkflowOrchestrator.html">WorkflowCore.Services.WorkflowOrchestrator</a></td><td class="right">112</td><td class="right">1</td><td class="right">113</td><td class="right">179</td><td title="112/113" class="right">99.1%</td><td><table class="coverage"><tr><td class="green covered99">&nbsp;</td><td class="red covered1">&nbsp;</td></tr></table></td><td class="right">18</td><td class="right">20</td><td class="right" title="18/20">90%</td><td><table class="coverage"><tr><td class="green covered90">&nbsp;</td><td class="red covered10">&nbsp;</td></tr></table></td></tr>
+<tr><td><a href="WorkflowCore_WorkflowValidator.html">WorkflowCore.Services.WorkflowValidator</a></td><td class="right">83</td><td class="right">12</td><td class="right">95</td><td class="right">142</td><td title="83/95" class="right">87.3%</td><td><table class="coverage"><tr><td class="green covered87">&nbsp;</td><td class="red covered13">&nbsp;</td></tr></table></td><td class="right">33</td><td class="right">50</td><td class="right" title="33/50">66%</td><td><table class="coverage"><tr><td class="green covered66">&nbsp;</td><td class="red covered34">&nbsp;</td></tr></table></td></tr>
+<tr><th>WorkflowOperator</th><th class="right">69</th><th class="right">30</th><th class="right">99</th><th class="right">343</th><th title="69/99" class="right">69.6%</th><th><table class="coverage"><tr><td class="green covered70">&nbsp;</td><td class="red covered30">&nbsp;</td></tr></table></th><th class="right">36</th><th class="right">46</th><th class="right" title="36/46">78.2%</th><th><table class="coverage"><tr><td class="green covered78">&nbsp;</td><td class="red covered22">&nbsp;</td></tr></table></th></tr>
+<tr><td><a href="WorkflowOperator_Program.html">Program</a></td><td class="right">0</td><td class="right">27</td><td class="right">27</td><td class="right">44</td><td title="0/27" class="right">0%</td><td><table class="coverage"><tr><td class="red covered100">&nbsp;</td></tr></table></td><td class="right">0</td><td class="right">4</td><td class="right" title="0/4">0%</td><td><table class="coverage"><tr><td class="red covered100">&nbsp;</td></tr></table></td></tr>
+<tr><td><a href="WorkflowOperator_WeatherForecast.html">WeatherForecast</a></td><td class="right">0</td><td class="right">2</td><td class="right">2</td><td class="right">44</td><td title="0/2" class="right">0%</td><td><table class="coverage"><tr><td class="red covered100">&nbsp;</td></tr></table></td><td class="right">0</td><td class="right">0</td><td class="right" title="-"></td><td><table class="coverage"><tr><td class="gray covered100">&nbsp;</td></tr></table></td></tr>
+<tr><td><a href="WorkflowOperator_WorkflowController.html">WorkflowOperator.Controllers.WorkflowController</a></td><td class="right">12</td><td class="right">1</td><td class="right">13</td><td class="right">37</td><td title="12/13" class="right">92.3%</td><td><table class="coverage"><tr><td class="green covered92">&nbsp;</td><td class="red covered8">&nbsp;</td></tr></table></td><td class="right">3</td><td class="right">4</td><td class="right" title="3/4">75%</td><td><table class="coverage"><tr><td class="green covered75">&nbsp;</td><td class="red covered25">&nbsp;</td></tr></table></td></tr>
+<tr><td><a href="WorkflowOperator_WorkflowTaskController.html">WorkflowOperator.Controllers.WorkflowTaskController</a></td><td class="right">7</td><td class="right">0</td><td class="right">7</td><td class="right">29</td><td title="7/7" class="right">100%</td><td><table class="coverage"><tr><td class="green covered100">&nbsp;</td></tr></table></td><td class="right">2</td><td class="right">2</td><td class="right" title="2/2">100%</td><td><table class="coverage"><tr><td class="green covered100">&nbsp;</td></tr></table></td></tr>
+<tr><td><a href="WorkflowOperator_AdmissionResult.html">WorkflowOperator.Webhooks.AdmissionResult</a></td><td class="right">4</td><td class="right">0</td><td class="right">4</td><td class="right">62</td><td title="4/4" class="right">100%</td><td><table class="coverage"><tr><td class="green covered100">&nbsp;</td></tr></table></td><td class="right">0</td><td class="right">0</td><td class="right" title="-"></td><td><table class="coverage"><tr><td class="gray covered100">&nbsp;</td></tr></table></td></tr>
+<tr><td><a href="WorkflowOperator_WorkflowTaskValidationWebhook.html">WorkflowOperator.Webhooks.WorkflowTaskValidationWebhook</a></td><td class="right">20</td><td class="right">0</td><td class="right">20</td><td class="right">62</td><td title="20/20" class="right">100%</td><td><table class="coverage"><tr><td class="green covered100">&nbsp;</td></tr></table></td><td class="right">15</td><td class="right">18</td><td class="right" title="15/18">83.3%</td><td><table class="coverage"><tr><td class="green covered83">&nbsp;</td><td class="red covered17">&nbsp;</td></tr></table></td></tr>
+<tr><td><a href="WorkflowOperator_WorkflowValidationWebhook.html">WorkflowOperator.Webhooks.WorkflowValidationWebhook</a></td><td class="right">26</td><td class="right">0</td><td class="right">26</td><td class="right">65</td><td title="26/26" class="right">100%</td><td><table class="coverage"><tr><td class="green covered100">&nbsp;</td></tr></table></td><td class="right">16</td><td class="right">18</td><td class="right" title="16/18">88.8%</td><td><table class="coverage"><tr><td class="green covered89">&nbsp;</td><td class="red covered11">&nbsp;</td></tr></table></td></tr>
 </tbody>
 </table>
 </div>
 </coverage-info>
-<div class="footer">Generated by: ReportGenerator 5.5.0.0<br />21/11/2025 - 21:16:08<br /><a href="https://github.com/danielpalme/ReportGenerator">GitHub</a> | <a href="https://reportgenerator.io">reportgenerator.io</a></div></div></div>
+<div class="footer">Generated by: ReportGenerator 5.5.0.0<br />22/11/2025 - 13:41:41<br /><a href="https://github.com/danielpalme/ReportGenerator">GitHub</a> | <a href="https://reportgenerator.io">reportgenerator.io</a></div></div></div>
 <script type="text/javascript">
 /* <![CDATA[ */
 (function() {

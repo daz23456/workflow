@@ -1,0 +1,101 @@
+
+[38;5;11m   _____ _              _               _   _ ______ _______  [0m
+[38;5;11m  / ____| |            | |             | \ | |  ____|__   __| [0m
+[38;5;11m | (___ | |_ _ __ _   _| | _____ _ __  |  \| | |__     | |    [0m
+[38;5;11m  \___ \| __| '__| | | | |/ / _ \ '__| | . ` |  __|    | |    [0m
+[38;5;11m  ____) | |_| |  | |_| |   <  __/ |    | |\  | |____   | |    [0m
+[38;5;11m |_____/ \__|_|   \__, |_|\_\___|_| (_)|_| \_|______|  |_|    [0m
+[38;5;11m                   __/ |                                      [0m
+[38;5;11m                  |___/                                       [0m
+
+
+Version: [38;5;2m4.8.1[0m
+
+[23:51:18 INF] Stryker will use a max of 4 parallel testsessions.
+[23:51:18 INF] Analysis starting.
+[23:51:18 INF] Analyzing 1 test project(s).
+[23:51:23 INF] Found project /Users/darren/dev/workflow/src/WorkflowGateway/WorkflowGateway.csproj to mutate.
+[23:51:24 INF] Analysis complete.
+[23:51:24 INF] Building test project /Users/darren/dev/workflow/tests/WorkflowGateway.Tests/WorkflowGateway.Tests.csproj (1/1)
+[23:51:24 INF] Building project WorkflowGateway.Tests.csproj using dotnet build WorkflowGateway.Tests.csproj (directory /Users/darren/dev/workflow/tests/WorkflowGateway.Tests.)
+[23:51:31 INF] Number of tests found: 91 for project /Users/darren/dev/workflow/src/WorkflowGateway/WorkflowGateway.csproj. Initial test run started.
+[23:52:03 INF] 368 mutants created
+[23:52:03 INF] Capture mutant coverage using 'CoverageBasedTest' mode.
+[38;5;14mHint: by passing "--open-report or -o" the report will open automatically and [0m
+[38;5;14mupdate the report in real-time.[0m
+[23:52:31 INF] 16    mutants got status CompileError. Reason: Mutant caused compile errors
+[23:52:31 INF] 33    mutants got status NoCoverage.   Reason: Not covered by any test.
+[23:52:31 INF] 74    mutants got status Ignored.      Reason: Removed by block already covered filter
+[23:52:31 INF] 35    mutants got status Ignored.      Reason: Removed by mutate filter
+[23:52:31 INF] 158   total mutants are skipped for the above mentioned reasons
+[23:52:31 INF] 210   total mutants will be tested
+
+Killed:   [38;5;13m141[0m
+Survived: [38;5;13m 68[0m
+Timeout:  [38;5;13m  1[0m
+
+
+All mutants have been tested, and your mutation score has been calculated
+╭─────────────────────────────────────────┬────┬─────┬──────┬───────┬─────┬────╮
+│ File                                    │ %  │  #  │   #  │    #  │  #  │ #  │
+│                                         │ s… │ ki… │ tim… │ surv… │ no  │ e… │
+│                                         │    │     │      │       │ cov │    │
+├─────────────────────────────────────────┼────┼─────┼──────┼───────┼─────┼────┤
+│ /Users/darren/dev/workflow/src          │ [38;5;9m58[0m │ 141 │    1 │   226 │  33 │ 16 │
+│                                         │ [38;5;9m.4[0m │     │      │       │     │    │
+│                                         │  [38;5;9m4[0m │     │      │       │     │    │
+│ Controllers/DynamicWorkflowController.c │ [38;5;9m58[0m │  34 │    0 │    43 │   5 │  4 │
+│ s                                       │ [38;5;9m.6[0m │     │      │       │     │    │
+│                                         │  [38;5;9m2[0m │     │      │       │     │    │
+│ Controllers/WorkflowManagementControlle │ [38;5;9m56[0m │   9 │    0 │    11 │   4 │  1 │
+│ r.cs                                    │ [38;5;9m.2[0m │     │      │       │     │    │
+│                                         │  [38;5;9m5[0m │     │      │       │     │    │
+│ Models/EndpointInfo.cs                  │ [38;5;9m0.[0m │   0 │    0 │     4 │   0 │  0 │
+│                                         │ [38;5;9m00[0m │     │      │       │     │    │
+│ Models/TaskListResponse.cs              │ [38;5;9m0.[0m │   0 │    0 │     3 │   0 │  0 │
+│                                         │ [38;5;9m00[0m │     │      │       │     │    │
+│ Models/WorkflowDetailResponse.cs        │ [38;5;9m0.[0m │   0 │    0 │     5 │   0 │  0 │
+│                                         │ [38;5;9m00[0m │     │      │       │     │    │
+│ Models/WorkflowExecutionRequest.cs      │ [38;5;8mN/[0m │   0 │    0 │     0 │   0 │  0 │
+│                                         │  [38;5;8mA[0m │     │      │       │     │    │
+│ Models/WorkflowExecutionResponse.cs     │ [38;5;9m0.[0m │   0 │    0 │     1 │   0 │  0 │
+│                                         │ [38;5;9m00[0m │     │      │       │     │    │
+│ Models/WorkflowListResponse.cs          │ [38;5;9m0.[0m │   0 │    0 │     3 │   0 │  0 │
+│                                         │ [38;5;9m00[0m │     │      │       │     │    │
+│ Models/WorkflowTestRequest.cs           │ [38;5;8mN/[0m │   0 │    0 │     0 │   0 │  0 │
+│                                         │  [38;5;8mA[0m │     │      │       │     │    │
+│ Models/WorkflowTestResponse.cs          │ [38;5;8mN/[0m │   0 │    0 │     0 │   0 │  0 │
+│                                         │  [38;5;8mA[0m │     │      │       │     │    │
+│ Program.cs                              │ [38;5;8mN/[0m │   0 │    0 │    35 │   0 │  0 │
+│                                         │  [38;5;8mA[0m │     │      │       │     │    │
+│ Services/DynamicEndpointService.cs      │ [38;5;11m72[0m │  16 │    0 │    14 │   1 │  0 │
+│                                         │ [38;5;11m.7[0m │     │      │       │     │    │
+│                                         │  [38;5;11m3[0m │     │      │       │     │    │
+│ Services/IKubernetesWorkflowClient.cs   │ [38;5;8mN/[0m │   0 │    0 │     0 │   0 │  0 │
+│                                         │  [38;5;8mA[0m │     │      │       │     │    │
+│ Services/InputValidationService.cs      │ [38;5;11m66[0m │   8 │    0 │    11 │   0 │  1 │
+│                                         │ [38;5;11m.6[0m │     │      │       │     │    │
+│                                         │  [38;5;11m7[0m │     │      │       │     │    │
+│ Services/KubernetesWorkflowClient.cs    │ [38;5;9m0.[0m │   0 │    0 │    38 │  23 │  0 │
+│                                         │ [38;5;9m00[0m │     │      │       │     │    │
+│ Services/WorkflowDiscoveryService.cs    │ [38;5;2m93[0m │  31 │    0 │    15 │   0 │  4 │
+│                                         │ [38;5;2m.9[0m │     │      │       │     │    │
+│                                         │  [38;5;2m4[0m │     │      │       │     │    │
+│ Services/WorkflowExecutionService.cs    │ [38;5;11m76[0m │  20 │    0 │    13 │   0 │  1 │
+│                                         │ [38;5;11m.9[0m │     │      │       │     │    │
+│                                         │  [38;5;11m2[0m │     │      │       │     │    │
+│ Services/WorkflowWatcherService.cs      │ [38;5;11m64[0m │  23 │    1 │    30 │   0 │  5 │
+│                                         │ [38;5;11m.8[0m │     │      │       │     │    │
+│                                         │  [38;5;11m6[0m │     │      │       │     │    │
+╰─────────────────────────────────────────┴────┴─────┴──────┴───────┴─────┴────╯
+
+[38;5;2mYour json report has been generated at:[0m
+]8;id=790833143;file:///Users/darren/dev/workflow/tests/WorkflowGateway.Tests/../../stryker-output/workflowgateway/reports/mutation-report.json\[38;5;2m/Users/darren/dev/workflow/tests/WorkflowGateway.Tests/../../stryker-output/work[0m]8;;\
+]8;id=2010831936;file:///Users/darren/dev/workflow/tests/WorkflowGateway.Tests/../../stryker-output/workflowgateway/reports/mutation-report.json\[38;5;2mflowgateway/reports/mutation-report.json[0m]8;;\
+
+[38;5;2mYour html report has been generated at:[0m
+]8;id=1874051801;file:///Users/darren/dev/workflow/tests/WorkflowGateway.Tests/../../stryker-output/workflowgateway/reports/mutation-report.html\[38;5;2m/Users/darren/dev/workflow/tests/WorkflowGateway.Tests/../../stryker-output/work[0m]8;;\
+]8;id=1002331111;file:///Users/darren/dev/workflow/tests/WorkflowGateway.Tests/../../stryker-output/workflowgateway/reports/mutation-report.html\[38;5;2mflowgateway/reports/mutation-report.html[0m]8;;\
+[38;5;2mYou can open it in your browser of choice.[0m
+[23:55:19 INF] Time Elapsed 00:04:00.9686351
+[23:55:19 INF] The final mutation score is 58.44 %

@@ -1,8 +1,12 @@
+using KubeOps.Operator;
 using WorkflowCore.Services;
 using WorkflowOperator.Controllers;
 using WorkflowOperator.Webhooks;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Add KubeOps operator
+builder.Services.AddKubernetesOperator();
 
 // Register WorkflowCore services needed by controllers and webhooks
 builder.Services.AddSingleton<ISchemaParser, SchemaParser>();

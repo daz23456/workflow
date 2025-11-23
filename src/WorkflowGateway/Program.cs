@@ -58,6 +58,7 @@ builder.Services.AddScoped<IInputValidationService, InputValidationService>();
 builder.Services.AddScoped(sp => new WorkflowExecutionService(
     sp.GetRequiredService<IWorkflowOrchestrator>(),
     sp.GetRequiredService<IWorkflowDiscoveryService>(),
+    sp.GetService<IExecutionRepository>(),  // Nullable - OK if DB not configured
     executionTimeout));
 
 // Register background service

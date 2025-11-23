@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Moq;
+using WorkflowCore.Data.Repositories;
 using WorkflowCore.Models;
 using WorkflowCore.Services;
 using WorkflowGateway.Models;
@@ -12,19 +13,30 @@ public class WorkflowExecutionServiceTests
 {
     private readonly Mock<IWorkflowOrchestrator> _orchestratorMock;
     private readonly Mock<IWorkflowDiscoveryService> _discoveryServiceMock;
+    private readonly Mock<IExecutionRepository> _executionRepositoryMock;
     private readonly IWorkflowExecutionService _service;
 
     public WorkflowExecutionServiceTests()
     {
         _orchestratorMock = new Mock<IWorkflowOrchestrator>();
         _discoveryServiceMock = new Mock<IWorkflowDiscoveryService>();
+        _executionRepositoryMock = new Mock<IExecutionRepository>();
 
         // Setup discovery service to return empty tasks by default
         _discoveryServiceMock
             .Setup(x => x.DiscoverTasksAsync(It.IsAny<string>()))
             .ReturnsAsync(new List<WorkflowTaskResource>());
 
-        _service = new WorkflowExecutionService(_orchestratorMock.Object, _discoveryServiceMock.Object, timeoutSeconds: 30);
+        // Setup execution repository to return what was saved (default behavior)
+        _executionRepositoryMock
+            .Setup(x => x.SaveExecutionAsync(It.IsAny<ExecutionRecord>()))
+            .ReturnsAsync((ExecutionRecord r) => r);
+
+        _service = new WorkflowExecutionService(
+            _orchestratorMock.Object,
+            _discoveryServiceMock.Object,
+            _executionRepositoryMock.Object,
+            timeoutSeconds: 30);
     }
 
     [Fact]
@@ -112,7 +124,7 @@ public class WorkflowExecutionServiceTests
     public async Task ExecuteAsync_ShouldEnforceTimeout()
     {
         // Arrange
-        var service = new WorkflowExecutionService(_orchestratorMock.Object, _discoveryServiceMock.Object, timeoutSeconds: 1);
+        var service = new WorkflowExecutionService(_orchestratorMock.Object, _discoveryServiceMock.Object, _executionRepositoryMock.Object, timeoutSeconds: 1);
 
         var workflow = new WorkflowResource
         {
@@ -213,7 +225,7 @@ public class WorkflowExecutionServiceTests
     public async Task ExecuteAsync_ShouldCancelOnTimeout()
     {
         // Arrange
-        var service = new WorkflowExecutionService(_orchestratorMock.Object, _discoveryServiceMock.Object, timeoutSeconds: 1);
+        var service = new WorkflowExecutionService(_orchestratorMock.Object, _discoveryServiceMock.Object, _executionRepositoryMock.Object, timeoutSeconds: 1);
 
         var workflow = new WorkflowResource
         {
@@ -257,7 +269,7 @@ public class WorkflowExecutionServiceTests
     public void Constructor_WithNullOrchestrator_ShouldThrowArgumentNullException()
     {
         // Act
-        Action act = () => new WorkflowExecutionService(null!, _discoveryServiceMock.Object);
+        Action act = () => new WorkflowExecutionService(null!, _discoveryServiceMock.Object, _executionRepositoryMock.Object);
 
         // Assert
         act.Should().Throw<ArgumentNullException>()
@@ -268,7 +280,7 @@ public class WorkflowExecutionServiceTests
     public void Constructor_WithNullDiscoveryService_ShouldThrowArgumentNullException()
     {
         // Act
-        Action act = () => new WorkflowExecutionService(_orchestratorMock.Object, null!);
+        Action act = () => new WorkflowExecutionService(_orchestratorMock.Object, null!, _executionRepositoryMock.Object);
 
         // Assert
         act.Should().Throw<ArgumentNullException>()
@@ -499,5 +511,297 @@ public class WorkflowExecutionServiceTests
         // Assert
         result.ExecutedTasks.Should().HaveCount(3);
         result.ExecutedTasks.Should().Contain(new[] { "task-1", "task-2", "task-3" });
+    }
+
+    // ========== DATABASE PERSISTENCE TESTS ==========
+
+    [Fact]
+    public async Task ExecuteAsync_ShouldGenerateExecutionId()
+    {
+        // Arrange
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = "test-workflow" },
+            Spec = new WorkflowSpec()
+        };
+
+        _orchestratorMock
+            .Setup(x => x.ExecuteAsync(It.IsAny<WorkflowResource>(), It.IsAny<Dictionary<string, WorkflowTaskResource>>(), It.IsAny<Dictionary<string, object>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new WorkflowExecutionResult { Success = true });
+
+        // Act
+        var result = await _service.ExecuteAsync(workflow, new Dictionary<string, object>());
+
+        // Assert
+        result.ExecutionId.Should().NotBeEmpty();
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ShouldSaveExecutionRecordWithRunningStatus_BeforeOrchestration()
+    {
+        // Arrange
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = "user-workflow" },
+            Spec = new WorkflowSpec()
+        };
+
+        ExecutionRecord? savedRecord = null;
+        _executionRepositoryMock
+            .Setup(x => x.SaveExecutionAsync(It.IsAny<ExecutionRecord>()))
+            .Callback<ExecutionRecord>(record => savedRecord = record)
+            .ReturnsAsync((ExecutionRecord r) => r);
+
+        _orchestratorMock
+            .Setup(x => x.ExecuteAsync(It.IsAny<WorkflowResource>(), It.IsAny<Dictionary<string, WorkflowTaskResource>>(), It.IsAny<Dictionary<string, object>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new WorkflowExecutionResult { Success = true });
+
+        // Act
+        await _service.ExecuteAsync(workflow, new Dictionary<string, object>());
+
+        // Assert
+        _executionRepositoryMock.Verify(x => x.SaveExecutionAsync(It.Is<ExecutionRecord>(r =>
+            r.Status == ExecutionStatus.Running &&
+            r.WorkflowName == "user-workflow"
+        )), Times.AtLeastOnce());
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ShouldUpdateExecutionRecordToSucceeded_WhenWorkflowSucceeds()
+    {
+        // Arrange
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = "success-workflow" },
+            Spec = new WorkflowSpec()
+        };
+
+        _orchestratorMock
+            .Setup(x => x.ExecuteAsync(It.IsAny<WorkflowResource>(), It.IsAny<Dictionary<string, WorkflowTaskResource>>(), It.IsAny<Dictionary<string, object>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new WorkflowExecutionResult { Success = true });
+
+        // Act
+        await _service.ExecuteAsync(workflow, new Dictionary<string, object>());
+
+        // Assert - Called twice (Running + Succeeded)
+        _executionRepositoryMock.Verify(x => x.SaveExecutionAsync(It.Is<ExecutionRecord>(r =>
+            r.Status == ExecutionStatus.Succeeded &&
+            r.CompletedAt != null &&
+            r.Duration != null
+        )), Times.Once());  // Final call with Succeeded status
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ShouldUpdateExecutionRecordToFailed_WhenWorkflowFails()
+    {
+        // Arrange
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = "fail-workflow" },
+            Spec = new WorkflowSpec()
+        };
+
+        _orchestratorMock
+            .Setup(x => x.ExecuteAsync(It.IsAny<WorkflowResource>(), It.IsAny<Dictionary<string, WorkflowTaskResource>>(), It.IsAny<Dictionary<string, object>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new WorkflowExecutionResult
+            {
+                Success = false,
+                Errors = new List<string> { "Task failed" }
+            });
+
+        // Act
+        await _service.ExecuteAsync(workflow, new Dictionary<string, object>());
+
+        // Assert
+        _executionRepositoryMock.Verify(x => x.SaveExecutionAsync(It.Is<ExecutionRecord>(r =>
+            r.Status == ExecutionStatus.Failed &&
+            r.CompletedAt != null
+        )), Times.Once());
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ShouldSaveTaskExecutionRecords_AfterCompletion()
+    {
+        // Arrange
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = "multi-task-workflow" },
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "task-1", TaskRef = "fetch-user" },
+                    new WorkflowTaskStep { Id = "task-2", TaskRef = "send-email" }
+                }
+            }
+        };
+
+        _orchestratorMock
+            .Setup(x => x.ExecuteAsync(It.IsAny<WorkflowResource>(), It.IsAny<Dictionary<string, WorkflowTaskResource>>(), It.IsAny<Dictionary<string, object>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new WorkflowExecutionResult
+            {
+                Success = true,
+                TaskResults = new Dictionary<string, TaskExecutionResult>
+                {
+                    ["task-1"] = new TaskExecutionResult
+                    {
+                        Success = true,
+                        Output = new Dictionary<string, object> { ["userId"] = "123" },
+                        Duration = TimeSpan.FromMilliseconds(150),
+                        RetryCount = 0
+                    },
+                    ["task-2"] = new TaskExecutionResult
+                    {
+                        Success = true,
+                        Duration = TimeSpan.FromMilliseconds(200),
+                        RetryCount = 1
+                    }
+                }
+            });
+
+        // Act
+        await _service.ExecuteAsync(workflow, new Dictionary<string, object>());
+
+        // Assert
+        _executionRepositoryMock.Verify(x => x.SaveExecutionAsync(It.Is<ExecutionRecord>(r =>
+            r.TaskExecutionRecords.Count == 2 &&
+            r.TaskExecutionRecords.Any(t => t.TaskId == "task-1" && t.Status == "Succeeded") &&
+            r.TaskExecutionRecords.Any(t => t.TaskId == "task-2" && t.RetryCount == 1)
+        )), Times.Once());
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ShouldSerializeInputSnapshot_AsJson()
+    {
+        // Arrange
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = "input-test" },
+            Spec = new WorkflowSpec()
+        };
+
+        var input = new Dictionary<string, object>
+        {
+            ["userId"] = "123",
+            ["action"] = "register"
+        };
+
+        _orchestratorMock
+            .Setup(x => x.ExecuteAsync(It.IsAny<WorkflowResource>(), It.IsAny<Dictionary<string, WorkflowTaskResource>>(), It.IsAny<Dictionary<string, object>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new WorkflowExecutionResult { Success = true });
+
+        // Act
+        await _service.ExecuteAsync(workflow, input);
+
+        // Assert
+        _executionRepositoryMock.Verify(x => x.SaveExecutionAsync(It.Is<ExecutionRecord>(r =>
+            r.InputSnapshot != null &&
+            r.InputSnapshot.Contains("userId") &&
+            r.InputSnapshot.Contains("123")
+        )), Times.AtLeastOnce());
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ShouldHandleTimeout_AndSaveFailedStatus()
+    {
+        // Arrange
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = "timeout-workflow" },
+            Spec = new WorkflowSpec()
+        };
+
+        _orchestratorMock
+            .Setup(x => x.ExecuteAsync(It.IsAny<WorkflowResource>(), It.IsAny<Dictionary<string, WorkflowTaskResource>>(), It.IsAny<Dictionary<string, object>>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new OperationCanceledException());
+
+        var timeoutService = new WorkflowExecutionService(
+            _orchestratorMock.Object,
+            _discoveryServiceMock.Object,
+            _executionRepositoryMock.Object,
+            timeoutSeconds: 1);
+
+        // Act
+        var result = await timeoutService.ExecuteAsync(workflow, new Dictionary<string, object>());
+
+        // Assert
+        result.Success.Should().BeFalse();
+        _executionRepositoryMock.Verify(x => x.SaveExecutionAsync(It.Is<ExecutionRecord>(r =>
+            r.Status == ExecutionStatus.Failed
+        )), Times.Once());
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ShouldIncludeTaskDetails_InResponse()
+    {
+        // Arrange
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = "task-details-workflow" },
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "task-1", TaskRef = "fetch-data" }
+                }
+            }
+        };
+
+        _orchestratorMock
+            .Setup(x => x.ExecuteAsync(It.IsAny<WorkflowResource>(), It.IsAny<Dictionary<string, WorkflowTaskResource>>(), It.IsAny<Dictionary<string, object>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new WorkflowExecutionResult
+            {
+                Success = true,
+                TaskResults = new Dictionary<string, TaskExecutionResult>
+                {
+                    ["task-1"] = new TaskExecutionResult
+                    {
+                        Success = true,
+                        Output = new Dictionary<string, object> { ["data"] = "value" },
+                        Duration = TimeSpan.FromMilliseconds(300),
+                        RetryCount = 0,
+                        Errors = new List<string>()
+                    }
+                }
+            });
+
+        // Act
+        var result = await _service.ExecuteAsync(workflow, new Dictionary<string, object>());
+
+        // Assert
+        result.TaskDetails.Should().HaveCount(1);
+        result.TaskDetails[0].TaskId.Should().Be("task-1");
+        result.TaskDetails[0].TaskRef.Should().Be("fetch-data");
+        result.TaskDetails[0].Success.Should().BeTrue();
+        result.TaskDetails[0].DurationMs.Should().Be(300);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithNullRepository_ShouldSkipPersistence()
+    {
+        // Arrange
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = "no-db-workflow" },
+            Spec = new WorkflowSpec()
+        };
+
+        _orchestratorMock
+            .Setup(x => x.ExecuteAsync(It.IsAny<WorkflowResource>(), It.IsAny<Dictionary<string, WorkflowTaskResource>>(), It.IsAny<Dictionary<string, object>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new WorkflowExecutionResult { Success = true });
+
+        var serviceWithoutRepo = new WorkflowExecutionService(
+            _orchestratorMock.Object,
+            _discoveryServiceMock.Object,
+            null,
+            timeoutSeconds: 30);
+
+        // Act
+        var result = await serviceWithoutRepo.ExecuteAsync(workflow, new Dictionary<string, object>());
+
+        // Assert
+        result.Success.Should().BeTrue();
+        result.ExecutionId.Should().NotBeEmpty();
+        // No repository calls should be made
     }
 }

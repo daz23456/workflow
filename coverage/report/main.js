@@ -213,54 +213,55 @@ var assemblies = [
   {
     "name": "WorkflowCore",
     "classes": [
+      { "name": "WorkflowCore.Data.Migrations.InitialCreate", "rp": "WorkflowCore_InitialCreate.html", "cl": 0, "ucl": 217, "cal": 217, "tl": 273, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "WorkflowCore.Data.Migrations.WorkflowDbContextModelSnapshot", "rp": "WorkflowCore_WorkflowDbContextModelSnapshot.html", "cl": 0, "ucl": 127, "cal": 127, "tl": 153, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "WorkflowCore.Data.Repositories.ExecutionRepository", "rp": "WorkflowCore_ExecutionRepository.html", "cl": 39, "ucl": 0, "cal": 39, "tl": 71, "cb": 6, "tb": 6, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "WorkflowCore.Data.Repositories.TaskExecutionRepository", "rp": "WorkflowCore_TaskExecutionRepository.html", "cl": 24, "ucl": 0, "cal": 24, "tl": 46, "cb": 2, "tb": 2, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "WorkflowCore.Data.Repositories.WorkflowVersionRepository", "rp": "WorkflowCore_WorkflowVersionRepository.html", "cl": 21, "ucl": 0, "cal": 21, "tl": 43, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "WorkflowCore.Data.WorkflowDbContext", "rp": "WorkflowCore_WorkflowDbContext.html", "cl": 29, "ucl": 0, "cal": 29, "tl": 63, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "WorkflowCore.Data.WorkflowDbContextFactory", "rp": "WorkflowCore_WorkflowDbContextFactory.html", "cl": 0, "ucl": 5, "cal": 5, "tl": 22, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "WorkflowCore.Models.CompatibilityError", "rp": "WorkflowCore_CompatibilityError.html", "cl": 3, "ucl": 0, "cal": 3, "tl": 14, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "WorkflowCore.Models.CompatibilityResult", "rp": "WorkflowCore_CompatibilityResult.html", "cl": 2, "ucl": 0, "cal": 2, "tl": 14, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "WorkflowCore.Models.ErrorMessageBuilder", "rp": "WorkflowCore_ErrorMessageBuilder.html", "cl": 41, "ucl": 0, "cal": 41, "tl": 69, "cb": 4, "tb": 4, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "WorkflowCore.Models.ExecutionGraph", "rp": "WorkflowCore_ExecutionGraph.html", "cl": 81, "ucl": 0, "cal": 81, "tl": 125, "cb": 26, "tb": 26, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "WorkflowCore.Models.ExecutionGraphResult", "rp": "WorkflowCore_ExecutionGraphResult.html", "cl": 3, "ucl": 0, "cal": 3, "tl": 125, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "WorkflowCore.Models.HttpRequestDefinition", "rp": "WorkflowCore_HttpRequestDefinition.html", "cl": 5, "ucl": 0, "cal": 5, "tl": 72, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "WorkflowCore.Models.ErrorMessageBuilder", "rp": "WorkflowCore_ErrorMessageBuilder.html", "cl": 41, "ucl": 0, "cal": 41, "tl": 69, "cb": 3, "tb": 4, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "WorkflowCore.Models.ExecutionGraph", "rp": "WorkflowCore_ExecutionGraph.html", "cl": 86, "ucl": 0, "cal": 86, "tl": 132, "cb": 26, "tb": 26, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "WorkflowCore.Models.ExecutionGraphResult", "rp": "WorkflowCore_ExecutionGraphResult.html", "cl": 3, "ucl": 0, "cal": 3, "tl": 132, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "WorkflowCore.Models.ExecutionRecord", "rp": "WorkflowCore_ExecutionRecord.html", "cl": 8, "ucl": 0, "cal": 8, "tl": 47, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "WorkflowCore.Models.HttpRequestDefinition", "rp": "WorkflowCore_HttpRequestDefinition.html", "cl": 4, "ucl": 0, "cal": 4, "tl": 72, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "WorkflowCore.Models.PropertyDefinition", "rp": "WorkflowCore_PropertyDefinition.html", "cl": 10, "ucl": 0, "cal": 10, "tl": 56, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "WorkflowCore.Models.ResourceMetadata", "rp": "WorkflowCore_ResourceMetadata.html", "cl": 3, "ucl": 0, "cal": 3, "tl": 72, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "WorkflowCore.Models.ResourceMetadata", "rp": "WorkflowCore_ResourceMetadata.html", "cl": 2, "ucl": 0, "cal": 2, "tl": 72, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "WorkflowCore.Models.RetryPolicyOptions", "rp": "WorkflowCore_RetryPolicyOptions.html", "cl": 4, "ucl": 0, "cal": 4, "tl": 9, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "WorkflowCore.Models.SchemaDefinition", "rp": "WorkflowCore_SchemaDefinition.html", "cl": 7, "ucl": 0, "cal": 7, "tl": 56, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "WorkflowCore.Models.TaskExecutionRecord", "rp": "WorkflowCore_TaskExecutionRecord.html", "cl": 12, "ucl": 0, "cal": 12, "tl": 67, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "WorkflowCore.Models.TaskExecutionResult", "rp": "WorkflowCore_TaskExecutionResult.html", "cl": 5, "ucl": 0, "cal": 5, "tl": 10, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "WorkflowCore.Models.TemplateContext", "rp": "WorkflowCore_TemplateContext.html", "cl": 2, "ucl": 0, "cal": 2, "tl": 24, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "WorkflowCore.Models.TemplateContext", "rp": "WorkflowCore_TemplateContext.html", "cl": 2, "ucl": 0, "cal": 2, "tl": 26, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "WorkflowCore.Models.TemplateExpression", "rp": "WorkflowCore_TemplateExpression.html", "cl": 3, "ucl": 0, "cal": 3, "tl": 21, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "WorkflowCore.Models.TemplateParseResult", "rp": "WorkflowCore_TemplateParseResult.html", "cl": 3, "ucl": 0, "cal": 3, "tl": 21, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "WorkflowCore.Models.TemplateResolutionException", "rp": "WorkflowCore_TemplateResolutionException.html", "cl": 5, "ucl": 4, "cal": 9, "tl": 24, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "WorkflowCore.Models.TemplateResolutionException", "rp": "WorkflowCore_TemplateResolutionException.html", "cl": 5, "ucl": 4, "cal": 9, "tl": 26, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "WorkflowCore.Models.ValidationError", "rp": "WorkflowCore_ValidationError.html", "cl": 4, "ucl": 0, "cal": 4, "tl": 15, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "WorkflowCore.Models.ValidationResult", "rp": "WorkflowCore_ValidationResult.html", "cl": 2, "ucl": 0, "cal": 2, "tl": 15, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "WorkflowCore.Models.WorkflowExecutionResult", "rp": "WorkflowCore_WorkflowExecutionResult.html", "cl": 5, "ucl": 0, "cal": 5, "tl": 10, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "WorkflowCore.Models.WorkflowResource", "rp": "WorkflowCore_WorkflowResource.html", "cl": 5, "ucl": 0, "cal": 5, "tl": 57, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "WorkflowCore.Models.WorkflowSpec", "rp": "WorkflowCore_WorkflowSpec.html", "cl": 2, "ucl": 0, "cal": 2, "tl": 57, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "WorkflowCore.Models.WorkflowStatus", "rp": "WorkflowCore_WorkflowStatus.html", "cl": 4, "ucl": 0, "cal": 4, "tl": 57, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "WorkflowCore.Models.WorkflowInputParameter", "rp": "WorkflowCore_WorkflowInputParameter.html", "cl": 4, "ucl": 0, "cal": 4, "tl": 78, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "WorkflowCore.Models.WorkflowResource", "rp": "WorkflowCore_WorkflowResource.html", "cl": 5, "ucl": 0, "cal": 5, "tl": 78, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "WorkflowCore.Models.WorkflowSpec", "rp": "WorkflowCore_WorkflowSpec.html", "cl": 3, "ucl": 0, "cal": 3, "tl": 78, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "WorkflowCore.Models.WorkflowStatus", "rp": "WorkflowCore_WorkflowStatus.html", "cl": 4, "ucl": 0, "cal": 4, "tl": 78, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "WorkflowCore.Models.WorkflowTaskResource", "rp": "WorkflowCore_WorkflowTaskResource.html", "cl": 5, "ucl": 0, "cal": 5, "tl": 72, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "WorkflowCore.Models.WorkflowTaskSpec", "rp": "WorkflowCore_WorkflowTaskSpec.html", "cl": 6, "ucl": 0, "cal": 6, "tl": 72, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "WorkflowCore.Models.WorkflowTaskSpec", "rp": "WorkflowCore_WorkflowTaskSpec.html", "cl": 5, "ucl": 0, "cal": 5, "tl": 72, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "WorkflowCore.Models.WorkflowTaskStatus", "rp": "WorkflowCore_WorkflowTaskStatus.html", "cl": 2, "ucl": 0, "cal": 2, "tl": 72, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "WorkflowCore.Models.WorkflowTaskStep", "rp": "WorkflowCore_WorkflowTaskStep.html", "cl": 5, "ucl": 0, "cal": 5, "tl": 57, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "WorkflowCore.Services.ExecutionGraphBuilder", "rp": "WorkflowCore_ExecutionGraphBuilder.html", "cl": 34, "ucl": 0, "cal": 34, "tl": 56, "cb": 14, "tb": 16, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "WorkflowCore.Models.WorkflowTaskStep", "rp": "WorkflowCore_WorkflowTaskStep.html", "cl": 4, "ucl": 0, "cal": 4, "tl": 78, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "WorkflowCore.Models.WorkflowVersion", "rp": "WorkflowCore_WorkflowVersion.html", "cl": 5, "ucl": 0, "cal": 5, "tl": 33, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "WorkflowCore.Services.ExecutionGraphBuilder", "rp": "WorkflowCore_ExecutionGraphBuilder.html", "cl": 34, "ucl": 0, "cal": 34, "tl": 56, "cb": 16, "tb": 16, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "WorkflowCore.Services.HttpClientWrapper", "rp": "WorkflowCore_HttpClientWrapper.html", "cl": 0, "ucl": 7, "cal": 7, "tl": 21, "cb": 0, "tb": 2, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "WorkflowCore.Services.HttpTaskExecutor", "rp": "WorkflowCore_HttpTaskExecutor.html", "cl": 102, "ucl": 4, "cal": 106, "tl": 172, "cb": 35, "tb": 44, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "WorkflowCore.Services.RetryPolicy", "rp": "WorkflowCore_RetryPolicy.html", "cl": 24, "ucl": 1, "cal": 25, "tl": 60, "cb": 13, "tb": 14, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "WorkflowCore.Services.SchemaParseException", "rp": "WorkflowCore_SchemaParseException.html", "cl": 0, "ucl": 3, "cal": 3, "tl": 48, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "WorkflowCore.Services.HttpTaskExecutor", "rp": "WorkflowCore_HttpTaskExecutor.html", "cl": 119, "ucl": 0, "cal": 119, "tl": 192, "cb": 46, "tb": 52, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "WorkflowCore.Services.RetryPolicy", "rp": "WorkflowCore_RetryPolicy.html", "cl": 25, "ucl": 0, "cal": 25, "tl": 60, "cb": 13, "tb": 14, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "WorkflowCore.Services.SchemaParseException", "rp": "WorkflowCore_SchemaParseException.html", "cl": 3, "ucl": 0, "cal": 3, "tl": 48, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "WorkflowCore.Services.SchemaParser", "rp": "WorkflowCore_SchemaParser.html", "cl": 13, "ucl": 3, "cal": 16, "tl": 48, "cb": 2, "tb": 2, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "WorkflowCore.Services.SchemaValidator", "rp": "WorkflowCore_SchemaValidator.html", "cl": 43, "ucl": 2, "cal": 45, "tl": 73, "cb": 17, "tb": 20, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "WorkflowCore.Services.TemplateParser", "rp": "WorkflowCore_TemplateParser.html", "cl": 48, "ucl": 7, "cal": 55, "tl": 87, "cb": 13, "tb": 18, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "WorkflowCore.Services.TemplateResolver", "rp": "WorkflowCore_TemplateResolver.html", "cl": 69, "ucl": 1, "cal": 70, "tl": 117, "cb": 40, "tb": 42, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "WorkflowCore.Services.TypeCompatibilityChecker", "rp": "WorkflowCore_TypeCompatibilityChecker.html", "cl": 41, "ucl": 7, "cal": 48, "tl": 78, "cb": 18, "tb": 22, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "WorkflowCore.Services.WorkflowOrchestrator", "rp": "WorkflowCore_WorkflowOrchestrator.html", "cl": 112, "ucl": 1, "cal": 113, "tl": 179, "cb": 18, "tb": 20, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "WorkflowCore.Services.WorkflowValidator", "rp": "WorkflowCore_WorkflowValidator.html", "cl": 83, "ucl": 12, "cal": 95, "tl": 142, "cb": 33, "tb": 50, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-    ]},
-  {
-    "name": "WorkflowOperator",
-    "classes": [
-      { "name": "Program", "rp": "WorkflowOperator_Program.html", "cl": 0, "ucl": 27, "cal": 27, "tl": 44, "cb": 0, "tb": 4, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "WeatherForecast", "rp": "WorkflowOperator_WeatherForecast.html", "cl": 0, "ucl": 2, "cal": 2, "tl": 44, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "WorkflowOperator.Controllers.WorkflowController", "rp": "WorkflowOperator_WorkflowController.html", "cl": 12, "ucl": 1, "cal": 13, "tl": 37, "cb": 3, "tb": 4, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "WorkflowOperator.Controllers.WorkflowTaskController", "rp": "WorkflowOperator_WorkflowTaskController.html", "cl": 7, "ucl": 0, "cal": 7, "tl": 29, "cb": 2, "tb": 2, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "WorkflowOperator.Webhooks.AdmissionResult", "rp": "WorkflowOperator_AdmissionResult.html", "cl": 4, "ucl": 0, "cal": 4, "tl": 62, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "WorkflowOperator.Webhooks.WorkflowTaskValidationWebhook", "rp": "WorkflowOperator_WorkflowTaskValidationWebhook.html", "cl": 20, "ucl": 0, "cal": 20, "tl": 62, "cb": 15, "tb": 18, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "WorkflowOperator.Webhooks.WorkflowValidationWebhook", "rp": "WorkflowOperator_WorkflowValidationWebhook.html", "cl": 26, "ucl": 0, "cal": 26, "tl": 65, "cb": 16, "tb": 18, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "WorkflowCore.Services.SchemaValidator", "rp": "WorkflowCore_SchemaValidator.html", "cl": 43, "ucl": 2, "cal": 45, "tl": 73, "cb": 16, "tb": 20, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "WorkflowCore.Services.TemplateParser", "rp": "WorkflowCore_TemplateParser.html", "cl": 48, "ucl": 7, "cal": 55, "tl": 87, "cb": 12, "tb": 18, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "WorkflowCore.Services.TemplateResolver", "rp": "WorkflowCore_TemplateResolver.html", "cl": 70, "ucl": 0, "cal": 70, "tl": 117, "cb": 40, "tb": 42, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "WorkflowCore.Services.TimeoutParser", "rp": "WorkflowCore_TimeoutParser.html", "cl": 13, "ucl": 22, "cal": 35, "tl": 50, "cb": 5, "tb": 18, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "WorkflowCore.Services.TypeCompatibilityChecker", "rp": "WorkflowCore_TypeCompatibilityChecker.html", "cl": 48, "ucl": 0, "cal": 48, "tl": 78, "cb": 22, "tb": 22, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "WorkflowCore.Services.WorkflowOrchestrator", "rp": "WorkflowCore_WorkflowOrchestrator.html", "cl": 196, "ucl": 22, "cal": 218, "tl": 310, "cb": 50, "tb": 62, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "WorkflowCore.Services.WorkflowValidator", "rp": "WorkflowCore_WorkflowValidator.html", "cl": 116, "ucl": 8, "cal": 124, "tl": 176, "cb": 58, "tb": 64, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
     ]},
 ];
 
@@ -275,16 +276,16 @@ var riskHotspotMetrics = [
 
 var riskHotspots = [
   {
-    "assembly": "WorkflowCore", "class": "WorkflowCore.Services.WorkflowValidator", "reportPath": "WorkflowCore_WorkflowValidator.html", "methodName": "GetPropertyAtPath(WorkflowCore.Models.SchemaDefinition,System.String)", "methodShortName": "GetPropertyAtPath(...)", "fileIndex": 0, "line": 111,
+    "assembly": "WorkflowCore", "class": "WorkflowCore.Services.TimeoutParser", "reportPath": "WorkflowCore_TimeoutParser.html", "methodName": "Parse(System.String)", "methodShortName": "Parse(...)", "fileIndex": 0, "line": 6,
     "metrics": [
-      { "value": 35, "exceeded": true },
-      { "value": 16, "exceeded": true },
+      { "value": 98, "exceeded": true },
+      { "value": 18, "exceeded": true },
     ]},
   {
-    "assembly": "WorkflowCore", "class": "WorkflowCore.Services.WorkflowValidator", "reportPath": "WorkflowCore_WorkflowValidator.html", "methodName": "GetPropertyAtPath(WorkflowCore.Models.SchemaDefinition,System.String)", "methodShortName": "GetPropertyAtPath(...)", "fileIndex": 0, "line": 112,
+    "assembly": "WorkflowCore", "class": "WorkflowCore.Services.WorkflowValidator", "reportPath": "WorkflowCore_WorkflowValidator.html", "methodName": "ValidateAsync(WorkflowCore.Models.WorkflowResource,System.Collections.Generic.Dictionary`2<System.String,WorkflowCore.Models.WorkflowTaskResource>)", "methodShortName": "ValidateAsync(...)", "fileIndex": 0, "line": 28,
     "metrics": [
-      { "value": 31, "exceeded": true },
-      { "value": 16, "exceeded": true },
+      { "value": 36, "exceeded": true },
+      { "value": 36, "exceeded": true },
     ]},
   {
     "assembly": "WorkflowCore", "class": "WorkflowCore.Services.TemplateResolver", "reportPath": "WorkflowCore_TemplateResolver.html", "methodName": "ResolveInputPath(System.String,System.Collections.Generic.Dictionary`2<System.String,System.Object>,System.String)", "methodShortName": "ResolveInputPath(...)", "fileIndex": 0, "line": 73,
@@ -293,43 +294,25 @@ var riskHotspots = [
       { "value": 28, "exceeded": true },
     ]},
   {
-    "assembly": "WorkflowCore", "class": "WorkflowCore.Services.TemplateResolver", "reportPath": "WorkflowCore_TemplateResolver.html", "methodName": "ResolveInputPath(System.String,System.Collections.Generic.Dictionary`2<System.String,System.Object>,System.String)", "methodShortName": "ResolveInputPath(...)", "fileIndex": 0, "line": 74,
+    "assembly": "WorkflowCore", "class": "WorkflowCore.Services.WorkflowOrchestrator", "reportPath": "WorkflowCore_WorkflowOrchestrator.html", "methodName": "ExecuteAsync()", "methodShortName": "ExecuteAsync()", "fileIndex": 0, "line": 42,
     "metrics": [
       { "value": 28, "exceeded": false },
       { "value": 28, "exceeded": true },
     ]},
   {
-    "assembly": "WorkflowCore", "class": "WorkflowCore.Services.HttpTaskExecutor", "reportPath": "WorkflowCore_HttpTaskExecutor.html", "methodName": "BuildHttpRequestAsync()", "methodShortName": "BuildHttpRequestAsync()", "fileIndex": 0, "line": 135,
-    "metrics": [
-      { "value": 23, "exceeded": false },
-      { "value": 22, "exceeded": true },
-    ]},
-  {
-    "assembly": "WorkflowCore", "class": "WorkflowCore.Services.HttpTaskExecutor", "reportPath": "WorkflowCore_HttpTaskExecutor.html", "methodName": "BuildHttpRequestAsync()", "methodShortName": "BuildHttpRequestAsync()", "fileIndex": 0, "line": 137,
-    "metrics": [
-      { "value": 23, "exceeded": false },
-      { "value": 22, "exceeded": true },
-    ]},
-  {
-    "assembly": "WorkflowCore", "class": "WorkflowCore.Services.TypeCompatibilityChecker", "reportPath": "WorkflowCore_TypeCompatibilityChecker.html", "methodName": "CheckCompatibilityRecursive(WorkflowCore.Models.PropertyDefinition,WorkflowCore.Models.PropertyDefinition,System.String,System.Collections.Generic.List`1<WorkflowCore.Models.CompatibilityError>)", "methodShortName": "CheckCompatibilityRecursive(...)", "fileIndex": 0, "line": 29,
-    "metrics": [
-      { "value": 25, "exceeded": false },
-      { "value": 22, "exceeded": true },
-    ]},
-  {
-    "assembly": "WorkflowCore", "class": "WorkflowCore.Services.TypeCompatibilityChecker", "reportPath": "WorkflowCore_TypeCompatibilityChecker.html", "methodName": "CheckCompatibilityRecursive(WorkflowCore.Models.PropertyDefinition,WorkflowCore.Models.PropertyDefinition,System.String,System.Collections.Generic.List`1<WorkflowCore.Models.CompatibilityError>)", "methodShortName": "CheckCompatibilityRecursive(...)", "fileIndex": 0, "line": 31,
-    "metrics": [
-      { "value": 26, "exceeded": false },
-      { "value": 22, "exceeded": true },
-    ]},
-  {
-    "assembly": "WorkflowCore", "class": "WorkflowCore.Services.WorkflowValidator", "reportPath": "WorkflowCore_WorkflowValidator.html", "methodName": "ValidateAsync(WorkflowCore.Models.WorkflowResource,System.Collections.Generic.Dictionary`2<System.String,WorkflowCore.Models.WorkflowTaskResource>)", "methodShortName": "ValidateAsync(...)", "fileIndex": 0, "line": 28,
+    "assembly": "WorkflowCore", "class": "WorkflowCore.Services.HttpTaskExecutor", "reportPath": "WorkflowCore_HttpTaskExecutor.html", "methodName": "BuildHttpRequestAsync()", "methodShortName": "BuildHttpRequestAsync()", "fileIndex": 0, "line": 155,
     "metrics": [
       { "value": 22, "exceeded": false },
       { "value": 22, "exceeded": true },
     ]},
   {
-    "assembly": "WorkflowCore", "class": "WorkflowCore.Services.WorkflowValidator", "reportPath": "WorkflowCore_WorkflowValidator.html", "methodName": "ValidateAsync(WorkflowCore.Models.WorkflowResource,System.Collections.Generic.Dictionary`2<System.String,WorkflowCore.Models.WorkflowTaskResource>)", "methodShortName": "ValidateAsync(...)", "fileIndex": 0, "line": 29,
+    "assembly": "WorkflowCore", "class": "WorkflowCore.Services.HttpTaskExecutor", "reportPath": "WorkflowCore_HttpTaskExecutor.html", "methodName": "ExecuteAsync()", "methodShortName": "ExecuteAsync()", "fileIndex": 0, "line": 40,
+    "metrics": [
+      { "value": 22, "exceeded": false },
+      { "value": 22, "exceeded": true },
+    ]},
+  {
+    "assembly": "WorkflowCore", "class": "WorkflowCore.Services.TypeCompatibilityChecker", "reportPath": "WorkflowCore_TypeCompatibilityChecker.html", "methodName": "CheckCompatibilityRecursive(WorkflowCore.Models.PropertyDefinition,WorkflowCore.Models.PropertyDefinition,System.String,System.Collections.Generic.List`1<WorkflowCore.Models.CompatibilityError>)", "methodShortName": "CheckCompatibilityRecursive(...)", "fileIndex": 0, "line": 29,
     "metrics": [
       { "value": 22, "exceeded": false },
       { "value": 22, "exceeded": true },
@@ -341,39 +324,21 @@ var riskHotspots = [
       { "value": 18, "exceeded": true },
     ]},
   {
-    "assembly": "WorkflowCore", "class": "WorkflowCore.Services.SchemaValidator", "reportPath": "WorkflowCore_SchemaValidator.html", "methodName": "ValidateAsync()", "methodShortName": "ValidateAsync()", "fileIndex": 0, "line": 24,
-    "metrics": [
-      { "value": 18, "exceeded": false },
-      { "value": 18, "exceeded": true },
-    ]},
-  {
-    "assembly": "WorkflowCore", "class": "WorkflowCore.Services.WorkflowOrchestrator", "reportPath": "WorkflowCore_WorkflowOrchestrator.html", "methodName": "ExecuteAsync()", "methodShortName": "ExecuteAsync()", "fileIndex": 0, "line": 33,
-    "metrics": [
-      { "value": 18, "exceeded": false },
-      { "value": 18, "exceeded": true },
-    ]},
-  {
-    "assembly": "WorkflowCore", "class": "WorkflowCore.Services.WorkflowOrchestrator", "reportPath": "WorkflowCore_WorkflowOrchestrator.html", "methodName": "ExecuteAsync()", "methodShortName": "ExecuteAsync()", "fileIndex": 0, "line": 34,
-    "metrics": [
-      { "value": 18, "exceeded": false },
-      { "value": 18, "exceeded": true },
-    ]},
-  {
     "assembly": "WorkflowCore", "class": "WorkflowCore.Services.ExecutionGraphBuilder", "reportPath": "WorkflowCore_ExecutionGraphBuilder.html", "methodName": "Build(WorkflowCore.Models.WorkflowResource)", "methodShortName": "Build(...)", "fileIndex": 0, "line": 16,
     "metrics": [
       { "value": 16, "exceeded": false },
       { "value": 16, "exceeded": true },
     ]},
   {
-    "assembly": "WorkflowCore", "class": "WorkflowCore.Services.ExecutionGraphBuilder", "reportPath": "WorkflowCore_ExecutionGraphBuilder.html", "methodName": "Build(WorkflowCore.Models.WorkflowResource)", "methodShortName": "Build(...)", "fileIndex": 0, "line": 17,
+    "assembly": "WorkflowCore", "class": "WorkflowCore.Services.WorkflowOrchestrator", "reportPath": "WorkflowCore_WorkflowOrchestrator.html", "methodName": "ResolveOutputExpression(System.String,WorkflowCore.Models.TemplateContext)", "methodShortName": "ResolveOutputExpression(...)", "fileIndex": 0, "line": 248,
     "metrics": [
-      { "value": 16, "exceeded": false },
+      { "value": 24, "exceeded": false },
       { "value": 16, "exceeded": true },
     ]},
   {
-    "assembly": "WorkflowOperator", "class": "WorkflowOperator.Webhooks.WorkflowTaskValidationWebhook", "reportPath": "WorkflowOperator_WorkflowTaskValidationWebhook.html", "methodName": "ValidateAsync()", "methodShortName": "ValidateAsync()", "fileIndex": 0, "line": 20,
+    "assembly": "WorkflowCore", "class": "WorkflowCore.Services.WorkflowValidator", "reportPath": "WorkflowCore_WorkflowValidator.html", "methodName": "GetPropertyAtPath(WorkflowCore.Models.SchemaDefinition,System.String)", "methodShortName": "GetPropertyAtPath(...)", "fileIndex": 0, "line": 145,
     "metrics": [
-      { "value": 16, "exceeded": false },
+      { "value": 17, "exceeded": false },
       { "value": 16, "exceeded": true },
     ]},
 ];

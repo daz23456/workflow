@@ -109,8 +109,8 @@ public class DynamicWorkflowController : ControllerBase
         // Validate input against workflow schema
         var validationResult = await _validationService.ValidateAsync(workflow, request.Input);
 
-        // Build execution plan (without executing)
-        ExecutionPlan? executionPlan = null;
+        // Build enhanced execution plan (without executing)
+        EnhancedExecutionPlan? executionPlan = null;
         var validationErrors = new List<string>();
 
         if (!validationResult.IsValid)
@@ -126,10 +126,54 @@ public class DynamicWorkflowController : ControllerBase
 
                 if (graphResult.IsValid && graphResult.Graph != null)
                 {
-                    executionPlan = new ExecutionPlan
+                    var graph = graphResult.Graph;
+                    var parallelGroups = graph.GetParallelGroups();
+
+                    // Build task level lookup from parallel groups
+                    var taskLevels = new Dictionary<string, int>();
+                    foreach (var group in parallelGroups)
                     {
-                        TaskOrder = graphResult.Graph.GetExecutionOrder(),
-                        Parallelizable = new List<string>() // TODO: Implement parallel task detection
+                        foreach (var taskId in group.TaskIds)
+                        {
+                            taskLevels[taskId] = group.Level;
+                        }
+                    }
+
+                    // Build nodes with level information
+                    var nodes = new List<GraphNode>();
+                    foreach (var taskId in graph.Nodes)
+                    {
+                        var taskStep = workflow.Spec.Tasks?.FirstOrDefault(t => t.Id == taskId);
+                        nodes.Add(new GraphNode
+                        {
+                            Id = taskId,
+                            TaskRef = taskStep?.TaskRef ?? "",
+                            Level = taskLevels.ContainsKey(taskId) ? taskLevels[taskId] : 0
+                        });
+                    }
+
+                    // Build edges from dependencies
+                    var edges = new List<GraphEdge>();
+                    foreach (var taskId in graph.Nodes)
+                    {
+                        var dependencies = graph.GetDependencies(taskId);
+                        foreach (var dependency in dependencies)
+                        {
+                            edges.Add(new GraphEdge
+                            {
+                                From = taskId,
+                                To = dependency
+                            });
+                        }
+                    }
+
+                    executionPlan = new EnhancedExecutionPlan
+                    {
+                        Nodes = nodes,
+                        Edges = edges,
+                        ParallelGroups = parallelGroups,
+                        ExecutionOrder = graph.GetExecutionOrder(),
+                        ValidationResult = validationResult
                     };
                 }
                 else

@@ -265,7 +265,19 @@ public class DynamicWorkflowControllerTests
         response!.Valid.Should().BeTrue();
         response.ValidationErrors.Should().BeEmpty();
         response.ExecutionPlan.Should().NotBeNull();
-        response.ExecutionPlan!.TaskOrder.Should().HaveCount(2);
+
+        // ExecutionPlan can be either ExecutionPlan or EnhancedExecutionPlan
+        var enhancedPlan = response.ExecutionPlan as EnhancedExecutionPlan;
+        if (enhancedPlan != null)
+        {
+            enhancedPlan.ExecutionOrder.Should().HaveCount(2);
+        }
+        else
+        {
+            var executionPlan = response.ExecutionPlan as ExecutionPlan;
+            executionPlan.Should().NotBeNull();
+            executionPlan!.TaskOrder.Should().HaveCount(2);
+        }
     }
 
     [Fact]

@@ -11,7 +11,7 @@ public class WorkflowTestResponse
     public List<string> ValidationErrors { get; set; } = new();
 
     [JsonPropertyName("executionPlan")]
-    public ExecutionPlan? ExecutionPlan { get; set; }
+    public object? ExecutionPlan { get; set; } // Can be ExecutionPlan or EnhancedExecutionPlan
 }
 
 public class ExecutionPlan

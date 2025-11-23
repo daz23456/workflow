@@ -71,7 +71,12 @@ public class ApiModelsTests
         deserialized.Should().NotBeNull();
         deserialized!.Valid.Should().BeTrue();
         deserialized.ExecutionPlan.Should().NotBeNull();
-        deserialized.ExecutionPlan!.TaskOrder.Should().HaveCount(2);
+
+        // Cast to ExecutionPlan to access TaskOrder
+        var executionPlan = JsonSerializer.Deserialize<ExecutionPlan>(
+            ((System.Text.Json.JsonElement)deserialized.ExecutionPlan!).GetRawText());
+        executionPlan.Should().NotBeNull();
+        executionPlan!.TaskOrder.Should().HaveCount(2);
     }
 
     [Fact]

@@ -122,6 +122,105 @@ public class ExecutionGraph
 
         result.Add(node);
     }
+
+    /// <summary>
+    /// Identifies groups of tasks that can execute in parallel.
+    /// Uses BFS to group tasks by their dependency level.
+    /// </summary>
+    /// <returns>List of parallel groups ordered by execution level.</returns>
+    public List<ParallelGroup> GetParallelGroups()
+    {
+        if (Nodes.Count == 0)
+        {
+            return new List<ParallelGroup>();
+        }
+
+        // Build a map of dependents (reverse dependencies)
+        var dependents = BuildDependentsMap();
+
+        // Track the level of each task
+        var taskLevels = new Dictionary<string, int>();
+
+        // Start with tasks that have no dependencies (level 0)
+        var queue = new Queue<string>();
+        foreach (var node in Nodes)
+        {
+            if (GetDependencies(node).Count == 0)
+            {
+                queue.Enqueue(node);
+                taskLevels[node] = 0;
+            }
+        }
+
+        // BFS to assign levels
+        while (queue.Count > 0)
+        {
+            var current = queue.Dequeue();
+            var currentLevel = taskLevels[current];
+
+            // Process all tasks that depend on this one
+            if (dependents.ContainsKey(current))
+            {
+                foreach (var dependent in dependents[current])
+                {
+                    // Check if all dependencies of the dependent are processed
+                    var dependencies = GetDependencies(dependent);
+                    var maxDependencyLevel = dependencies
+                        .Where(dep => taskLevels.ContainsKey(dep))
+                        .Select(dep => taskLevels[dep])
+                        .DefaultIfEmpty(-1)
+                        .Max();
+
+                    if (dependencies.All(dep => taskLevels.ContainsKey(dep)))
+                    {
+                        var newLevel = maxDependencyLevel + 1;
+
+                        // Update level if not set or if we found a longer dependency path
+                        if (!taskLevels.ContainsKey(dependent) || taskLevels[dependent] < newLevel)
+                        {
+                            taskLevels[dependent] = newLevel;
+                            queue.Enqueue(dependent);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Group tasks by level
+        var groupedByLevel = taskLevels
+            .GroupBy(kvp => kvp.Value)
+            .OrderBy(g => g.Key)
+            .Select(g => new ParallelGroup
+            {
+                Level = g.Key,
+                TaskIds = g.Select(kvp => kvp.Key).OrderBy(id => id).ToList()
+            })
+            .ToList();
+
+        return groupedByLevel;
+    }
+
+    /// <summary>
+    /// Builds a map of which tasks depend on each task (reverse dependencies).
+    /// </summary>
+    private Dictionary<string, HashSet<string>> BuildDependentsMap()
+    {
+        var dependents = new Dictionary<string, HashSet<string>>();
+
+        foreach (var node in Nodes)
+        {
+            foreach (var dependency in GetDependencies(node))
+            {
+                if (!dependents.ContainsKey(dependency))
+                {
+                    dependents[dependency] = new HashSet<string>();
+                }
+                dependents[dependency].Add(node);
+            }
+        }
+
+        return dependents;
+    }
 }
 
 public class ExecutionGraphResult

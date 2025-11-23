@@ -41,7 +41,7 @@ public class TemplateResolverTests
         var template = "{{tasks.fetch-user.output.id}}";
         var context = new TemplateContext
         {
-            TaskOutputs = new Dictionary<string, Dictionary<string, object>>
+            TaskOutputs = new System.Collections.Concurrent.ConcurrentDictionary<string, Dictionary<string, object>>
             {
                 ["fetch-user"] = new Dictionary<string, object>
                 {
@@ -64,7 +64,7 @@ public class TemplateResolverTests
         var template = "{{tasks.fetch-user.output.address.city}}";
         var context = new TemplateContext
         {
-            TaskOutputs = new Dictionary<string, Dictionary<string, object>>
+            TaskOutputs = new System.Collections.Concurrent.ConcurrentDictionary<string, Dictionary<string, object>>
             {
                 ["fetch-user"] = new Dictionary<string, object>
                 {
@@ -95,7 +95,7 @@ public class TemplateResolverTests
             {
                 ["userId"] = "user-123"
             },
-            TaskOutputs = new Dictionary<string, Dictionary<string, object>>
+            TaskOutputs = new System.Collections.Concurrent.ConcurrentDictionary<string, Dictionary<string, object>>
             {
                 ["fetch-user"] = new Dictionary<string, object>
                 {
@@ -133,7 +133,7 @@ public class TemplateResolverTests
         var template = "{{tasks.fetch-user.output.id}}";
         var context = new TemplateContext
         {
-            TaskOutputs = new Dictionary<string, Dictionary<string, object>>() // Empty
+            TaskOutputs = new System.Collections.Concurrent.ConcurrentDictionary<string, Dictionary<string, object>>() // Empty
         };
 
         // Act & Assert
@@ -162,7 +162,7 @@ public class TemplateResolverTests
         var template = "{{tasks.fetch-user.output.userData}}";
         var context = new TemplateContext
         {
-            TaskOutputs = new Dictionary<string, Dictionary<string, object>>
+            TaskOutputs = new System.Collections.Concurrent.ConcurrentDictionary<string, Dictionary<string, object>>
             {
                 ["fetch-user"] = new Dictionary<string, object>
                 {
@@ -187,7 +187,7 @@ public class TemplateResolverTests
         var userObject = new { name = "Alice", id = 42 };
         var context = new TemplateContext
         {
-            TaskOutputs = new Dictionary<string, Dictionary<string, object>>
+            TaskOutputs = new System.Collections.Concurrent.ConcurrentDictionary<string, Dictionary<string, object>>
             {
                 ["fetch-user"] = new Dictionary<string, object>
                 {
@@ -211,7 +211,7 @@ public class TemplateResolverTests
         var userObject = new { name = "Alice" };
         var context = new TemplateContext
         {
-            TaskOutputs = new Dictionary<string, Dictionary<string, object>>
+            TaskOutputs = new System.Collections.Concurrent.ConcurrentDictionary<string, Dictionary<string, object>>
             {
                 ["fetch-user"] = new Dictionary<string, object>
                 {
@@ -324,7 +324,7 @@ public class TemplateResolverTests
         var template = "{{tasks.fetch-user.result.data}}";
         var context = new TemplateContext
         {
-            TaskOutputs = new Dictionary<string, Dictionary<string, object>>
+            TaskOutputs = new System.Collections.Concurrent.ConcurrentDictionary<string, Dictionary<string, object>>
             {
                 ["fetch-user"] = new Dictionary<string, object> { ["result"] = "value" }
             }
@@ -424,7 +424,7 @@ public class TemplateResolverTests
         var userObject = new { name = "Alice", address = addressObject };
         var context = new TemplateContext
         {
-            TaskOutputs = new Dictionary<string, Dictionary<string, object>>
+            TaskOutputs = new System.Collections.Concurrent.ConcurrentDictionary<string, Dictionary<string, object>>
             {
                 ["fetch-user"] = new Dictionary<string, object>
                 {

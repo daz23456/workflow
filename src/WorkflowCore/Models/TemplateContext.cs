@@ -1,9 +1,11 @@
+using System.Collections.Concurrent;
+
 namespace WorkflowCore.Models;
 
 public class TemplateContext
 {
     public Dictionary<string, object> Input { get; set; } = new();
-    public Dictionary<string, Dictionary<string, object>> TaskOutputs { get; set; } = new();
+    public ConcurrentDictionary<string, Dictionary<string, object>> TaskOutputs { get; set; } = new();
 }
 
 public class TemplateResolutionException : Exception

@@ -76,64 +76,101 @@ public class WorkflowOrchestrator : IWorkflowOrchestrator
                 Input = inputs
             };
 
-            // Get execution order
-            var executionOrder = graphResult.Graph.GetExecutionOrder();
-
-            // Track failed tasks to skip their dependents
+            // Track completed and failed tasks
+            var completedTasks = new HashSet<string>();
             var failedTasks = new HashSet<string>();
+            var remainingTasks = workflow.Spec.Tasks.Select(t => t.Id).ToHashSet();
 
-            // Execute tasks in dependency order
-            foreach (var taskId in executionOrder)
+            // Execute tasks in parallel levels based on dependencies
+            while (remainingTasks.Count > 0)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var taskStep = workflow.Spec.Tasks.First(t => t.Id == taskId);
-
-                // Check if any dependencies failed
-                var dependencies = graphResult.Graph.GetDependencies(taskId);
-                var hasFailedDependency = dependencies.Any(dep => failedTasks.Contains(dep));
-
-                if (hasFailedDependency)
-                {
-                    // Skip this task because a dependency failed
-                    taskResults[taskId] = new TaskExecutionResult
+                // Find tasks ready to execute (all dependencies satisfied)
+                var readyTasks = remainingTasks
+                    .Where(taskId =>
                     {
-                        Success = false,
-                        Errors = new List<string> { "Task skipped due to failed dependency" }
-                    };
-                    failedTasks.Add(taskId);
-                    continue;
-                }
+                        var dependencies = graphResult.Graph.GetDependencies(taskId);
+                        return dependencies.All(dep => completedTasks.Contains(dep));
+                    })
+                    .ToList();
 
-                // Get task spec
-                if (!availableTasks.ContainsKey(taskStep.TaskRef))
+                if (readyTasks.Count == 0)
                 {
-                    var errorMessage = $"Task reference '{taskStep.TaskRef}' not found";
-                    taskResults[taskId] = new TaskExecutionResult
+                    // No tasks ready but tasks remaining = dependency failed or circular dependency
+                    // Mark remaining tasks as skipped
+                    foreach (var taskId in remainingTasks)
                     {
-                        Success = false,
-                        Errors = new List<string> { errorMessage }
-                    };
-                    errors.Add($"Task '{taskId}' failed: {errorMessage}");
-                    failedTasks.Add(taskId);
-                    continue;
+                        taskResults[taskId] = new TaskExecutionResult
+                        {
+                            Success = false,
+                            Errors = new List<string> { "Task skipped due to failed dependency" }
+                        };
+                        errors.Add($"Task '{taskId}' skipped due to failed dependency");
+                    }
+                    break;
                 }
 
-                var taskSpec = availableTasks[taskStep.TaskRef].Spec;
-
-                // Execute task
-                var taskResult = await _taskExecutor.ExecuteAsync(taskSpec, context, cancellationToken);
-                taskResults[taskId] = taskResult;
-
-                if (!taskResult.Success)
+                // Execute ready tasks in parallel
+                var tasks = readyTasks.Select(async taskId =>
                 {
-                    failedTasks.Add(taskId);
-                    errors.Add($"Task '{taskId}' failed: {string.Join(", ", taskResult.Errors)}");
-                }
-                else if (taskResult.Output != null)
+                    var taskStep = workflow.Spec.Tasks.First(t => t.Id == taskId);
+
+                    // Check if any dependencies failed
+                    var dependencies = graphResult.Graph.GetDependencies(taskId);
+                    var hasFailedDependency = dependencies.Any(dep => failedTasks.Contains(dep));
+
+                    if (hasFailedDependency)
+                    {
+                        return (taskId, new TaskExecutionResult
+                        {
+                            Success = false,
+                            Errors = new List<string> { "Task skipped due to failed dependency" }
+                        });
+                    }
+
+                    // Get task spec
+                    if (!availableTasks.ContainsKey(taskStep.TaskRef))
+                    {
+                        var errorMessage = $"Task reference '{taskStep.TaskRef}' not found";
+                        return (taskId, new TaskExecutionResult
+                        {
+                            Success = false,
+                            Errors = new List<string> { errorMessage }
+                        });
+                    }
+
+                    var taskSpec = availableTasks[taskStep.TaskRef].Spec;
+
+                    // Execute task
+                    var taskResult = await _taskExecutor.ExecuteAsync(taskSpec, context, cancellationToken);
+                    return (taskId, taskResult);
+                }).ToList();
+
+                // Wait for all parallel tasks to complete
+                var results = await Task.WhenAll(tasks);
+
+                // Process results
+                foreach (var (taskId, taskResult) in results)
                 {
-                    // Add task output to context for downstream tasks
-                    context.TaskOutputs[taskId] = taskResult.Output;
+                    taskResults[taskId] = taskResult;
+
+                    if (!taskResult.Success)
+                    {
+                        failedTasks.Add(taskId);
+                        errors.Add($"Task '{taskId}' failed: {string.Join(", ", taskResult.Errors)}");
+                    }
+                    else
+                    {
+                        completedTasks.Add(taskId);
+                        if (taskResult.Output != null)
+                        {
+                            // Add task output to context for downstream tasks (thread-safe)
+                            context.TaskOutputs[taskId] = taskResult.Output;
+                        }
+                    }
+
+                    remainingTasks.Remove(taskId);
                 }
             }
 

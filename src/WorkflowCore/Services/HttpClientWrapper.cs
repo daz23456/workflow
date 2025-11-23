@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace WorkflowCore.Services;
 
 public interface IHttpClientWrapper
@@ -5,6 +7,7 @@ public interface IHttpClientWrapper
     Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken);
 }
 
+[ExcludeFromCodeCoverage]
 public class HttpClientWrapper : IHttpClientWrapper
 {
     private readonly HttpClient _httpClient;

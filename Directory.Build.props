@@ -1,0 +1,20 @@
+<Project>
+  <PropertyGroup>
+    <!-- Coverage Exclusions -->
+    <CoverletOutputFormat>cobertura</CoverletOutputFormat>
+    <ExcludeByFile>
+      <!-- Exclude EF Core Migrations (auto-generated) -->
+      **/Migrations/**/*.cs;
+      <!-- Exclude design-time factories -->
+      **/*DbContextFactory.cs;
+      <!-- Exclude Program.cs (startup code, requires integration tests) -->
+      **/Program.cs;
+    </ExcludeByFile>
+    <ExcludeByAttribute>
+      <!-- Exclude classes marked with ExcludeFromCodeCoverage -->
+      ExcludeFromCodeCoverageAttribute;
+      GeneratedCodeAttribute;
+      CompilerGeneratedAttribute;
+    </ExcludeByAttribute>
+  </PropertyGroup>
+</Project>

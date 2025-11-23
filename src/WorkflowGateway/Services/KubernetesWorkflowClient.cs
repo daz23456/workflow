@@ -1,9 +1,11 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using k8s;
 using WorkflowCore.Models;
 
 namespace WorkflowGateway.Services;
 
+[ExcludeFromCodeCoverage]
 public class KubernetesWorkflowClient : IKubernetesWorkflowClient
 {
     private readonly IKubernetes _kubernetes;

@@ -4,6 +4,9 @@ namespace WorkflowGateway.Models;
 
 public class WorkflowExecutionResponse
 {
+    [JsonPropertyName("executionId")]
+    public Guid ExecutionId { get; set; }
+
     [JsonPropertyName("workflowName")]
     public string WorkflowName { get; set; } = string.Empty;
 
@@ -15,6 +18,9 @@ public class WorkflowExecutionResponse
 
     [JsonPropertyName("executedTasks")]
     public List<string> ExecutedTasks { get; set; } = new();
+
+    [JsonPropertyName("taskDetails")]
+    public List<TaskExecutionDetail> TaskDetails { get; set; } = new();
 
     [JsonPropertyName("executionTimeMs")]
     public long ExecutionTimeMs { get; set; }

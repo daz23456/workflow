@@ -122,4 +122,81 @@ public class WorkflowExecutionResponseTests
         // Assert
         response.ExecutionTimeMs.Should().Be(15000);
     }
+
+    [Fact]
+    public void WorkflowExecutionResponse_ShouldInclude_ExecutionId()
+    {
+        // Arrange
+        var executionId = Guid.NewGuid();
+
+        // Act
+        var response = new WorkflowExecutionResponse
+        {
+            WorkflowName = "user-registration",
+            Success = true,
+            ExecutionId = executionId
+        };
+
+        // Assert
+        response.ExecutionId.Should().Be(executionId);
+    }
+
+    [Fact]
+    public void WorkflowExecutionResponse_ShouldInclude_TaskDetails()
+    {
+        // Arrange
+        var taskDetails = new List<TaskExecutionDetail>
+        {
+            new TaskExecutionDetail
+            {
+                TaskId = "task-1",
+                TaskRef = "fetch-user",
+                Success = true,
+                DurationMs = 150,
+                RetryCount = 0
+            },
+            new TaskExecutionDetail
+            {
+                TaskId = "task-2",
+                TaskRef = "send-email",
+                Success = true,
+                DurationMs = 300,
+                RetryCount = 1
+            }
+        };
+
+        // Act
+        var response = new WorkflowExecutionResponse
+        {
+            WorkflowName = "onboarding",
+            Success = true,
+            TaskDetails = taskDetails
+        };
+
+        // Assert
+        response.TaskDetails.Should().HaveCount(2);
+        response.TaskDetails[0].TaskRef.Should().Be("fetch-user");
+        response.TaskDetails[1].RetryCount.Should().Be(1);
+    }
+
+    [Fact]
+    public void WorkflowExecutionResponse_ShouldInitialize_TaskDetailsAsEmptyList()
+    {
+        // Act
+        var response = new WorkflowExecutionResponse();
+
+        // Assert
+        response.TaskDetails.Should().NotBeNull();
+        response.TaskDetails.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void WorkflowExecutionResponse_ShouldInitialize_ExecutionIdAsEmpty()
+    {
+        // Act
+        var response = new WorkflowExecutionResponse();
+
+        // Assert
+        response.ExecutionId.Should().BeEmpty();
+    }
 }

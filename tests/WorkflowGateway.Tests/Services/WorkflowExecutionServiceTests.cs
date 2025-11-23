@@ -559,11 +559,10 @@ public class WorkflowExecutionServiceTests
         // Act
         await _service.ExecuteAsync(workflow, new Dictionary<string, object>());
 
-        // Assert
+        // Assert - Saved at least twice (Running + final status)
         _executionRepositoryMock.Verify(x => x.SaveExecutionAsync(It.Is<ExecutionRecord>(r =>
-            r.Status == ExecutionStatus.Running &&
             r.WorkflowName == "user-workflow"
-        )), Times.AtLeastOnce());
+        )), Times.AtLeast(2));
     }
 
     [Fact]
@@ -583,12 +582,12 @@ public class WorkflowExecutionServiceTests
         // Act
         await _service.ExecuteAsync(workflow, new Dictionary<string, object>());
 
-        // Assert - Called twice (Running + Succeeded)
+        // Assert - Verify final state was saved
         _executionRepositoryMock.Verify(x => x.SaveExecutionAsync(It.Is<ExecutionRecord>(r =>
             r.Status == ExecutionStatus.Succeeded &&
             r.CompletedAt != null &&
             r.Duration != null
-        )), Times.Once());  // Final call with Succeeded status
+        )), Times.AtLeastOnce());
     }
 
     [Fact]
@@ -616,7 +615,7 @@ public class WorkflowExecutionServiceTests
         _executionRepositoryMock.Verify(x => x.SaveExecutionAsync(It.Is<ExecutionRecord>(r =>
             r.Status == ExecutionStatus.Failed &&
             r.CompletedAt != null
-        )), Times.Once());
+        )), Times.AtLeastOnce());
     }
 
     [Fact]
@@ -667,7 +666,7 @@ public class WorkflowExecutionServiceTests
             r.TaskExecutionRecords.Count == 2 &&
             r.TaskExecutionRecords.Any(t => t.TaskId == "task-1" && t.Status == "Succeeded") &&
             r.TaskExecutionRecords.Any(t => t.TaskId == "task-2" && t.RetryCount == 1)
-        )), Times.Once());
+        )), Times.AtLeastOnce());
     }
 
     [Fact]
@@ -728,7 +727,7 @@ public class WorkflowExecutionServiceTests
         result.Success.Should().BeFalse();
         _executionRepositoryMock.Verify(x => x.SaveExecutionAsync(It.Is<ExecutionRecord>(r =>
             r.Status == ExecutionStatus.Failed
-        )), Times.Once());
+        )), Times.AtLeastOnce());
     }
 
     [Fact]

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using WorkflowCore.Data;
 using WorkflowCore.Data.Repositories;
+using WorkflowCore.Models;
 using WorkflowCore.Services;
 using WorkflowGateway.Services;
 
@@ -43,15 +44,36 @@ else
 builder.Services.AddSingleton<ISchemaParser, SchemaParser>();
 builder.Services.AddScoped<ISchemaValidator, SchemaValidator>();
 builder.Services.AddScoped<ITemplateParser, TemplateParser>();
+builder.Services.AddScoped<ITypeCompatibilityChecker, TypeCompatibilityChecker>();
 builder.Services.AddScoped<IWorkflowValidator, WorkflowValidator>();
 builder.Services.AddScoped<IExecutionGraphBuilder, ExecutionGraphBuilder>();
 builder.Services.AddScoped<ITemplateResolver, TemplateResolver>();
+
+// Register retry policy options and services
+builder.Services.AddSingleton(new RetryPolicyOptions
+{
+    InitialDelayMilliseconds = 100,
+    MaxDelayMilliseconds = 30000,
+    BackoffMultiplier = 2.0,
+    MaxRetryCount = 3
+});
 builder.Services.AddScoped<IRetryPolicy, RetryPolicy>();
+
+// Register HTTP client and related services
+builder.Services.AddHttpClient();
+builder.Services.AddScoped<HttpClient>(sp =>
+    sp.GetRequiredService<IHttpClientFactory>().CreateClient());
 builder.Services.AddScoped<IHttpClientWrapper, HttpClientWrapper>();
 builder.Services.AddScoped<IHttpTaskExecutor, HttpTaskExecutor>();
 builder.Services.AddScoped<IWorkflowOrchestrator, WorkflowOrchestrator>();
 
 // Register WorkflowGateway services
+builder.Services.AddSingleton<IKubernetesWorkflowClient>(sp =>
+{
+    // For now, return a stub - in production this would use real IKubernetes
+    // This allows health checks to work even without Kubernetes configured
+    return new KubernetesWorkflowClient(null!); // TODO: Configure properly for production
+});
 builder.Services.AddSingleton<IWorkflowDiscoveryService, WorkflowDiscoveryService>();
 builder.Services.AddSingleton<IDynamicEndpointService, DynamicEndpointService>();
 builder.Services.AddScoped<IInputValidationService, InputValidationService>();
@@ -71,7 +93,7 @@ builder.Services.AddHostedService(sp => sp.GetRequiredService<WorkflowWatcherSer
 
 var app = builder.Build();
 
-// Apply database migrations on startup (only if connection string configured)
+// Apply database migrations on startup (only if connection string configured and using relational database)
 if (!string.IsNullOrEmpty(connectionString))
 {
     using (var scope = app.Services.CreateScope())
@@ -81,9 +103,13 @@ if (!string.IsNullOrEmpty(connectionString))
 
         try
         {
-            logger.LogInformation("Applying database migrations...");
-            await dbContext.Database.MigrateAsync();
-            logger.LogInformation("Database migrations applied successfully");
+            // Only migrate if using a relational database (skip for InMemory in tests)
+            if (dbContext.Database.IsRelational())
+            {
+                logger.LogInformation("Applying database migrations...");
+                await dbContext.Database.MigrateAsync();
+                logger.LogInformation("Database migrations applied successfully");
+            }
         }
         catch (Exception ex)
         {

@@ -38,7 +38,8 @@
       "Bash(npx playwright install --with-deps chromium)",
       "Bash(npx msw:*)",
       "Bash(npm run test:*)",
-      "Bash(npm run type-check:*)"
+      "Bash(npm run type-check:*)",
+      "Bash(npm run test:coverage:*)"
     ],
     "deny": [],
     "ask": []

@@ -1,0 +1,123 @@
+using System.Text.Json;
+using Microsoft.AspNetCore.Mvc;
+using WorkflowCore.Data.Repositories;
+using WorkflowCore.Models;
+using WorkflowGateway.Models;
+
+namespace WorkflowGateway.Controllers;
+
+[ApiController]
+[Route("api/v1/executions")]
+public class ExecutionHistoryController : ControllerBase
+{
+    private readonly IExecutionRepository _executionRepository;
+
+    public ExecutionHistoryController(IExecutionRepository executionRepository)
+    {
+        _executionRepository = executionRepository ?? throw new ArgumentNullException(nameof(executionRepository));
+    }
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetExecutionDetails(Guid id)
+    {
+        var execution = await _executionRepository.GetExecutionAsync(id);
+
+        if (execution == null)
+        {
+            return NotFound(new { error = $"Execution {id} not found" });
+        }
+
+        var response = new DetailedWorkflowExecutionResponse
+        {
+            ExecutionId = execution.Id,
+            WorkflowName = execution.WorkflowName,
+            Status = execution.Status.ToString(),
+            StartedAt = execution.StartedAt,
+            CompletedAt = execution.CompletedAt,
+            DurationMs = execution.Duration.HasValue ? (long?)execution.Duration.Value.TotalMilliseconds : null,
+            Input = DeserializeInputSnapshot(execution.InputSnapshot),
+            Tasks = MapTaskExecutionDetails(execution.TaskExecutionRecords)
+        };
+
+        return Ok(response);
+    }
+
+    private Dictionary<string, object> DeserializeInputSnapshot(string? inputSnapshot)
+    {
+        if (string.IsNullOrEmpty(inputSnapshot))
+        {
+            return new Dictionary<string, object>();
+        }
+
+        try
+        {
+            var deserialized = JsonSerializer.Deserialize<Dictionary<string, object>>(inputSnapshot);
+            return deserialized ?? new Dictionary<string, object>();
+        }
+        catch (JsonException)
+        {
+            // Return empty dictionary if JSON is invalid
+            return new Dictionary<string, object>();
+        }
+    }
+
+    private List<TaskExecutionDetail> MapTaskExecutionDetails(List<TaskExecutionRecord> taskRecords)
+    {
+        var details = new List<TaskExecutionDetail>();
+
+        foreach (var record in taskRecords)
+        {
+            var detail = new TaskExecutionDetail
+            {
+                TaskId = record.TaskId,
+                TaskRef = record.TaskRef,
+                Success = record.Status == "Succeeded",
+                Output = DeserializeOutput(record.Output),
+                Errors = DeserializeErrors(record.Errors),
+                RetryCount = record.RetryCount,
+                DurationMs = record.Duration.HasValue ? (long)record.Duration.Value.TotalMilliseconds : 0,
+                StartedAt = record.StartedAt,
+                CompletedAt = record.CompletedAt ?? record.StartedAt
+            };
+
+            details.Add(detail);
+        }
+
+        return details;
+    }
+
+    private Dictionary<string, object>? DeserializeOutput(string? outputJson)
+    {
+        if (string.IsNullOrEmpty(outputJson))
+        {
+            return null;
+        }
+
+        try
+        {
+            return JsonSerializer.Deserialize<Dictionary<string, object>>(outputJson);
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+    }
+
+    private List<string> DeserializeErrors(string? errorsJson)
+    {
+        if (string.IsNullOrEmpty(errorsJson))
+        {
+            return new List<string>();
+        }
+
+        try
+        {
+            var errors = JsonSerializer.Deserialize<List<string>>(errorsJson);
+            return errors ?? new List<string>();
+        }
+        catch (JsonException)
+        {
+            return new List<string>();
+        }
+    }
+}

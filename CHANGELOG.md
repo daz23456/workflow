@@ -9,9 +9,16 @@ The format is based on stage completion, and this project follows strict TDD and
 ## [Unreleased]
 
 ### Next Stage
-- Stage 7.85: Enhanced Dry-Run Visualization
+- Stage 7.85: Enhanced Dry-Run Visualization (Deliverable 3 remaining)
 
 ### Recent Changes
+- **2025-11-23**: Stage 7.85 (Partial) - Parallel Groups & Enhanced Execution Plan (Deliverables 1 & 2)
+  - ✅ Deliverable 1: Parallel Group Detection (7 tests)
+  - ✅ Deliverable 2: Enhanced Execution Plan Model (6 tests)
+  - Total tests: 557 → 570 (+13 tests)
+  - Coverage: Maintaining 96.8%
+  - Commit: edb061e
+
 - **2025-11-23**: Coverage remediation for TimeoutParser and TemplateResolutionException
   - Added 32 TimeoutParser tests (coverage: 37.1% → 71.4%)
   - Added 8 TemplateResolutionException tests (coverage: 55.5% → 88.8%)

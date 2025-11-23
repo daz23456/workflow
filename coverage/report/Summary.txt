@@ -1,68 +1,61 @@
 Summary
-  Generated on: 22/11/2025 - 13:41:41
-  Coverage date: 22/11/2025 - 10:03:14 - 22/11/2025 - 13:41:10
-  Parser: MultiReport (3x Cobertura)
-  Assemblies: 2
-  Classes: 44
-  Files: 28
-  Line coverage: 91.2%
-  Covered lines: 855
-  Uncovered lines: 82
-  Coverable lines: 937
-  Total lines: 1752
-  Branch coverage: 82.5% (269 of 326)
-  Covered branches: 269
-  Total branches: 326
-  Method coverage: 95.8% (183 of 191)
-  Full method coverage: 82.7% (158 of 191)
-  Covered methods: 183
-  Fully covered methods: 158
-  Total methods: 191
+  Generated on: 23/11/2025 - 13:12:27
+  Coverage date: 23/11/2025 - 13:10:47
+  Parser: Cobertura
+  Assemblies: 1
+  Classes: 39
+  Files: 24
+  Line coverage: 92.6%
+  Covered lines: 951
+  Uncovered lines: 75
+  Coverable lines: 1026
+  Total lines: 1780
+  Branch coverage: 85.3% (309 of 362)
+  Covered branches: 309
+  Total branches: 362
+  Method coverage: 97.8% (136 of 139)
+  Full method coverage: 89.9% (125 of 139)
+  Covered methods: 136
+  Fully covered methods: 125
+  Total methods: 139
 
-WorkflowCore                                                93.7%
-  WorkflowCore.Models.CompatibilityError                     100%
-  WorkflowCore.Models.CompatibilityResult                    100%
-  WorkflowCore.Models.ErrorMessageBuilder                    100%
-  WorkflowCore.Models.ExecutionGraph                         100%
-  WorkflowCore.Models.ExecutionGraphResult                   100%
-  WorkflowCore.Models.HttpRequestDefinition                  100%
-  WorkflowCore.Models.PropertyDefinition                     100%
-  WorkflowCore.Models.ResourceMetadata                       100%
-  WorkflowCore.Models.RetryPolicyOptions                     100%
-  WorkflowCore.Models.SchemaDefinition                       100%
-  WorkflowCore.Models.TaskExecutionResult                    100%
-  WorkflowCore.Models.TemplateContext                        100%
-  WorkflowCore.Models.TemplateExpression                     100%
-  WorkflowCore.Models.TemplateParseResult                    100%
-  WorkflowCore.Models.TemplateResolutionException           55.5%
-  WorkflowCore.Models.ValidationError                        100%
-  WorkflowCore.Models.ValidationResult                       100%
-  WorkflowCore.Models.WorkflowExecutionResult                100%
-  WorkflowCore.Models.WorkflowResource                       100%
-  WorkflowCore.Models.WorkflowSpec                           100%
-  WorkflowCore.Models.WorkflowStatus                         100%
-  WorkflowCore.Models.WorkflowTaskResource                   100%
-  WorkflowCore.Models.WorkflowTaskSpec                       100%
-  WorkflowCore.Models.WorkflowTaskStatus                     100%
-  WorkflowCore.Models.WorkflowTaskStep                       100%
-  WorkflowCore.Services.ExecutionGraphBuilder                100%
-  WorkflowCore.Services.HttpClientWrapper                      0%
-  WorkflowCore.Services.HttpTaskExecutor                    96.2%
-  WorkflowCore.Services.RetryPolicy                           96%
-  WorkflowCore.Services.SchemaParseException                   0%
-  WorkflowCore.Services.SchemaParser                        81.2%
-  WorkflowCore.Services.SchemaValidator                     95.5%
-  WorkflowCore.Services.TemplateParser                      87.2%
-  WorkflowCore.Services.TemplateResolver                    98.5%
-  WorkflowCore.Services.TypeCompatibilityChecker            85.4%
-  WorkflowCore.Services.WorkflowOrchestrator                99.1%
-  WorkflowCore.Services.WorkflowValidator                   87.3%
-
-WorkflowOperator                                            69.6%
-  Program                                                      0%
-  WeatherForecast                                              0%
-  WorkflowOperator.Controllers.WorkflowController           92.3%
-  WorkflowOperator.Controllers.WorkflowTaskController        100%
-  WorkflowOperator.Webhooks.AdmissionResult                  100%
-  WorkflowOperator.Webhooks.WorkflowTaskValidationWebhook    100%
-  WorkflowOperator.Webhooks.WorkflowValidationWebhook        100%
+WorkflowCore                                        92.6%
+  WorkflowCore.Models.CompatibilityError             100%
+  WorkflowCore.Models.CompatibilityResult            100%
+  WorkflowCore.Models.ErrorMessageBuilder            100%
+  WorkflowCore.Models.ExecutionGraph                 100%
+  WorkflowCore.Models.ExecutionGraphResult           100%
+  WorkflowCore.Models.HttpRequestDefinition          100%
+  WorkflowCore.Models.PropertyDefinition             100%
+  WorkflowCore.Models.ResourceMetadata               100%
+  WorkflowCore.Models.RetryPolicyOptions             100%
+  WorkflowCore.Models.SchemaDefinition               100%
+  WorkflowCore.Models.TaskExecutionResult            100%
+  WorkflowCore.Models.TemplateContext                100%
+  WorkflowCore.Models.TemplateExpression             100%
+  WorkflowCore.Models.TemplateParseResult            100%
+  WorkflowCore.Models.TemplateResolutionException   55.5%
+  WorkflowCore.Models.ValidationError                100%
+  WorkflowCore.Models.ValidationResult               100%
+  WorkflowCore.Models.WorkflowExecutionResult        100%
+  WorkflowCore.Models.WorkflowInputParameter         100%
+  WorkflowCore.Models.WorkflowResource               100%
+  WorkflowCore.Models.WorkflowSpec                   100%
+  WorkflowCore.Models.WorkflowStatus                 100%
+  WorkflowCore.Models.WorkflowTaskResource           100%
+  WorkflowCore.Models.WorkflowTaskSpec               100%
+  WorkflowCore.Models.WorkflowTaskStatus             100%
+  WorkflowCore.Models.WorkflowTaskStep               100%
+  WorkflowCore.Services.ExecutionGraphBuilder        100%
+  WorkflowCore.Services.HttpClientWrapper              0%
+  WorkflowCore.Services.HttpTaskExecutor             100%
+  WorkflowCore.Services.RetryPolicy                  100%
+  WorkflowCore.Services.SchemaParseException         100%
+  WorkflowCore.Services.SchemaParser                81.2%
+  WorkflowCore.Services.SchemaValidator             95.5%
+  WorkflowCore.Services.TemplateParser              87.2%
+  WorkflowCore.Services.TemplateResolver             100%
+  WorkflowCore.Services.TimeoutParser               37.1%
+  WorkflowCore.Services.TypeCompatibilityChecker     100%
+  WorkflowCore.Services.WorkflowOrchestrator        89.9%
+  WorkflowCore.Services.WorkflowValidator           93.5%

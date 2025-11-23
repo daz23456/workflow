@@ -10,6 +10,12 @@
   <ItemGroup>
     <PackageReference Include="JsonSchema.Net" Version="5.5.0" />
     <PackageReference Include="KubernetesClient" Version="18.0.5" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.11" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.11">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.10" />
     <PackageReference Include="Serilog" Version="3.1.1" />
     <PackageReference Include="System.Text.Json" Version="10.0.0" />
     <PackageReference Include="YamlDotNet" Version="16.3.0" />

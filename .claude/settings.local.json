@@ -24,7 +24,10 @@
       "Bash(lsof:*)",
       "Bash(xargs kill:*)",
       "Bash(timeout 60 dotnet stryker:*)",
-      "Bash(export PATH=$PATH:/Users/darren/.dotnet/tools)"
+      "Bash(export PATH=$PATH:/Users/darren/.dotnet/tools)",
+      "Bash(dotnet --version:*)",
+      "Bash(dotnet restore:*)",
+      "Bash(dotnet ef migrations add:*)"
     ],
     "deny": [],
     "ask": []

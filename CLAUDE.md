@@ -116,11 +116,12 @@ workflow-operator/
 ---
 
 
-## Completed Stages (1-7)
+## Completed Stages (1-7.5)
 
-**Status:** 7/11 stages complete (64%)
+**Status:** 8/16 stages complete (50%)**
+*Note:* Stage breakdown refined - original 11 stages expanded to 16 focused stages
 
-Detailed TDD implementation instructions for Stages 1-4 have been archived to `COMPLETED_STAGES_ARCHIVE.md`.  
+Detailed TDD implementation instructions for Stages 1-4 have been archived to `COMPLETED_STAGES_ARCHIVE.md`.
 For proof of completion and actual results, see the respective `STAGE_X_PROOF.md` files.
 
 ### Stage 1: Foundation ✅
@@ -192,6 +193,39 @@ For proof of completion and actual results, see the respective `STAGE_X_PROOF.md
 - AdmissionResult, WorkflowTaskStatus, WorkflowStatus models
 
 **Value Delivered:** Fail-fast validation at kubectl apply time prevents invalid workflows from deployment.
+
+### Stage 7: API Gateway ✅
+**Status:** Complete
+**Proof:** `STAGE_7_PROOF.md`
+**Metrics:** 51/51 tests, 74.5% coverage, 0 vulnerabilities
+
+**Deliverables:**
+- Workflow execution API (POST /api/v1/workflows/{name}/execute)
+- Dry-run testing API (POST /api/v1/workflows/{name}/test)
+- Workflow management API (GET /api/v1/workflows, GET /api/v1/tasks)
+- Dynamic endpoint registration per workflow
+- Background workflow discovery service with caching
+- Input validation against workflow schemas
+- Swagger/OpenAPI documentation
+
+**Value Delivered:** Synchronous workflow execution API with input validation and dry-run testing capability.
+
+### Stage 7.5: Output Mapping & Parallel Execution ✅
+**Status:** Complete
+**Proof:** `STAGE_7.5_PROOF.md`
+**Metrics:** 235/235 tests, 92.6% coverage, 0 vulnerabilities
+
+**Deliverables:**
+- Workflow output mapping (expose task outputs as workflow outputs)
+- Output mapping validation (at workflow definition time)
+- Independent task identification in execution graph
+- Parallel task execution with Task.WhenAll()
+- Configurable parallelism limits (max concurrent tasks with SemaphoreSlim)
+- Per-task timeout support (timeout property + enforcement)
+- Timeout string parsing (30s, 5m, 2h, 500ms)
+- Performance validation tests (2x+ speedup for parallel execution)
+
+**Value Delivered:** Dramatically faster workflow execution through parallelism, better data flow control through output mapping, and reliability through per-task timeouts.
 
 ---
 
@@ -469,55 +503,152 @@ public class Program
    - Handle timeout gracefully with clear error messages
    - Add tests for timeout scenarios and cancellation
 
-### Week 5.75 (API Gateway Extensions):
-**Stage 7.75: Execution History & Enhanced Dry-Run (TDD)**
-1. Execution History Endpoints
-   - GET /api/v1/workflows/{name}/executions - List all executions for a workflow
-   - GET /api/v1/executions/{id} - Get detailed execution info with task results
-   - GET /api/v1/workflows/{name}/versions - List workflow version history
-   - GET /api/v1/workflows/{name}/versions/{version} - Get specific version details
-   - POST /api/v1/executions/{id}/resume - Resume a paused workflow execution
-2. Enhanced Dry-Run Visualization
-   - Return execution plan as directed graph (nodes: tasks, edges: dependencies)
-   - Include resolved template values in execution plan
-   - Estimate execution time based on task count and historical data
-   - Show parallel execution groups visually
-   - Validate all templates without executing HTTP calls
-3. Execution Trace Endpoints
-   - GET /api/v1/executions/{id}/trace - Get detailed execution trace
-   - Include timing for each task (start, end, duration)
-   - Show dependency resolution order
-   - Include template resolution details
+### Week 5.75-6 (Database Integration & API Gateway Extensions):
+**Breaking down into 4 focused stages for better manageability**
 
-### Week 6 (Database Integration & State Management):
-**Stage 8: PostgreSQL Integration & Workflow State (TDD)**
+**Stage 7.75: PostgreSQL Integration (Foundation)**
+*Scope:* Database setup - foundation for future features
+*Deliverables:* 5
+*Tests:* ~20-25 tests
+*Value:* Persistent storage ready for execution history
+
 1. Database Schema Design
-   - workflow_executions table (id, workflow_name, status, started_at, completed_at, duration)
-   - workflow_execution_tasks table (execution_id, task_id, status, output, errors, duration)
-   - workflow_versions table (workflow_name, version, definition, created_at)
+   - ExecutionRecord table (id, workflow_name, status, started_at, completed_at, duration, input_snapshot)
+   - TaskExecutionRecord table (execution_id, task_id, task_ref, status, output, errors, duration, retry_count, started_at, completed_at)
+   - WorkflowVersion table (workflow_name, version_hash, created_at, definition_snapshot)
+2. DbContext with EF Core Migrations
+   - Configure entity relationships (ExecutionRecord → TaskExecutionRecords)
+   - Add indexes for performance (workflow_name, created_at, status)
+   - Create initial migration
+3. Repository Pattern
+   - IExecutionRepository interface (SaveExecution, GetExecution, ListExecutions)
+   - IWorkflowVersionRepository interface (SaveVersion, GetVersions)
+   - ExecutionRepository and WorkflowVersionRepository implementations
+4. TestContainers Integration Tests
+   - Real PostgreSQL integration tests
+   - Test CRUD operations on ExecutionRecord
+   - Test entity relationships and foreign keys
+5. DI Setup & Health Checks
+   - Connection string configuration (appsettings.json)
+   - Register DbContext in DI container
+   - Add database health check endpoint
+   - Configure connection pooling
+
+**Stage 7.8: Execution History & Task Details**
+*Scope:* Track and retrieve execution history with full task-level data
+*Deliverables:* 4
+*Tests:* ~20-25 tests
+*Dependencies:* Requires Stage 7.75 (PostgreSQL)
+*Value:* Full execution audit trail with task-level observability
+
+1. Generate Execution IDs & Save to Database
+   - Modify WorkflowExecutionService to generate Guid execution IDs
+   - Save ExecutionRecord at workflow start (status: Running)
+   - Update ExecutionRecord on completion (status: Succeeded/Failed, duration)
+   - Save TaskExecutionRecords as each task completes
+2. Expose Task-Level Details in API Response
+   - Modify WorkflowExecutionResponse to include execution ID
+   - Add TaskExecutionDetail list (task outputs, timing, retries, errors)
+   - Map from TaskExecutionResult to TaskExecutionDetail
+   - Include task start/end timestamps
+3. List Executions Endpoint
+   - GET /api/v1/workflows/{name}/executions
+   - Query parameters: status filter, pagination (skip, take), date range
+   - Return ExecutionSummary list (id, workflow_name, status, started_at, duration)
+   - Order by started_at descending (most recent first)
+4. Get Execution Details Endpoint
+   - GET /api/v1/executions/{id}
+   - Return DetailedWorkflowExecutionResponse with all task data
+   - Include workflow input snapshot, outputs, errors
+   - 404 if execution not found
+
+**Stage 7.85: Enhanced Dry-Run Visualization**
+*Scope:* Rich execution plan with parallel groups and template preview
+*Deliverables:* 3
+*Tests:* ~15-20 tests
+*Dependencies:* Stage 7.8 (for execution time estimates from history)
+*Value:* Visual workflow understanding before execution
+
+1. Parallel Group Detection
+   - Add GetParallelGroups() method to ExecutionGraph
+   - Implement parallel level detection algorithm (BFS-based)
+   - Return List<ParallelGroup> with level and task IDs
+   - Write tests for complex dependency scenarios
+2. Enhanced Execution Plan Model
+   - Create EnhancedExecutionPlan model
+   - Include graph visualization data (nodes: tasks, edges: dependencies)
+   - Add ParallelGroup list to show which tasks run concurrently
+   - Include execution order (topological sort)
+3. Template Resolution Preview & Time Estimation
+   - Add template resolution preview (resolve templates with input, no HTTP calls)
+   - Show resolved template values in execution plan
+   - Calculate estimated execution time from historical data (average task durations)
+   - Update POST /api/v1/workflows/{name}/test to return EnhancedExecutionPlan
+   - Validate all templates without side effects
+
+**Stage 7.9: Execution Trace & Workflow Versioning**
+*Scope:* Detailed execution traces and workflow change tracking
+*Deliverables:* 3
+*Tests:* ~15-20 tests
+*Dependencies:* Stages 7.75, 7.8
+*Value:* Deep debugging capability and change tracking
+
+1. Execution Trace Endpoint
+   - GET /api/v1/executions/{id}/trace
+   - Create ExecutionTraceResponse model
+   - Include detailed timing breakdown (per-task start, end, duration, wait time)
+   - Show dependency resolution order (which tasks blocked on which)
+   - Show parallel vs sequential execution (which tasks ran concurrently)
+   - Include template resolution log (before/after values)
+2. Simple Workflow Versioning (Hash-Based Change Detection)
+   - Calculate SHA256 hash of workflow definition (YAML string)
+   - Save WorkflowVersion record when workflow changes detected
+   - Store definition snapshot for comparison
+   - Track created_at timestamp for version history
+3. Workflow Versions Endpoint
+   - GET /api/v1/workflows/{name}/versions
+   - Return list of versions (version_hash, created_at, definition_snapshot)
+   - Order by created_at descending
+   - Simple version comparison (hash match = no changes)
+
+**Note:** Execution resume (POST /api/v1/executions/{id}/resume) deferred to future stage - requires complex orchestrator state management
+
+### Week 7 (Advanced Workflow State Management):
+**Stage 8: Workflow State Persistence & Recovery (TDD)**
+*Note:* PostgreSQL integration completed in Stage 7.75
+*Scope:* Advanced state management - pause, resume, recovery
+*Deliverables:* 4
+*Tests:* ~25-30 tests
+*Value:* Fault tolerance and long-running workflow support
+
+1. Workflow State Persistence & Pause Capability
+   - Extend ExecutionRecord with state_snapshot (JSON serialized state)
+   - Save WorkflowOrchestrator state mid-execution (tasks pending, in-progress, completed)
+   - Add POST /api/v1/executions/{id}/pause endpoint
+   - Store task context and intermediate outputs
+   - Handle pause gracefully (wait for in-flight tasks to complete)
+2. Workflow Resume from Saved State
+   - POST /api/v1/executions/{id}/resume endpoint
+   - Reconstruct WorkflowOrchestrator state from database
+   - Resume execution from where it left off (skip completed tasks)
+   - Re-establish template context with completed task outputs
+   - Handle task failures during resume
+3. Partial Execution Recovery After Failures
+   - Detect interrupted executions (status: Running but process crashed)
+   - Auto-recovery on startup (find interrupted executions)
+   - Retry failed tasks vs skip and continue (configurable)
+   - State migration when workflow definition changes
+4. Workflow Audit Log & Change Tracking
    - workflow_audit_log table (workflow_name, action, changed_by, changed_at, changes)
-2. Execution History Storage
-   - Save workflow execution state at workflow start
-   - Update execution state as each task completes
-   - Store task outputs and errors in database
-   - Record total execution duration
-   - Add queries for execution history retrieval
-3. Workflow State Persistence & Recovery
-   - Implement workflow pause capability (save state mid-execution)
-   - Implement workflow resume from saved state
-   - Handle partial execution recovery after failures
-   - Add state migration for workflow definition changes
-4. Workflow Versioning
-   - Track workflow definition versions automatically
-   - Store version metadata (author, timestamp, changelog)
-   - Implement version comparison and diff
-   - Prevent breaking changes to active workflows
-   - Add rollback capability for workflow definitions
+   - Track workflow definition changes (created, updated, deleted)
+   - Store author metadata (if available from K8s annotations)
+   - Implement version comparison and diff (text diff of YAML)
+   - Add GET /api/v1/workflows/{name}/audit-log endpoint
 5. Integration Tests with TestContainers
-   - Full stack tests (Operator + Gateway + Postgres)
-   - Test workflow execution with database persistence
-   - Test state recovery and resume scenarios
-   - Validate version tracking and migration
+   - Full stack tests (Operator + Gateway + PostgreSQL)
+   - Test workflow pause and resume scenarios
+   - Test partial execution recovery
+   - Validate state migration when workflow changes
    - Test with real Kubernetes resources
 
 ### Week 7-8 (UI):

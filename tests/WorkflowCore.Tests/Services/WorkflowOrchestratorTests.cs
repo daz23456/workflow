@@ -1180,4 +1180,94 @@ public class WorkflowOrchestratorTests
         act.Should().Throw<ArgumentException>()
             .WithMessage("maxConcurrentTasks must be greater than 0*");
     }
+
+    [Fact]
+    public async Task ExecuteAsync_ParallelExecution_ShouldBeFasterThanSequential()
+    {
+        // Arrange - Create 4 independent tasks that each take 100ms
+        var taskDelay = TimeSpan.FromMilliseconds(100);
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "task-1", TaskRef = "task-ref-1" },
+                    new WorkflowTaskStep { Id = "task-2", TaskRef = "task-ref-2" },
+                    new WorkflowTaskStep { Id = "task-3", TaskRef = "task-ref-3" },
+                    new WorkflowTaskStep { Id = "task-4", TaskRef = "task-ref-4" }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["task-ref-1"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } },
+            ["task-ref-2"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } },
+            ["task-ref-3"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } },
+            ["task-ref-4"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } }
+        };
+
+        // All tasks are independent (no dependencies)
+        var graph = new ExecutionGraph();
+        graph.AddNode("task-1");
+        graph.AddNode("task-2");
+        graph.AddNode("task-3");
+        graph.AddNode("task-4");
+
+        _graphBuilderMock.Setup(x => x.Build(workflow))
+            .Returns(new ExecutionGraphResult
+            {
+                IsValid = true,
+                Graph = graph
+            });
+
+        // Mock task executor with delay
+        _taskExecutorMock.Setup(x => x.ExecuteAsync(
+                It.IsAny<WorkflowTaskSpec>(),
+                It.IsAny<TemplateContext>(),
+                It.IsAny<CancellationToken>()))
+            .Returns(async (WorkflowTaskSpec spec, TemplateContext ctx, CancellationToken ct) =>
+            {
+                await Task.Delay(taskDelay, ct);
+                return new TaskExecutionResult { Success = true };
+            });
+
+        var inputs = new Dictionary<string, object>();
+
+        // Act - Sequential execution
+        var sequentialOrchestrator = new WorkflowOrchestrator(
+            _graphBuilderMock.Object,
+            _taskExecutorMock.Object,
+            maxConcurrentTasks: 1);
+
+        var sequentialResult = await sequentialOrchestrator.ExecuteAsync(workflow, tasks, inputs, CancellationToken.None);
+
+        // Act - Parallel execution
+        var parallelOrchestrator = new WorkflowOrchestrator(
+            _graphBuilderMock.Object,
+            _taskExecutorMock.Object,
+            maxConcurrentTasks: int.MaxValue);
+
+        var parallelResult = await parallelOrchestrator.ExecuteAsync(workflow, tasks, inputs, CancellationToken.None);
+
+        // Assert - Both should succeed
+        sequentialResult.Success.Should().BeTrue();
+        parallelResult.Success.Should().BeTrue();
+
+        // Assert - Sequential should take ~400ms (4 tasks * 100ms each)
+        // Parallel should take ~100ms (all tasks run simultaneously)
+        // Parallel execution should be at least 2x faster
+        var speedupRatio = sequentialResult.TotalDuration.TotalMilliseconds / parallelResult.TotalDuration.TotalMilliseconds;
+        speedupRatio.Should().BeGreaterThan(2.0,
+            because: $"parallel execution ({parallelResult.TotalDuration.TotalMilliseconds}ms) should be significantly faster than sequential ({sequentialResult.TotalDuration.TotalMilliseconds}ms)");
+
+        // Additional validation: Sequential should be close to 4x the task delay
+        sequentialResult.TotalDuration.Should().BeGreaterThan(TimeSpan.FromMilliseconds(350),
+            because: "4 tasks at 100ms each should take at least 350ms sequentially");
+
+        // Parallel should be close to 1x the task delay (all run at once)
+        parallelResult.TotalDuration.Should().BeLessThan(TimeSpan.FromMilliseconds(250),
+            because: "4 tasks running in parallel should take less than 250ms");
+    }
 }

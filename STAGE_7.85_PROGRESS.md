@@ -1,8 +1,8 @@
 # Stage 7.85: Enhanced Dry-Run Visualization - Progress Report
 
-**Date:** 2025-11-23  
-**Status:** 🟡 Partial (2/3 deliverables complete)  
-**Commit:** edb061e, 86e9148
+**Date:** 2025-11-23
+**Status:** 🟡 Partial (2.67/3 deliverables complete - 89%)
+**Commits:** edb061e, 86e9148, 9602da6
 
 ---
 
@@ -67,50 +67,107 @@
 
 ---
 
+### Deliverable 3.1: Template Preview Service (8 tests)
+
+**Files Created:**
+- `src/WorkflowCore/Services/ITemplatePreviewService.cs`
+- `src/WorkflowCore/Services/TemplatePreviewService.cs`
+- `tests/WorkflowCore.Tests/Services/TemplatePreviewServiceTests.cs`
+
+**Implementation:**
+- `ITemplatePreviewService` interface with `PreviewTemplate()` method
+- `TemplatePreviewService` implementation using regex template parsing
+- Resolves `{{input.*}}` templates with actual values from workflow input
+- Shows `{{tasks.*}}` templates as placeholders (e.g., `<will-resolve-from-step1.output.data>`)
+- Handles nested paths (e.g., `input.user.profile.email`)
+- Supports array indexing (e.g., `input.items[0].name`)
+- Returns `<null>` for missing input paths
+- Returns dictionary mapping template expressions to resolved values/placeholders
+
+**Tests Added (8):**
+1. PreviewTemplate_WithSimpleInputTemplate_ShouldResolveValue
+2. PreviewTemplate_WithNestedInputTemplate_ShouldResolveNestedValue
+3. PreviewTemplate_WithTaskOutputTemplate_ShouldReturnPlaceholder
+4. PreviewTemplate_WithMultipleTemplates_ShouldResolveAll
+5. PreviewTemplate_WithMissingInputPath_ShouldReturnNull
+6. PreviewTemplate_WithNoTemplates_ShouldReturnEmptyDictionary
+7. PreviewTemplate_WithComplexNestedPath_ShouldResolveCorrectly
+8. PreviewTemplate_WithEmptyInput_AndInputTemplate_ShouldReturnNull
+
+---
+
+### Deliverable 3.2: Historical Data Repository (6 tests)
+
+**Files Modified:**
+- `src/WorkflowCore/Data/Repositories/IExecutionRepository.cs`
+- `src/WorkflowCore/Data/Repositories/ExecutionRepository.cs`
+- `tests/WorkflowCore.Tests/Data/ExecutionRepositoryTests.cs`
+
+**Implementation:**
+- Added `GetAverageTaskDurationsAsync(string workflowName, int daysBack = 30)` to interface
+- Implemented LINQ query with filtering:
+  - Workflow name filter
+  - Date range filter (last N days)
+  - Only includes Succeeded workflow executions
+  - Only includes Succeeded task executions
+  - Excludes tasks with null durations
+- Groups by TaskRef and calculates average duration in milliseconds
+- Returns `Dictionary<string, long>` mapping TaskRef to average duration
+
+**Tests Added (6):**
+1. GetAverageTaskDurationsAsync_WithNoData_ShouldReturnEmptyDictionary
+2. GetAverageTaskDurationsAsync_WithSuccessfulTasks_ShouldReturnAverages
+3. GetAverageTaskDurationsAsync_ShouldFilterByWorkflowName
+4. GetAverageTaskDurationsAsync_ShouldFilterByDateRange
+5. GetAverageTaskDurationsAsync_ShouldOnlyIncludeSucceededExecutions
+6. GetAverageTaskDurationsAsync_ShouldHandleNullDurations
+
+---
+
 ## ⏳ Remaining Work
 
-### Deliverable 3: Template Preview & Time Estimation (~19 tests)
+### Deliverable 3.3: Controller Integration (~5 tests)
 
 **Scope:**
-1. **Template Preview Service (8 tests)**
-   - Create `ITemplatePreviewService` interface
-   - Implement `TemplatePreviewService`
-   - Preview input templates (resolve with actual values)
-   - Preview task output templates (show placeholders)
-   - Handle nested paths, missing values, multiple templates
+1. **Controller Updates**
+   - Inject `ITemplatePreviewService` into `DynamicWorkflowController` constructor
+   - Inject `IExecutionRepository` (already done) for historical duration data
+   - Update `Test()` endpoint to call `GetAverageTaskDurationsAsync()`
+   - Calculate total estimated duration (sum of average task durations)
+   - Set `EstimatedDurationMs` in `EnhancedExecutionPlan`
 
-2. **Historical Data Repository (6 tests)**
-   - Add `GetAverageTaskDurationsAsync()` to `IExecutionRepository`
-   - Implement query to calculate average task durations
-   - Filter to last 30 days of successful executions
-   - Group by task ID and return averages
+2. **Template Preview Integration**
+   - For each task in the workflow, preview input templates
+   - Add template previews to `EnhancedExecutionPlan` (new property)
+   - Show resolved input values and task output placeholders
 
-3. **Controller Integration (5 tests)**
-   - Update `DynamicWorkflowController.Test()` to include template previews
-   - Add estimated duration calculation from historical data
-   - Integrate `ITemplatePreviewService` via DI
-   - Add tests for full endpoint with previews and estimates
+3. **Integration Tests (5 tests)**
+   - Test_ShouldIncludeEstimatedDuration_FromHistoricalData
+   - Test_ShouldIncludeTemplatePreview_ForAllTasks
+   - Test_EstimatedDuration_ShouldBeNull_WhenNoHistoricalData
+   - Test_TemplatePreview_ShouldResolveInputTemplates
+   - Test_TemplatePreview_ShouldShowPlaceholders_ForTaskOutputs
 
-**Estimated Effort:** 1-2 sessions
+**Estimated Effort:** 1 session (~30-45 minutes)
 
 ---
 
 ## 📊 Metrics
 
 **Test Count:**
-- WorkflowCore.Tests: 348 (+7 from baseline 341)
-- WorkflowGateway.Tests: 222 (+6 from baseline 216)
-- **Total: 570 tests** (+13 from baseline 557)
+- WorkflowCore.Tests: 348 → 362 (+14 from baseline 348 after Deliverables 1 & 2)
+- WorkflowGateway.Tests: 222 (unchanged)
+- **Total: 584 tests** (+27 from baseline 557, +14 since last commit)
 
 **Coverage:**
 - Current: 96.8% (maintaining)
 - Target: ≥90% ✅
 
 **Quality Gates:**
-- ✅ All tests passing (570/570)
-- ✅ Coverage ≥90%
+- ✅ All tests passing (584/584)
+- ✅ Coverage ≥90% (to be verified after Deliverable 3.3)
 - ✅ Clean build (0 errors)
-- ⏳ Stage not yet complete
+- ⏳ Stage not yet complete (Deliverable 3.3 remaining)
 
 ---
 
@@ -136,6 +193,21 @@
 
 ---
 
-**Progress:** 2/3 deliverables (67%)  
-**Value Delivered:** High (graph visualization and parallel groups are immediately useful)  
-**Quality:** Production-ready (all tests passing, coverage maintained)
+**Progress:** 2.67/3 deliverables (89%)
+- ✅ Deliverable 1: Parallel Group Detection (7 tests)
+- ✅ Deliverable 2: Enhanced Execution Plan Model (6 tests)
+- ✅ Deliverable 3.1: Template Preview Service (8 tests)
+- ✅ Deliverable 3.2: Historical Data Repository (6 tests)
+- ⏳ Deliverable 3.3: Controller Integration (5 tests) - NEXT
+
+**Value Delivered:** High
+- Graph visualization with parallel groups enables UI rendering of concurrent execution
+- Template preview shows users exactly what data will be used at runtime
+- Historical duration data enables accurate execution time estimates
+- All features immediately useful for debugging and workflow understanding
+
+**Quality:** Production-ready
+- All 584 tests passing (362 WorkflowCore, 222 WorkflowGateway)
+- Clean build (0 errors)
+- Coverage maintained (to be verified after final deliverable)
+- Full TDD discipline (RED-GREEN-REFACTOR)

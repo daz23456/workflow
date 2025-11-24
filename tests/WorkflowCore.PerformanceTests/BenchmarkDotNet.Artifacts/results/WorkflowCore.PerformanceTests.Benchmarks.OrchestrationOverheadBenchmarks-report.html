@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>WorkflowCore.PerformanceTests.Benchmarks.OrchestrationOverheadBenchmarks-20251124-101754</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet v0.13.11, macOS Sonoma 14.7.6 (23H626) [Darwin 23.6.0]
+Intel Core i9-9880H CPU 2.30GHz, 1 CPU, 16 logical and 8 physical cores
+.NET SDK 8.0.414
+  [Host]   : .NET 8.0.20 (8.0.2025.41914), X64 RyuJIT AVX2
+  .NET 8.0 : .NET 8.0.20 (8.0.2025.41914), X64 RyuJIT AVX2
+</code></pre>
+<pre><code>Job=.NET 8.0  Runtime=.NET 8.0  
+</code></pre>
+
+<table>
+<thead><tr><th>Method                 </th><th>workflow</th><th>taskCount</th><th>Mean</th><th>Error</th><th>StdDev</th><th>Ratio</th><th>RatioSD</th><th>Gen0</th><th>Allocated</th><th>Alloc Ratio</th>
+</tr>
+</thead><tbody><tr><td>MeasureTemplateResolutionOnly</td><td>?</td><td>?</td><td>7.933 &mu;s</td><td>0.1427 &mu;s</td><td>0.1527 &mu;s</td><td>?</td><td>?</td><td>1.2054</td><td>9.93 KB</td><td>?</td>
+</tr><tr><td>MeasureGraphBuildingOnly</td><td>?</td><td>?</td><td>NA</td><td>NA</td><td>NA</td><td>?</td><td>?</td><td>NA</td><td>NA</td><td>?</td>
+</tr><tr><td>MeasureGraphBuildingOnly</td><td>?</td><td>?</td><td>NA</td><td>NA</td><td>NA</td><td>?</td><td>?</td><td>NA</td><td>NA</td><td>?</td>
+</tr><tr><td>MeasureGraphBuildingOnly</td><td>?</td><td>?</td><td>NA</td><td>NA</td><td>NA</td><td>?</td><td>?</td><td>NA</td><td>NA</td><td>?</td>
+</tr><tr><td>MeasureEndToEndOrchestration</td><td>?</td><td>?</td><td>NA</td><td>NA</td><td>NA</td><td>?</td><td>?</td><td>NA</td><td>NA</td><td>?</td>
+</tr><tr><td>MeasureEndToEndOrchestration</td><td>?</td><td>?</td><td>NA</td><td>NA</td><td>NA</td><td>?</td><td>?</td><td>NA</td><td>NA</td><td>?</td>
+</tr><tr><td>MeasureEndToEndOrchestration</td><td>?</td><td>?</td><td>NA</td><td>NA</td><td>NA</td><td>?</td><td>?</td><td>NA</td><td>NA</td><td>?</td>
+</tr><tr><td>MeasureExecutionScheduling</td><td>?</td><td>10</td><td>6.855 &mu;s</td><td>0.1322 &mu;s</td><td>0.1358 &mu;s</td><td>1.27</td><td>0.05</td><td>0.2213</td><td>1.84 KB</td><td>1.16</td>
+</tr><tr><td>CompareAgainstDirectExecution</td><td>?</td><td>10</td><td>5.351 &mu;s</td><td>0.1064 &mu;s</td><td>0.2290 &mu;s</td><td>1.00</td><td>0.00</td><td>0.1907</td><td>1.59 KB</td><td>1.00</td>
+</tr><tr><td>MeasureExecutionScheduling</td><td>?</td><td>20</td><td>13.219 &mu;s</td><td>0.2540 &mu;s</td><td>0.2252 &mu;s</td><td>?</td><td>?</td><td>0.3967</td><td>3.33 KB</td><td>?</td>
+</tr><tr><td>MeasureExecutionScheduling</td><td>?</td><td>50</td><td>29.256 &mu;s</td><td>0.5764 &mu;s</td><td>0.8803 &mu;s</td><td>?</td><td>?</td><td>0.9155</td><td>7.54 KB</td><td>?</td>
+</tr></tbody></table>
+</body>
+</html>

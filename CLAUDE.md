@@ -116,10 +116,11 @@ workflow-operator/
 ---
 
 
-## Completed Stages (1-7.5)
+## Completed Stages (1-7.9)
 
-**Status:** 8/16 stages complete (50%)**
+**Status:** 8/15 stages complete (53%)** - Stage 8 SKIPPED (architectural decision)
 *Note:* Stage breakdown refined - original 11 stages expanded to 16 focused stages
+*Note:* Stage 8 skipped as it's designed for async workflows, not synchronous execution model
 
 Detailed TDD implementation instructions for Stages 1-4 have been archived to `COMPLETED_STAGES_ARCHIVE.md`.
 For proof of completion and actual results, see the respective `STAGE_X_PROOF.md` files.
@@ -226,6 +227,21 @@ For proof of completion and actual results, see the respective `STAGE_X_PROOF.md
 - Performance validation tests (2x+ speedup for parallel execution)
 
 **Value Delivered:** Dramatically faster workflow execution through parallelism, better data flow control through output mapping, and reliability through per-task timeouts.
+
+### Stage 7.9: Execution Trace & Workflow Versioning ✅
+**Status:** Complete
+**Proof:** `STAGE_7.9_PROOF.md`
+**Metrics:** 626/626 tests (34 new tests), 89.6% coverage (WorkflowGateway), 0 vulnerabilities
+
+**Deliverables:**
+- Workflow Versioning Service (SHA256 hash-based change detection)
+- Automatic version tracking in WorkflowWatcherService
+- Workflow versions API endpoint (GET /api/v1/workflows/{name}/versions)
+- Execution Trace Service (wait time calculation, dependency resolution)
+- Execution trace API endpoint (GET /api/v1/executions/{id}/trace)
+- Actual parallel execution detection from timing analysis
+
+**Value Delivered:** Deep debugging capability with execution traces, workflow change tracking for audit/compliance, wait time visibility for bottleneck identification, and parallel execution verification.
 
 ---
 
@@ -611,45 +627,48 @@ public class Program
    - Order by created_at descending
    - Simple version comparison (hash match = no changes)
 
-**Note:** Execution resume (POST /api/v1/executions/{id}/resume) deferred to future stage - requires complex orchestrator state management
+**Note:** Execution resume (POST /api/v1/executions/{id}/resume) deferred - requires complex orchestrator state management and doesn't align with synchronous execution model
 
-### Week 7 (Advanced Workflow State Management):
-**Stage 8: Workflow State Persistence & Recovery (TDD)**
-*Note:* PostgreSQL integration completed in Stage 7.75
-*Scope:* Advanced state management - pause, resume, recovery
-*Deliverables:* 4
-*Tests:* ~25-30 tests
-*Value:* Fault tolerance and long-running workflow support
+### Stage 8: Workflow State Persistence & Recovery ❌ SKIPPED
 
-1. Workflow State Persistence & Pause Capability
-   - Extend ExecutionRecord with state_snapshot (JSON serialized state)
-   - Save WorkflowOrchestrator state mid-execution (tasks pending, in-progress, completed)
-   - Add POST /api/v1/executions/{id}/pause endpoint
-   - Store task context and intermediate outputs
-   - Handle pause gracefully (wait for in-flight tasks to complete)
-2. Workflow Resume from Saved State
-   - POST /api/v1/executions/{id}/resume endpoint
-   - Reconstruct WorkflowOrchestrator state from database
-   - Resume execution from where it left off (skip completed tasks)
-   - Re-establish template context with completed task outputs
-   - Handle task failures during resume
-3. Partial Execution Recovery After Failures
-   - Detect interrupted executions (status: Running but process crashed)
-   - Auto-recovery on startup (find interrupted executions)
-   - Retry failed tasks vs skip and continue (configurable)
-   - State migration when workflow definition changes
-4. Workflow Audit Log & Change Tracking
-   - workflow_audit_log table (workflow_name, action, changed_by, changed_at, changes)
-   - Track workflow definition changes (created, updated, deleted)
-   - Store author metadata (if available from K8s annotations)
-   - Implement version comparison and diff (text diff of YAML)
-   - Add GET /api/v1/workflows/{name}/audit-log endpoint
-5. Integration Tests with TestContainers
-   - Full stack tests (Operator + Gateway + PostgreSQL)
-   - Test workflow pause and resume scenarios
-   - Test partial execution recovery
-   - Validate state migration when workflow changes
-   - Test with real Kubernetes resources
+**Status:** ❌ **SKIPPED** - Not applicable for synchronous workflows
+
+**Architectural Decision (2025-11-24):**
+Stage 8 features (pause/resume, state recovery, partial execution recovery) are designed for **asynchronous, long-running workflows** (think: AWS Step Functions, Temporal, Airflow), but this engine is explicitly **synchronous** with 30-second max execution time.
+
+**Why Stage 8 Doesn't Fit:**
+
+1. **Pause/Resume** - Impossible when user is waiting for HTTP response (30s timeout)
+   - User makes synchronous API call and waits for response
+   - There's no "pause" in a sync API - you either respond or timeout
+   - This feature requires async execution model
+
+2. **State Recovery** - User already received error/timeout, they just retry the request
+   - If process crashes, user's HTTP request fails with error
+   - User retries the entire workflow with a new execution ID
+   - No need for complex state recovery - just re-execute from scratch
+
+3. **Partial Execution Recovery** - Each execution is independent; no "resume" makes sense
+   - Synchronous workflows are short-lived (seconds to minutes)
+   - Full retry is faster and simpler than partial recovery
+   - State migration complexity not justified for 30-second workflows
+
+4. **Audit Log** - Already implemented in Stage 7.9 (WorkflowVersioningService)
+   - SHA256 hash-based workflow versioning ✅
+   - Version history with timestamps ✅
+   - Definition snapshots for comparison ✅
+
+**What's Already Built (Stages 7.8-7.9):**
+- ✅ Execution History (Stage 7.8) - Every execution saved to PostgreSQL
+- ✅ Execution Traces (Stage 7.9) - Detailed timing breakdown and dependency analysis
+- ✅ Workflow Versioning (Stage 7.9) - SHA256 change tracking with version history
+- ✅ Retry Logic (Stage 5) - Exponential backoff with configurable policies
+- ✅ Timeouts (Stage 7.5) - Per-task timeout enforcement
+- ✅ Input Validation (Stage 7) - Schema validation at API gateway
+
+**Conclusion:** All valuable Stage 8 features already delivered in previous stages. Proceed directly to Stage 9 (UI) or Stage 10 (Performance).
+
+---
 
 ### Week 7-8 (UI):
 **Stage 9: UI Backend & Frontend (TDD)**

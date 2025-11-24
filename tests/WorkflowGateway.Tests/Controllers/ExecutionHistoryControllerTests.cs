@@ -5,6 +5,7 @@ using WorkflowCore.Data.Repositories;
 using WorkflowCore.Models;
 using WorkflowGateway.Controllers;
 using WorkflowGateway.Models;
+using WorkflowGateway.Services;
 using Xunit;
 
 namespace WorkflowGateway.Tests.Controllers;
@@ -12,12 +13,19 @@ namespace WorkflowGateway.Tests.Controllers;
 public class ExecutionHistoryControllerTests
 {
     private readonly Mock<IExecutionRepository> _repositoryMock;
+    private readonly Mock<IWorkflowDiscoveryService> _workflowDiscoveryMock;
+    private readonly Mock<IExecutionTraceService> _traceServiceMock;
     private readonly ExecutionHistoryController _controller;
 
     public ExecutionHistoryControllerTests()
     {
         _repositoryMock = new Mock<IExecutionRepository>();
-        _controller = new ExecutionHistoryController(_repositoryMock.Object);
+        _workflowDiscoveryMock = new Mock<IWorkflowDiscoveryService>();
+        _traceServiceMock = new Mock<IExecutionTraceService>();
+        _controller = new ExecutionHistoryController(
+            _repositoryMock.Object,
+            _workflowDiscoveryMock.Object,
+            _traceServiceMock.Object);
     }
 
     [Fact]
@@ -280,7 +288,7 @@ public class ExecutionHistoryControllerTests
     public void Constructor_ShouldThrowArgumentNullException_WhenRepositoryIsNull()
     {
         // Act & Assert
-        var act = () => new ExecutionHistoryController(null!);
+        var act = () => new ExecutionHistoryController(null!, _workflowDiscoveryMock.Object, _traceServiceMock.Object);
         act.Should().Throw<ArgumentNullException>()
             .WithMessage("*executionRepository*");
     }
@@ -505,5 +513,356 @@ public class ExecutionHistoryControllerTests
         summary.Status.Should().Be("Running");
         summary.CompletedAt.Should().BeNull();
         summary.DurationMs.Should().BeNull();
+    }
+
+    // ===== Execution Trace Endpoint Tests =====
+
+    [Fact]
+    public async Task GetTrace_WithValidExecutionId_ReturnsTraceResponse()
+    {
+        // Arrange
+        var executionId = Guid.NewGuid();
+        var workflowName = "user-workflow";
+        var startTime = DateTime.UtcNow;
+
+        var executionRecord = new ExecutionRecord
+        {
+            Id = executionId,
+            WorkflowName = workflowName,
+            Status = ExecutionStatus.Succeeded,
+            StartedAt = startTime,
+            CompletedAt = startTime.AddMilliseconds(500),
+            Duration = TimeSpan.FromMilliseconds(500),
+            TaskExecutionRecords = new List<TaskExecutionRecord>
+            {
+                new TaskExecutionRecord
+                {
+                    TaskId = "task1",
+                    TaskRef = "fetch-user",
+                    StartedAt = startTime,
+                    CompletedAt = startTime.AddMilliseconds(200),
+                    Duration = TimeSpan.FromMilliseconds(200),
+                    Status = "Succeeded",
+                    RetryCount = 0
+                }
+            }
+        };
+
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = workflowName },
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "task1", TaskRef = "fetch-user" }
+                }
+            }
+        };
+
+        var traceResponse = new ExecutionTraceResponse
+        {
+            ExecutionId = executionId,
+            WorkflowName = workflowName,
+            StartedAt = startTime,
+            CompletedAt = startTime.AddMilliseconds(500),
+            TotalDurationMs = 500,
+            TaskTimings = new List<TaskTimingDetail>
+            {
+                new TaskTimingDetail
+                {
+                    TaskId = "task1",
+                    TaskRef = "fetch-user",
+                    StartedAt = startTime,
+                    CompletedAt = startTime.AddMilliseconds(200),
+                    DurationMs = 200,
+                    WaitTimeMs = 0,
+                    Success = true,
+                    RetryCount = 0
+                }
+            },
+            DependencyOrder = new List<DependencyInfo>(),
+            PlannedParallelGroups = new List<ParallelGroup>(),
+            ActualParallelGroups = new List<ActualParallelGroup>()
+        };
+
+        _repositoryMock
+            .Setup(x => x.GetExecutionAsync(executionId))
+            .ReturnsAsync(executionRecord);
+
+        _workflowDiscoveryMock
+            .Setup(x => x.GetWorkflowByNameAsync(workflowName, null))
+            .ReturnsAsync(workflow);
+
+        _traceServiceMock
+            .Setup(x => x.BuildTrace(executionRecord, workflow))
+            .Returns(traceResponse);
+
+        // Act
+        var result = await _controller.GetTrace(executionId);
+
+        // Assert
+        result.Should().BeOfType<OkObjectResult>();
+        var okResult = (OkObjectResult)result;
+        var response = okResult.Value.Should().BeOfType<ExecutionTraceResponse>().Subject;
+
+        response.ExecutionId.Should().Be(executionId);
+        response.WorkflowName.Should().Be(workflowName);
+        response.TotalDurationMs.Should().Be(500);
+        response.TaskTimings.Should().HaveCount(1);
+        response.TaskTimings[0].TaskId.Should().Be("task1");
+        response.TaskTimings[0].WaitTimeMs.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task GetTrace_ExecutionNotFound_Returns404NotFound()
+    {
+        // Arrange
+        var executionId = Guid.NewGuid();
+
+        _repositoryMock
+            .Setup(x => x.GetExecutionAsync(executionId))
+            .ReturnsAsync((ExecutionRecord?)null);
+
+        // Act
+        var result = await _controller.GetTrace(executionId);
+
+        // Assert
+        result.Should().BeOfType<NotFoundObjectResult>();
+        var notFoundResult = (NotFoundObjectResult)result;
+        notFoundResult.Value.Should().BeEquivalentTo(new { error = $"Execution {executionId} not found" });
+    }
+
+    [Fact]
+    public async Task GetTrace_WorkflowNotFound_Returns404NotFound()
+    {
+        // Arrange
+        var executionId = Guid.NewGuid();
+        var workflowName = "missing-workflow";
+
+        var executionRecord = new ExecutionRecord
+        {
+            Id = executionId,
+            WorkflowName = workflowName,
+            Status = ExecutionStatus.Succeeded,
+            StartedAt = DateTime.UtcNow,
+            CompletedAt = DateTime.UtcNow,
+            TaskExecutionRecords = new List<TaskExecutionRecord>()
+        };
+
+        _repositoryMock
+            .Setup(x => x.GetExecutionAsync(executionId))
+            .ReturnsAsync(executionRecord);
+
+        _workflowDiscoveryMock
+            .Setup(x => x.GetWorkflowByNameAsync(workflowName, null))
+            .ReturnsAsync((WorkflowResource?)null);
+
+        // Act
+        var result = await _controller.GetTrace(executionId);
+
+        // Assert
+        result.Should().BeOfType<NotFoundObjectResult>();
+        var notFoundResult = (NotFoundObjectResult)result;
+        notFoundResult.Value.Should().BeEquivalentTo(new { error = $"Workflow definition '{workflowName}' not found" });
+    }
+
+    [Fact]
+    public async Task GetTrace_ReturnsCompleteTraceStructure_WithAllProperties()
+    {
+        // Arrange
+        var executionId = Guid.NewGuid();
+        var workflowName = "complex-workflow";
+        var startTime = DateTime.UtcNow;
+
+        var executionRecord = new ExecutionRecord
+        {
+            Id = executionId,
+            WorkflowName = workflowName,
+            Status = ExecutionStatus.Succeeded,
+            StartedAt = startTime,
+            CompletedAt = startTime.AddMilliseconds(1000),
+            Duration = TimeSpan.FromMilliseconds(1000),
+            TaskExecutionRecords = new List<TaskExecutionRecord>
+            {
+                new TaskExecutionRecord
+                {
+                    TaskId = "task1",
+                    TaskRef = "fetch-user",
+                    StartedAt = startTime,
+                    CompletedAt = startTime.AddMilliseconds(200),
+                    Duration = TimeSpan.FromMilliseconds(200),
+                    Status = "Succeeded",
+                    RetryCount = 0
+                },
+                new TaskExecutionRecord
+                {
+                    TaskId = "task2",
+                    TaskRef = "process-user",
+                    StartedAt = startTime.AddMilliseconds(250),
+                    CompletedAt = startTime.AddMilliseconds(500),
+                    Duration = TimeSpan.FromMilliseconds(250),
+                    Status = "Succeeded",
+                    RetryCount = 1
+                }
+            }
+        };
+
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = workflowName },
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "task1", TaskRef = "fetch-user" },
+                    new WorkflowTaskStep
+                    {
+                        Id = "task2",
+                        TaskRef = "process-user",
+                        Input = new Dictionary<string, string>
+                        {
+                            ["userId"] = "{{tasks.task1.output}}"
+                        }
+                    }
+                }
+            }
+        };
+
+        var traceResponse = new ExecutionTraceResponse
+        {
+            ExecutionId = executionId,
+            WorkflowName = workflowName,
+            StartedAt = startTime,
+            CompletedAt = startTime.AddMilliseconds(1000),
+            TotalDurationMs = 1000,
+            TaskTimings = new List<TaskTimingDetail>
+            {
+                new TaskTimingDetail
+                {
+                    TaskId = "task1",
+                    DurationMs = 200,
+                    WaitTimeMs = 0,
+                    WaitedForTasks = new List<string>(),
+                    RetryCount = 0,
+                    Success = true
+                },
+                new TaskTimingDetail
+                {
+                    TaskId = "task2",
+                    DurationMs = 250,
+                    WaitTimeMs = 50,
+                    WaitedForTasks = new List<string> { "task1" },
+                    RetryCount = 1,
+                    Success = true
+                }
+            },
+            DependencyOrder = new List<DependencyInfo>
+            {
+                new DependencyInfo
+                {
+                    TaskId = "task1",
+                    DependsOn = new List<string>(),
+                    ReadyAt = null,
+                    StartedAt = startTime
+                },
+                new DependencyInfo
+                {
+                    TaskId = "task2",
+                    DependsOn = new List<string> { "task1" },
+                    ReadyAt = startTime.AddMilliseconds(200),
+                    StartedAt = startTime.AddMilliseconds(250)
+                }
+            },
+            PlannedParallelGroups = new List<ParallelGroup>(),
+            ActualParallelGroups = new List<ActualParallelGroup>()
+        };
+
+        _repositoryMock
+            .Setup(x => x.GetExecutionAsync(executionId))
+            .ReturnsAsync(executionRecord);
+
+        _workflowDiscoveryMock
+            .Setup(x => x.GetWorkflowByNameAsync(workflowName, null))
+            .ReturnsAsync(workflow);
+
+        _traceServiceMock
+            .Setup(x => x.BuildTrace(executionRecord, workflow))
+            .Returns(traceResponse);
+
+        // Act
+        var result = await _controller.GetTrace(executionId);
+
+        // Assert
+        result.Should().BeOfType<OkObjectResult>();
+        var okResult = (OkObjectResult)result;
+        var response = okResult.Value.Should().BeOfType<ExecutionTraceResponse>().Subject;
+
+        // Verify complete trace structure
+        response.ExecutionId.Should().Be(executionId);
+        response.WorkflowName.Should().Be(workflowName);
+        response.TotalDurationMs.Should().Be(1000);
+
+        response.TaskTimings.Should().HaveCount(2);
+        response.TaskTimings[0].WaitTimeMs.Should().Be(0);
+        response.TaskTimings[1].WaitTimeMs.Should().Be(50);
+        response.TaskTimings[1].WaitedForTasks.Should().Contain("task1");
+
+        response.DependencyOrder.Should().HaveCount(2);
+        response.DependencyOrder[0].DependsOn.Should().BeEmpty();
+        response.DependencyOrder[1].DependsOn.Should().Contain("task1");
+        response.DependencyOrder[1].ReadyAt.Should().Be(startTime.AddMilliseconds(200));
+
+        response.PlannedParallelGroups.Should().NotBeNull();
+        response.ActualParallelGroups.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task GetTrace_CallsTraceService_WithCorrectParameters()
+    {
+        // Arrange
+        var executionId = Guid.NewGuid();
+        var workflowName = "test-workflow";
+
+        var executionRecord = new ExecutionRecord
+        {
+            Id = executionId,
+            WorkflowName = workflowName,
+            Status = ExecutionStatus.Succeeded,
+            StartedAt = DateTime.UtcNow,
+            CompletedAt = DateTime.UtcNow,
+            TaskExecutionRecords = new List<TaskExecutionRecord>()
+        };
+
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = workflowName },
+            Spec = new WorkflowSpec { Tasks = new List<WorkflowTaskStep>() }
+        };
+
+        var traceResponse = new ExecutionTraceResponse
+        {
+            ExecutionId = executionId,
+            WorkflowName = workflowName
+        };
+
+        _repositoryMock
+            .Setup(x => x.GetExecutionAsync(executionId))
+            .ReturnsAsync(executionRecord);
+
+        _workflowDiscoveryMock
+            .Setup(x => x.GetWorkflowByNameAsync(workflowName, null))
+            .ReturnsAsync(workflow);
+
+        _traceServiceMock
+            .Setup(x => x.BuildTrace(executionRecord, workflow))
+            .Returns(traceResponse);
+
+        // Act
+        var result = await _controller.GetTrace(executionId);
+
+        // Assert
+        _traceServiceMock.Verify(x => x.BuildTrace(executionRecord, workflow), Times.Once);
+        result.Should().BeOfType<OkObjectResult>();
     }
 }

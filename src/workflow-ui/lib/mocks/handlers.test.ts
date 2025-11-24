@@ -269,7 +269,7 @@ describe('MSW Handlers', () => {
       expect(task).toHaveProperty('taskId');
       expect(task).toHaveProperty('status');
       expect(task).toHaveProperty('durationMs');
-      expect(task).toHaveProperty('retries');
+      expect(task).toHaveProperty('retryCount');
     });
   });
 

@@ -19,6 +19,7 @@ const userSignupList: WorkflowListItem = {
   stats: {
     totalExecutions: 1247,
     successRate: 98.5,
+    successRateTrend: 2.3, // Up 2.3%
     avgDurationMs: 850,
     lastExecuted: '2025-11-23T10:30:00Z',
   },
@@ -47,7 +48,7 @@ const userSignupDetail: WorkflowDetail = {
       taskRef: 'email-validator',
       description: 'Validate email format and check if already exists',
       timeout: '5s',
-      retries: 2,
+      retryCount: 2,
       inputMapping: {
         email: '{{input.email}}',
       },
@@ -63,7 +64,7 @@ const userSignupDetail: WorkflowDetail = {
       taskRef: 'user-service',
       description: 'Create user account in database',
       timeout: '10s',
-      retries: 3,
+      retryCount: 3,
       inputMapping: {
         email: '{{input.email}}',
         password: '{{input.password}}',
@@ -81,7 +82,7 @@ const userSignupDetail: WorkflowDetail = {
       taskRef: 'email-sender',
       description: 'Send verification email to user',
       timeout: '15s',
-      retries: 3,
+      retryCount: 3,
       inputMapping: {
         to: '{{input.email}}',
         userId: '{{tasks.create-user.output.id}}',
@@ -102,8 +103,8 @@ const userSignupDetail: WorkflowDetail = {
       { id: 'send-email', type: 'task', position: { x: 0, y: 200 }, data: { label: 'send-email', status: 'idle' } },
     ],
     edges: [
-      { id: 'e1', source: 'validate-email', target: 'create-user', animated: false },
-      { id: 'e2', source: 'create-user', target: 'send-email', animated: false },
+      { id: 'e1', source: 'validate-email', target: 'create-user', type: 'dependency', animated: false },
+      { id: 'e2', source: 'create-user', target: 'send-email', type: 'dependency', animated: false },
     ],
     parallelGroups: [
       { level: 0, taskIds: ['validate-email'] },
@@ -132,6 +133,7 @@ const orderProcessingList: WorkflowListItem = {
   stats: {
     totalExecutions: 8945,
     successRate: 94.2,
+    successRateTrend: -1.5, // Down 1.5%
     avgDurationMs: 2300,
     lastExecuted: '2025-11-23T11:45:00Z',
   },
@@ -169,7 +171,7 @@ const orderProcessingDetail: WorkflowDetail = {
       taskRef: 'order-validator',
       description: 'Validate order data and business rules',
       timeout: '5s',
-      retries: 1,
+      retryCount: 1,
       inputMapping: {
         orderId: '{{input.orderId}}',
         items: '{{input.items}}',
@@ -185,7 +187,7 @@ const orderProcessingDetail: WorkflowDetail = {
       taskRef: 'inventory-service',
       description: 'Check product availability',
       timeout: '10s',
-      retries: 2,
+      retryCount: 2,
       inputMapping: {
         items: '{{input.items}}',
       },
@@ -201,7 +203,7 @@ const orderProcessingDetail: WorkflowDetail = {
       taskRef: 'payment-gateway',
       description: 'Process payment via selected method',
       timeout: '30s',
-      retries: 3,
+      retryCount: 3,
       inputMapping: {
         orderId: '{{input.orderId}}',
         method: '{{input.paymentMethod}}',
@@ -218,7 +220,7 @@ const orderProcessingDetail: WorkflowDetail = {
       taskRef: 'order-service',
       description: 'Confirm order after inventory and payment',
       timeout: '5s',
-      retries: 2,
+      retryCount: 2,
       inputMapping: {
         orderId: '{{input.orderId}}',
         reservationId: '{{tasks.check-inventory.output.reservationId}}',
@@ -236,7 +238,7 @@ const orderProcessingDetail: WorkflowDetail = {
       taskRef: 'email-sender',
       description: 'Send order confirmation email',
       timeout: '15s',
-      retries: 3,
+      retryCount: 3,
       inputMapping: {
         orderId: '{{input.orderId}}',
         status: '{{tasks.confirm-order.output.status}}',
@@ -252,7 +254,7 @@ const orderProcessingDetail: WorkflowDetail = {
       taskRef: 'shipping-service',
       description: 'Create shipping label and schedule pickup',
       timeout: '20s',
-      retries: 2,
+      retryCount: 2,
       inputMapping: {
         orderId: '{{input.orderId}}',
       },
@@ -273,12 +275,12 @@ const orderProcessingDetail: WorkflowDetail = {
       { id: 'ship-order', type: 'task', position: { x: 400, y: 300 }, data: { label: 'ship-order', status: 'idle' } },
     ],
     edges: [
-      { id: 'e1', source: 'validate-order', target: 'check-inventory', animated: false },
-      { id: 'e2', source: 'validate-order', target: 'process-payment', animated: false },
-      { id: 'e3', source: 'check-inventory', target: 'confirm-order', animated: false },
-      { id: 'e4', source: 'process-payment', target: 'confirm-order', animated: false },
-      { id: 'e5', source: 'confirm-order', target: 'send-confirmation', animated: false },
-      { id: 'e6', source: 'confirm-order', target: 'ship-order', animated: false },
+      { id: 'e1', source: 'validate-order', target: 'check-inventory', type: 'dependency', animated: false },
+      { id: 'e2', source: 'validate-order', target: 'process-payment', type: 'dependency', animated: false },
+      { id: 'e3', source: 'check-inventory', target: 'confirm-order', type: 'dependency', animated: false },
+      { id: 'e4', source: 'process-payment', target: 'confirm-order', type: 'dependency', animated: false },
+      { id: 'e5', source: 'confirm-order', target: 'send-confirmation', type: 'dependency', animated: false },
+      { id: 'e6', source: 'confirm-order', target: 'ship-order', type: 'dependency', animated: false },
     ],
     parallelGroups: [
       { level: 0, taskIds: ['validate-order'] },
@@ -336,7 +338,7 @@ const dataPipelineDetail: WorkflowDetail = {
       taskRef: 'http-fetcher',
       description: 'Download data from source URL',
       timeout: '2m',
-      retries: 3,
+      retryCount: 3,
       inputMapping: {
         url: '{{input.sourceUrl}}',
       },
@@ -352,7 +354,7 @@ const dataPipelineDetail: WorkflowDetail = {
       taskRef: 'data-parser',
       description: 'Parse data according to format',
       timeout: '1m',
-      retries: 2,
+      retryCount: 2,
       inputMapping: {
         data: '{{tasks.fetch-data.output.data}}',
         format: '{{input.format}}',
@@ -368,7 +370,7 @@ const dataPipelineDetail: WorkflowDetail = {
       taskRef: 'schema-validator',
       description: 'Validate data against schema rules',
       timeout: '30s',
-      retries: 1,
+      retryCount: 1,
       inputMapping: {
         records: '{{tasks.parse-data.output.records}}',
         rules: '{{input.validationRules}}',
@@ -385,7 +387,7 @@ const dataPipelineDetail: WorkflowDetail = {
       taskRef: 'data-transformer',
       description: 'Apply transformations to records',
       timeout: '5m',
-      retries: 2,
+      retryCount: 2,
       inputMapping: {
         records: '{{tasks.parse-data.output.records}}',
       },
@@ -400,7 +402,7 @@ const dataPipelineDetail: WorkflowDetail = {
       taskRef: 'data-enricher',
       description: 'Enrich records with external data',
       timeout: '3m',
-      retries: 3,
+      retryCount: 3,
       inputMapping: {
         records: '{{tasks.transform-data.output.transformed}}',
       },
@@ -415,7 +417,7 @@ const dataPipelineDetail: WorkflowDetail = {
       taskRef: 'deduplicator',
       description: 'Remove duplicate records',
       timeout: '1m',
-      retries: 1,
+      retryCount: 1,
       inputMapping: {
         records: '{{tasks.enrich-data.output.enriched}}',
       },
@@ -430,7 +432,7 @@ const dataPipelineDetail: WorkflowDetail = {
       taskRef: 'report-generator',
       description: 'Generate processing summary report',
       timeout: '30s',
-      retries: 2,
+      retryCount: 2,
       inputMapping: {
         records: '{{tasks.deduplicate.output.unique}}',
       },
@@ -446,7 +448,7 @@ const dataPipelineDetail: WorkflowDetail = {
       taskRef: 's3-uploader',
       description: 'Upload processed data to S3',
       timeout: '2m',
-      retries: 3,
+      retryCount: 3,
       inputMapping: {
         data: '{{tasks.deduplicate.output.unique}}',
         report: '{{tasks.generate-report.output.report}}',
@@ -470,13 +472,13 @@ const dataPipelineDetail: WorkflowDetail = {
       { id: 'upload-results', type: 'task', position: { x: 200, y: 700 }, data: { label: 'upload-results', status: 'idle' } },
     ],
     edges: [
-      { id: 'e1', source: 'fetch-data', target: 'parse-data', animated: false },
-      { id: 'e2', source: 'parse-data', target: 'validate-schema', animated: false },
-      { id: 'e3', source: 'validate-schema', target: 'transform-data', animated: false },
-      { id: 'e4', source: 'transform-data', target: 'enrich-data', animated: false },
-      { id: 'e5', source: 'enrich-data', target: 'deduplicate', animated: false },
-      { id: 'e6', source: 'deduplicate', target: 'generate-report', animated: false },
-      { id: 'e7', source: 'generate-report', target: 'upload-results', animated: false },
+      { id: 'e1', source: 'fetch-data', target: 'parse-data', type: 'dependency', animated: false },
+      { id: 'e2', source: 'parse-data', target: 'validate-schema', type: 'dependency', animated: false },
+      { id: 'e3', source: 'validate-schema', target: 'transform-data', type: 'dependency', animated: false },
+      { id: 'e4', source: 'transform-data', target: 'enrich-data', type: 'dependency', animated: false },
+      { id: 'e5', source: 'enrich-data', target: 'deduplicate', type: 'dependency', animated: false },
+      { id: 'e6', source: 'deduplicate', target: 'generate-report', type: 'dependency', animated: false },
+      { id: 'e7', source: 'generate-report', target: 'upload-results', type: 'dependency', animated: false },
     ],
     parallelGroups: [
       { level: 0, taskIds: ['fetch-data'] },
@@ -543,7 +545,7 @@ const userOnboardingDetail: WorkflowDetail = {
       taskRef: 'profile-service',
       description: 'Create user profile',
       timeout: '10s',
-      retries: 2,
+      retryCount: 2,
       inputMapping: {
         userId: '{{input.userId}}',
         preferences: '{{input.preferences}}',
@@ -560,7 +562,7 @@ const userOnboardingDetail: WorkflowDetail = {
       taskRef: 'billing-service',
       description: 'Initialize billing account',
       timeout: '15s',
-      retries: 3,
+      retryCount: 3,
       inputMapping: {
         userId: '{{input.userId}}',
         plan: '{{input.plan}}',
@@ -579,7 +581,7 @@ const userOnboardingDetail: WorkflowDetail = {
       taskRef: 'resource-allocator',
       description: 'Allocate resources based on plan',
       timeout: '10s',
-      retries: 2,
+      retryCount: 2,
       inputMapping: {
         plan: '{{input.plan}}',
         billingId: '{{tasks.setup-billing.output.billingId}}',
@@ -597,7 +599,7 @@ const userOnboardingDetail: WorkflowDetail = {
       taskRef: 'email-sender',
       description: 'Send welcome email with onboarding guide',
       timeout: '15s',
-      retries: 3,
+      retryCount: 3,
       inputMapping: {
         userId: '{{input.userId}}',
         plan: '{{input.plan}}',
@@ -619,9 +621,9 @@ const userOnboardingDetail: WorkflowDetail = {
       { id: 'send-welcome', type: 'task', position: { x: 0, y: 300 }, data: { label: 'send-welcome', status: 'idle', schemaMismatch: true } },
     ],
     edges: [
-      { id: 'e1', source: 'create-profile', target: 'setup-billing', animated: false, style: { stroke: '#ef4444' } },
-      { id: 'e2', source: 'setup-billing', target: 'assign-resources', animated: false },
-      { id: 'e3', source: 'assign-resources', target: 'send-welcome', animated: false, style: { stroke: '#ef4444' } },
+      { id: 'e1', source: 'create-profile', target: 'setup-billing', type: 'dependency', animated: false, style: { stroke: '#ef4444' } },
+      { id: 'e2', source: 'setup-billing', target: 'assign-resources', type: 'dependency', animated: false },
+      { id: 'e3', source: 'assign-resources', target: 'send-welcome', type: 'dependency', animated: false, style: { stroke: '#ef4444' } },
     ],
     parallelGroups: [
       { level: 0, taskIds: ['create-profile'] },
@@ -680,7 +682,7 @@ const paymentFlowDetail: WorkflowDetail = {
       taskRef: 'fraud-detector',
       description: 'Check transaction for fraud indicators',
       timeout: '5s',
-      retries: 2,
+      retryCount: 2,
       inputMapping: {
         amount: '{{input.amount}}',
         customerId: '{{input.customerId}}',
@@ -697,7 +699,7 @@ const paymentFlowDetail: WorkflowDetail = {
       taskRef: '3ds-verifier',
       description: '3D Secure verification if required',
       timeout: '30s',
-      retries: 1,
+      retryCount: 1,
       inputMapping: {
         cardToken: '{{input.cardToken}}',
         amount: '{{input.amount}}',
@@ -714,7 +716,7 @@ const paymentFlowDetail: WorkflowDetail = {
       taskRef: 'payment-gateway',
       description: 'Authorize payment with card issuer',
       timeout: '20s',
-      retries: 2,
+      retryCount: 2,
       inputMapping: {
         amount: '{{input.amount}}',
         currency: '{{input.currency}}',
@@ -733,7 +735,7 @@ const paymentFlowDetail: WorkflowDetail = {
       taskRef: 'ledger-service',
       description: 'Record transaction in ledger',
       timeout: '10s',
-      retries: 3,
+      retryCount: 3,
       inputMapping: {
         customerId: '{{input.customerId}}',
         amount: '{{input.amount}}',
@@ -750,7 +752,7 @@ const paymentFlowDetail: WorkflowDetail = {
       taskRef: 'payment-gateway',
       description: 'Capture authorized payment',
       timeout: '15s',
-      retries: 3,
+      retryCount: 3,
       inputMapping: {
         authorizationId: '{{tasks.authorize-payment.output.authorizationId}}',
       },
@@ -771,10 +773,10 @@ const paymentFlowDetail: WorkflowDetail = {
       { id: 'capture-payment', type: 'task', position: { x: 0, y: 400 }, data: { label: 'capture-payment', status: 'idle' } },
     ],
     edges: [
-      { id: 'e1', source: 'fraud-check', target: 'verify-3ds', animated: false },
-      { id: 'e2', source: 'verify-3ds', target: 'authorize-payment', animated: false },
-      { id: 'e3', source: 'authorize-payment', target: 'update-ledger', animated: false },
-      { id: 'e4', source: 'update-ledger', target: 'capture-payment', animated: false },
+      { id: 'e1', source: 'fraud-check', target: 'verify-3ds', type: 'dependency', animated: false },
+      { id: 'e2', source: 'verify-3ds', target: 'authorize-payment', type: 'dependency', animated: false },
+      { id: 'e3', source: 'authorize-payment', target: 'update-ledger', type: 'dependency', animated: false },
+      { id: 'e4', source: 'update-ledger', target: 'capture-payment', type: 'dependency', animated: false },
     ],
     parallelGroups: [
       { level: 0, taskIds: ['fraud-check'] },

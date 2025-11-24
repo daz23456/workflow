@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
+using WorkflowCore.Data.Repositories;
 using WorkflowCore.Models;
 using WorkflowGateway.Controllers;
 using WorkflowGateway.Models;
@@ -13,13 +14,18 @@ public class WorkflowManagementControllerTests
 {
     private readonly Mock<IWorkflowDiscoveryService> _discoveryServiceMock;
     private readonly Mock<IDynamicEndpointService> _endpointServiceMock;
+    private readonly Mock<IWorkflowVersionRepository> _versionRepositoryMock;
     private readonly WorkflowManagementController _controller;
 
     public WorkflowManagementControllerTests()
     {
         _discoveryServiceMock = new Mock<IWorkflowDiscoveryService>();
         _endpointServiceMock = new Mock<IDynamicEndpointService>();
-        _controller = new WorkflowManagementController(_discoveryServiceMock.Object, _endpointServiceMock.Object);
+        _versionRepositoryMock = new Mock<IWorkflowVersionRepository>();
+        _controller = new WorkflowManagementController(
+            _discoveryServiceMock.Object,
+            _endpointServiceMock.Object,
+            _versionRepositoryMock.Object);
     }
 
     [Fact]
@@ -28,7 +34,8 @@ public class WorkflowManagementControllerTests
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() => new WorkflowManagementController(
             null!,
-            _endpointServiceMock.Object));
+            _endpointServiceMock.Object,
+            _versionRepositoryMock.Object));
     }
 
     [Fact]
@@ -37,6 +44,17 @@ public class WorkflowManagementControllerTests
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() => new WorkflowManagementController(
             _discoveryServiceMock.Object,
+            null!,
+            _versionRepositoryMock.Object));
+    }
+
+    [Fact]
+    public void Constructor_WithNullVersionRepository_ShouldThrowArgumentNullException()
+    {
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() => new WorkflowManagementController(
+            _discoveryServiceMock.Object,
+            _endpointServiceMock.Object,
             null!));
     }
 
@@ -409,5 +427,161 @@ public class WorkflowManagementControllerTests
         response.Should().NotBeNull();
         response!.Workflows.Should().HaveCount(1);
         response.Workflows[0].TaskCount.Should().Be(3);
+    }
+
+    // ========== WORKFLOW VERSIONS TESTS ==========
+
+    [Fact]
+    public async Task GetWorkflowVersions_ShouldReturnAllVersions()
+    {
+        // Arrange
+        var versions = new List<WorkflowVersion>
+        {
+            new WorkflowVersion
+            {
+                WorkflowName = "test-workflow",
+                VersionHash = "hash1",
+                CreatedAt = DateTime.UtcNow.AddHours(-2),
+                DefinitionSnapshot = "workflow definition 1"
+            },
+            new WorkflowVersion
+            {
+                WorkflowName = "test-workflow",
+                VersionHash = "hash2",
+                CreatedAt = DateTime.UtcNow.AddHours(-1),
+                DefinitionSnapshot = "workflow definition 2"
+            }
+        };
+
+        _versionRepositoryMock
+            .Setup(x => x.GetVersionsAsync("test-workflow"))
+            .ReturnsAsync(versions);
+
+        // Act
+        var result = await _controller.GetWorkflowVersions("test-workflow");
+
+        // Assert
+        result.Should().BeOfType<OkObjectResult>();
+        var okResult = result as OkObjectResult;
+        var response = okResult!.Value as WorkflowVersionListResponse;
+
+        response.Should().NotBeNull();
+        response!.WorkflowName.Should().Be("test-workflow");
+        response.Versions.Should().HaveCount(2);
+        response.TotalCount.Should().Be(2);
+        response.Versions.Should().Contain(v => v.VersionHash == "hash1");
+        response.Versions.Should().Contain(v => v.VersionHash == "hash2");
+    }
+
+    [Fact]
+    public async Task GetWorkflowVersions_ShouldOrderByCreatedAtDescending()
+    {
+        // Arrange
+        var now = DateTime.UtcNow;
+        var versions = new List<WorkflowVersion>
+        {
+            new WorkflowVersion
+            {
+                WorkflowName = "test-workflow",
+                VersionHash = "oldest",
+                CreatedAt = now.AddHours(-3),
+                DefinitionSnapshot = "old definition"
+            },
+            new WorkflowVersion
+            {
+                WorkflowName = "test-workflow",
+                VersionHash = "newest",
+                CreatedAt = now,
+                DefinitionSnapshot = "new definition"
+            },
+            new WorkflowVersion
+            {
+                WorkflowName = "test-workflow",
+                VersionHash = "middle",
+                CreatedAt = now.AddHours(-1),
+                DefinitionSnapshot = "middle definition"
+            }
+        };
+
+        _versionRepositoryMock
+            .Setup(x => x.GetVersionsAsync("test-workflow"))
+            .ReturnsAsync(versions);
+
+        // Act
+        var result = await _controller.GetWorkflowVersions("test-workflow");
+
+        // Assert
+        var okResult = result as OkObjectResult;
+        var response = okResult!.Value as WorkflowVersionListResponse;
+
+        response!.Versions[0].VersionHash.Should().Be("newest");
+        response.Versions[1].VersionHash.Should().Be("middle");
+        response.Versions[2].VersionHash.Should().Be("oldest");
+    }
+
+    [Fact]
+    public async Task GetWorkflowVersions_WithNoVersions_ShouldReturnEmptyList()
+    {
+        // Arrange
+        _versionRepositoryMock
+            .Setup(x => x.GetVersionsAsync("nonexistent-workflow"))
+            .ReturnsAsync(new List<WorkflowVersion>());
+
+        // Act
+        var result = await _controller.GetWorkflowVersions("nonexistent-workflow");
+
+        // Assert
+        result.Should().BeOfType<OkObjectResult>();
+        var okResult = result as OkObjectResult;
+        var response = okResult!.Value as WorkflowVersionListResponse;
+
+        response.Should().NotBeNull();
+        response!.WorkflowName.Should().Be("nonexistent-workflow");
+        response.Versions.Should().BeEmpty();
+        response.TotalCount.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task GetWorkflowVersions_ShouldIncludeDefinitionSnapshot()
+    {
+        // Arrange
+        var versions = new List<WorkflowVersion>
+        {
+            new WorkflowVersion
+            {
+                WorkflowName = "test-workflow",
+                VersionHash = "hash1",
+                CreatedAt = DateTime.UtcNow,
+                DefinitionSnapshot = "apiVersion: workflow.io/v1\nkind: Workflow"
+            }
+        };
+
+        _versionRepositoryMock
+            .Setup(x => x.GetVersionsAsync("test-workflow"))
+            .ReturnsAsync(versions);
+
+        // Act
+        var result = await _controller.GetWorkflowVersions("test-workflow");
+
+        // Assert
+        var okResult = result as OkObjectResult;
+        var response = okResult!.Value as WorkflowVersionListResponse;
+
+        response!.Versions[0].DefinitionSnapshot.Should().Be("apiVersion: workflow.io/v1\nkind: Workflow");
+    }
+
+    [Fact]
+    public async Task GetWorkflowVersions_ShouldCallRepositoryWithCorrectWorkflowName()
+    {
+        // Arrange
+        _versionRepositoryMock
+            .Setup(x => x.GetVersionsAsync("my-workflow"))
+            .ReturnsAsync(new List<WorkflowVersion>());
+
+        // Act
+        await _controller.GetWorkflowVersions("my-workflow");
+
+        // Assert
+        _versionRepositoryMock.Verify(x => x.GetVersionsAsync("my-workflow"), Times.Once);
     }
 }

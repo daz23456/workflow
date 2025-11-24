@@ -1,8 +1,21 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { WorkflowCard } from './workflow-card';
 import type { WorkflowListItem } from '@/types/workflow';
+
+function renderWithQuery(ui: React.ReactElement) {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+      },
+    },
+  });
+
+  return render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>);
+}
 
 describe('WorkflowCard', () => {
   const mockWorkflow: WorkflowListItem = {
@@ -22,37 +35,37 @@ describe('WorkflowCard', () => {
 
   describe('Rendering', () => {
     it('renders workflow name', () => {
-      render(<WorkflowCard workflow={mockWorkflow} />);
+      renderWithQuery(<WorkflowCard workflow={mockWorkflow} />);
       expect(screen.getByText('user-signup')).toBeInTheDocument();
     });
 
     it('renders workflow description', () => {
-      render(<WorkflowCard workflow={mockWorkflow} />);
+      renderWithQuery(<WorkflowCard workflow={mockWorkflow} />);
       expect(screen.getByText('Complete user registration flow')).toBeInTheDocument();
     });
 
     it('renders namespace badge', () => {
-      render(<WorkflowCard workflow={mockWorkflow} />);
+      renderWithQuery(<WorkflowCard workflow={mockWorkflow} />);
       expect(screen.getByText('production')).toBeInTheDocument();
     });
 
     it('renders task count', () => {
-      render(<WorkflowCard workflow={mockWorkflow} />);
+      renderWithQuery(<WorkflowCard workflow={mockWorkflow} />);
       expect(screen.getByText(/3 tasks/i)).toBeInTheDocument();
     });
 
     it('renders success rate with percentage', () => {
-      render(<WorkflowCard workflow={mockWorkflow} />);
+      renderWithQuery(<WorkflowCard workflow={mockWorkflow} />);
       expect(screen.getByText(/98.5%/i)).toBeInTheDocument();
     });
 
     it('renders total executions', () => {
-      render(<WorkflowCard workflow={mockWorkflow} />);
+      renderWithQuery(<WorkflowCard workflow={mockWorkflow} />);
       expect(screen.getByText(/1,247/i)).toBeInTheDocument();
     });
 
     it('renders average duration', () => {
-      render(<WorkflowCard workflow={mockWorkflow} />);
+      renderWithQuery(<WorkflowCard workflow={mockWorkflow} />);
       expect(screen.getByText('2.5s')).toBeInTheDocument();
     });
   });
@@ -60,7 +73,7 @@ describe('WorkflowCard', () => {
   describe('Success Rate Badge', () => {
     it('renders success variant for high success rate', () => {
       const workflow = { ...mockWorkflow, stats: { ...mockWorkflow.stats, successRate: 95 } };
-      const { container } = render(<WorkflowCard workflow={workflow} />);
+      const { container } = renderWithQuery(<WorkflowCard workflow={workflow} />);
       const badge = container.querySelector('.bg-green-100');
       expect(badge).toBeInTheDocument();
       expect(badge).toHaveTextContent('95.0%');
@@ -68,7 +81,7 @@ describe('WorkflowCard', () => {
 
     it('renders warning variant for medium success rate', () => {
       const workflow = { ...mockWorkflow, stats: { ...mockWorkflow.stats, successRate: 75 } };
-      const { container } = render(<WorkflowCard workflow={workflow} />);
+      const { container } = renderWithQuery(<WorkflowCard workflow={workflow} />);
       const badge = container.querySelector('.bg-yellow-100');
       expect(badge).toBeInTheDocument();
       expect(badge).toHaveTextContent('75.0%');
@@ -76,7 +89,7 @@ describe('WorkflowCard', () => {
 
     it('renders destructive variant for low success rate', () => {
       const workflow = { ...mockWorkflow, stats: { ...mockWorkflow.stats, successRate: 50 } };
-      const { container } = render(<WorkflowCard workflow={workflow} />);
+      const { container } = renderWithQuery(<WorkflowCard workflow={workflow} />);
       const badge = container.querySelector('.bg-red-100');
       expect(badge).toBeInTheDocument();
       expect(badge).toHaveTextContent('50.0%');
@@ -90,22 +103,22 @@ describe('WorkflowCard', () => {
         totalExecutions: 0,
         successRate: 0,
         avgDurationMs: 0,
-        lastExecuted: null,
+        lastExecuted: undefined,
       },
     };
 
-    it('renders "Never executed" text when lastExecuted is null', () => {
-      render(<WorkflowCard workflow={neverExecutedWorkflow} />);
+    it('renders "Never executed" text when lastExecuted is undefined', () => {
+      renderWithQuery(<WorkflowCard workflow={neverExecutedWorkflow} />);
       expect(screen.getByText(/never executed/i)).toBeInTheDocument();
     });
 
     it('shows 0 executions', () => {
-      render(<WorkflowCard workflow={neverExecutedWorkflow} />);
+      renderWithQuery(<WorkflowCard workflow={neverExecutedWorkflow} />);
       expect(screen.getByText('0')).toBeInTheDocument();
     });
 
     it('shows N/A for success rate', () => {
-      render(<WorkflowCard workflow={neverExecutedWorkflow} />);
+      renderWithQuery(<WorkflowCard workflow={neverExecutedWorkflow} />);
       expect(screen.getByText(/n\/a/i)).toBeInTheDocument();
     });
   });
@@ -115,7 +128,7 @@ describe('WorkflowCard', () => {
       const user = userEvent.setup();
       const onClick = vi.fn();
 
-      render(<WorkflowCard workflow={mockWorkflow} onClick={onClick} />);
+      renderWithQuery(<WorkflowCard workflow={mockWorkflow} onClick={onClick} />);
 
       const card = screen.getByRole('article');
       await user.click(card);
@@ -126,14 +139,14 @@ describe('WorkflowCard', () => {
 
     it('has pointer cursor when onClick is provided', () => {
       const onClick = vi.fn();
-      render(<WorkflowCard workflow={mockWorkflow} onClick={onClick} />);
+      renderWithQuery(<WorkflowCard workflow={mockWorkflow} onClick={onClick} />);
 
       const card = screen.getByRole('article');
       expect(card).toHaveClass('cursor-pointer');
     });
 
     it('does not have pointer cursor when onClick is not provided', () => {
-      render(<WorkflowCard workflow={mockWorkflow} />);
+      renderWithQuery(<WorkflowCard workflow={mockWorkflow} />);
 
       const card = screen.getByRole('article');
       expect(card).not.toHaveClass('cursor-pointer');
@@ -143,7 +156,7 @@ describe('WorkflowCard', () => {
       const user = userEvent.setup();
       const onClick = vi.fn();
 
-      render(<WorkflowCard workflow={mockWorkflow} onClick={onClick} />);
+      renderWithQuery(<WorkflowCard workflow={mockWorkflow} onClick={onClick} />);
 
       const card = screen.getByRole('article');
       card.focus();
@@ -156,19 +169,19 @@ describe('WorkflowCard', () => {
   describe('Duration Formatting', () => {
     it('formats milliseconds', () => {
       const workflow = { ...mockWorkflow, stats: { ...mockWorkflow.stats, avgDurationMs: 500 } };
-      render(<WorkflowCard workflow={workflow} />);
+      renderWithQuery(<WorkflowCard workflow={workflow} />);
       expect(screen.getByText('500ms')).toBeInTheDocument();
     });
 
     it('formats seconds', () => {
       const workflow = { ...mockWorkflow, stats: { ...mockWorkflow.stats, avgDurationMs: 3500 } };
-      render(<WorkflowCard workflow={workflow} />);
+      renderWithQuery(<WorkflowCard workflow={workflow} />);
       expect(screen.getByText('3.5s')).toBeInTheDocument();
     });
 
     it('formats minutes', () => {
       const workflow = { ...mockWorkflow, stats: { ...mockWorkflow.stats, avgDurationMs: 90000 } };
-      render(<WorkflowCard workflow={workflow} />);
+      renderWithQuery(<WorkflowCard workflow={workflow} />);
       expect(screen.getByText('1m 30s')).toBeInTheDocument();
     });
   });
@@ -176,32 +189,93 @@ describe('WorkflowCard', () => {
   describe('Number Formatting', () => {
     it('formats large execution counts with commas', () => {
       const workflow = { ...mockWorkflow, stats: { ...mockWorkflow.stats, totalExecutions: 123456 } };
-      render(<WorkflowCard workflow={workflow} />);
+      renderWithQuery(<WorkflowCard workflow={workflow} />);
       expect(screen.getByText(/123,456/i)).toBeInTheDocument();
     });
 
     it('formats small execution counts without commas', () => {
       const workflow = { ...mockWorkflow, stats: { ...mockWorkflow.stats, totalExecutions: 42 } };
-      render(<WorkflowCard workflow={workflow} />);
+      renderWithQuery(<WorkflowCard workflow={workflow} />);
       expect(screen.getByText('42')).toBeInTheDocument();
+    });
+  });
+
+  describe('Success Rate Trend', () => {
+    it('displays upward trend with arrow', () => {
+      const workflow = { ...mockWorkflow, stats: { ...mockWorkflow.stats, successRateTrend: 2.3 } };
+      renderWithQuery(<WorkflowCard workflow={workflow} />);
+
+      expect(screen.getByText(/↑/)).toBeInTheDocument();
+      expect(screen.getByText(/2.3%/)).toBeInTheDocument();
+    });
+
+    it('displays downward trend with arrow', () => {
+      const workflow = { ...mockWorkflow, stats: { ...mockWorkflow.stats, successRateTrend: -1.5 } };
+      renderWithQuery(<WorkflowCard workflow={workflow} />);
+
+      expect(screen.getByText(/↓/)).toBeInTheDocument();
+      expect(screen.getByText(/1.5%/)).toBeInTheDocument();
+    });
+
+    it('applies green color for upward trend', () => {
+      const workflow = { ...mockWorkflow, stats: { ...mockWorkflow.stats, successRateTrend: 2.3 } };
+      const { container } = renderWithQuery(<WorkflowCard workflow={workflow} />);
+
+      const trendElement = container.querySelector('.text-green-600');
+      expect(trendElement).toBeInTheDocument();
+      expect(trendElement).toHaveTextContent('↑ 2.3%');
+    });
+
+    it('applies red color for downward trend', () => {
+      const workflow = { ...mockWorkflow, stats: { ...mockWorkflow.stats, successRateTrend: -1.5 } };
+      const { container } = renderWithQuery(<WorkflowCard workflow={workflow} />);
+
+      const trendElement = container.querySelector('.text-red-600');
+      expect(trendElement).toBeInTheDocument();
+      expect(trendElement).toHaveTextContent('↓ 1.5%');
+    });
+
+    it('does not display trend when not provided', () => {
+      const workflow = { ...mockWorkflow, stats: { ...mockWorkflow.stats, successRateTrend: undefined } };
+      const { container } = renderWithQuery(<WorkflowCard workflow={workflow} />);
+
+      const trendElement = container.querySelector('.text-green-600, .text-red-600');
+      expect(trendElement).not.toBeInTheDocument();
+    });
+
+    it('does not display trend for never executed workflows', () => {
+      const neverExecutedWorkflow: WorkflowListItem = {
+        ...mockWorkflow,
+        stats: {
+          totalExecutions: 0,
+          successRate: 0,
+          avgDurationMs: 0,
+          lastExecuted: undefined,
+          successRateTrend: 5.0, // Even if trend is provided
+        },
+      };
+      const { container } = renderWithQuery(<WorkflowCard workflow={neverExecutedWorkflow} />);
+
+      const trendElement = container.querySelector('.text-green-600, .text-red-600');
+      expect(trendElement).not.toBeInTheDocument();
     });
   });
 
   describe('Accessibility', () => {
     it('has article role', () => {
-      render(<WorkflowCard workflow={mockWorkflow} />);
+      renderWithQuery(<WorkflowCard workflow={mockWorkflow} />);
       expect(screen.getByRole('article')).toBeInTheDocument();
     });
 
     it('has accessible name from workflow name', () => {
-      render(<WorkflowCard workflow={mockWorkflow} />);
+      renderWithQuery(<WorkflowCard workflow={mockWorkflow} />);
       const card = screen.getByRole('article');
       expect(card).toHaveAccessibleName('user-signup');
     });
 
     it('is focusable when clickable', () => {
       const onClick = vi.fn();
-      render(<WorkflowCard workflow={mockWorkflow} onClick={onClick} />);
+      renderWithQuery(<WorkflowCard workflow={mockWorkflow} onClick={onClick} />);
 
       const card = screen.getByRole('article');
       expect(card).toHaveAttribute('tabIndex', '0');

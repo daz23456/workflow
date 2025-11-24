@@ -1,0 +1,30 @@
+
+[38;5;11m   _____ _              _               _   _ ______ _______  [0m
+[38;5;11m  / ____| |            | |             | \ | |  ____|__   __| [0m
+[38;5;11m | (___ | |_ _ __ _   _| | _____ _ __  |  \| | |__     | |    [0m
+[38;5;11m  \___ \| __| '__| | | | |/ / _ \ '__| | . ` |  __|    | |    [0m
+[38;5;11m  ____) | |_| |  | |_| |   <  __/ |    | |\  | |____   | |    [0m
+[38;5;11m |_____/ \__|_|   \__, |_|\_\___|_| (_)|_| \_|______|  |_|    [0m
+[38;5;11m                   __/ |                                      [0m
+[38;5;11m                  |___/                                       [0m
+
+
+Version: [38;5;2m4.8.1[0m
+
+[19:30:37 INF] Stryker will use a max of 4 parallel testsessions.
+[19:30:37 INF] Analysis starting.
+[19:30:37 INF] Identifying projects to mutate in /Users/darren/dev/workflow/WorkflowOperator.sln. This can take a while.
+[19:30:42 INF] Could not find an assembly reference to a mutable assembly for project /Users/darren/dev/workflow/tests/WorkflowCore.Tests/WorkflowCore.Tests.csproj. Will look into project references.
+[19:30:42 INF] Could not find an assembly reference to a mutable assembly for project /Users/darren/dev/workflow/tests/WorkflowGateway.Tests/WorkflowGateway.Tests.csproj. Will look into project references.
+[19:30:42 INF] Could not find an assembly reference to a mutable assembly for project /Users/darren/dev/workflow/tests/WorkflowCore.IntegrationTests/WorkflowCore.IntegrationTests.csproj. Will look into project references.
+[19:30:42 INF] Could not find an assembly reference to a mutable assembly for project /Users/darren/dev/workflow/tests/WorkflowOperator.Tests/WorkflowOperator.Tests.csproj. Will look into project references.
+[19:30:42 INF] Analysis complete.
+[19:30:42 INF] Time Elapsed 00:00:05.2483783
+[38;5;11mStryker.NET failed to mutate your project. For more information see the logs [0m
+[38;5;11mbelow:[0m
+
+
+No project references found. Please add a project reference to your test project
+and retry.
+
+

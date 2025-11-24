@@ -51,18 +51,24 @@ describe('WorkflowList', () => {
   });
 
   describe('Loading State', () => {
-    it('shows loading skeleton while fetching', () => {
+    it('shows loading skeletons while fetching', () => {
       renderWithQuery(<WorkflowList />);
 
-      // Should show loading text initially
-      expect(screen.getByText(/loading/i)).toBeInTheDocument();
+      // Should show skeleton cards initially
+      const skeletons = screen.getAllByRole('status');
+      expect(skeletons.length).toBeGreaterThan(0);
+      expect(skeletons[0]).toHaveAccessibleName('Loading workflow');
     });
 
-    it('hides loading state after data loads', async () => {
+    it('hides loading skeletons after data loads', async () => {
       renderWithQuery(<WorkflowList />);
 
       await waitFor(() => {
-        expect(screen.queryByText(/loading/i)).not.toBeInTheDocument();
+        // Skeletons (with role="status") should be hidden
+        // Note: Workflow count also has role="status" for screen readers, so count will be 1
+        const statusElements = screen.queryAllByRole('status');
+        const skeletons = statusElements.filter(el => el.getAttribute('aria-label') === 'Loading workflow');
+        expect(skeletons.length).toBe(0);
       });
     });
   });
@@ -194,8 +200,9 @@ describe('WorkflowList', () => {
         const grid = document.querySelector('.grid');
         expect(grid).toBeInTheDocument();
         expect(grid).toHaveClass('grid-cols-1');
-        expect(grid).toHaveClass('md:grid-cols-2');
+        expect(grid).toHaveClass('sm:grid-cols-2');
         expect(grid).toHaveClass('lg:grid-cols-3');
+        expect(grid).toHaveClass('xl:grid-cols-4');
       });
     });
   });
@@ -252,6 +259,283 @@ describe('WorkflowList', () => {
         const cards = screen.getAllByRole('article');
         expect(cards.length).toBeGreaterThan(0);
       });
+    });
+  });
+
+  describe('Last Updated Timestamp', () => {
+    it('displays last updated timestamp after data loads', async () => {
+      renderWithQuery(<WorkflowList />);
+
+      await waitFor(() => {
+        const cards = screen.getAllByRole('article');
+        expect(cards.length).toBeGreaterThan(0);
+      });
+
+      // Should show "Updated X ago" text
+      await waitFor(() => {
+        expect(screen.getByText(/updated/i)).toBeInTheDocument();
+      });
+    });
+
+    it('does not display timestamp while loading', () => {
+      renderWithQuery(<WorkflowList />);
+
+      // Should not show timestamp during initial load
+      expect(screen.queryByText(/updated/i)).not.toBeInTheDocument();
+    });
+  });
+
+  describe('Keyboard Shortcuts', () => {
+    it('focuses search input when "/" key is pressed', async () => {
+      renderWithQuery(<WorkflowList />);
+
+      // Wait for loading to complete and search to be enabled
+      await waitFor(() => {
+        const searchInput = screen.getByLabelText(/search/i) as HTMLInputElement;
+        expect(searchInput).toBeInTheDocument();
+        expect(searchInput.disabled).toBe(false);
+      });
+
+      const searchInput = screen.getByLabelText(/search/i) as HTMLInputElement;
+
+      // Ensure search is not focused initially
+      expect(document.activeElement).not.toBe(searchInput);
+
+      // Press "/" key
+      act(() => {
+        const event = new KeyboardEvent('keydown', { key: '/' });
+        document.dispatchEvent(event);
+      });
+
+      // Search input should now be focused
+      await waitFor(() => {
+        expect(document.activeElement).toBe(searchInput);
+      });
+    });
+
+    it('clears all filters when "Escape" key is pressed', async () => {
+      renderWithQuery(<WorkflowList defaultFilters={{ search: 'order', namespace: 'production', sort: 'success-rate' }} />);
+
+      // Wait for workflows to load and filters to be applied
+      await waitFor(() => {
+        // Workflows must be loaded (check for cards)
+        const cards = screen.queryAllByRole('article');
+        expect(cards.length).toBeGreaterThan(0);
+      });
+
+      await waitFor(() => {
+        const searchInput = screen.getByPlaceholderText(/search workflows/i) as HTMLInputElement;
+        const namespaceSelect = screen.getByLabelText(/namespace/i) as HTMLSelectElement;
+        const sortSelect = screen.getByLabelText(/sort by/i) as HTMLSelectElement;
+
+        expect(searchInput.disabled).toBe(false);
+        expect(searchInput.value).toBe('order');
+        expect(namespaceSelect.value).toBe('production');
+        expect(sortSelect.value).toBe('success-rate');
+      });
+
+      // Press "Escape" key
+      act(() => {
+        const event = new KeyboardEvent('keydown', { key: 'Escape' });
+        document.dispatchEvent(event);
+      });
+
+      // All filters should be cleared
+      await waitFor(() => {
+        const searchInput = screen.getByPlaceholderText(/search workflows/i) as HTMLInputElement;
+        const namespaceSelect = screen.getByLabelText(/namespace/i) as HTMLSelectElement;
+        const sortSelect = screen.getByLabelText(/sort by/i) as HTMLSelectElement;
+
+        expect(searchInput.value).toBe('');
+        expect(namespaceSelect.value).toBe('');
+        expect(sortSelect.value).toBe('name');
+      });
+    });
+
+    it('does not trigger "/" shortcut when typing in an input field', async () => {
+      renderWithQuery(<WorkflowList />);
+
+      // Wait for loading to complete
+      await waitFor(() => {
+        const searchInput = screen.getByLabelText(/search/i) as HTMLInputElement;
+        expect(searchInput).toBeInTheDocument();
+        expect(searchInput.disabled).toBe(false);
+      });
+
+      const searchInput = screen.getByLabelText(/search/i) as HTMLInputElement;
+      searchInput.focus();
+
+      // Wait for focus
+      await waitFor(() => {
+        expect(document.activeElement).toBe(searchInput);
+      });
+
+      // Type "/" while focused in search input
+      act(() => {
+        const event = new KeyboardEvent('keydown', { key: '/' });
+        Object.defineProperty(event, 'target', { value: searchInput, enumerable: true });
+        document.dispatchEvent(event);
+      });
+
+      // Should not interfere with normal typing - focus should remain on search
+      expect(document.activeElement).toBe(searchInput);
+    });
+  });
+
+  describe('Workflow Count Display', () => {
+    it('displays workflow count after loading', async () => {
+      renderWithQuery(<WorkflowList />);
+
+      await waitFor(() => {
+        const cards = screen.getAllByRole('article');
+        expect(cards.length).toBeGreaterThan(0);
+
+        const count = screen.getByText(new RegExp(`Showing ${cards.length} workflows?`));
+        expect(count).toBeInTheDocument();
+      });
+    });
+
+    it('displays correct count with filters applied', async () => {
+      renderWithQuery(<WorkflowList defaultFilters={{ search: 'user' }} />);
+
+      await waitFor(() => {
+        const cards = screen.getAllByRole('article');
+        expect(cards.length).toBeGreaterThan(0);
+
+        const count = screen.getByText(new RegExp(`Showing ${cards.length} workflows?`));
+        expect(count).toBeInTheDocument();
+      });
+    });
+
+    it('does not display count while loading', () => {
+      renderWithQuery(<WorkflowList />);
+
+      // Should not show count during initial load
+      expect(screen.queryByText(/showing/i)).not.toBeInTheDocument();
+    });
+  });
+
+  describe('Edge Cases', () => {
+    it('handles rapid filter changes gracefully', async () => {
+      const user = await import('@testing-library/user-event').then(m => m.userEvent.setup());
+      renderWithQuery(<WorkflowList />);
+
+      await waitFor(() => {
+        const searchInput = screen.getByPlaceholderText(/search workflows/i) as HTMLInputElement;
+        expect(searchInput).toBeInTheDocument();
+        expect(searchInput.disabled).toBe(false);
+      });
+
+      const searchInput = screen.getByPlaceholderText(/search workflows/i) as HTMLInputElement;
+
+      // Rapidly change search value
+      await user.type(searchInput, 'user');
+      searchInput.value = ''; // Manually clear instead of user.clear()
+      await user.type(searchInput, 'order');
+
+      // Should eventually show correct results
+      await waitFor(() => {
+        expect(searchInput.value).toBe('order');
+      });
+    });
+
+    it('handles empty workflow list gracefully', async () => {
+      renderWithQuery(<WorkflowList defaultFilters={{ search: 'this-will-match-nothing-xyz' }} />);
+
+      await waitFor(() => {
+        expect(screen.getByText(/no workflows found/i)).toBeInTheDocument();
+      });
+
+      // Should not show workflow count
+      expect(screen.queryByText(/showing/i)).not.toBeInTheDocument();
+    });
+
+    it('handles single workflow result', async () => {
+      renderWithQuery(<WorkflowList defaultFilters={{ namespace: 'production' }} />);
+
+      await waitFor(() => {
+        const cards = screen.queryAllByRole('article');
+        if (cards.length === 1) {
+          expect(screen.getByText(/Showing 1 workflow$/i)).toBeInTheDocument();
+        }
+      });
+    });
+  });
+
+  describe('Clear Filters Button', () => {
+    it('displays clear filters button when filters are active', async () => {
+      renderWithQuery(<WorkflowList defaultFilters={{ search: 'user' }} />);
+
+      await waitFor(() => {
+        const clearButton = screen.getByRole('button', { name: /clear filters/i });
+        expect(clearButton).toBeInTheDocument();
+      });
+    });
+
+    it('does not display clear filters button when no filters are active', async () => {
+      renderWithQuery(<WorkflowList />);
+
+      await waitFor(() => {
+        const cards = screen.getAllByRole('article');
+        expect(cards.length).toBeGreaterThan(0);
+      });
+
+      // Button should not be present
+      expect(screen.queryByRole('button', { name: /clear filters/i })).not.toBeInTheDocument();
+    });
+
+    it('displays filter count badge showing number of active filters', async () => {
+      renderWithQuery(<WorkflowList defaultFilters={{ search: 'user', namespace: 'default' }} />);
+
+      await waitFor(() => {
+        const clearButton = screen.getByRole('button', { name: /clear filters/i });
+        expect(clearButton).toBeInTheDocument();
+      });
+
+      // Should show "2" for search + namespace
+      const badge = screen.getByText('2');
+      expect(badge).toBeInTheDocument();
+    });
+
+    it('clears all filters when clear button is clicked', async () => {
+      const user = await import('@testing-library/user-event').then(m => m.userEvent.setup());
+      renderWithQuery(<WorkflowList defaultFilters={{ search: 'order', namespace: 'production', sort: 'success-rate' }} />);
+
+      // Wait for filters to be applied
+      await waitFor(() => {
+        const searchInput = screen.getByPlaceholderText(/search workflows/i) as HTMLInputElement;
+        expect(searchInput.value).toBe('order');
+      });
+
+      // Click clear filters button
+      const clearButton = screen.getByRole('button', { name: /clear filters/i });
+      await user.click(clearButton);
+
+      // All filters should be cleared
+      await waitFor(() => {
+        const searchInput = screen.getByPlaceholderText(/search workflows/i) as HTMLInputElement;
+        const namespaceSelect = screen.getByLabelText(/namespace/i) as HTMLSelectElement;
+        const sortSelect = screen.getByLabelText(/sort by/i) as HTMLSelectElement;
+
+        expect(searchInput.value).toBe('');
+        expect(namespaceSelect.value).toBe('');
+        expect(sortSelect.value).toBe('name');
+      });
+
+      // Button should disappear after clearing
+      expect(screen.queryByRole('button', { name: /clear filters/i })).not.toBeInTheDocument();
+    });
+
+    it('counts only non-default filters (excludes default sort)', async () => {
+      renderWithQuery(<WorkflowList defaultFilters={{ sort: 'name' }} />);
+
+      await waitFor(() => {
+        const cards = screen.getAllByRole('article');
+        expect(cards.length).toBeGreaterThan(0);
+      });
+
+      // No clear button should appear because 'name' is the default sort
+      expect(screen.queryByRole('button', { name: /clear filters/i })).not.toBeInTheDocument();
     });
   });
 });

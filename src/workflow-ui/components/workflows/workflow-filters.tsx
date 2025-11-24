@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, RefObject } from 'react';
 import { useDebounce } from '@/lib/utils';
 
 interface WorkflowFiltersProps {
@@ -14,6 +14,13 @@ interface WorkflowFiltersProps {
     sort?: string;
   };
   isLoading?: boolean;
+  filters?: {
+    search: string;
+    namespace: string | undefined;
+    sort: string;
+  };
+  onClearFilters?: () => void;
+  searchInputRef?: RefObject<HTMLInputElement | null>;
 }
 
 export function WorkflowFilters({
@@ -21,12 +28,34 @@ export function WorkflowFilters({
   onFilterChange,
   defaultValues,
   isLoading = false,
+  filters,
+  searchInputRef,
 }: WorkflowFiltersProps) {
   const [search, setSearch] = useState(defaultValues?.search || '');
   const [namespace, setNamespace] = useState(defaultValues?.namespace || '');
   const [sort, setSort] = useState(defaultValues?.sort || 'name');
 
   const debouncedSearch = useDebounce(search, 300);
+
+  // Sync with parent when defaultValues change (e.g., keyboard shortcut clear)
+  useEffect(() => {
+    if (defaultValues) {
+      const newSearch = defaultValues.search || '';
+      const newNamespace = defaultValues.namespace || '';
+      const newSort = defaultValues.sort || 'name';
+
+      if (newSearch !== search) {
+        setSearch(newSearch);
+      }
+      if (newNamespace !== namespace) {
+        setNamespace(newNamespace);
+      }
+      if (newSort !== sort) {
+        setSort(newSort);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [defaultValues]);
 
   // Notify parent of filter changes
   useEffect(() => {
@@ -45,13 +74,14 @@ export function WorkflowFilters({
           Search
         </label>
         <input
+          ref={searchInputRef}
           id="search"
           type="search"
           placeholder="Search workflows..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           disabled={isLoading}
-          className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500"
+          className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm transition-all duration-150 ease-in-out focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500"
         />
       </div>
 
@@ -65,7 +95,7 @@ export function WorkflowFilters({
           value={namespace}
           onChange={(e) => setNamespace(e.target.value)}
           disabled={isLoading}
-          className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500"
+          className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm transition-all duration-150 ease-in-out focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500"
         >
           <option value="">All namespaces</option>
           {namespaces.map((ns) => (
@@ -86,11 +116,11 @@ export function WorkflowFilters({
           value={sort}
           onChange={(e) => setSort(e.target.value)}
           disabled={isLoading}
-          className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500"
+          className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm transition-all duration-150 ease-in-out focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500"
         >
-          <option value="name">Name (A-Z)</option>
-          <option value="success-rate">Success Rate</option>
-          <option value="executions">Total Executions</option>
+          <option value="name">Name ↑ A-Z</option>
+          <option value="success-rate">Success Rate ↓ High-Low</option>
+          <option value="executions">Total Executions ↓ High-Low</option>
         </select>
       </div>
     </div>

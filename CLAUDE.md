@@ -693,6 +693,78 @@ public class Program
    - Resource limits and quotas
    - High availability configuration
 
+### Week 13 (Neural Visualization):
+**Stage 12: Real-Time Neural Network Visualization (TDD)**
+*Scope:* Live 3D visualization of workflow execution as neural network
+*Deliverables:* 5
+*Tests:* ~30-35 tests
+*Dependencies:* Stages 7.8, 7.85, 9 (UI)
+*Value:* Stunning real-time visualization for monitoring, demos, and traffic pattern analysis
+
+1. Real-Time Event Streaming (Backend)
+   - Add SignalR hub to WorkflowGateway
+   - Emit execution events from WorkflowOrchestrator:
+     - WorkflowStarted (workflow_name, execution_id, timestamp)
+     - TaskStarted (task_id, execution_id, dependencies)
+     - TaskCompleted (task_id, status, duration, outputs)
+     - SignalFlow (from_task, to_task, execution_id) - dependency activation
+     - WorkflowCompleted (execution_id, status, duration)
+   - Event aggregation and batching (for high-traffic scenarios)
+   - WebSocket connection management and reconnection logic
+   - Add tests for event emission and SignalR hub
+
+2. Graph Layout & Positioning Algorithm
+   - Automatic node positioning based on ExecutionGraph structure
+   - Force-directed layout algorithm (D3.js integration)
+   - Cluster similar workflows by domain/namespace
+   - Calculate node positions (x, y, z coordinates for 3D)
+   - Return graph layout data via API endpoint
+   - Tests for layout algorithm with complex graphs
+
+3. 3D Visualization Component (Frontend)
+   - Three.js / WebGL-based rendering engine
+   - Neurons (tasks): sphere geometries with glow shaders
+     - Idle state: dim blue/purple ambient glow
+     - Executing: bright pulsing animation
+     - Success: green flash then fade to idle
+     - Failed: red pulse with persistent red tint
+   - Edges (dependencies): line geometries with particle systems
+     - Signal flow: animated particles traveling from source to target
+     - Width based on call frequency or data volume
+   - Camera controls: orbit, zoom, pan
+   - Performance optimization: instancing, frustum culling, LOD
+
+4. Animation System & Visual Effects
+   - Pulse animation system for task execution (glow intensity curves)
+   - Particle system for signal flow along edges
+   - Bloom/glow post-processing effects (UnrealBloomPass)
+   - Synchronized firing for parallel task groups
+   - Heat map overlay showing "hot paths" (frequently-used tasks)
+   - Fade-out animation after workflow completion
+   - Tests for animation timing and state transitions
+
+5. Advanced Features & Replay Mode
+   - Replay past executions at configurable speed (1x, 10x, 100x)
+   - Time-lapse view showing network growth over days/weeks
+   - Filter by workflow name, status, or time range
+   - Performance metrics overlay (execution time, throughput)
+   - "Brain growth" visualization (network expands as workflows added)
+   - Export visualization as video (for demos/presentations)
+   - Integration tests with real SignalR events
+
+**Visual Design Goals:**
+- Dark theme with neon/bioluminescent aesthetics
+- Organic clustering (workflows form "brain regions")
+- Mesmerizing at high traffic (100+ concurrent workflows)
+- Educational: understand workflow composition at a glance
+- Demo-ready: impressive for presentations and marketing
+
+**Performance Targets:**
+- Handle 1000+ req/s with smooth 60fps rendering
+- Support 100+ concurrent workflow visualizations
+- Sub-100ms latency for event → visualization
+- Efficient WebGL rendering (no DOM manipulation)
+
 ---
 
 ## Quality Gates (Enforced)

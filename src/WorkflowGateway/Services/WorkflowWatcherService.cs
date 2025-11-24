@@ -1,5 +1,7 @@
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using WorkflowCore.Services;
 using WorkflowGateway.Services;
 
 namespace WorkflowGateway.Services;
@@ -8,6 +10,7 @@ public class WorkflowWatcherService : BackgroundService
 {
     private readonly IWorkflowDiscoveryService _discoveryService;
     private readonly IDynamicEndpointService _endpointService;
+    private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<WorkflowWatcherService> _logger;
     private readonly TimeSpan _pollingInterval;
     private HashSet<string> _previousWorkflows = new();
@@ -15,11 +18,13 @@ public class WorkflowWatcherService : BackgroundService
     public WorkflowWatcherService(
         IWorkflowDiscoveryService discoveryService,
         IDynamicEndpointService endpointService,
+        IServiceProvider serviceProvider,
         ILogger<WorkflowWatcherService> logger,
         int pollingIntervalSeconds = 30)
     {
         _discoveryService = discoveryService ?? throw new ArgumentNullException(nameof(discoveryService));
         _endpointService = endpointService ?? throw new ArgumentNullException(nameof(endpointService));
+        _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _pollingInterval = TimeSpan.FromSeconds(pollingIntervalSeconds);
     }
@@ -62,6 +67,40 @@ public class WorkflowWatcherService : BackgroundService
             var currentWorkflowNames = new HashSet<string>(
                 currentWorkflows.Select(w => w.Metadata?.Name ?? "").Where(n => !string.IsNullOrEmpty(n))
             );
+
+            // Track workflow versions (check for definition changes)
+            // Use scope to access scoped IWorkflowVersioningService
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var versioningService = scope.ServiceProvider.GetService<IWorkflowVersioningService>();
+
+                if (versioningService != null)
+                {
+                    var versionCreatedCount = 0;
+                    foreach (var workflow in currentWorkflows)
+                    {
+                        try
+                        {
+                            var versionCreated = await versioningService.CreateVersionIfChangedAsync(workflow);
+                            if (versionCreated)
+                            {
+                                versionCreatedCount++;
+                                _logger.LogDebug("New version created for workflow: {WorkflowName}", workflow.Metadata?.Name);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogWarning(ex, "Failed to track version for workflow: {WorkflowName}", workflow.Metadata?.Name);
+                            // Continue with other workflows even if version tracking fails
+                        }
+                    }
+
+                    if (versionCreatedCount > 0)
+                    {
+                        _logger.LogInformation("Created {Count} new workflow versions", versionCreatedCount);
+                    }
+                }
+            }
 
             // Detect added workflows
             var addedWorkflows = currentWorkflowNames.Except(_previousWorkflows).ToList();

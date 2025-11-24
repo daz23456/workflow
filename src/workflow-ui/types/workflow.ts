@@ -8,6 +8,7 @@ export interface WorkflowListItem {
   stats: {
     totalExecutions: number;
     successRate: number;
+    successRateTrend?: number; // Percentage change (e.g., 2.3 for +2.3%, -1.5 for -1.5%)
     avgDurationMs: number;
     lastExecuted?: string;
   };
@@ -36,9 +37,10 @@ export interface TaskDetail {
   id: string;
   taskRef: string;
   description: string;
-  input: Record<string, string>;
-  inputSchema: JSONSchema;
-  outputSchema: JSONSchema;
+  input?: Record<string, string>;
+  inputMapping?: Record<string, string>;
+  inputSchema?: JSONSchema;
+  outputSchema?: JSONSchema;
   httpRequest?: {
     method: string;
     url: string;
@@ -47,6 +49,8 @@ export interface TaskDetail {
   };
   timeout?: string;
   condition?: string;
+  retryCount?: number;
+  dependencies?: string[];
 }
 
 export interface JSONSchema {
@@ -67,6 +71,8 @@ export interface PropertyDefinition {
   maximum?: number;
   pattern?: string;
   enum?: string[];
+  items?: PropertyDefinition | JSONSchema;
+  properties?: Record<string, PropertyDefinition>;
 }
 
 export interface GraphNode {
@@ -74,9 +80,11 @@ export interface GraphNode {
   type: 'task';
   data: {
     label: string;
-    taskRef: string;
-    level: number;
+    taskRef?: string;
+    level?: number;
     description?: string;
+    status?: string;
+    schemaMismatch?: boolean;
   };
   position: { x: number; y: number };
 }
@@ -87,6 +95,8 @@ export interface GraphEdge {
   target: string;
   type: 'dependency';
   label?: string;
+  animated?: boolean;
+  style?: Record<string, string>;
   data?: {
     hasWarning?: boolean;
     hasError?: boolean;

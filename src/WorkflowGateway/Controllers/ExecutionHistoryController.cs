@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using WorkflowCore.Data.Repositories;
 using WorkflowCore.Models;
 using WorkflowGateway.Models;
+using WorkflowGateway.Services;
 
 namespace WorkflowGateway.Controllers;
 
@@ -11,10 +12,17 @@ namespace WorkflowGateway.Controllers;
 public class ExecutionHistoryController : ControllerBase
 {
     private readonly IExecutionRepository _executionRepository;
+    private readonly IWorkflowDiscoveryService _workflowDiscoveryService;
+    private readonly IExecutionTraceService _traceService;
 
-    public ExecutionHistoryController(IExecutionRepository executionRepository)
+    public ExecutionHistoryController(
+        IExecutionRepository executionRepository,
+        IWorkflowDiscoveryService workflowDiscoveryService,
+        IExecutionTraceService traceService)
     {
         _executionRepository = executionRepository ?? throw new ArgumentNullException(nameof(executionRepository));
+        _workflowDiscoveryService = workflowDiscoveryService ?? throw new ArgumentNullException(nameof(workflowDiscoveryService));
+        _traceService = traceService ?? throw new ArgumentNullException(nameof(traceService));
     }
 
     [HttpGet("workflows/{workflowName}/list")]
@@ -150,5 +158,27 @@ public class ExecutionHistoryController : ControllerBase
         {
             return new List<string>();
         }
+    }
+
+    [HttpGet("{id}/trace")]
+    public async Task<IActionResult> GetTrace(Guid id)
+    {
+        var execution = await _executionRepository.GetExecutionAsync(id);
+
+        if (execution == null)
+        {
+            return NotFound(new { error = $"Execution {id} not found" });
+        }
+
+        var workflow = await _workflowDiscoveryService.GetWorkflowByNameAsync(execution.WorkflowName, null);
+
+        if (workflow == null)
+        {
+            return NotFound(new { error = $"Workflow definition '{execution.WorkflowName}' not found" });
+        }
+
+        var trace = _traceService.BuildTrace(execution, workflow);
+
+        return Ok(trace);
     }
 }

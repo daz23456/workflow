@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { cn, formatDuration, getSuccessRateVariant, useDebounce } from './utils';
+import { cn, formatDuration, getSuccessRateVariant, useDebounce, formatRelativeTime } from './utils';
 
 describe('utils', () => {
   describe('cn', () => {
@@ -150,6 +150,45 @@ describe('utils', () => {
 
       // Should not throw or cause issues
       unmount();
+    });
+  });
+
+  describe('formatRelativeTime', () => {
+    it('returns "just now" for times less than 10 seconds ago', () => {
+      const now = Date.now();
+      expect(formatRelativeTime(now)).toBe('just now');
+      expect(formatRelativeTime(now - 5000)).toBe('just now'); // 5 seconds ago
+      expect(formatRelativeTime(now - 9999)).toBe('just now'); // 9.999 seconds ago
+    });
+
+    it('returns seconds for times 10-59 seconds ago', () => {
+      const now = Date.now();
+      expect(formatRelativeTime(now - 10000)).toBe('10 seconds ago');
+      expect(formatRelativeTime(now - 30000)).toBe('30 seconds ago');
+      expect(formatRelativeTime(now - 59000)).toBe('59 seconds ago');
+    });
+
+    it('returns minutes for times 1-59 minutes ago', () => {
+      const now = Date.now();
+      expect(formatRelativeTime(now - 60000)).toBe('1 minute ago'); // 1 minute
+      expect(formatRelativeTime(now - 120000)).toBe('2 minutes ago'); // 2 minutes
+      expect(formatRelativeTime(now - 1800000)).toBe('30 minutes ago'); // 30 minutes
+      expect(formatRelativeTime(now - 3540000)).toBe('59 minutes ago'); // 59 minutes
+    });
+
+    it('returns hours for times 1-23 hours ago', () => {
+      const now = Date.now();
+      expect(formatRelativeTime(now - 3600000)).toBe('1 hour ago'); // 1 hour
+      expect(formatRelativeTime(now - 7200000)).toBe('2 hours ago'); // 2 hours
+      expect(formatRelativeTime(now - 43200000)).toBe('12 hours ago'); // 12 hours
+      expect(formatRelativeTime(now - 82800000)).toBe('23 hours ago'); // 23 hours
+    });
+
+    it('returns days for times 24+ hours ago', () => {
+      const now = Date.now();
+      expect(formatRelativeTime(now - 86400000)).toBe('1 day ago'); // 1 day
+      expect(formatRelativeTime(now - 172800000)).toBe('2 days ago'); // 2 days
+      expect(formatRelativeTime(now - 604800000)).toBe('7 days ago'); // 7 days
     });
   });
 });

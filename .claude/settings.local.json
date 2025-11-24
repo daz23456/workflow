@@ -43,7 +43,11 @@
       "Bash(open:*)",
       "Bash(xargs basename:*)",
       "Bash(npm run build:*)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "Bash(timeout 600 dotnet stryker:*)",
+      "Bash(tee:*)",
+      "Bash(git reset:*)",
+      "Bash(npm test:*)"
     ],
     "deny": [],
     "ask": []

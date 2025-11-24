@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using WorkflowCore.Data.Repositories;
 using WorkflowGateway.Models;
 using WorkflowGateway.Services;
 
@@ -10,13 +11,16 @@ public class WorkflowManagementController : ControllerBase
 {
     private readonly IWorkflowDiscoveryService _discoveryService;
     private readonly IDynamicEndpointService _endpointService;
+    private readonly IWorkflowVersionRepository _versionRepository;
 
     public WorkflowManagementController(
         IWorkflowDiscoveryService discoveryService,
-        IDynamicEndpointService endpointService)
+        IDynamicEndpointService endpointService,
+        IWorkflowVersionRepository versionRepository)
     {
         _discoveryService = discoveryService ?? throw new ArgumentNullException(nameof(discoveryService));
         _endpointService = endpointService ?? throw new ArgumentNullException(nameof(endpointService));
+        _versionRepository = versionRepository ?? throw new ArgumentNullException(nameof(versionRepository));
     }
 
     /// <summary>
@@ -67,6 +71,36 @@ public class WorkflowManagementController : ControllerBase
         var response = new TaskListResponse
         {
             Tasks = taskSummaries
+        };
+
+        return Ok(response);
+    }
+
+    /// <summary>
+    /// Get version history for a specific workflow
+    /// </summary>
+    /// <param name="workflowName">Name of the workflow</param>
+    /// <returns>List of workflow versions ordered by creation date descending</returns>
+    [HttpGet("workflows/{workflowName}/versions")]
+    [ProducesResponseType(typeof(WorkflowVersionListResponse), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetWorkflowVersions(string workflowName)
+    {
+        var versions = await _versionRepository.GetVersionsAsync(workflowName);
+
+        var versionDetails = versions
+            .OrderByDescending(v => v.CreatedAt)
+            .Select(v => new WorkflowVersionDetail
+            {
+                VersionHash = v.VersionHash,
+                CreatedAt = v.CreatedAt,
+                DefinitionSnapshot = v.DefinitionSnapshot
+            }).ToList();
+
+        var response = new WorkflowVersionListResponse
+        {
+            WorkflowName = workflowName,
+            Versions = versionDetails,
+            TotalCount = versionDetails.Count
         };
 
         return Ok(response);

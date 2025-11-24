@@ -1,7 +1,9 @@
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
 using WorkflowCore.Models;
+using WorkflowCore.Services;
 using WorkflowGateway.Services;
 using Xunit;
 
@@ -11,18 +13,26 @@ public class WorkflowWatcherServiceTests
 {
     private readonly Mock<IWorkflowDiscoveryService> _discoveryServiceMock;
     private readonly Mock<IDynamicEndpointService> _endpointServiceMock;
+    private readonly Mock<IWorkflowVersioningService> _versioningServiceMock;
     private readonly Mock<ILogger<WorkflowWatcherService>> _loggerMock;
+    private readonly IServiceProvider _serviceProvider;
 
     public WorkflowWatcherServiceTests()
     {
         _discoveryServiceMock = new Mock<IWorkflowDiscoveryService>();
         _endpointServiceMock = new Mock<IDynamicEndpointService>();
+        _versioningServiceMock = new Mock<IWorkflowVersioningService>();
         _loggerMock = new Mock<ILogger<WorkflowWatcherService>>();
 
         // Setup default behavior
         _discoveryServiceMock
             .Setup(x => x.DiscoverWorkflowsAsync(It.IsAny<string>()))
             .ReturnsAsync(new List<WorkflowResource>());
+
+        // Create a service collection for testing
+        var services = new ServiceCollection();
+        services.AddScoped(_ => _versioningServiceMock.Object);
+        _serviceProvider = services.BuildServiceProvider();
     }
 
     [Fact]
@@ -32,6 +42,7 @@ public class WorkflowWatcherServiceTests
         var service = new WorkflowWatcherService(
             _discoveryServiceMock.Object,
             _endpointServiceMock.Object,
+            _serviceProvider,
             _loggerMock.Object,
             pollingIntervalSeconds: 1);
 
@@ -67,6 +78,7 @@ public class WorkflowWatcherServiceTests
         var service = new WorkflowWatcherService(
             _discoveryServiceMock.Object,
             _endpointServiceMock.Object,
+            _serviceProvider,
             _loggerMock.Object,
             pollingIntervalSeconds: 10);
 
@@ -110,6 +122,7 @@ public class WorkflowWatcherServiceTests
         var service = new WorkflowWatcherService(
             _discoveryServiceMock.Object,
             _endpointServiceMock.Object,
+            _serviceProvider,
             _loggerMock.Object,
             pollingIntervalSeconds: 1);
 
@@ -152,6 +165,7 @@ public class WorkflowWatcherServiceTests
         var service = new WorkflowWatcherService(
             _discoveryServiceMock.Object,
             _endpointServiceMock.Object,
+            _serviceProvider,
             _loggerMock.Object,
             pollingIntervalSeconds: 1);
 
@@ -192,6 +206,7 @@ public class WorkflowWatcherServiceTests
         var service = new WorkflowWatcherService(
             _discoveryServiceMock.Object,
             _endpointServiceMock.Object,
+            _serviceProvider,
             _loggerMock.Object,
             pollingIntervalSeconds: 1);
 
@@ -214,6 +229,7 @@ public class WorkflowWatcherServiceTests
         Action act = () => new WorkflowWatcherService(
             null!,
             _endpointServiceMock.Object,
+            _serviceProvider,
             _loggerMock.Object);
 
         // Assert
@@ -228,11 +244,27 @@ public class WorkflowWatcherServiceTests
         Action act = () => new WorkflowWatcherService(
             _discoveryServiceMock.Object,
             null!,
+            _serviceProvider,
             _loggerMock.Object);
 
         // Assert
         act.Should().Throw<ArgumentNullException>()
             .WithMessage("*endpointService*");
+    }
+
+    [Fact]
+    public void Constructor_WithNullServiceProvider_ShouldThrowArgumentNullException()
+    {
+        // Act
+        Action act = () => new WorkflowWatcherService(
+            _discoveryServiceMock.Object,
+            _endpointServiceMock.Object,
+            null!,
+            _loggerMock.Object);
+
+        // Assert
+        act.Should().Throw<ArgumentNullException>()
+            .WithMessage("*serviceProvider*");
     }
 
     [Fact]
@@ -242,6 +274,7 @@ public class WorkflowWatcherServiceTests
         Action act = () => new WorkflowWatcherService(
             _discoveryServiceMock.Object,
             _endpointServiceMock.Object,
+            _serviceProvider,
             null!);
 
         // Assert
@@ -274,6 +307,7 @@ public class WorkflowWatcherServiceTests
         var service = new WorkflowWatcherService(
             _discoveryServiceMock.Object,
             _endpointServiceMock.Object,
+            _serviceProvider,
             _loggerMock.Object,
             pollingIntervalSeconds: 10);
 
@@ -319,6 +353,7 @@ public class WorkflowWatcherServiceTests
         var service = new WorkflowWatcherService(
             _discoveryServiceMock.Object,
             _endpointServiceMock.Object,
+            _serviceProvider,
             _loggerMock.Object,
             pollingIntervalSeconds: 10);
 
@@ -359,6 +394,7 @@ public class WorkflowWatcherServiceTests
         var service = new WorkflowWatcherService(
             _discoveryServiceMock.Object,
             _endpointServiceMock.Object,
+            _serviceProvider,
             _loggerMock.Object,
             pollingIntervalSeconds: 1);
 
@@ -417,6 +453,7 @@ public class WorkflowWatcherServiceTests
         var service = new WorkflowWatcherService(
             _discoveryServiceMock.Object,
             _endpointServiceMock.Object,
+            _serviceProvider,
             _loggerMock.Object,
             pollingIntervalSeconds: 1);
 
@@ -470,6 +507,7 @@ public class WorkflowWatcherServiceTests
         var service = new WorkflowWatcherService(
             _discoveryServiceMock.Object,
             _endpointServiceMock.Object,
+            _serviceProvider,
             _loggerMock.Object,
             pollingIntervalSeconds: 1);
 
@@ -497,6 +535,7 @@ public class WorkflowWatcherServiceTests
         var service = new WorkflowWatcherService(
             _discoveryServiceMock.Object,
             _endpointServiceMock.Object,
+            _serviceProvider,
             _loggerMock.Object,
             pollingIntervalSeconds: 10);
 
@@ -530,6 +569,7 @@ public class WorkflowWatcherServiceTests
         var service = new WorkflowWatcherService(
             _discoveryServiceMock.Object,
             _endpointServiceMock.Object,
+            _serviceProvider,
             _loggerMock.Object,
             pollingIntervalSeconds: 2); // 2 seconds
 
@@ -560,6 +600,7 @@ public class WorkflowWatcherServiceTests
         var service = new WorkflowWatcherService(
             _discoveryServiceMock.Object,
             _endpointServiceMock.Object,
+            _serviceProvider,
             _loggerMock.Object,
             pollingIntervalSeconds: 10);
 
@@ -589,6 +630,7 @@ public class WorkflowWatcherServiceTests
         var service = new WorkflowWatcherService(
             _discoveryServiceMock.Object,
             _endpointServiceMock.Object,
+            _serviceProvider,
             _loggerMock.Object,
             pollingIntervalSeconds: 10);
 
@@ -633,6 +675,7 @@ public class WorkflowWatcherServiceTests
         var service = new WorkflowWatcherService(
             _discoveryServiceMock.Object,
             _endpointServiceMock.Object,
+            _serviceProvider,
             _loggerMock.Object,
             pollingIntervalSeconds: 1);
 
@@ -690,6 +733,7 @@ public class WorkflowWatcherServiceTests
         var service = new WorkflowWatcherService(
             _discoveryServiceMock.Object,
             _endpointServiceMock.Object,
+            _serviceProvider,
             _loggerMock.Object,
             pollingIntervalSeconds: 1);
 
@@ -732,6 +776,7 @@ public class WorkflowWatcherServiceTests
         var service = new WorkflowWatcherService(
             _discoveryServiceMock.Object,
             _endpointServiceMock.Object,
+            _serviceProvider,
             _loggerMock.Object,
             pollingIntervalSeconds: 10);
 
@@ -752,5 +797,343 @@ public class WorkflowWatcherServiceTests
                 It.IsAny<Exception>(),
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
             Times.AtLeastOnce);
+    }
+
+    // ========== VERSION TRACKING TESTS ==========
+
+    [Fact]
+    public async Task SyncWorkflowsAsync_WithNewWorkflow_ShouldCreateVersion()
+    {
+        // Arrange
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = "new-workflow" },
+            Spec = new WorkflowSpec()
+        };
+
+        _discoveryServiceMock
+            .Setup(x => x.DiscoverWorkflowsAsync(null))
+            .ReturnsAsync(new List<WorkflowResource> { workflow });
+
+        _versioningServiceMock
+            .Setup(x => x.CreateVersionIfChangedAsync(It.IsAny<WorkflowResource>()))
+            .ReturnsAsync(true);
+
+        var service = new WorkflowWatcherService(
+            _discoveryServiceMock.Object,
+            _endpointServiceMock.Object,
+            _serviceProvider,
+            _loggerMock.Object,
+            pollingIntervalSeconds: 10);
+
+        using var cts = new CancellationTokenSource();
+
+        // Act
+        await service.StartAsync(cts.Token);
+        await Task.Delay(100);
+        cts.Cancel();
+        await service.StopAsync(CancellationToken.None);
+
+        // Assert
+        _versioningServiceMock.Verify(
+            x => x.CreateVersionIfChangedAsync(It.Is<WorkflowResource>(w => w.Metadata.Name == "new-workflow")),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task SyncWorkflowsAsync_WhenWorkflowChanges_ShouldCreateNewVersion()
+    {
+        // Arrange
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = "changed-workflow" },
+            Spec = new WorkflowSpec()
+        };
+
+        _discoveryServiceMock
+            .Setup(x => x.DiscoverWorkflowsAsync(null))
+            .ReturnsAsync(new List<WorkflowResource> { workflow });
+
+        _versioningServiceMock
+            .Setup(x => x.CreateVersionIfChangedAsync(It.IsAny<WorkflowResource>()))
+            .ReturnsAsync(true);  // Indicates workflow changed
+
+        var service = new WorkflowWatcherService(
+            _discoveryServiceMock.Object,
+            _endpointServiceMock.Object,
+            _serviceProvider,
+            _loggerMock.Object,
+            pollingIntervalSeconds: 10);
+
+        using var cts = new CancellationTokenSource();
+
+        // Act
+        await service.StartAsync(cts.Token);
+        await Task.Delay(100);
+        cts.Cancel();
+        await service.StopAsync(CancellationToken.None);
+
+        // Assert
+        _versioningServiceMock.Verify(
+            x => x.CreateVersionIfChangedAsync(It.IsAny<WorkflowResource>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task SyncWorkflowsAsync_WhenWorkflowUnchanged_ShouldNotLogVersionCreation()
+    {
+        // Arrange
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = "unchanged-workflow" },
+            Spec = new WorkflowSpec()
+        };
+
+        _discoveryServiceMock
+            .Setup(x => x.DiscoverWorkflowsAsync(null))
+            .ReturnsAsync(new List<WorkflowResource> { workflow });
+
+        _versioningServiceMock
+            .Setup(x => x.CreateVersionIfChangedAsync(It.IsAny<WorkflowResource>()))
+            .ReturnsAsync(false);  // No changes detected
+
+        var service = new WorkflowWatcherService(
+            _discoveryServiceMock.Object,
+            _endpointServiceMock.Object,
+            _serviceProvider,
+            _loggerMock.Object,
+            pollingIntervalSeconds: 10);
+
+        using var cts = new CancellationTokenSource();
+
+        // Act
+        await service.StartAsync(cts.Token);
+        await Task.Delay(100);
+        cts.Cancel();
+        await service.StopAsync(CancellationToken.None);
+
+        // Assert - Should NOT log version creation count (count is 0)
+        _loggerMock.Verify(
+            x => x.Log(
+                LogLevel.Information,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("new workflow versions")),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task SyncWorkflowsAsync_WithMultipleWorkflows_ShouldTrackAllVersions()
+    {
+        // Arrange
+        var workflows = new List<WorkflowResource>
+        {
+            new WorkflowResource
+            {
+                Metadata = new ResourceMetadata { Name = "workflow-1" },
+                Spec = new WorkflowSpec()
+            },
+            new WorkflowResource
+            {
+                Metadata = new ResourceMetadata { Name = "workflow-2" },
+                Spec = new WorkflowSpec()
+            },
+            new WorkflowResource
+            {
+                Metadata = new ResourceMetadata { Name = "workflow-3" },
+                Spec = new WorkflowSpec()
+            }
+        };
+
+        _discoveryServiceMock
+            .Setup(x => x.DiscoverWorkflowsAsync(null))
+            .ReturnsAsync(workflows);
+
+        _versioningServiceMock
+            .Setup(x => x.CreateVersionIfChangedAsync(It.IsAny<WorkflowResource>()))
+            .ReturnsAsync(true);
+
+        var service = new WorkflowWatcherService(
+            _discoveryServiceMock.Object,
+            _endpointServiceMock.Object,
+            _serviceProvider,
+            _loggerMock.Object,
+            pollingIntervalSeconds: 10);
+
+        using var cts = new CancellationTokenSource();
+
+        // Act
+        await service.StartAsync(cts.Token);
+        await Task.Delay(100);
+        cts.Cancel();
+        await service.StopAsync(CancellationToken.None);
+
+        // Assert
+        _versioningServiceMock.Verify(
+            x => x.CreateVersionIfChangedAsync(It.IsAny<WorkflowResource>()),
+            Times.Exactly(3));
+    }
+
+    [Fact]
+    public async Task SyncWorkflowsAsync_WhenVersioningFails_ShouldContinueWithOtherWorkflows()
+    {
+        // Arrange
+        var workflows = new List<WorkflowResource>
+        {
+            new WorkflowResource
+            {
+                Metadata = new ResourceMetadata { Name = "workflow-1" },
+                Spec = new WorkflowSpec()
+            },
+            new WorkflowResource
+            {
+                Metadata = new ResourceMetadata { Name = "workflow-2" },
+                Spec = new WorkflowSpec()
+            }
+        };
+
+        _discoveryServiceMock
+            .Setup(x => x.DiscoverWorkflowsAsync(null))
+            .ReturnsAsync(workflows);
+
+        var callCount = 0;
+        _versioningServiceMock
+            .Setup(x => x.CreateVersionIfChangedAsync(It.IsAny<WorkflowResource>()))
+            .Returns(() =>
+            {
+                callCount++;
+                if (callCount == 1)
+                {
+                    throw new InvalidOperationException("Version tracking failed");
+                }
+                return Task.FromResult(true);
+            });
+
+        var service = new WorkflowWatcherService(
+            _discoveryServiceMock.Object,
+            _endpointServiceMock.Object,
+            _serviceProvider,
+            _loggerMock.Object,
+            pollingIntervalSeconds: 10);
+
+        using var cts = new CancellationTokenSource();
+
+        // Act
+        await service.StartAsync(cts.Token);
+        await Task.Delay(100);
+        cts.Cancel();
+        await service.StopAsync(CancellationToken.None);
+
+        // Assert - Should have tried both workflows despite first one failing
+        _versioningServiceMock.Verify(
+            x => x.CreateVersionIfChangedAsync(It.IsAny<WorkflowResource>()),
+            Times.Exactly(2));
+
+        // Verify warning was logged for failed workflow
+        _loggerMock.Verify(
+            x => x.Log(
+                LogLevel.Warning,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Failed to track version")),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task SyncWorkflowsAsync_WithVersionsCreated_ShouldLogCount()
+    {
+        // Arrange
+        var workflows = new List<WorkflowResource>
+        {
+            new WorkflowResource
+            {
+                Metadata = new ResourceMetadata { Name = "workflow-1" },
+                Spec = new WorkflowSpec()
+            },
+            new WorkflowResource
+            {
+                Metadata = new ResourceMetadata { Name = "workflow-2" },
+                Spec = new WorkflowSpec()
+            }
+        };
+
+        _discoveryServiceMock
+            .Setup(x => x.DiscoverWorkflowsAsync(null))
+            .ReturnsAsync(workflows);
+
+        _versioningServiceMock
+            .Setup(x => x.CreateVersionIfChangedAsync(It.IsAny<WorkflowResource>()))
+            .ReturnsAsync(true);
+
+        var service = new WorkflowWatcherService(
+            _discoveryServiceMock.Object,
+            _endpointServiceMock.Object,
+            _serviceProvider,
+            _loggerMock.Object,
+            pollingIntervalSeconds: 10);
+
+        using var cts = new CancellationTokenSource();
+
+        // Act
+        await service.StartAsync(cts.Token);
+        await Task.Delay(100);
+        cts.Cancel();
+        await service.StopAsync(CancellationToken.None);
+
+        // Assert - Should log creation count
+        _loggerMock.Verify(
+            x => x.Log(
+                LogLevel.Information,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Created 2 new workflow versions")),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.AtLeastOnce);
+    }
+
+    [Fact]
+    public async Task SyncWorkflowsAsync_WithoutVersioningService_ShouldContinueNormally()
+    {
+        // Arrange - Create service provider WITHOUT versioning service
+        var emptyServices = new ServiceCollection();
+        var emptyServiceProvider = emptyServices.BuildServiceProvider();
+
+        var workflows = new List<WorkflowResource>
+        {
+            new WorkflowResource
+            {
+                Metadata = new ResourceMetadata { Name = "workflow-1" },
+                Spec = new WorkflowSpec()
+            }
+        };
+
+        _discoveryServiceMock
+            .Setup(x => x.DiscoverWorkflowsAsync(null))
+            .ReturnsAsync(workflows);
+
+        var service = new WorkflowWatcherService(
+            _discoveryServiceMock.Object,
+            _endpointServiceMock.Object,
+            emptyServiceProvider,
+            _loggerMock.Object,
+            pollingIntervalSeconds: 10);
+
+        using var cts = new CancellationTokenSource();
+
+        // Act
+        await service.StartAsync(cts.Token);
+        await Task.Delay(100);
+        cts.Cancel();
+        await service.StopAsync(CancellationToken.None);
+
+        // Assert - Endpoint service should still be called (workflow tracking continues)
+        _endpointServiceMock.Verify(
+            x => x.OnWorkflowsChangedAsync(
+                It.Is<List<string>>(list => list.Contains("workflow-1")),
+                It.IsAny<List<string>>(),
+                null),
+            Times.Once);
     }
 }

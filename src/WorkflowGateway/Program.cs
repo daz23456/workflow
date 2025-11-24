@@ -66,6 +66,9 @@ builder.Services.AddScoped<HttpClient>(sp =>
 builder.Services.AddScoped<IHttpClientWrapper, HttpClientWrapper>();
 builder.Services.AddScoped<IHttpTaskExecutor, HttpTaskExecutor>();
 builder.Services.AddScoped<IWorkflowOrchestrator, WorkflowOrchestrator>();
+builder.Services.AddScoped<ITemplatePreviewService, TemplatePreviewService>();
+builder.Services.AddScoped<IWorkflowVersioningService, WorkflowVersioningService>();
+builder.Services.AddScoped<IExecutionTraceService, ExecutionTraceService>();
 
 // Register WorkflowGateway services
 builder.Services.AddSingleton<IKubernetesWorkflowClient>(sp =>
@@ -77,6 +80,8 @@ builder.Services.AddSingleton<IKubernetesWorkflowClient>(sp =>
 builder.Services.AddSingleton<IWorkflowDiscoveryService, WorkflowDiscoveryService>();
 builder.Services.AddSingleton<IDynamicEndpointService, DynamicEndpointService>();
 builder.Services.AddScoped<IInputValidationService, InputValidationService>();
+
+// Note: IWorkflowVersionRepository is already registered in database services section above (line 31)
 builder.Services.AddScoped(sp => new WorkflowExecutionService(
     sp.GetRequiredService<IWorkflowOrchestrator>(),
     sp.GetRequiredService<IWorkflowDiscoveryService>(),
@@ -87,6 +92,7 @@ builder.Services.AddScoped(sp => new WorkflowExecutionService(
 builder.Services.AddSingleton(sp => new WorkflowWatcherService(
     sp.GetRequiredService<IWorkflowDiscoveryService>(),
     sp.GetRequiredService<IDynamicEndpointService>(),
+    sp,  // IServiceProvider for creating scopes
     sp.GetRequiredService<ILogger<WorkflowWatcherService>>(),
     watcherInterval));
 builder.Services.AddHostedService(sp => sp.GetRequiredService<WorkflowWatcherService>());

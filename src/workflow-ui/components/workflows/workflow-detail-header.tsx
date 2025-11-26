@@ -15,6 +15,7 @@ interface WorkflowDetailHeaderProps {
   onTest?: () => void;
   isExecuting?: boolean;
   isTesting?: boolean;
+  activeTab?: string;
 }
 
 export function WorkflowDetailHeader({
@@ -24,6 +25,7 @@ export function WorkflowDetailHeader({
   onTest,
   isExecuting = false,
   isTesting = false,
+  activeTab = 'overview',
 }: WorkflowDetailHeaderProps) {
   const taskCount = workflow.tasks.length;
   const hasExecutions = stats.totalExecutions > 0;
@@ -105,26 +107,28 @@ export function WorkflowDetailHeader({
             </div>
           </div>
 
-          {/* Right: Action Buttons */}
-          <div className="flex flex-col gap-2 sm:ml-6 sm:flex-shrink-0">
-            <button
-              onClick={onExecute}
-              disabled={isExecuting || isTesting}
-              className="inline-flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors duration-150 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
-              aria-label={isExecuting ? 'Executing workflow' : 'Execute workflow'}
-            >
-              {isExecuting ? 'Executing...' : 'Execute'}
-            </button>
+          {/* Right: Action Buttons - Hidden on Execute tab since form has its own button */}
+          {activeTab !== 'execute' && (
+            <div className="flex flex-col gap-2 sm:ml-6 sm:flex-shrink-0">
+              <button
+                onClick={onExecute}
+                disabled={isExecuting || isTesting}
+                className="inline-flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors duration-150 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                aria-label={isExecuting ? 'Executing workflow' : 'Execute workflow'}
+              >
+                {isExecuting ? 'Executing...' : 'Execute'}
+              </button>
 
-            <button
-              onClick={onTest}
-              disabled={isExecuting || isTesting}
-              className="inline-flex items-center justify-center rounded-md bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm border border-gray-300 transition-colors duration-150 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
-              aria-label={isTesting ? 'Testing workflow (dry-run)' : 'Test workflow (dry-run)'}
-            >
-              {isTesting ? 'Testing...' : 'Test (Dry-run)'}
-            </button>
-          </div>
+              <button
+                onClick={onTest}
+                disabled={isExecuting || isTesting}
+                className="inline-flex items-center justify-center rounded-md bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm border border-gray-300 transition-colors duration-150 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
+                aria-label={isTesting ? 'Testing workflow (dry-run)' : 'Test workflow (dry-run)'}
+              >
+                {isTesting ? 'Testing...' : 'Test (Dry-run)'}
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

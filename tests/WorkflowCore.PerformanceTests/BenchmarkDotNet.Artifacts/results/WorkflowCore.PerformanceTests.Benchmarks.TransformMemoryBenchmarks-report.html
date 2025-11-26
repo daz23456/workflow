@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>WorkflowCore.PerformanceTests.Benchmarks.TransformMemoryBenchmarks-20251125-142621</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet v0.13.11, macOS Sonoma 14.7.6 (23H626) [Darwin 23.6.0]
+Intel Core i9-9880H CPU 2.30GHz, 1 CPU, 16 logical and 8 physical cores
+.NET SDK 8.0.414
+  [Host]     : .NET 8.0.20 (8.0.2025.41914), X64 RyuJIT AVX2
+  DefaultJob : .NET 8.0.20 (8.0.2025.41914), X64 RyuJIT AVX2
+</code></pre>
+<pre><code></code></pre>
+
+<table>
+<thead><tr><th>Method                               </th><th>RecordCount</th><th>Mean</th><th>Error</th><th>StdDev</th><th>Median</th><th>Gen0 </th><th>Gen1</th><th>Gen2</th><th>Allocated</th>
+</tr>
+</thead><tbody><tr><td>&#39;Extract single field (minimal allocation)&#39;</td><td>10000</td><td>121.3 ms</td><td>2.41 ms</td><td>3.05 ms</td><td>121.2 ms</td><td>7500.0000</td><td>5000.0000</td><td>1500.0000</td><td>69.84 MB</td>
+</tr><tr><td>&#39;Filter to 10% (selective query)&#39;</td><td>10000</td><td>167.2 ms</td><td>3.28 ms</td><td>4.26 ms</td><td>166.4 ms</td><td>14000.0000</td><td>9000.0000</td><td>2000.0000</td><td>98.67 MB</td>
+</tr><tr><td>&#39;Full dataset transform (max allocations)&#39;</td><td>10000</td><td>269.3 ms</td><td>5.35 ms</td><td>14.09 ms</td><td>265.8 ms</td><td>14000.0000</td><td>10000.0000</td><td>2000.0000</td><td>101.49 MB</td>
+</tr><tr><td>&#39;Extract single field (minimal allocation)&#39;</td><td>50000</td><td>649.1 ms</td><td>8.30 ms</td><td>7.36 ms</td><td>650.1 ms</td><td>33000.0000</td><td>15000.0000</td><td>4000.0000</td><td>334.14 MB</td>
+</tr><tr><td>&#39;Filter to 10% (selective query)&#39;</td><td>50000</td><td>958.3 ms</td><td>13.37 ms</td><td>11.85 ms</td><td>959.6 ms</td><td>52000.0000</td><td>18000.0000</td><td>5000.0000</td><td>478.67 MB</td>
+</tr><tr><td>&#39;Extract single field (minimal allocation)&#39;</td><td>100000</td><td>1,394.7 ms</td><td>18.84 ms</td><td>15.73 ms</td><td>1,395.8 ms</td><td>59000.0000</td><td>23000.0000</td><td>6000.0000</td><td>669.6 MB</td>
+</tr><tr><td>&#39;Full dataset transform (max allocations)&#39;</td><td>50000</td><td>2,002.1 ms</td><td>52.13 ms</td><td>153.71 ms</td><td>2,046.8 ms</td><td>58000.0000</td><td>35000.0000</td><td>10000.0000</td><td>492.41 MB</td>
+</tr><tr><td>&#39;Filter to 10% (selective query)&#39;</td><td>100000</td><td>2,163.0 ms</td><td>41.77 ms</td><td>52.83 ms</td><td>2,135.0 ms</td><td>94000.0000</td><td>27000.0000</td><td>10000.0000</td><td>958.67 MB</td>
+</tr><tr><td>&#39;Full dataset transform (max allocations)&#39;</td><td>100000</td><td>4,501.9 ms</td><td>154.08 ms</td><td>454.29 ms</td><td>4,649.5 ms</td><td>106000.0000</td><td>59000.0000</td><td>14000.0000</td><td>986.21 MB</td>
+</tr></tbody></table>
+</body>
+</html>

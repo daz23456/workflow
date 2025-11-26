@@ -1,0 +1,25 @@
+apiVersion: workflow.example.com/v1
+kind: Workflow
+metadata:
+  name: space-info
+  namespace: default
+spec:
+  description: Get space facts and a random dad joke (demonstrates parallel API calls)
+  input: {}
+  tasks:
+    - id: get-astronauts
+      taskRef: fetch-astronauts
+      input: {}
+    - id: get-iss-location
+      taskRef: fetch-iss-location
+      input: {}
+    - id: get-joke
+      taskRef: fetch-dad-joke
+      input: {}
+  output:
+    astronautCount: "{{tasks.get-astronauts.output.number}}"
+    astronautNames: "{{tasks.get-astronauts.output.people}}"
+    issLatitude: "{{tasks.get-iss-location.output.iss_position.latitude}}"
+    issLongitude: "{{tasks.get-iss-location.output.iss_position.longitude}}"
+    dadJoke: "{{tasks.get-joke.output.joke}}"
+    funFact: "There are currently {{tasks.get-astronauts.output.number}} people in space!"

@@ -1,0 +1,30 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: task-transform-extract-post-titles
+  namespace: default
+spec:
+  type: transform
+  transform:
+    input: $.posts.data
+    jsonPath: $[*].title
+  inputSchema:
+    type: object
+    properties:
+      posts:
+        type: array
+        items:
+          type: object
+          properties:
+            id:
+              type: integer
+            userId:
+              type: integer
+            title:
+              type: string
+            body:
+              type: string
+  outputSchema:
+    type: array
+    items:
+      type: string

@@ -20,8 +20,8 @@ export const handlers = [
   // WORKFLOW ENDPOINTS
   // ============================================================================
 
-  // GET /api/v1/workflows - List all workflows
-  http.get('/api/v1/workflows', async ({ request }) => {
+  // GET /api/workflows - List all workflows
+  http.get('/api/workflows', async ({ request }) => {
     await delay(300); // Simulate network latency
 
     const url = new URL(request.url);
@@ -64,8 +64,8 @@ export const handlers = [
     });
   }),
 
-  // GET /api/v1/workflows/:name - Get workflow details
-  http.get('/api/v1/workflows/:name', async ({ params }) => {
+  // GET /api/workflows/:name - Get workflow details
+  http.get('/api/workflows/:name', async ({ params }) => {
     await delay(200);
     const { name } = params;
     const workflow = mockWorkflowDetails[name as string];
@@ -84,8 +84,8 @@ export const handlers = [
   // EXECUTION ENDPOINTS
   // ============================================================================
 
-  // POST /api/v1/workflows/:name/execute - Execute workflow
-  http.post('/api/v1/workflows/:name/execute', async ({ params, request }) => {
+  // POST /api/workflows/:name/execute - Execute workflow
+  http.post('/api/workflows/:name/execute', async ({ params, request }) => {
     await delay(500); // Simulate execution time
     const { name } = params;
     const body = await request.json();
@@ -139,8 +139,8 @@ export const handlers = [
     });
   }),
 
-  // POST /api/v1/workflows/:name/test - Dry-run workflow
-  http.post('/api/v1/workflows/:name/test', async ({ params, request }) => {
+  // POST /api/workflows/:name/test - Dry-run workflow
+  http.post('/api/workflows/:name/test', async ({ params, request }) => {
     await delay(300);
     const { name } = params;
     const body = await request.json();
@@ -184,8 +184,8 @@ export const handlers = [
     });
   }),
 
-  // GET /api/v1/workflows/:name/executions - Get execution history for workflow
-  http.get('/api/v1/workflows/:name/executions', async ({ params, request }) => {
+  // GET /api/workflows/:name/executions - Get execution history for workflow
+  http.get('/api/workflows/:name/executions', async ({ params, request }) => {
     await delay(200);
     const { name } = params;
     const url = new URL(request.url);
@@ -220,8 +220,8 @@ export const handlers = [
     });
   }),
 
-  // GET /api/v1/executions/:id - Get execution details by ID
-  http.get('/api/v1/executions/:id', async ({ params }) => {
+  // GET /api/executions/:id - Get execution details by ID
+  http.get('/api/executions/:id', async ({ params }) => {
     await delay(200);
     const { id } = params;
 
@@ -257,8 +257,8 @@ export const handlers = [
   // TASK ENDPOINTS
   // ============================================================================
 
-  // GET /api/v1/tasks - List all available tasks
-  http.get('/api/v1/tasks', async () => {
+  // GET /api/tasks - List all available tasks
+  http.get('/api/tasks', async () => {
     await delay(200);
     return HttpResponse.json({
       tasks: [

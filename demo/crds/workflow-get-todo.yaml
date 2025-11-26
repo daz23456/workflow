@@ -1,0 +1,19 @@
+apiVersion: workflow.example.com/v1
+kind: Workflow
+metadata:
+  name: get-todo
+  namespace: default
+spec:
+  description: Simple workflow to fetch a todo item and demonstrate auto-discovery
+  input:
+    todoId:
+      type: string
+      required: true
+      description: The todo ID to fetch (1-200)
+  tasks:
+    - id: fetch-todo
+      taskRef: fetch-user  # Reusing existing task but will call different endpoint
+      input:
+        userId: "{{input.todoId}}"
+  output:
+    todoData: "{{tasks.fetch-todo.output}}"

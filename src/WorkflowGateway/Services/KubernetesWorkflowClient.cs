@@ -20,7 +20,7 @@ public class KubernetesWorkflowClient : IKubernetesWorkflowClient
         try
         {
             var response = await _kubernetes.CustomObjects.ListNamespacedCustomObjectAsync(
-                group: "workflows.example.com",
+                group: "workflow.example.com",
                 version: "v1",
                 namespaceParameter: @namespace,
                 plural: "workflows",
@@ -40,7 +40,7 @@ public class KubernetesWorkflowClient : IKubernetesWorkflowClient
         try
         {
             var response = await _kubernetes.CustomObjects.ListNamespacedCustomObjectAsync(
-                group: "workflows.example.com",
+                group: "workflow.example.com",
                 version: "v1",
                 namespaceParameter: @namespace,
                 plural: "workflowtasks",
@@ -59,6 +59,12 @@ public class KubernetesWorkflowClient : IKubernetesWorkflowClient
     {
         var workflows = new List<WorkflowResource>();
 
+        var options = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
+
         var json = JsonSerializer.Serialize(response);
         var doc = JsonDocument.Parse(json);
 
@@ -68,7 +74,7 @@ public class KubernetesWorkflowClient : IKubernetesWorkflowClient
             foreach (var item in itemsElement.EnumerateArray())
             {
                 var workflowJson = item.GetRawText();
-                var workflow = JsonSerializer.Deserialize<WorkflowResource>(workflowJson);
+                var workflow = JsonSerializer.Deserialize<WorkflowResource>(workflowJson, options);
                 if (workflow != null)
                 {
                     workflows.Add(workflow);
@@ -83,6 +89,12 @@ public class KubernetesWorkflowClient : IKubernetesWorkflowClient
     {
         var tasks = new List<WorkflowTaskResource>();
 
+        var options = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
+
         var json = JsonSerializer.Serialize(response);
         var doc = JsonDocument.Parse(json);
 
@@ -92,7 +104,7 @@ public class KubernetesWorkflowClient : IKubernetesWorkflowClient
             foreach (var item in itemsElement.EnumerateArray())
             {
                 var taskJson = item.GetRawText();
-                var task = JsonSerializer.Deserialize<WorkflowTaskResource>(taskJson);
+                var task = JsonSerializer.Deserialize<WorkflowTaskResource>(taskJson, options);
                 if (task != null)
                 {
                     tasks.Add(task);

@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text.Json;
 using WorkflowCore.Models;
 
 namespace WorkflowCore.Services;
@@ -15,16 +16,22 @@ public interface IWorkflowOrchestrator
 public class WorkflowOrchestrator : IWorkflowOrchestrator
 {
     private readonly IExecutionGraphBuilder _graphBuilder;
-    private readonly IHttpTaskExecutor _taskExecutor;
+    private readonly IHttpTaskExecutor _httpTaskExecutor;
+    private readonly ITransformTaskExecutor? _transformTaskExecutor;
+    private readonly ITemplateResolver _templateResolver;
     private readonly SemaphoreSlim _semaphore;
 
     public WorkflowOrchestrator(
         IExecutionGraphBuilder graphBuilder,
-        IHttpTaskExecutor taskExecutor,
-        int maxConcurrentTasks = int.MaxValue)
+        IHttpTaskExecutor httpTaskExecutor,
+        ITemplateResolver templateResolver,
+        int maxConcurrentTasks = int.MaxValue,
+        ITransformTaskExecutor? transformTaskExecutor = null)
     {
         _graphBuilder = graphBuilder ?? throw new ArgumentNullException(nameof(graphBuilder));
-        _taskExecutor = taskExecutor ?? throw new ArgumentNullException(nameof(taskExecutor));
+        _httpTaskExecutor = httpTaskExecutor ?? throw new ArgumentNullException(nameof(httpTaskExecutor));
+        _templateResolver = templateResolver ?? throw new ArgumentNullException(nameof(templateResolver));
+        _transformTaskExecutor = transformTaskExecutor;
 
         if (maxConcurrentTasks <= 0)
         {
@@ -155,7 +162,73 @@ public class WorkflowOrchestrator : IWorkflowOrchestrator
                     await _semaphore.WaitAsync(cancellationToken);
                     try
                     {
-                        var taskResult = await _taskExecutor.ExecuteAsync(taskSpec, context, cancellationToken);
+                        TaskExecutionResult taskResult;
+
+                        // Route based on task type
+                        if (taskSpec.Type == "transform")
+                        {
+                            if (_transformTaskExecutor == null)
+                            {
+                                taskResult = new TaskExecutionResult
+                                {
+                                    Success = false,
+                                    Errors = new List<string> { "Transform task executor not available" }
+                                };
+                            }
+                            else
+                            {
+                                // For transform tasks, resolve the task input templates first
+                                var resolvedInput = new Dictionary<string, object>();
+                                if (taskStep.Input != null)
+                                {
+                                    foreach (var (key, value) in taskStep.Input)
+                                    {
+                                        try
+                                        {
+                                            var resolvedValue = await _templateResolver.ResolveAsync(value, context);
+
+                                            // If the resolved value is a JSON string, deserialize it back to an object
+                                            // This is needed because template resolution serializes objects to JSON
+                                            if (resolvedValue.StartsWith("{") || resolvedValue.StartsWith("["))
+                                            {
+                                                try
+                                                {
+                                                    var deserialized = JsonSerializer.Deserialize<object>(resolvedValue);
+                                                    resolvedInput[key] = deserialized ?? resolvedValue;
+                                                }
+                                                catch
+                                                {
+                                                    // If deserialization fails, use the string as-is
+                                                    resolvedInput[key] = resolvedValue;
+                                                }
+                                            }
+                                            else
+                                            {
+                                                resolvedInput[key] = resolvedValue;
+                                            }
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            taskResult = new TaskExecutionResult
+                                            {
+                                                Success = false,
+                                                Errors = new List<string> { $"Failed to resolve input '{key}': {ex.Message}" }
+                                            };
+                                            return (taskId, taskResult);
+                                        }
+                                    }
+                                }
+
+                                // Pass the resolved input to the transform executor
+                                taskResult = await _transformTaskExecutor.ExecuteAsync(taskSpec, resolvedInput, cancellationToken);
+                            }
+                        }
+                        else
+                        {
+                            // Default to HTTP task executor for other types
+                            taskResult = await _httpTaskExecutor.ExecuteAsync(taskSpec, context, cancellationToken);
+                        }
+
                         return (taskId, taskResult);
                     }
                     finally
@@ -199,7 +272,8 @@ public class WorkflowOrchestrator : IWorkflowOrchestrator
                 {
                     try
                     {
-                        var resolvedValue = ResolveOutputExpression(outputMapping.Value, context);
+                        // Use TemplateResolver to handle mixed text and nested paths
+                        var resolvedValue = await _templateResolver.ResolveAsync(outputMapping.Value, context);
                         workflowOutput[outputMapping.Key] = resolvedValue;
                     }
                     catch (Exception ex)
@@ -244,67 +318,4 @@ public class WorkflowOrchestrator : IWorkflowOrchestrator
         }
     }
 
-    private object ResolveOutputExpression(string expression, TemplateContext context)
-    {
-        // Remove {{ and }} if present
-        var cleanExpression = expression.Trim();
-        if (cleanExpression.StartsWith("{{") && cleanExpression.EndsWith("}}"))
-        {
-            cleanExpression = cleanExpression.Substring(2, cleanExpression.Length - 4).Trim();
-        }
-
-        var parts = cleanExpression.Split('.');
-
-        if (parts.Length < 2)
-        {
-            throw new InvalidOperationException($"Invalid output expression: {expression}");
-        }
-
-        // Handle {{input.fieldName}} or {{input.nested.field}}
-        if (parts[0] == "input")
-        {
-            var path = parts.Skip(1).ToArray();
-            return ResolvePathInDictionary(path, context.Input, expression);
-        }
-
-        // Handle {{tasks.taskId.output.fieldName}} or {{tasks.taskId.output.nested.field}}
-        if (parts[0] == "tasks" && parts.Length >= 3 && parts[2] == "output")
-        {
-            var taskId = parts[1];
-
-            if (!context.TaskOutputs.ContainsKey(taskId))
-            {
-                throw new InvalidOperationException($"Task '{taskId}' output not found in execution context for expression: {expression}");
-            }
-
-            var taskOutput = context.TaskOutputs[taskId];
-            var path = parts.Skip(3).ToArray();
-            return ResolvePathInDictionary(path, taskOutput, expression);
-        }
-
-        throw new InvalidOperationException($"Unknown output expression type: {expression}");
-    }
-
-    private object ResolvePathInDictionary(string[] path, Dictionary<string, object> data, string originalExpression)
-    {
-        object current = data;
-
-        foreach (var part in path)
-        {
-            if (current is Dictionary<string, object> dict)
-            {
-                if (!dict.ContainsKey(part))
-                {
-                    throw new InvalidOperationException($"Field '{part}' not found for expression: {originalExpression}");
-                }
-                current = dict[part];
-            }
-            else
-            {
-                throw new InvalidOperationException($"Cannot navigate path '{string.Join(".", path)}' in expression: {originalExpression}");
-            }
-        }
-
-        return current;
-    }
 }

@@ -772,4 +772,87 @@ public class WorkflowValidatorTests
             e.Field == "userId" &&
             e.Message.Contains("non-existent-task"));
     }
+
+    [Fact]
+    public async Task ValidateAsync_WithTransformTaskMissingTransformProperty_ShouldReturnError()
+    {
+        // Arrange - Transform task without Transform property
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep
+                    {
+                        Id = "transform-data",
+                        TaskRef = "transform-task"
+                    }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["transform-task"] = new WorkflowTaskResource
+            {
+                Spec = new WorkflowTaskSpec
+                {
+                    Type = "transform",
+                    Transform = null  // Missing Transform property
+                }
+            }
+        };
+
+        // Act
+        var result = await _validator.ValidateAsync(workflow, tasks);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().Contain(e =>
+            e.TaskId == "transform-data" &&
+            e.Message.Contains("Transform definition is required"));
+    }
+
+    [Fact]
+    public async Task ValidateAsync_WithValidTransformTask_ShouldReturnSuccess()
+    {
+        // Arrange - Valid transform task
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep
+                    {
+                        Id = "transform-data",
+                        TaskRef = "transform-task"
+                    }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["transform-task"] = new WorkflowTaskResource
+            {
+                Spec = new WorkflowTaskSpec
+                {
+                    Type = "transform",
+                    Transform = new TransformDefinition
+                    {
+                        Query = "$.users[*].name"
+                    }
+                }
+            }
+        };
+
+        // Act
+        var result = await _validator.ValidateAsync(workflow, tasks);
+
+        // Assert
+        result.IsValid.Should().BeTrue();
+        result.Errors.Should().BeEmpty();
+    }
 }

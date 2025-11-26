@@ -1,0 +1,32 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: fetch-astronauts
+  namespace: default
+spec:
+  type: http
+  description: Fetch list of astronauts currently in space
+  request:
+    url: "http://api.open-notify.org/astros.json"
+    method: GET
+    headers:
+      Accept: "application/json"
+  inputSchema:
+    type: object
+    properties: {}
+  outputSchema:
+    type: object
+    properties:
+      number:
+        type: integer
+        description: Number of people in space
+      people:
+        type: array
+        description: List of people in space
+      message:
+        type: string
+        description: Success message
+  retry:
+    maxAttempts: 3
+    backoffMs: 1000
+  timeout: "10s"

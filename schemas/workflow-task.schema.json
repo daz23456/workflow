@@ -1,0 +1,126 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://workflow.example.com/schemas/workflow-task.schema.json",
+  "title": "WorkflowTask",
+  "description": "Kubernetes Custom Resource for WorkflowTask",
+  "type": "object",
+  "properties": {
+    "apiVersion": {
+      "type": "string",
+      "description": "API version",
+      "const": "workflow.example.com/v1"
+    },
+    "kind": {
+      "type": "string",
+      "description": "Resource kind",
+      "const": "WorkflowTask"
+    },
+    "metadata": {
+      "$ref": "common-definitions.schema.json#/definitions/ResourceMetadata"
+    },
+    "spec": {
+      "$ref": "#/definitions/WorkflowTaskSpec"
+    },
+    "status": {
+      "$ref": "#/definitions/WorkflowTaskStatus"
+    }
+  },
+  "required": ["apiVersion", "kind", "metadata", "spec"],
+  "definitions": {
+    "WorkflowTaskSpec": {
+      "type": "object",
+      "description": "WorkflowTask specification",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Task type (fetch, transform, etc.)",
+          "enum": ["fetch", "transform", "webhook"]
+        },
+        "inputSchema": {
+          "$ref": "common-definitions.schema.json#/definitions/SchemaDefinition"
+        },
+        "outputSchema": {
+          "$ref": "common-definitions.schema.json#/definitions/SchemaDefinition"
+        },
+        "request": {
+          "$ref": "#/definitions/HttpRequestDefinition"
+        },
+        "http": {
+          "$ref": "#/definitions/HttpRequestDefinition"
+        },
+        "transform": {
+          "$ref": "#/definitions/TransformDefinition"
+        },
+        "timeout": {
+          "type": "string",
+          "description": "Task timeout (e.g., 30s, 5m, 2h)",
+          "pattern": "^[0-9]+(ms|s|m|h)$"
+        }
+      },
+      "required": ["type"]
+    },
+    "HttpRequestDefinition": {
+      "type": "object",
+      "description": "HTTP request definition for fetch tasks",
+      "properties": {
+        "method": {
+          "type": "string",
+          "description": "HTTP method",
+          "enum": ["GET", "POST", "PUT", "PATCH", "DELETE"]
+        },
+        "url": {
+          "type": "string",
+          "description": "Request URL (supports templates)",
+          "format": "uri-template"
+        },
+        "headers": {
+          "type": "object",
+          "description": "HTTP headers",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "body": {
+          "type": "string",
+          "description": "Request body (supports templates)"
+        }
+      },
+      "required": ["method", "url"]
+    },
+    "TransformDefinition": {
+      "type": "object",
+      "description": "Transform definition for data transformation tasks",
+      "properties": {
+        "input": {
+          "type": "string",
+          "description": "JSONPath to input data"
+        },
+        "jsonPath": {
+          "type": "string",
+          "description": "JSONPath expression for transformation"
+        },
+        "query": {
+          "type": "string",
+          "description": "Legacy: JSONPath query (deprecated)"
+        }
+      },
+      "required": ["input", "jsonPath"]
+    },
+    "WorkflowTaskStatus": {
+      "type": "object",
+      "description": "WorkflowTask status",
+      "properties": {
+        "usageCount": {
+          "type": "integer",
+          "description": "Number of times this task has been used",
+          "minimum": 0
+        },
+        "lastUpdated": {
+          "type": "string",
+          "description": "Last update timestamp",
+          "format": "date-time"
+        }
+      }
+    }
+  }
+}

@@ -35,6 +35,8 @@ public class PostgresFixture : IAsyncLifetime
     /// <summary>
     /// Creates a new DbContext connected to the shared test database.
     /// Database is migrated once on first call.
+    /// Note: Tables are NOT truncated automatically. Tests share the database.
+    /// Use SaveChangesAsync() to persist data across multiple contexts in the same test.
     /// </summary>
     public async Task<WorkflowDbContext> CreateDbContextAsync()
     {
@@ -53,6 +55,10 @@ public class PostgresFixture : IAsyncLifetime
                 if (!_isMigrated)
                 {
                     await context.Database.MigrateAsync();
+
+                    // Clean tables once at startup
+                    await TruncateAllTablesAsync(context);
+
                     _isMigrated = true;
                 }
             }
@@ -62,11 +68,26 @@ public class PostgresFixture : IAsyncLifetime
             }
         }
 
-        // Clean tables for test isolation
+        return context;
+    }
+
+    /// <summary>
+    /// Truncates all tables for test isolation.
+    /// Tests using xUnit's IClassFixture get a fresh fixture per test class,
+    /// so tables are cleaned once per test class automatically.
+    /// Call this method from individual tests if they need complete isolation from other tests.
+    /// </summary>
+    public async Task CleanTablesAsync()
+    {
+        var context = await CreateDbContextAsync();
+        await TruncateAllTablesAsync(context);
+        await context.DisposeAsync();
+    }
+
+    private static async Task TruncateAllTablesAsync(WorkflowDbContext context)
+    {
         await context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE \"TaskExecutionRecords\" CASCADE");
         await context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE \"ExecutionRecords\" CASCADE");
         await context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE \"WorkflowVersions\" CASCADE");
-
-        return context;
     }
 }

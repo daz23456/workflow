@@ -43,9 +43,13 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "dependencies": {
+            "JsonPath.Net": {
+              "target": "Package",
+              "version": "[2.1.1, )"
+            },
             "JsonSchema.Net": {
               "target": "Package",
-              "version": "[5.5.0, )"
+              "version": "[7.4.0, )"
             },
             "KubernetesClient": {
               "target": "Package",
@@ -71,7 +75,7 @@
             },
             "System.Text.Json": {
               "target": "Package",
-              "version": "[10.0.0, )"
+              "version": "[9.0.0, )"
             },
             "YamlDotNet": {
               "target": "Package",

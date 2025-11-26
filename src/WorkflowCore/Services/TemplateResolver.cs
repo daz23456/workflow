@@ -71,6 +71,12 @@ public class TemplateResolver : ITemplateResolver
 
     private string ResolveInputPath(string path, Dictionary<string, object> data, string originalExpression)
     {
+        // If path is empty, return entire object as JSON
+        if (string.IsNullOrEmpty(path))
+        {
+            return JsonSerializer.Serialize(data);
+        }
+
         var parts = path.Split('.');
         object? current = data;
 
@@ -85,6 +91,26 @@ public class TemplateResolver : ITemplateResolver
                         originalExpression);
                 }
                 current = dict[part];
+            }
+            else if (current is JsonElement jsonElement)
+            {
+                // Handle JsonElement (nested JSON objects from deserialization)
+                if (jsonElement.ValueKind == JsonValueKind.Object)
+                {
+                    if (!jsonElement.TryGetProperty(part, out var property))
+                    {
+                        throw new TemplateResolutionException(
+                            $"Property '{part}' not found in JSON object at path '{path}'",
+                            originalExpression);
+                    }
+                    current = property;
+                }
+                else
+                {
+                    throw new TemplateResolutionException(
+                        $"Cannot navigate path '{part}' - current value is not an object",
+                        originalExpression);
+                }
             }
             else
             {
@@ -109,6 +135,20 @@ public class TemplateResolver : ITemplateResolver
         if (current is int or long or double or float or decimal or bool)
         {
             return current.ToString() ?? string.Empty;
+        }
+
+        // Handle JsonElement
+        if (current is JsonElement element)
+        {
+            return element.ValueKind switch
+            {
+                JsonValueKind.String => element.GetString() ?? string.Empty,
+                JsonValueKind.Number => element.GetRawText(),
+                JsonValueKind.True => "true",
+                JsonValueKind.False => "false",
+                JsonValueKind.Null => string.Empty,
+                _ => element.GetRawText() // For objects/arrays, return JSON
+            };
         }
 
         // For complex objects, serialize to JSON

@@ -43,6 +43,12 @@ public class WorkflowTaskSpec
     [YamlMember(Alias = "request")]
     public HttpRequestDefinition? Request { get; set; }
 
+    [YamlMember(Alias = "http")]
+    public HttpRequestDefinition? Http { get; set; }
+
+    [YamlMember(Alias = "transform")]
+    public TransformDefinition? Transform { get; set; }
+
     [YamlMember(Alias = "timeout")]
     public string? Timeout { get; set; }
 }
@@ -60,6 +66,19 @@ public class HttpRequestDefinition
 
     [YamlMember(Alias = "body")]
     public string? Body { get; set; }
+}
+
+public class TransformDefinition
+{
+    [YamlMember(Alias = "input")]
+    public string Input { get; set; } = string.Empty;
+
+    [YamlMember(Alias = "jsonPath")]
+    public string JsonPath { get; set; } = string.Empty;
+
+    // Legacy support for old "query" property
+    [YamlMember(Alias = "query")]
+    public string? Query { get; set; }
 }
 
 public class WorkflowTaskStatus

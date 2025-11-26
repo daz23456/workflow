@@ -1,0 +1,42 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: transform-extract-cities
+  namespace: default
+spec:
+  type: transform
+  description: Extracts city names from nested address objects using JSONPath
+  transform:
+    query: "$.users[*].address.city"
+  inputSchema:
+    type: object
+    properties:
+      users:
+        type: array
+        description: Array of user objects with nested address
+        items:
+          type: object
+          properties:
+            id:
+              type: integer
+            name:
+              type: string
+            address:
+              type: object
+              properties:
+                street:
+                  type: string
+                city:
+                  type: string
+                zipcode:
+                  type: string
+    required:
+      - users
+  outputSchema:
+    type: object
+    properties:
+      result:
+        type: array
+        description: Array of city names from user addresses
+        items:
+          type: string

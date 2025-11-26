@@ -1,0 +1,36 @@
+apiVersion: workflow.example.com/v1
+kind: Workflow
+metadata:
+  name: user-profile
+  namespace: default
+spec:
+  description: Fetches user profile and their posts, demonstrating parallel execution and dependency resolution
+  input:
+    userId:
+      type: string
+      required: true
+      description: The user ID to fetch profile for
+  tasks:
+    - id: fetch-user
+      taskRef: fetch-user
+      input:
+        userId: "{{input.userId}}"
+
+    - id: fetch-posts
+      taskRef: fetch-posts
+      input:
+        userId: "{{input.userId}}"
+
+    # This task depends on both previous tasks completing (demonstrates dependency resolution)
+    - id: create-summary-post
+      taskRef: create-post
+      input:
+        userId: "{{tasks.fetch-user.output.id}}"
+        title: "Profile Summary for {{tasks.fetch-user.output.name}}"
+        body: "User {{tasks.fetch-user.output.name}} ({{tasks.fetch-user.output.email}}) has posted content. Contact: {{tasks.fetch-user.output.phone}}"
+  output:
+    userName: "{{tasks.fetch-user.output.name}}"
+    userEmail: "{{tasks.fetch-user.output.email}}"
+    userCity: "{{tasks.fetch-user.output.address.city}}"
+    postsCount: "{{tasks.fetch-posts.output.length}}"
+    summaryPostId: "{{tasks.create-summary-post.output.id}}"

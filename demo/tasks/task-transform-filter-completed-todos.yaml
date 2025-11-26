@@ -1,0 +1,39 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: task-transform-filter-completed-todos
+  namespace: default
+spec:
+  type: transform
+  transform:
+    input: $.todos.data
+    jsonPath: $[?(@.completed == true)]
+  inputSchema:
+    type: object
+    properties:
+      todos:
+        type: array
+        items:
+          type: object
+          properties:
+            id:
+              type: integer
+            userId:
+              type: integer
+            title:
+              type: string
+            completed:
+              type: boolean
+  outputSchema:
+    type: array
+    items:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        title:
+          type: string
+        completed:
+          type: boolean

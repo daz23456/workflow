@@ -1,0 +1,73 @@
+apiVersion: workflow.example.com/v1
+kind: Workflow
+metadata:
+  name: user-activity-analysis
+  namespace: default
+spec:
+  input:
+    userId:
+      type: string
+      required: true
+      description: User ID to analyze from JSONPlaceholder
+
+  tasks:
+    # STAGE 1: PARALLEL DATA FETCHING (Real APIs)
+    # Fetch user, posts, and todos simultaneously from JSONPlaceholder
+    - id: fetch-user
+      taskRef: task-fetch-user
+      input:
+        userId: "{{input.userId}}"
+      timeout: 10s
+
+    - id: fetch-posts
+      taskRef: task-fetch-posts
+      input:
+        userId: "{{input.userId}}"
+      timeout: 10s
+
+    - id: fetch-todos
+      taskRef: task-fetch-todos
+      input:
+        userId: "{{input.userId}}"
+      timeout: 10s
+
+    # STAGE 2: PARALLEL DATA TRANSFORMATION
+    # Extract insights from fetched data
+    - id: extract-post-titles
+      taskRef: task-transform-extract-post-titles
+      dependsOn:
+        - fetch-posts
+      input:
+        posts: "{{tasks.fetch-posts.output}}"
+      timeout: 5s
+
+    - id: filter-completed-todos
+      taskRef: task-transform-filter-completed-todos
+      dependsOn:
+        - fetch-todos
+      input:
+        todos: "{{tasks.fetch-todos.output}}"
+      timeout: 5s
+
+    # STAGE 3: SEND ANALYSIS TO WEBHOOK
+    # Post all collected data to httpbin for verification
+    - id: post-analysis-webhook
+      taskRef: task-fetch-post-webhook
+      dependsOn:
+        - fetch-user
+        - extract-post-titles
+        - filter-completed-todos
+      input:
+        user: "{{tasks.fetch-user.output}}"
+        posts: "{{tasks.extract-post-titles.output}}"
+        todos: "{{tasks.filter-completed-todos.output}}"
+        timestamp: "2025-11-25T00:00:00Z"
+      timeout: 10s
+
+  output:
+    # Map outputs from all stages for comprehensive result
+    userId: "{{input.userId}}"
+    user: "{{tasks.fetch-user.output}}"
+    postTitles: "{{tasks.extract-post-titles.output}}"
+    completedTodos: "{{tasks.filter-completed-todos.output}}"
+    # webhookResponse: "{{tasks.post-analysis-webhook.output}}"

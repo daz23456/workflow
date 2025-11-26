@@ -19,7 +19,6 @@ public class TaskExecutionRepository : ITaskExecutionRepository
     public async Task<TaskExecutionRecord> SaveTaskExecutionAsync(TaskExecutionRecord record)
     {
         var existing = await _context.TaskExecutionRecords
-            .AsNoTracking()
             .FirstOrDefaultAsync(t => t.Id == record.Id);
 
         if (existing == null)
@@ -28,11 +27,12 @@ public class TaskExecutionRepository : ITaskExecutionRepository
         }
         else
         {
-            _context.TaskExecutionRecords.Update(record);
+            // Update the existing tracked entity with new values
+            _context.Entry(existing).CurrentValues.SetValues(record);
         }
 
         await _context.SaveChangesAsync();
-        return record;
+        return existing ?? record;
     }
 
     /// <inheritdoc />

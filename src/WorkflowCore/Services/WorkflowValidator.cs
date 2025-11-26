@@ -42,6 +42,24 @@ public class WorkflowValidator : IWorkflowValidator
                 continue;
             }
 
+            var task = availableTasks[step.TaskRef];
+
+            // Validate transform tasks have Transform property
+            if (task.Spec.Type == "transform")
+            {
+                if (task.Spec.Transform == null || string.IsNullOrEmpty(task.Spec.Transform.Query))
+                {
+                    errors.Add(new ValidationError
+                    {
+                        TaskId = step.Id,
+                        Field = "transform",
+                        Message = "Transform definition is required for transform tasks",
+                        SuggestedFix = "Add a 'transform' property with a 'query' field containing a valid JSONPath expression"
+                    });
+                    continue;
+                }
+            }
+
             // Validate templates in inputs
             foreach (var (inputKey, inputTemplate) in step.Input)
             {
@@ -54,7 +72,6 @@ public class WorkflowValidator : IWorkflowValidator
                 }
 
                 // Validate type compatibility
-                var task = availableTasks[step.TaskRef];
                 if (task.Spec.InputSchema?.Properties?.ContainsKey(inputKey) == true)
                 {
                     var targetProperty = task.Spec.InputSchema.Properties[inputKey];

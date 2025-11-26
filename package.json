@@ -1,0 +1,27 @@
+{
+  "name": "workflow-root",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "pnpm@10.17.1",
+  "description": "Workflow orchestration engine - schema validation tests",
+  "scripts": {
+    "build": "turbo run build",
+    "build:packages": "turbo run build --filter='./packages/*'",
+    "clean": "turbo run clean",
+    "lint": "turbo run lint",
+    "test": "jest",
+    "test:schema": "jest tests/schema-validation.test.ts",
+    "test:packages": "turbo run test --filter='./packages/*'"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.11",
+    "@types/node": "^20.10.6",
+    "ajv": "^8.12.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.1",
+    "ts-node": "^10.9.2",
+    "turbo": "^2.6.1",
+    "typescript": "^5.3.3",
+    "yaml": "^2.3.4"
+  }
+}

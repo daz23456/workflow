@@ -1,0 +1,46 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: transform-filter-adults
+  namespace: default
+spec:
+  type: transform
+  description: Filters users array to only include adults (age >= 18) using JSONPath
+  transform:
+    query: "$.users[?(@.age >= 18)]"
+  inputSchema:
+    type: object
+    properties:
+      users:
+        type: array
+        description: Array of user objects with age property
+        items:
+          type: object
+          properties:
+            id:
+              type: integer
+            name:
+              type: string
+            age:
+              type: integer
+            email:
+              type: string
+    required:
+      - users
+  outputSchema:
+    type: object
+    properties:
+      result:
+        type: array
+        description: Filtered array of adult users
+        items:
+          type: object
+          properties:
+            id:
+              type: integer
+            name:
+              type: string
+            age:
+              type: integer
+            email:
+              type: string

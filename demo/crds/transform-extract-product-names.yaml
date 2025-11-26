@@ -1,0 +1,31 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: transform-extract-product-names
+  namespace: default
+spec:
+  type: transform
+  transform:
+    input: $.orders
+    jsonPath: $[*].items[*].productName
+  inputSchema:
+    type: object
+    properties:
+      orders:
+        type: array
+        items:
+          type: object
+          properties:
+            items:
+              type: array
+              items:
+                type: object
+                properties:
+                  productName:
+                    type: string
+                  quantity:
+                    type: number
+  outputSchema:
+    type: array
+    items:
+      type: string

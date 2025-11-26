@@ -1,0 +1,20 @@
+apiVersion: workflow.example.com/v1
+kind: Workflow
+metadata:
+  name: user-signup
+spec:
+  input:
+    userId:
+      type: string
+      required: true
+  tasks:
+    - id: fetch-user
+      taskRef: get-user-data
+      input:
+        userId: "{{input.userId}}"
+    
+    - id: send-email
+      taskRef: send-welcome-email
+      dependsOn: [fetch-user]
+      input:
+        email: "{{tasks.fetch-user.output.email}}"

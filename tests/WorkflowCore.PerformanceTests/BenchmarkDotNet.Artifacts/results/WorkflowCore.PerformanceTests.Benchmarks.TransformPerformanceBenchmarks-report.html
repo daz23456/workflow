@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>WorkflowCore.PerformanceTests.Benchmarks.TransformPerformanceBenchmarks-20251125-144313</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet v0.13.11, macOS Sonoma 14.7.6 (23H626) [Darwin 23.6.0]
+Intel Core i9-9880H CPU 2.30GHz, 1 CPU, 16 logical and 8 physical cores
+.NET SDK 8.0.414
+  [Host]     : .NET 8.0.20 (8.0.2025.41914), X64 RyuJIT AVX2
+  DefaultJob : .NET 8.0.20 (8.0.2025.41914), X64 RyuJIT AVX2
+</code></pre>
+<pre><code></code></pre>
+
+<table>
+<thead><tr><th>Method                          </th><th>RecordCount</th><th>Mean  </th><th>Error</th><th>StdDev</th><th>Rank</th><th>Gen0 </th><th>Gen1</th><th>Gen2</th><th>Allocated</th>
+</tr>
+</thead><tbody><tr><td>&#39;Simple extraction (names)&#39;</td><td>1000</td><td>4.803 ms</td><td>0.0950 ms</td><td>0.1535 ms</td><td>1</td><td>484.3750</td><td>210.9375</td><td>15.6250</td><td>4.4 MB</td>
+</tr><tr><td>&#39;Nested property extraction (cities)&#39;</td><td>1000</td><td>7.674 ms</td><td>0.1461 ms</td><td>0.2401 ms</td><td>2</td><td>765.6250</td><td>328.1250</td><td>15.6250</td><td>6.63 MB</td>
+</tr><tr><td>&#39;Array filtering (age &gt; 25)&#39;</td><td>1000</td><td>9.609 ms</td><td>0.1890 ms</td><td>0.2943 ms</td><td>3</td><td>1000.0000</td><td>484.3750</td><td>15.6250</td><td>8.48 MB</td>
+</tr><tr><td>&#39;Sequential transforms (3 transforms)&#39;</td><td>1000</td><td>25.567 ms</td><td>0.5081 ms</td><td>0.9418 ms</td><td>4</td><td>1718.7500</td><td>625.0000</td><td>125.0000</td><td>15.11 MB</td>
+</tr><tr><td>&#39;Simple extraction (names)&#39;</td><td>10000</td><td>95.230 ms</td><td>1.0989 ms</td><td>2.1172 ms</td><td>5</td><td>5200.0000</td><td>2600.0000</td><td>1200.0000</td><td>52.1 MB</td>
+</tr><tr><td>&#39;Nested property extraction (cities)&#39;</td><td>10000</td><td>139.051 ms</td><td>2.7113 ms</td><td>2.7843 ms</td><td>6</td><td>8500.0000</td><td>3000.0000</td><td>1750.0000</td><td>74.37 MB</td>
+</tr><tr><td>&#39;Array filtering (age &gt; 25)&#39;</td><td>10000</td><td>144.477 ms</td><td>2.8327 ms</td><td>4.1521 ms</td><td>7</td><td>10000.0000</td><td>3000.0000</td><td>1000.0000</td><td>92.8 MB</td>
+</tr><tr><td>&#39;Sequential transforms (3 transforms)&#39;</td><td>10000</td><td>354.866 ms</td><td>7.0768 ms</td><td>14.2954 ms</td><td>8</td><td>20000.0000</td><td>13000.0000</td><td>4000.0000</td><td>166.66 MB</td>
+</tr><tr><td>&#39;Simple extraction (names)&#39;</td><td>100000</td><td>867.218 ms</td><td>12.4608 ms</td><td>11.6558 ms</td><td>9</td><td>52000.0000</td><td>17000.0000</td><td>5000.0000</td><td>505.7 MB</td>
+</tr><tr><td>&#39;Nested property extraction (cities)&#39;</td><td>100000</td><td>1,293.939 ms</td><td>25.8018 ms</td><td>43.8135 ms</td><td>10</td><td>88000.0000</td><td>32000.0000</td><td>8000.0000</td><td>728.41 MB</td>
+</tr><tr><td>&#39;Array filtering (age &gt; 25)&#39;</td><td>100000</td><td>1,908.546 ms</td><td>20.7282 ms</td><td>17.3090 ms</td><td>11</td><td>113000.0000</td><td>35000.0000</td><td>10000.0000</td><td>912.82 MB</td>
+</tr><tr><td>&#39;Sequential transforms (3 transforms)&#39;</td><td>100000</td><td>4,415.871 ms</td><td>86.0407 ms</td><td>126.1173 ms</td><td>12</td><td>187000.0000</td><td>66000.0000</td><td>19000.0000</td><td>1701.27 MB</td>
+</tr></tbody></table>
+</body>
+</html>

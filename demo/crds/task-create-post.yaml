@@ -1,0 +1,49 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: create-post
+  namespace: default
+spec:
+  type: http
+  description: Creates a new post for a user
+  request:
+    url: "https://jsonplaceholder.typicode.com/posts"
+    method: POST
+    headers:
+      Content-Type: "application/json"
+      Accept: "application/json"
+    body: |
+      {
+        "userId": {{input.userId}},
+        "title": "{{input.title}}",
+        "body": "{{input.body}}"
+      }
+  inputSchema:
+    type: object
+    properties:
+      userId:
+        type: integer
+        description: The user ID creating the post
+      title:
+        type: string
+        description: Post title
+      body:
+        type: string
+        description: Post content
+    required:
+      - userId
+      - title
+      - body
+  outputSchema:
+    type: object
+    properties:
+      id:
+        type: integer
+      userId:
+        type: integer
+      title:
+        type: string
+      body:
+        type: string
+    required:
+      - id

@@ -1,0 +1,50 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: task-fetch-post-webhook
+  namespace: default
+spec:
+  type: fetch
+  http:
+    method: POST
+    url: "https://httpbin.org/post"
+    headers:
+      Content-Type: "application/json"
+      Accept: "application/json"
+    body: |
+      {
+        "user": {{input.user}},
+        "posts": {{input.posts}},
+        "todos": {{input.todos}},
+        "timestamp": "{{input.timestamp}}"
+      }
+  inputSchema:
+    type: object
+    properties:
+      user:
+        type: object
+        description: User data to send
+      posts:
+        type: array
+        description: Posts data to send
+      todos:
+        type: array
+        description: Todos data to send
+      timestamp:
+        type: string
+        description: Request timestamp
+    required:
+      - user
+      - posts
+      - todos
+  outputSchema:
+    type: object
+    properties:
+      data:
+        type: string
+      json:
+        type: object
+      headers:
+        type: object
+      url:
+        type: string

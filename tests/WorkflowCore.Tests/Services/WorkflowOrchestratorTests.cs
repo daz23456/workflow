@@ -10,13 +10,18 @@ public class WorkflowOrchestratorTests
 {
     private readonly Mock<IExecutionGraphBuilder> _graphBuilderMock;
     private readonly Mock<IHttpTaskExecutor> _taskExecutorMock;
+    private readonly Mock<ITemplateResolver> _templateResolverMock;
     private readonly IWorkflowOrchestrator _orchestrator;
 
     public WorkflowOrchestratorTests()
     {
         _graphBuilderMock = new Mock<IExecutionGraphBuilder>();
         _taskExecutorMock = new Mock<IHttpTaskExecutor>();
-        _orchestrator = new WorkflowOrchestrator(_graphBuilderMock.Object, _taskExecutorMock.Object);
+        _templateResolverMock = new Mock<ITemplateResolver>();
+        _orchestrator = new WorkflowOrchestrator(
+            _graphBuilderMock.Object,
+            _taskExecutorMock.Object,
+            _templateResolverMock.Object);
     }
 
     [Fact]
@@ -887,6 +892,22 @@ public class WorkflowOrchestratorTests
                 Output = ordersOutput
             });
 
+        // Setup template resolver for output mappings
+        _templateResolverMock.Setup(x => x.ResolveAsync(
+                "{{tasks.fetch-user.output.id}}",
+                It.IsAny<TemplateContext>()))
+            .ReturnsAsync("user-123");
+
+        _templateResolverMock.Setup(x => x.ResolveAsync(
+                "{{tasks.fetch-user.output.name}}",
+                It.IsAny<TemplateContext>()))
+            .ReturnsAsync("John Doe");
+
+        _templateResolverMock.Setup(x => x.ResolveAsync(
+                "{{tasks.fetch-orders.output.count}}",
+                It.IsAny<TemplateContext>()))
+            .ReturnsAsync("5");
+
         var inputs = new Dictionary<string, object>();
 
         // Act
@@ -900,7 +921,7 @@ public class WorkflowOrchestratorTests
         result.Output.Should().ContainKey("userName");
         result.Output["userName"].Should().Be("John Doe");
         result.Output.Should().ContainKey("orderCount");
-        result.Output["orderCount"].Should().Be(5);
+        result.Output["orderCount"].Should().Be("5"); // Template resolver returns strings
     }
 
     [Fact]
@@ -1063,6 +1084,7 @@ public class WorkflowOrchestratorTests
         var orchestratorWithLimit = new WorkflowOrchestrator(
             _graphBuilderMock.Object,
             _taskExecutorMock.Object,
+            _templateResolverMock.Object,
             maxConcurrentTasks: 2);
 
         // Act
@@ -1145,6 +1167,7 @@ public class WorkflowOrchestratorTests
         var orchestratorWithLimit = new WorkflowOrchestrator(
             _graphBuilderMock.Object,
             _taskExecutorMock.Object,
+            _templateResolverMock.Object,
             maxConcurrentTasks: 1);
 
         // Act
@@ -1162,6 +1185,7 @@ public class WorkflowOrchestratorTests
         var act = () => new WorkflowOrchestrator(
             _graphBuilderMock.Object,
             _taskExecutorMock.Object,
+            _templateResolverMock.Object,
             maxConcurrentTasks: 0);
 
         act.Should().Throw<ArgumentException>()
@@ -1175,6 +1199,7 @@ public class WorkflowOrchestratorTests
         var act = () => new WorkflowOrchestrator(
             _graphBuilderMock.Object,
             _taskExecutorMock.Object,
+            _templateResolverMock.Object,
             maxConcurrentTasks: -1);
 
         act.Should().Throw<ArgumentException>()
@@ -1239,6 +1264,7 @@ public class WorkflowOrchestratorTests
         var sequentialOrchestrator = new WorkflowOrchestrator(
             _graphBuilderMock.Object,
             _taskExecutorMock.Object,
+            _templateResolverMock.Object,
             maxConcurrentTasks: 1);
 
         var sequentialResult = await sequentialOrchestrator.ExecuteAsync(workflow, tasks, inputs, CancellationToken.None);
@@ -1247,6 +1273,7 @@ public class WorkflowOrchestratorTests
         var parallelOrchestrator = new WorkflowOrchestrator(
             _graphBuilderMock.Object,
             _taskExecutorMock.Object,
+            _templateResolverMock.Object,
             maxConcurrentTasks: int.MaxValue);
 
         var parallelResult = await parallelOrchestrator.ExecuteAsync(workflow, tasks, inputs, CancellationToken.None);
@@ -1269,5 +1296,88 @@ public class WorkflowOrchestratorTests
         // Parallel should be close to 1x the task delay (all run at once)
         parallelResult.TotalDuration.Should().BeLessThan(TimeSpan.FromMilliseconds(250),
             because: "4 tasks running in parallel should take less than 250ms");
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithTransformTask_ShouldRouteToTransformExecutor()
+    {
+        // Arrange - Simple workflow with just a transform task
+        // We'll test that transform tasks work with workflow inputs
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep
+                    {
+                        Id = "extract-names",
+                        TaskRef = "transform-extract-names"
+                    }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["transform-extract-names"] = new WorkflowTaskResource
+            {
+                Spec = new WorkflowTaskSpec
+                {
+                    Type = "transform",
+                    Transform = new TransformDefinition
+                    {
+                        Query = "$.users[*].name"
+                    }
+                }
+            }
+        };
+
+        // Workflow inputs contain user data
+        var inputs = new Dictionary<string, object>
+        {
+            ["users"] = new[]
+            {
+                new { name = "Alice", age = 30 },
+                new { name = "Bob", age = 25 }
+            }
+        };
+
+        // Setup execution graph
+        var graph = new ExecutionGraph();
+        graph.AddNode("extract-names");
+
+        _graphBuilderMock.Setup(x => x.Build(workflow))
+            .Returns(new ExecutionGraphResult
+            {
+                IsValid = true,
+                Graph = graph
+            });
+
+        // Create orchestrator with real transform executor
+        var transformer = new JsonPathTransformer();
+        var transformExecutor = new TransformTaskExecutor(transformer);
+        var orchestratorWithTransform = new WorkflowOrchestrator(
+            _graphBuilderMock.Object,
+            _taskExecutorMock.Object,
+            _templateResolverMock.Object,
+            int.MaxValue,
+            transformExecutor);
+
+        // Act
+        var result = await orchestratorWithTransform.ExecuteAsync(workflow, tasks, inputs, CancellationToken.None);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        result.TaskResults.Should().ContainKey("extract-names");
+        result.TaskResults["extract-names"].Success.Should().BeTrue();
+
+        // Transform should have extracted the names
+        result.TaskResults["extract-names"].Output.Should().ContainKey("result");
+        var namesList = result.TaskResults["extract-names"].Output["result"] as List<object>;
+        namesList.Should().NotBeNull();
+        namesList.Should().HaveCount(2);
+        namesList.Should().Contain("Alice");
+        namesList.Should().Contain("Bob");
     }
 }

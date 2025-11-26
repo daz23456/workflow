@@ -58,6 +58,9 @@ public class WorkflowTaskStep
     [YamlMember(Alias = "input")]
     public Dictionary<string, string> Input { get; set; } = new();
 
+    [YamlMember(Alias = "dependsOn")]
+    public List<string>? DependsOn { get; set; }
+
     [YamlMember(Alias = "condition")]
     public string? Condition { get; set; }
 }

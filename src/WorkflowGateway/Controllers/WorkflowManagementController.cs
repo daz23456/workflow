@@ -105,4 +105,50 @@ public class WorkflowManagementController : ControllerBase
 
         return Ok(response);
     }
+
+    /// <summary>
+    /// Delete a workflow
+    /// </summary>
+    /// <param name="workflowName">Name of the workflow to delete</param>
+    /// <param name="namespace">Optional namespace (defaults to 'default')</param>
+    /// <returns>204 No Content on success, 404 if workflow not found</returns>
+    [HttpDelete("workflows/{workflowName}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> DeleteWorkflow(string workflowName, [FromQuery] string? @namespace = null)
+    {
+        var ns = @namespace ?? "default";
+
+        // Check if workflow exists
+        var workflow = await _discoveryService.GetWorkflowByNameAsync(workflowName, ns);
+        if (workflow == null)
+        {
+            return NotFound(new { message = $"Workflow '{workflowName}' not found in namespace '{ns}'" });
+        }
+
+        try
+        {
+            // Unregister dynamic endpoints for this workflow
+            await _endpointService.UnregisterWorkflowEndpointsAsync(workflowName);
+
+            // Delete the workflow file from disk
+            // Note: In a Kubernetes deployment, this would call k8s API to delete the CRD
+            var workflowsDirectory = Environment.GetEnvironmentVariable("WORKFLOW__DISCOVERY__WORKFLOWSDIRECTORY")
+                                     ?? "/Users/darren/dev/workflow/demo/crds";
+            var workflowFilePath = Path.Combine(workflowsDirectory, $"workflow-{workflowName}.yaml");
+
+            if (System.IO.File.Exists(workflowFilePath))
+            {
+                System.IO.File.Delete(workflowFilePath);
+            }
+
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError,
+                new { message = $"Failed to delete workflow '{workflowName}': {ex.Message}" });
+        }
+    }
 }

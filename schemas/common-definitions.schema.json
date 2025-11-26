@@ -1,0 +1,105 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://workflow.example.com/schemas/common-definitions.schema.json",
+  "title": "Common Definitions",
+  "description": "Shared type definitions for workflow resources",
+  "definitions": {
+    "ResourceMetadata": {
+      "type": "object",
+      "description": "Kubernetes resource metadata",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Resource name",
+          "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$"
+        },
+        "namespace": {
+          "type": "string",
+          "description": "Resource namespace",
+          "default": "default",
+          "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$"
+        }
+      },
+      "required": ["name", "namespace"],
+      "additionalProperties": false
+    },
+    "SchemaDefinition": {
+      "type": "object",
+      "description": "JSON Schema definition for validation",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["object", "array", "string", "number", "integer", "boolean", "null"]
+        },
+        "properties": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/PropertyDefinition"
+          }
+        },
+        "required": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "description": {
+          "type": "string"
+        },
+        "items": {
+          "$ref": "#/definitions/PropertyDefinition"
+        }
+      },
+      "required": ["type"],
+      "additionalProperties": false
+    },
+    "PropertyDefinition": {
+      "type": "object",
+      "description": "Property definition within a schema",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["object", "array", "string", "number", "integer", "boolean", "null"]
+        },
+        "description": {
+          "type": "string"
+        },
+        "format": {
+          "type": "string"
+        },
+        "properties": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/PropertyDefinition"
+          }
+        },
+        "items": {
+          "$ref": "#/definitions/PropertyDefinition"
+        },
+        "enum": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "minimum": {
+          "type": "integer"
+        },
+        "maximum": {
+          "type": "integer"
+        },
+        "pattern": {
+          "type": "string"
+        },
+        "required": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": ["type"],
+      "additionalProperties": false
+    }
+  }
+}

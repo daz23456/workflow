@@ -1,0 +1,45 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: transform-extract-customers
+  namespace: default
+spec:
+  type: transform
+  transform:
+    input: $.customers
+    jsonPath: $[*].{id: customerId, name: name, email: email, tier: loyaltyTier}
+  inputSchema:
+    type: object
+    properties:
+      customers:
+        type: array
+        items:
+          type: object
+          properties:
+            customerId:
+              type: string
+            name:
+              type: string
+            email:
+              type: string
+            loyaltyTier:
+              type: string
+            address:
+              type: object
+          required:
+            - customerId
+            - name
+            - email
+  outputSchema:
+    type: array
+    items:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        tier:
+          type: string

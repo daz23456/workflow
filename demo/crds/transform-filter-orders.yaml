@@ -1,0 +1,48 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: transform-filter-orders
+  namespace: default
+spec:
+  type: transform
+  transform:
+    input: $.orders
+    jsonPath: $[?(@.status == 'completed' && @.total > 100)]
+  inputSchema:
+    type: object
+    properties:
+      orders:
+        type: array
+        items:
+          type: object
+          properties:
+            orderId:
+              type: string
+            customerId:
+              type: string
+            status:
+              type: string
+            total:
+              type: number
+            items:
+              type: array
+          required:
+            - orderId
+            - customerId
+            - status
+            - total
+  outputSchema:
+    type: array
+    items:
+      type: object
+      properties:
+        orderId:
+          type: string
+        customerId:
+          type: string
+        status:
+          type: string
+        total:
+          type: number
+        items:
+          type: array

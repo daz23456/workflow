@@ -24,7 +24,8 @@ import type {
 // API BASE URL
 // ============================================================================
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api/v1';
+// Changed from '/api/v1' to '/api' to use Next.js proxy routes instead of MSW
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
 
 // ============================================================================
 // API CLIENT UTILITIES

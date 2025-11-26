@@ -156,7 +156,7 @@ public class OrchestrationOverheadBenchmarks
                 Duration = TimeSpan.FromMilliseconds(1)
             });
 
-        var orchestrator = new WorkflowOrchestrator(_graphBuilder!, mockExecutor.Object);
+        var orchestrator = new WorkflowOrchestrator(_graphBuilder!, mockExecutor.Object, _templateResolver!);
 
         // Create mock available tasks
         var availableTasks = new Dictionary<string, WorkflowTaskResource>();

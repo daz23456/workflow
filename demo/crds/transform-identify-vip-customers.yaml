@@ -1,0 +1,39 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: transform-identify-vip-customers
+  namespace: default
+spec:
+  type: transform
+  transform:
+    input: $.customerStats
+    jsonPath: $[?(@.totalSpent > 500 && @.orderCount >= 3)]
+  inputSchema:
+    type: object
+    properties:
+      customerStats:
+        type: array
+        items:
+          type: object
+          properties:
+            customerId:
+              type: string
+            orderCount:
+              type: number
+            totalSpent:
+              type: number
+            avgOrderValue:
+              type: number
+  outputSchema:
+    type: array
+    items:
+      type: object
+      properties:
+        customerId:
+          type: string
+        orderCount:
+          type: number
+        totalSpent:
+          type: number
+        avgOrderValue:
+          type: number

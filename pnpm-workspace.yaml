@@ -1,0 +1,5 @@
+packages:
+  - 'packages/*'
+  - 'src/workflow-ui'
+  - 'src/vscode-extension/client'
+  - 'src/vscode-extension/server'

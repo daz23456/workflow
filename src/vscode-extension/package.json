@@ -1,0 +1,58 @@
+{
+  "name": "workflow-yaml-extension",
+  "displayName": "Workflow YAML Support",
+  "description": "Language support for Workflow YAML files with validation and auto-completion",
+  "version": "0.1.0",
+  "publisher": "workflow",
+  "engines": {
+    "vscode": "^1.95.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Linters"
+  ],
+  "activationEvents": [
+    "onLanguage:yaml",
+    "onCommand:workflow.showGraph"
+  ],
+  "main": "./client/dist/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "workflow-yaml",
+        "aliases": ["Workflow YAML", "workflow"],
+        "extensions": [".workflow.yaml", ".workflow.yml", ".task.yaml", ".task.yml"],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "workflow-yaml",
+        "scopeName": "source.yaml",
+        "path": "./syntaxes/yaml.tmLanguage.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "workflow.showGraph",
+        "title": "Show Workflow Graph",
+        "category": "Workflow"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "pnpm run compile",
+    "compile": "pnpm run compile:client && pnpm run compile:server",
+    "compile:client": "cd client && pnpm run build",
+    "compile:server": "cd server && pnpm run build",
+    "watch": "pnpm run watch:client & pnpm run watch:server",
+    "watch:client": "cd client && pnpm run watch",
+    "watch:server": "cd server && pnpm run watch",
+    "clean": "rm -rf client/dist server/dist"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.25",
+    "@types/vscode": "^1.95.0",
+    "typescript": "^5.9.3"
+  }
+}

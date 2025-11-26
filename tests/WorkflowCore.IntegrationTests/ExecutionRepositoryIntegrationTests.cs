@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
 using WorkflowCore.Data.Repositories;
 using WorkflowCore.Models;
 
@@ -160,6 +161,7 @@ public class ExecutionRepositoryIntegrationTests : IClassFixture<PostgresFixture
     public async Task ListExecutionsAsync_ShouldFilterByStatus()
     {
         // Arrange
+        await _fixture.CleanTablesAsync();  // Ensure test isolation
         await using var context = await _fixture.CreateDbContextAsync();
         var repository = new ExecutionRepository(context);
 
@@ -193,6 +195,7 @@ public class ExecutionRepositoryIntegrationTests : IClassFixture<PostgresFixture
     public async Task ListExecutionsAsync_ShouldOrderByStartedAtDescending()
     {
         // Arrange
+        await _fixture.CleanTablesAsync();  // Ensure test isolation
         await using var context = await _fixture.CreateDbContextAsync();
         var repository = new ExecutionRepository(context);
 
@@ -258,5 +261,70 @@ public class ExecutionRepositoryIntegrationTests : IClassFixture<PostgresFixture
         // Verify no overlap
         var allIds = page1.Concat(page2).Concat(page3).Select(e => e.Id).ToList();
         allIds.Should().OnlyHaveUniqueItems();
+    }
+
+    [Fact]
+    public async Task SaveExecutionAsync_ShouldAddTaskExecutionRecordsOnUpdate()
+    {
+        // Arrange
+        await using var context = await _fixture.CreateDbContextAsync();
+        var repository = new ExecutionRepository(context);
+
+        var record = new ExecutionRecord
+        {
+            WorkflowName = "task-update-test",
+            Status = ExecutionStatus.Running,
+            StartedAt = DateTime.UtcNow
+        };
+
+        // Act - First save without tasks (workflow starting)
+        var saved = await repository.SaveExecutionAsync(record);
+        saved.Should().NotBeNull();
+        saved.Id.Should().NotBe(Guid.Empty);
+
+        // Act - Second save with tasks added (workflow completed)
+        saved.Status = ExecutionStatus.Succeeded;
+        saved.CompletedAt = DateTime.UtcNow;
+        saved.Duration = TimeSpan.FromSeconds(5);
+        saved.TaskExecutionRecords = new List<TaskExecutionRecord>
+        {
+            new TaskExecutionRecord
+            {
+                ExecutionId = saved.Id,
+                TaskId = "task-1",
+                TaskRef = "fetch-data",
+                Status = "Succeeded",
+                Duration = TimeSpan.FromSeconds(2)
+            },
+            new TaskExecutionRecord
+            {
+                ExecutionId = saved.Id,
+                TaskId = "task-2",
+                TaskRef = "process-data",
+                Status = "Succeeded",
+                Duration = TimeSpan.FromSeconds(3)
+            }
+        };
+
+        var updated = await repository.SaveExecutionAsync(saved);
+
+        // Assert
+        updated.Should().NotBeNull();
+        updated.Status.Should().Be(ExecutionStatus.Succeeded);
+        updated.TaskExecutionRecords.Should().HaveCount(2);
+        updated.TaskExecutionRecords.Should().Contain(t => t.TaskId == "task-1");
+        updated.TaskExecutionRecords.Should().Contain(t => t.TaskId == "task-2");
+
+        // Verify with fresh context
+        await using var verifyContext = await _fixture.CreateDbContextAsync();
+        var retrieved = await verifyContext.ExecutionRecords
+            .Include(e => e.TaskExecutionRecords)
+            .FirstOrDefaultAsync(e => e.Id == saved.Id);
+
+        retrieved.Should().NotBeNull();
+        retrieved!.Status.Should().Be(ExecutionStatus.Succeeded);
+        retrieved.TaskExecutionRecords.Should().HaveCount(2);
+        retrieved.TaskExecutionRecords.Should().Contain(t => t.TaskRef == "fetch-data");
+        retrieved.TaskExecutionRecords.Should().Contain(t => t.TaskRef == "process-data");
     }
 }

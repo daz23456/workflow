@@ -1,0 +1,47 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: fetch-user
+  namespace: default
+spec:
+  type: http
+  description: Fetches user details from the user service API
+  request:
+    url: "https://jsonplaceholder.typicode.com/users/{{input.userId}}"
+    method: GET
+    headers:
+      Accept: "application/json"
+  inputSchema:
+    type: object
+    properties:
+      userId:
+        type: string
+        description: The user ID to fetch
+    required:
+      - userId
+  outputSchema:
+    type: object
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+      email:
+        type: string
+      phone:
+        type: string
+      website:
+        type: string
+      address:
+        type: object
+        properties:
+          street:
+            type: string
+          city:
+            type: string
+          zipcode:
+            type: string
+    required:
+      - id
+      - name
+      - email

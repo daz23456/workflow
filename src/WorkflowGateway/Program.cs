@@ -1,3 +1,4 @@
+using k8s;
 using Microsoft.EntityFrameworkCore;
 using WorkflowCore.Data;
 using WorkflowCore.Data.Repositories;
@@ -12,7 +13,28 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
 // Configure Swagger/OpenAPI
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new Microsoft.OpenApi.OpenApiInfo
+    {
+        Title = "Workflow Gateway API",
+        Version = "v1",
+        Description = "Kubernetes-native workflow orchestration engine with dynamic workflow discovery"
+    });
+    options.DocumentFilter<WorkflowGateway.Swagger.DynamicWorkflowDocumentFilter>();
+});
+
+// Configure CORS to allow frontend access
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.WithOrigins("http://localhost:3000", "http://localhost:3001")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
 
 // Get configuration
 var workflowConfig = builder.Configuration.GetSection("Workflow");
@@ -29,6 +51,10 @@ if (!string.IsNullOrEmpty(connectionString))
     builder.Services.AddScoped<IExecutionRepository, ExecutionRepository>();
     builder.Services.AddScoped<ITaskExecutionRepository, TaskExecutionRepository>();
     builder.Services.AddScoped<IWorkflowVersionRepository, WorkflowVersionRepository>();
+
+    // Services that depend on database
+    builder.Services.AddScoped<IWorkflowVersioningService, WorkflowVersioningService>();
+    builder.Services.AddScoped<IExecutionTraceService, ExecutionTraceService>();
 
     // Add health checks
     builder.Services.AddHealthChecks()
@@ -65,24 +91,24 @@ builder.Services.AddScoped<HttpClient>(sp =>
     sp.GetRequiredService<IHttpClientFactory>().CreateClient());
 builder.Services.AddScoped<IHttpClientWrapper, HttpClientWrapper>();
 builder.Services.AddScoped<IHttpTaskExecutor, HttpTaskExecutor>();
+builder.Services.AddScoped<IDataTransformer, JsonPathTransformer>();
+builder.Services.AddScoped<ITransformTaskExecutor, TransformTaskExecutor>();
 builder.Services.AddScoped<IWorkflowOrchestrator, WorkflowOrchestrator>();
 builder.Services.AddScoped<ITemplatePreviewService, TemplatePreviewService>();
-builder.Services.AddScoped<IWorkflowVersioningService, WorkflowVersioningService>();
-builder.Services.AddScoped<IExecutionTraceService, ExecutionTraceService>();
 
-// Register WorkflowGateway services
-builder.Services.AddSingleton<IKubernetesWorkflowClient>(sp =>
+// Register Kubernetes client and workflow discovery services
+builder.Services.AddSingleton<IKubernetes>(sp =>
 {
-    // For now, return a stub - in production this would use real IKubernetes
-    // This allows health checks to work even without Kubernetes configured
-    return new KubernetesWorkflowClient(null!); // TODO: Configure properly for production
+    var config = KubernetesClientConfiguration.BuildDefaultConfig();
+    return new Kubernetes(config);
 });
+builder.Services.AddSingleton<IKubernetesWorkflowClient, KubernetesWorkflowClient>();
 builder.Services.AddSingleton<IWorkflowDiscoveryService, WorkflowDiscoveryService>();
 builder.Services.AddSingleton<IDynamicEndpointService, DynamicEndpointService>();
 builder.Services.AddScoped<IInputValidationService, InputValidationService>();
 
 // Note: IWorkflowVersionRepository is already registered in database services section above (line 31)
-builder.Services.AddScoped(sp => new WorkflowExecutionService(
+builder.Services.AddScoped<IWorkflowExecutionService>(sp => new WorkflowExecutionService(
     sp.GetRequiredService<IWorkflowOrchestrator>(),
     sp.GetRequiredService<IWorkflowDiscoveryService>(),
     sp.GetService<IExecutionRepository>(),  // Nullable - OK if DB not configured
@@ -135,6 +161,9 @@ if (app.Environment.IsDevelopment())
         options.RoutePrefix = string.Empty; // Serve Swagger UI at root
     });
 }
+
+// Enable CORS
+app.UseCors();
 
 app.UseHttpsRedirection();
 app.UseAuthorization();

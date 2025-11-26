@@ -1,0 +1,159 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://workflow.example.com/schemas/workflow.schema.json",
+  "title": "Workflow",
+  "description": "Kubernetes Custom Resource for Workflow",
+  "type": "object",
+  "properties": {
+    "apiVersion": {
+      "type": "string",
+      "description": "API version",
+      "const": "workflow.example.com/v1"
+    },
+    "kind": {
+      "type": "string",
+      "description": "Resource kind",
+      "const": "Workflow"
+    },
+    "metadata": {
+      "$ref": "common-definitions.schema.json#/definitions/ResourceMetadata"
+    },
+    "spec": {
+      "$ref": "#/definitions/WorkflowSpec"
+    },
+    "status": {
+      "$ref": "#/definitions/WorkflowStatus"
+    }
+  },
+  "required": ["apiVersion", "kind", "metadata", "spec"],
+  "additionalProperties": false,
+  "definitions": {
+    "WorkflowSpec": {
+      "type": "object",
+      "description": "Workflow specification",
+      "properties": {
+        "input": {
+          "type": "object",
+          "description": "Input parameters for the workflow",
+          "additionalProperties": {
+            "$ref": "#/definitions/WorkflowInputParameter"
+          }
+        },
+        "tasks": {
+          "type": "array",
+          "description": "Tasks to execute in the workflow",
+          "items": {
+            "$ref": "#/definitions/WorkflowTaskStep"
+          },
+          "minItems": 1
+        },
+        "output": {
+          "type": "object",
+          "description": "Output mappings from task results",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "required": ["input", "tasks"],
+      "additionalProperties": false
+    },
+    "WorkflowInputParameter": {
+      "type": "object",
+      "description": "Input parameter definition for workflow",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Parameter type",
+          "enum": ["string", "number", "integer", "boolean", "object", "array"]
+        },
+        "required": {
+          "type": "boolean",
+          "description": "Whether the parameter is required",
+          "default": false
+        },
+        "description": {
+          "type": "string",
+          "description": "Parameter description"
+        },
+        "default": {
+          "description": "Default value for the parameter"
+        }
+      },
+      "required": ["type", "required"],
+      "additionalProperties": false
+    },
+    "WorkflowTaskStep": {
+      "type": "object",
+      "description": "Task step within workflow (references a WorkflowTask)",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique task step identifier",
+          "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$"
+        },
+        "taskRef": {
+          "type": "string",
+          "description": "Reference to WorkflowTask name",
+          "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$"
+        },
+        "input": {
+          "type": "object",
+          "description": "Input mappings (supports template expressions)",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "dependsOn": {
+          "type": "array",
+          "description": "Task IDs this task depends on",
+          "items": {
+            "type": "string"
+          }
+        },
+        "condition": {
+          "type": "string",
+          "description": "Conditional execution expression"
+        },
+        "timeout": {
+          "type": "string",
+          "description": "Task timeout (e.g., 30s, 5m, 2h)",
+          "pattern": "^[0-9]+(ms|s|m|h)$"
+        }
+      },
+      "required": ["id", "taskRef", "input"],
+      "additionalProperties": false
+    },
+    "WorkflowStatus": {
+      "type": "object",
+      "description": "Workflow status",
+      "properties": {
+        "phase": {
+          "type": "string",
+          "description": "Workflow phase",
+          "enum": ["Pending", "Running", "Succeeded", "Failed"],
+          "default": "Pending"
+        },
+        "executionCount": {
+          "type": "integer",
+          "description": "Number of executions",
+          "minimum": 0,
+          "default": 0
+        },
+        "lastExecuted": {
+          "type": "string",
+          "description": "Last execution timestamp",
+          "format": "date-time"
+        },
+        "validationErrors": {
+          "type": "array",
+          "description": "Validation error messages",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

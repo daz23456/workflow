@@ -1,0 +1,35 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: transform-aggregate-by-customer
+  namespace: default
+spec:
+  type: transform
+  transform:
+    input: $.orders
+    jsonPath: $[*].{customerId: customerId, orderCount: length(@), totalSpent: sum(@[*].total), avgOrderValue: avg(@[*].total)}
+  inputSchema:
+    type: object
+    properties:
+      orders:
+        type: array
+        items:
+          type: object
+          properties:
+            customerId:
+              type: string
+            total:
+              type: number
+  outputSchema:
+    type: array
+    items:
+      type: object
+      properties:
+        customerId:
+          type: string
+        orderCount:
+          type: number
+        totalSpent:
+          type: number
+        avgOrderValue:
+          type: number

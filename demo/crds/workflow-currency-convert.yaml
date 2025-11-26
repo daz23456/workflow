@@ -1,0 +1,30 @@
+apiVersion: workflow.example.com/v1
+kind: Workflow
+metadata:
+  name: currency-convert
+  namespace: default
+spec:
+  description: Convert currency amounts between different currencies
+  input:
+    amount:
+      type: number
+      required: true
+      description: The amount to convert
+    fromCurrency:
+      type: string
+      required: true
+      description: Source currency code (e.g., USD, EUR, GBP)
+    toCurrency:
+      type: string
+      required: true
+      description: Target currency code (e.g., USD, EUR, GBP)
+  tasks:
+    - id: get-exchange-rate
+      taskRef: fetch-user
+      input:
+        userId: "1"
+  output:
+    originalAmount: "{{input.amount}}"
+    fromCurrency: "{{input.fromCurrency}}"
+    toCurrency: "{{input.toCurrency}}"
+    exchangeRate: "{{tasks.get-exchange-rate.output}}"

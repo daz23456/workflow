@@ -1,0 +1,21 @@
+apiVersion: workflow.example.com/v1
+kind: Workflow
+metadata:
+  name: simple-fetch
+  namespace: default
+spec:
+  description: Simple single-task workflow to fetch user data (perfect for testing)
+  input:
+    userId:
+      type: string
+      required: true
+      description: The user ID to fetch
+  tasks:
+    - id: get-user
+      taskRef: fetch-user
+      input:
+        userId: "{{input.userId}}"
+  output:
+    name: "{{tasks.get-user.output.name}}"
+    email: "{{tasks.get-user.output.email}}"
+    city: "{{tasks.get-user.output.address.city}}"

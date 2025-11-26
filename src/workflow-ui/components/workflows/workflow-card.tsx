@@ -10,10 +10,17 @@ interface WorkflowCardProps {
 
 export function WorkflowCard({ workflow, onClick }: WorkflowCardProps) {
   const { name, namespace, description, taskCount, stats } = workflow;
-  const { totalExecutions, successRate, successRateTrend, avgDurationMs, lastExecuted } = stats;
+
+  // Handle missing stats gracefully (backend may not provide them yet)
+  const hasStats = stats !== undefined;
+  const totalExecutions = stats?.totalExecutions ?? 0;
+  const successRate = stats?.successRate ?? 0;
+  const successRateTrend = stats?.successRateTrend;
+  const avgDurationMs = stats?.avgDurationMs ?? 0;
+  const lastExecuted = stats?.lastExecuted;
 
   const successVariant = getSuccessRateVariant(successRate);
-  const isNeverExecuted = totalExecutions === 0;
+  const isNeverExecuted = !hasStats || totalExecutions === 0;
   const hasTrend = !isNeverExecuted && successRateTrend !== undefined;
   const prefetchWorkflow = usePrefetchWorkflowDetail();
 

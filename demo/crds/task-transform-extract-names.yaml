@@ -1,0 +1,35 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: transform-extract-names
+  namespace: default
+spec:
+  type: transform
+  description: Extracts all user names from a users array using JSONPath
+  transform:
+    query: "$.users[*].name"
+  inputSchema:
+    type: object
+    properties:
+      users:
+        type: array
+        description: Array of user objects
+        items:
+          type: object
+          properties:
+            id:
+              type: integer
+            name:
+              type: string
+            email:
+              type: string
+    required:
+      - users
+  outputSchema:
+    type: object
+    properties:
+      result:
+        type: array
+        description: Array of user names
+        items:
+          type: string

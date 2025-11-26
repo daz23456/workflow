@@ -18,8 +18,8 @@ public class ExecutionRepository : IExecutionRepository
     /// <inheritdoc />
     public async Task<ExecutionRecord> SaveExecutionAsync(ExecutionRecord record)
     {
+        // Don't Include TaskExecutionRecords - we'll handle them separately to avoid tracking conflicts
         var existing = await _context.ExecutionRecords
-            .AsNoTracking()
             .FirstOrDefaultAsync(e => e.Id == record.Id);
 
         if (existing == null)
@@ -28,11 +28,22 @@ public class ExecutionRepository : IExecutionRepository
         }
         else
         {
-            _context.ExecutionRecords.Update(record);
+            // Update the existing tracked entity with new values
+            _context.Entry(existing).CurrentValues.SetValues(record);
+
+            // Handle TaskExecutionRecords separately - add directly to context, not through navigation property
+            // This avoids Clear() generating DELETE statements for non-existent records
+            if (record.TaskExecutionRecords != null && record.TaskExecutionRecords.Any())
+            {
+                foreach (var taskRecord in record.TaskExecutionRecords)
+                {
+                    _context.TaskExecutionRecords.Add(taskRecord);
+                }
+            }
         }
 
         await _context.SaveChangesAsync();
-        return record;
+        return existing ?? record;
     }
 
     /// <inheritdoc />

@@ -20,6 +20,16 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     async function initMocks() {
+      // Check if MSW is enabled via environment variable
+      const enableMSW = process.env.NEXT_PUBLIC_ENABLE_MSW === 'true';
+
+      if (!enableMSW) {
+        // MSW disabled - skip initialization and proceed immediately
+        setMswReady(true);
+        return;
+      }
+
+      // MSW enabled - initialize the service worker
       if (typeof window !== 'undefined') {
         const { worker } = await import('@/lib/mocks/browser');
         await worker.start({

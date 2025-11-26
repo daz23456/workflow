@@ -1,0 +1,32 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: fetch-iss-location
+  namespace: default
+spec:
+  type: http
+  description: Fetch current location of the International Space Station
+  request:
+    url: "http://api.open-notify.org/iss-now.json"
+    method: GET
+    headers:
+      Accept: "application/json"
+  inputSchema:
+    type: object
+    properties: {}
+  outputSchema:
+    type: object
+    properties:
+      timestamp:
+        type: integer
+        description: Unix timestamp
+      iss_position:
+        type: object
+        description: Current ISS coordinates
+      message:
+        type: string
+        description: Success message
+  retry:
+    maxAttempts: 3
+    backoffMs: 1000
+  timeout: "10s"

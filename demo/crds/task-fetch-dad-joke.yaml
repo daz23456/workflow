@@ -1,0 +1,33 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: fetch-dad-joke
+  namespace: default
+spec:
+  type: http
+  description: Fetch a random dad joke
+  request:
+    url: "https://icanhazdadjoke.com/"
+    method: GET
+    headers:
+      Accept: "application/json"
+      User-Agent: "Workflow Gateway (https://github.com/darren/workflow)"
+  inputSchema:
+    type: object
+    properties: {}
+  outputSchema:
+    type: object
+    properties:
+      id:
+        type: string
+        description: Joke ID
+      joke:
+        type: string
+        description: The dad joke
+      status:
+        type: integer
+        description: HTTP status code
+  retry:
+    maxAttempts: 3
+    backoffMs: 1000
+  timeout: "10s"

@@ -5,7 +5,7 @@ export interface WorkflowListItem {
   taskCount: number;
   inputSchemaPreview: string;
   endpoint: string;
-  stats: {
+  stats?: {  // ← Made optional - backend may not provide stats yet
     totalExecutions: number;
     successRate: number;
     successRateTrend?: number; // Percentage change (e.g., 2.3 for +2.3%, -1.5 for -1.5%)
@@ -21,7 +21,7 @@ export interface WorkflowDetail {
   inputSchema: JSONSchema;
   outputSchema: Record<string, string>;
   tasks: TaskDetail[];
-  graph: {
+  graph?: {  // ← Made optional - backend may not provide graph yet
     nodes: GraphNode[];
     edges: GraphEdge[];
     parallelGroups: ParallelGroup[];
@@ -108,6 +108,12 @@ export interface GraphEdge {
 export interface ParallelGroup {
   level: number;
   taskIds: string[];
+}
+
+export interface WorkflowGraph {
+  nodes: GraphNode[];
+  edges: GraphEdge[];
+  parallelGroups: ParallelGroup[];
 }
 
 export interface ValidationIssue {

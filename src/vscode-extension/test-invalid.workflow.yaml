@@ -1,0 +1,17 @@
+apiVersion: workflow.example.com/v1
+kind: Workflow
+metadata:
+  # Missing name - should trigger error!
+  namespace: default
+spec:
+  input: {}
+  tasks:
+    - id: task1
+      # Missing taskRef - should trigger error!
+      input:
+        test: "value"
+    
+    - taskRef: task-without-id
+      # Missing id - should trigger error!
+      input:
+        foo: "bar"

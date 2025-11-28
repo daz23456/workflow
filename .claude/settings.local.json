@@ -63,7 +63,13 @@
       "Bash(kubectl apply:*)",
       "Bash(chmod:*)",
       "Bash(./build/generate-all.sh:*)",
-      "Bash(pnpm build:*)"
+      "Bash(pnpm build:*)",
+      "Bash(pnpm run compile:extension:*)",
+      "Bash(pnpm run build:*)",
+      "Bash(pnpm run compile:client:*)",
+      "Bash(npx @vscode/vsce package:*)",
+      "Bash(code --install-extension:*)",
+      "Bash(pnpm add:*)"
     ],
     "deny": [],
     "ask": []

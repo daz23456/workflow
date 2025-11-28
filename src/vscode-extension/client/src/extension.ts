@@ -11,25 +11,28 @@ import { WorkflowGraphPanel } from './graphPanel';
 let client: LanguageClient;
 
 export function activate(context: ExtensionContext) {
+  console.log('[Extension] Activating workflow extension');
+
   // Register command to show workflow graph
   const showGraphCommand = commands.registerCommand('workflow.showGraph', () => {
+    console.log('[Extension] workflow.showGraph command triggered');
     const editor = window.activeTextEditor;
     if (!editor) {
+      console.log('[Extension] No active editor');
       window.showErrorMessage('No active editor');
       return;
     }
 
     const document = editor.document;
-    if (!document.fileName.includes('workflow')) {
-      window.showWarningMessage('This is not a workflow file');
-      return;
-    }
+    console.log('[Extension] Active document:', document.fileName);
 
     const workflowYaml = document.getText();
+    console.log('[Extension] Creating graph panel with YAML length:', workflowYaml.length);
     WorkflowGraphPanel.createOrShow(context.extensionUri, workflowYaml);
   });
 
   context.subscriptions.push(showGraphCommand);
+  console.log('[Extension] Command workflow.showGraph registered');
 
   // The server is implemented in node
   const serverModule = context.asAbsolutePath(

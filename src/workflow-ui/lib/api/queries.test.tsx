@@ -12,6 +12,10 @@ import {
   useTasks,
   usePrefetchWorkflowDetail,
   useInvalidateWorkflows,
+  useTaskDetail,
+  useTaskUsage,
+  useTaskExecutions,
+  useExecuteTask,
 } from './queries';
 
 /**
@@ -506,6 +510,262 @@ describe('TanStack Query Hooks', () => {
 
       // Call it - it should not throw
       expect(() => invalidateResult.current()).not.toThrow();
+    });
+  });
+
+  // ============================================================================
+  // TASK QUERIES
+  // ============================================================================
+
+  describe('useTaskDetail', () => {
+    it('fetches task details successfully', async () => {
+      const { result } = renderHook(() => useTaskDetail('fetch-user'), {
+        wrapper: createWrapper(),
+      });
+
+      // Initially loading
+      expect(result.current.isLoading).toBe(true);
+
+      // Wait for data
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      expect(result.current.data).toBeDefined();
+      expect(result.current.data?.name).toBe('fetch-user');
+      expect(result.current.data?.namespace).toBeDefined();
+      expect(result.current.data?.stats).toBeDefined();
+    });
+
+    it('includes task schemas and HTTP config', async () => {
+      const { result } = renderHook(() => useTaskDetail('fetch-user'), {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      const task = result.current.data!;
+      expect(task).toHaveProperty('inputSchema');
+      expect(task).toHaveProperty('outputSchema');
+      expect(task).toHaveProperty('httpRequest');
+      expect(task.httpRequest?.method).toBeDefined();
+      expect(task.httpRequest?.url).toBeDefined();
+    });
+
+    it('handles 404 errors', async () => {
+      const { result } = renderHook(() => useTaskDetail('non-existent'), {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(result.current.isError).toBe(true);
+      });
+
+      expect(result.current.error).toBeDefined();
+    });
+
+    it('can be disabled with enabled option', () => {
+      const { result } = renderHook(
+        () => useTaskDetail('fetch-user', { enabled: false }),
+        {
+          wrapper: createWrapper(),
+        }
+      );
+
+      expect(result.current.isPending).toBe(true);
+      expect(result.current.fetchStatus).toBe('idle');
+    });
+  });
+
+  describe('useTaskUsage', () => {
+    it('fetches workflows using a task', async () => {
+      const { result } = renderHook(() => useTaskUsage('fetch-user'), {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      expect(result.current.data).toBeDefined();
+      expect(result.current.data?.taskName).toBe('fetch-user');
+      expect(result.current.data?.workflows).toBeDefined();
+      expect(Array.isArray(result.current.data?.workflows)).toBe(true);
+      expect(result.current.data?.totalCount).toBeGreaterThanOrEqual(0);
+    });
+
+    it('supports pagination', async () => {
+      const { result } = renderHook(
+        () => useTaskUsage('fetch-user', { skip: 0, take: 5 }),
+        {
+          wrapper: createWrapper(),
+        }
+      );
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      expect(result.current.data?.skip).toBe(0);
+      expect(result.current.data?.take).toBe(5);
+    });
+
+    it('includes workflow metadata', async () => {
+      const { result } = renderHook(() => useTaskUsage('fetch-user'), {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      if (result.current.data!.workflows.length > 0) {
+        const workflow = result.current.data!.workflows[0];
+        expect(workflow).toHaveProperty('workflowName');
+        expect(workflow).toHaveProperty('workflowNamespace');
+        expect(workflow).toHaveProperty('taskCount');
+      }
+    });
+  });
+
+  describe('useTaskExecutions', () => {
+    it('fetches task execution history', async () => {
+      const { result } = renderHook(() => useTaskExecutions('fetch-user'), {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      expect(result.current.data).toBeDefined();
+      expect(result.current.data?.taskName).toBe('fetch-user');
+      expect(result.current.data?.executions).toBeDefined();
+      expect(Array.isArray(result.current.data?.executions)).toBe(true);
+      expect(result.current.data?.averageDurationMs).toBeGreaterThanOrEqual(0);
+    });
+
+    it('supports pagination', async () => {
+      const { result } = renderHook(
+        () => useTaskExecutions('fetch-user', { skip: 0, take: 10 }),
+        {
+          wrapper: createWrapper(),
+        }
+      );
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      expect(result.current.data?.skip).toBe(0);
+      expect(result.current.data?.take).toBe(10);
+    });
+
+    it('supports status filtering', async () => {
+      const { result } = renderHook(
+        () => useTaskExecutions('fetch-user', { status: 'succeeded' }),
+        {
+          wrapper: createWrapper(),
+        }
+      );
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      result.current.data?.executions.forEach((exec) => {
+        expect(exec.status).toBe('succeeded');
+      });
+    });
+
+    it('includes execution details', async () => {
+      const { result } = renderHook(() => useTaskExecutions('fetch-user'), {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      if (result.current.data!.executions.length > 0) {
+        const execution = result.current.data!.executions[0];
+        expect(execution).toHaveProperty('executionId');
+        expect(execution).toHaveProperty('workflowName');
+        expect(execution).toHaveProperty('status');
+        expect(execution).toHaveProperty('durationMs');
+        expect(execution).toHaveProperty('startedAt');
+      }
+    });
+  });
+
+  describe('useExecuteTask', () => {
+    it('executes task successfully', async () => {
+      const { result } = renderHook(() => useExecuteTask('fetch-user'), {
+        wrapper: createWrapper(),
+      });
+
+      // Execute mutation
+      result.current.mutate({ userId: '123' });
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      expect(result.current.data).toBeDefined();
+      expect(result.current.data?.executionId).toBeDefined();
+      expect(result.current.data?.status).toMatch(/success|succeeded/);
+      expect(result.current.data?.durationMs).toBeGreaterThanOrEqual(0);
+    });
+
+    it('handles execution errors', async () => {
+      const { result } = renderHook(() => useExecuteTask('fetch-user'), {
+        wrapper: createWrapper(),
+      });
+
+      // Trigger error
+      result.current.mutate({ simulateError: true });
+
+      await waitFor(() => {
+        expect(result.current.isError).toBe(true);
+      });
+
+      expect(result.current.error).toBeDefined();
+    });
+
+    it('includes output data on success', async () => {
+      const { result } = renderHook(() => useExecuteTask('fetch-user'), {
+        wrapper: createWrapper(),
+      });
+
+      result.current.mutate({ userId: '123' });
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      expect(result.current.data?.outputs).toBeDefined();
+    });
+
+    it('invalidates task execution history on success', async () => {
+      const wrapper = createWrapper();
+
+      const { result: executeResult } = renderHook(
+        () => useExecuteTask('fetch-user'),
+        { wrapper }
+      );
+
+      // Execute task
+      executeResult.current.mutate({ userId: '123' });
+
+      await waitFor(() => {
+        expect(executeResult.current.isSuccess).toBe(true);
+      });
+
+      // Verify cache invalidation would trigger refetch
+      // (This is hard to test directly, but we can verify the hook doesn't error)
+      expect(executeResult.current.data).toBeDefined();
     });
   });
 });

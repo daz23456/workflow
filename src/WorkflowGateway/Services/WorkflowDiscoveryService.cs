@@ -8,6 +8,7 @@ public interface IWorkflowDiscoveryService
     Task<List<WorkflowResource>> DiscoverWorkflowsAsync(string? @namespace = null);
     Task<WorkflowResource?> GetWorkflowByNameAsync(string name, string? @namespace = null);
     Task<List<WorkflowTaskResource>> DiscoverTasksAsync(string? @namespace = null);
+    Task<WorkflowTaskResource?> GetTaskByNameAsync(string name, string? @namespace = null);
     event EventHandler<WorkflowChangedEventArgs>? WorkflowsChanged;
 }
 
@@ -89,6 +90,12 @@ public class WorkflowDiscoveryService : IWorkflowDiscoveryService
         };
 
         return tasks;
+    }
+
+    public async Task<WorkflowTaskResource?> GetTaskByNameAsync(string name, string? @namespace = null)
+    {
+        var tasks = await DiscoverTasksAsync(@namespace);
+        return tasks.FirstOrDefault(t => t.Metadata?.Name == name);
     }
 
     private Task<List<WorkflowResource>> QueryWorkflowsFromKubernetesAsync(string @namespace)

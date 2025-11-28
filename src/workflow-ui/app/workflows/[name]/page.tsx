@@ -1,125 +1,54 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { use } from 'react';
+import Link from 'next/link';
+import {
+  useWorkflowDetail,
+  useWorkflowExecutions,
+  useExecuteWorkflow,
+  useDryRun,
+  useExecutionDetail
+} from '@/lib/api/queries';
 import { WorkflowDetailTabs } from '@/components/workflows/workflow-detail-tabs';
+import { WorkflowDurationTrendsSection } from '@/components/analytics/workflow-duration-trends-section';
 import { buildGraphFromTasks } from '@/lib/utils/build-graph-from-tasks';
-import type { WorkflowDetail } from '@/types/workflow';
-import type { ExecutionHistoryItem, WorkflowExecutionResponse } from '@/types/execution';
+import type { WorkflowExecutionResponse } from '@/types/execution';
 
-export default function WorkflowDetailPage() {
-  const params = useParams();
-  const workflowName = params.name as string;
+export default function WorkflowDetailPage({
+  params,
+}: {
+  params: Promise<{ name: string }>;
+}) {
+  const { name: workflowName } = use(params);
 
-  const [workflow, setWorkflow] = useState<WorkflowDetail | null>(null);
-  const [stats, setStats] = useState<any>(null);
-  const [executionHistory, setExecutionHistory] = useState<ExecutionHistoryItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // Fetch workflow data using TanStack Query
+  const { data: workflow, isLoading, error } = useWorkflowDetail(workflowName);
+  const { data: executionsData } = useWorkflowExecutions(workflowName, { limit: 10, offset: 0 });
 
-  // Fetch workflow details
-  useEffect(() => {
-    const fetchWorkflowDetails = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-
-        // Fetch workflow definition
-        const workflowRes = await fetch(`/api/workflows/${workflowName}`);
-        if (!workflowRes.ok) {
-          throw new Error(`Failed to fetch workflow: ${workflowRes.statusText}`);
-        }
-        const workflowData = await workflowRes.json();
-
-        // Build graph if backend doesn't provide it
-        if (!workflowData.graph && workflowData.tasks) {
-          workflowData.graph = buildGraphFromTasks(workflowData.tasks);
-        }
-
-        setWorkflow(workflowData);
-
-        // Fetch workflow stats (mock for now)
-        setStats({
-          totalExecutions: 0,
-          successRate: 0,
-          avgDurationMs: 0,
-        });
-
-        // Fetch execution history
-        try {
-          const historyRes = await fetch(`/api/workflows/${workflowName}/executions`);
-          if (historyRes.ok) {
-            const historyData = await historyRes.json();
-            setExecutionHistory(historyData);
-          }
-        } catch (err) {
-          console.warn('Failed to fetch execution history:', err);
-          setExecutionHistory([]);
-        }
-      } catch (err) {
-        console.error('Error fetching workflow details:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load workflow');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    if (workflowName) {
-      fetchWorkflowDetails();
-    }
-  }, [workflowName]);
+  // Mutations for execute and dry-run
+  const executeWorkflow = useExecuteWorkflow(workflowName);
+  const dryRunWorkflow = useDryRun(workflowName);
 
   // Handle workflow execution
   const handleExecute = async (input: Record<string, any>): Promise<WorkflowExecutionResponse> => {
-    const res = await fetch(`/api/workflows/${workflowName}/execute`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(input),
-    });
-
-    if (!res.ok) {
-      throw new Error(`Execution failed: ${res.statusText}`);
-    }
-
-    const result = await res.json();
-
-    // Refresh execution history after execution
-    try {
-      const historyRes = await fetch(`/api/workflows/${workflowName}/executions`);
-      if (historyRes.ok) {
-        const historyData = await historyRes.json();
-        setExecutionHistory(historyData);
-      }
-    } catch (err) {
-      console.warn('Failed to refresh execution history:', err);
-    }
-
+    const result = await executeWorkflow.mutateAsync(input);
     return result;
   };
 
   // Handle workflow test (dry-run)
   const handleTest = async (input: Record<string, any>) => {
-    const res = await fetch(`/api/workflows/${workflowName}/test`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(input),
-    });
-
-    if (!res.ok) {
-      throw new Error(`Test failed: ${res.statusText}`);
-    }
-
-    return res.json();
+    const result = await dryRunWorkflow.mutateAsync(input);
+    return result;
   };
 
   // Fetch execution details
   const handleFetchExecution = async (executionId: string): Promise<WorkflowExecutionResponse> => {
+    // Note: This could be wrapped in a query hook, but since it's called on-demand
+    // from the tabs component, we'll keep it as a manual fetch for now
     const res = await fetch(`/api/executions/${executionId}`);
-
     if (!res.ok) {
       throw new Error(`Failed to fetch execution: ${res.statusText}`);
     }
-
     return res.json();
   };
 
@@ -154,27 +83,50 @@ export default function WorkflowDetailPage() {
             />
           </svg>
           <h2 className="mt-4 text-xl font-semibold text-gray-900">Workflow Not Found</h2>
-          <p className="mt-2 text-gray-600">{error || `Workflow "${workflowName}" does not exist`}</p>
-          <a
+          <p className="mt-2 text-gray-600">
+            {error instanceof Error ? error.message : `Workflow "${workflowName}" does not exist`}
+          </p>
+          <Link
             href="/workflows"
             className="mt-4 inline-block rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
           >
             Back to Workflows
-          </a>
+          </Link>
         </div>
       </div>
     );
   }
 
+  // Build graph if backend doesn't provide it
+  const workflowWithGraph = {
+    ...workflow,
+    graph: workflow.graph || (workflow.tasks ? buildGraphFromTasks(workflow.tasks) : undefined),
+  };
+
+  // Mock stats for now (will be replaced with real stats from backend)
+  const stats = {
+    totalExecutions: executionsData?.total || 0,
+    successRate: 0, // TODO: Calculate from execution history
+    avgDurationMs: 0, // TODO: Calculate from execution history
+  };
+
   // Render workflow detail page
   return (
-    <WorkflowDetailTabs
-      workflow={workflow}
-      stats={stats}
-      executionHistory={executionHistory}
-      onExecute={handleExecute}
-      onTest={handleTest}
-      onFetchExecution={handleFetchExecution}
-    />
+    <div>
+      {/* Workflow Detail Tabs */}
+      <WorkflowDetailTabs
+        workflow={workflowWithGraph}
+        stats={stats}
+        executionHistory={executionsData?.executions || []}
+        onExecute={handleExecute}
+        onTest={handleTest}
+        onFetchExecution={handleFetchExecution}
+      />
+
+      {/* Duration Trends Section */}
+      <div className="container mx-auto px-6 pb-6">
+        <WorkflowDurationTrendsSection workflowName={workflowName} />
+      </div>
+    </div>
   );
 }

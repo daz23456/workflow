@@ -42,8 +42,20 @@ export class WorkflowGraphPanel {
     this._panel = panel;
     this._extensionUri = extensionUri;
 
-    // Set the webview's initial html content
-    this._update(workflowYaml);
+    // Set HTML first
+    this._panel.webview.html = this._getHtmlForWebview(this._panel.webview);
+
+    // Listen for messages from webview
+    this._panel.webview.onDidReceiveMessage(
+      (message) => {
+        if (message.type === 'webviewReady') {
+          console.log('[GraphPanel] WebView ready, sending workflow data');
+          this._update(workflowYaml);
+        }
+      },
+      null,
+      this._disposables
+    );
 
     // Listen for when the panel is disposed
     this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
@@ -68,8 +80,10 @@ export class WorkflowGraphPanel {
     try {
       // Parse YAML and build graph
       const workflow = YAML.parse(workflowYaml) as any;
+      console.log('[GraphPanel] Parsed workflow:', workflow);
 
       if (!workflow || workflow.kind !== 'Workflow') {
+        console.log('[GraphPanel] Invalid workflow kind:', workflow?.kind);
         webview.postMessage({
           type: 'error',
           message: 'Not a valid Workflow document'
@@ -80,6 +94,7 @@ export class WorkflowGraphPanel {
       // Build execution graph
       const graphBuilder = new ExecutionGraphBuilder();
       const executionGraph = graphBuilder.build(workflow.spec as WorkflowSpec);
+      console.log('[GraphPanel] Built execution graph:', executionGraph);
 
       // Convert to the format expected by the WebView
       const graph = {
@@ -95,6 +110,8 @@ export class WorkflowGraphPanel {
         parallelGroups: []
       };
 
+      console.log('[GraphPanel] Sending graph to webview with', graph.nodes.length, 'nodes and', graph.edges.length, 'edges');
+
       // Send graph to webview
       webview.postMessage({
         type: 'updateGraph',
@@ -102,13 +119,12 @@ export class WorkflowGraphPanel {
       });
 
     } catch (err: any) {
+      console.error('[GraphPanel] Error:', err);
       webview.postMessage({
         type: 'error',
         message: `Failed to parse workflow: ${err.message}`
       });
     }
-
-    this._panel.webview.html = this._getHtmlForWebview(webview);
   }
 
   private _getHtmlForWebview(webview: vscode.Webview) {
@@ -125,7 +141,7 @@ export class WorkflowGraphPanel {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data: ${webview.cspSource}; style-src ${webview.cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}';">
   <title>Workflow Graph</title>
   <style>
     body {

@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using WorkflowCore.Data.Repositories;
+using WorkflowCore.Models;
+using WorkflowCore.Services;
 using WorkflowGateway.Models;
 using WorkflowGateway.Services;
 
@@ -12,15 +14,21 @@ public class WorkflowManagementController : ControllerBase
     private readonly IWorkflowDiscoveryService _discoveryService;
     private readonly IDynamicEndpointService _endpointService;
     private readonly IWorkflowVersionRepository _versionRepository;
+    private readonly IExecutionRepository _executionRepository;
+    private readonly IHttpTaskExecutor _taskExecutor;
 
     public WorkflowManagementController(
         IWorkflowDiscoveryService discoveryService,
         IDynamicEndpointService endpointService,
-        IWorkflowVersionRepository versionRepository)
+        IWorkflowVersionRepository versionRepository,
+        IExecutionRepository executionRepository,
+        IHttpTaskExecutor taskExecutor)
     {
         _discoveryService = discoveryService ?? throw new ArgumentNullException(nameof(discoveryService));
         _endpointService = endpointService ?? throw new ArgumentNullException(nameof(endpointService));
         _versionRepository = versionRepository ?? throw new ArgumentNullException(nameof(versionRepository));
+        _executionRepository = executionRepository ?? throw new ArgumentNullException(nameof(executionRepository));
+        _taskExecutor = taskExecutor ?? throw new ArgumentNullException(nameof(taskExecutor));
     }
 
     /// <summary>
@@ -150,5 +158,343 @@ public class WorkflowManagementController : ControllerBase
             return StatusCode(StatusCodes.Status500InternalServerError,
                 new { message = $"Failed to delete workflow '{workflowName}': {ex.Message}" });
         }
+    }
+
+    /// <summary>
+    /// Get detailed information about a specific task
+    /// </summary>
+    /// <param name="taskName">Name of the task</param>
+    /// <param name="namespace">Optional namespace (defaults to 'default')</param>
+    /// <returns>Detailed task information including schemas, HTTP config, and statistics</returns>
+    [HttpGet("tasks/{taskName}")]
+    [ProducesResponseType(typeof(TaskDetailResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetTaskDetail(string taskName, [FromQuery] string? @namespace = null)
+    {
+        var ns = @namespace ?? "default";
+
+        // Get task from discovery service
+        var task = await _discoveryService.GetTaskByNameAsync(taskName, ns);
+        if (task == null)
+        {
+            return NotFound(new { message = $"Task '{taskName}' not found in namespace '{ns}'" });
+        }
+
+        // Build response with task details
+        var response = new TaskDetailResponse
+        {
+            Name = task.Metadata?.Name ?? taskName,
+            Namespace = task.Metadata?.Namespace ?? ns,
+            Description = null,  // Not available in WorkflowTaskSpec
+            InputSchema = task.Spec.InputSchema,
+            OutputSchema = task.Spec.OutputSchema
+        };
+
+        // Add HTTP configuration if available
+        if (task.Spec.Http != null)
+        {
+            response.HttpRequest = new HttpRequestConfig
+            {
+                Method = task.Spec.Http.Method,
+                Url = task.Spec.Http.Url,
+                Headers = task.Spec.Http.Headers ?? new Dictionary<string, string>(),
+                BodyTemplate = task.Spec.Http.Body
+            };
+        }
+
+        // Add retry policy if available (not currently in model, leaving as null)
+        response.RetryPolicy = null;
+
+        // Add timeout if available
+        response.Timeout = task.Spec.Timeout;
+
+        // Calculate statistics from execution history
+        // Get execution stats from database
+        var executionStats = await _executionRepository.GetTaskStatisticsAsync(taskName);
+
+        // Count workflows using this task
+        var allWorkflows = await _discoveryService.DiscoverWorkflowsAsync(ns);
+        var workflowsUsingTask = allWorkflows
+            .Count(w => w.Spec.Tasks?.Any(t => t.TaskRef == taskName) ?? false);
+
+        response.Stats = new TaskStats
+        {
+            UsedByWorkflows = workflowsUsingTask,
+            TotalExecutions = executionStats?.TotalExecutions ?? 0,
+            AvgDurationMs = executionStats?.AverageDurationMs ?? 0,
+            SuccessRate = executionStats?.SuccessRate ?? 0,
+            LastExecuted = executionStats?.LastExecuted
+        };
+
+        return Ok(response);
+    }
+
+    /// <summary>
+    /// Get workflows that use a specific task
+    /// </summary>
+    /// <param name="taskName">Name of the task</param>
+    /// <param name="namespace">Optional namespace (defaults to 'default')</param>
+    /// <param name="skip">Number of records to skip (for pagination)</param>
+    /// <param name="take">Number of records to take (for pagination, defaults to 20)</param>
+    /// <returns>List of workflows using this task</returns>
+    [HttpGet("tasks/{taskName}/usage")]
+    [ProducesResponseType(typeof(TaskUsageListResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetTaskUsage(
+        string taskName,
+        [FromQuery] string? @namespace = null,
+        [FromQuery] int skip = 0,
+        [FromQuery] int take = 20)
+    {
+        var ns = @namespace ?? "default";
+
+        // Check if task exists
+        var task = await _discoveryService.GetTaskByNameAsync(taskName, ns);
+        if (task == null)
+        {
+            return NotFound(new { message = $"Task '{taskName}' not found in namespace '{ns}'" });
+        }
+
+        // Get all workflows in namespace
+        var allWorkflows = await _discoveryService.DiscoverWorkflowsAsync(ns);
+
+        // Filter workflows that use this task and count usage
+        var workflowsUsingTask = allWorkflows
+            .Select(w => new
+            {
+                Workflow = w,
+                TaskCount = w.Spec.Tasks?.Count(t => t.TaskRef == taskName) ?? 0
+            })
+            .Where(x => x.TaskCount > 0)
+            .Select(x => new TaskUsageItem
+            {
+                WorkflowName = x.Workflow.Metadata?.Name ?? "",
+                WorkflowNamespace = x.Workflow.Metadata?.Namespace ?? ns,
+                TaskCount = x.TaskCount,
+                LastExecuted = null // TODO: Implement when execution history is available
+            })
+            .ToList();
+
+        // Apply pagination
+        var totalCount = workflowsUsingTask.Count;
+        var paginatedWorkflows = workflowsUsingTask
+            .Skip(skip)
+            .Take(take)
+            .ToList();
+
+        var response = new TaskUsageListResponse
+        {
+            TaskName = taskName,
+            Workflows = paginatedWorkflows,
+            TotalCount = totalCount,
+            Skip = skip,
+            Take = take
+        };
+
+        return Ok(response);
+    }
+
+    /// <summary>
+    /// Get execution history for a specific task across all workflows
+    /// </summary>
+    /// <param name="taskName">Name of the task</param>
+    /// <param name="namespace">Optional namespace (defaults to 'default')</param>
+    /// <param name="skip">Number of records to skip (for pagination)</param>
+    /// <param name="take">Number of records to take (for pagination, defaults to 20)</param>
+    /// <returns>List of task executions with average duration</returns>
+    [HttpGet("tasks/{taskName}/executions")]
+    [ProducesResponseType(typeof(TaskExecutionListResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetTaskExecutions(
+        string taskName,
+        [FromQuery] string? @namespace = null,
+        [FromQuery] int skip = 0,
+        [FromQuery] int take = 20)
+    {
+        var ns = @namespace ?? "default";
+
+        // Check if task exists
+        var task = await _discoveryService.GetTaskByNameAsync(taskName, ns);
+        if (task == null)
+        {
+            return NotFound(new { message = $"Task '{taskName}' not found in namespace '{ns}'" });
+        }
+
+        // Get task executions from repository
+        var executions = await _executionRepository.GetTaskExecutionsAsync(taskName, skip, take);
+
+        // Calculate average duration
+        var averageDurationMs = executions.Any()
+            ? (long)executions.Average(e => e.Task.Duration?.TotalMilliseconds ?? 0)
+            : 0;
+
+        // Map to response items
+        var executionItems = executions.Select(e =>
+        {
+            // Parse task status to ExecutionStatus enum
+            var status = ExecutionStatus.Running; // Default
+            if (!string.IsNullOrEmpty(e.Task.Status))
+            {
+                if (Enum.TryParse<ExecutionStatus>(e.Task.Status, ignoreCase: true, out var parsedStatus))
+                {
+                    status = parsedStatus;
+                }
+            }
+
+            return new TaskExecutionItem
+            {
+                ExecutionId = e.Execution.Id.ToString(),
+                WorkflowName = e.Execution.WorkflowName ?? "",
+                WorkflowNamespace = ns,
+                Status = status,
+                DurationMs = (long)(e.Task.Duration?.TotalMilliseconds ?? 0),
+                StartedAt = e.Task.StartedAt,
+                Error = string.IsNullOrEmpty(e.Task.Errors) ? null : e.Task.Errors
+            };
+        }).ToList();
+
+        var response = new TaskExecutionListResponse
+        {
+            TaskName = taskName,
+            Executions = executionItems,
+            AverageDurationMs = averageDurationMs,
+            TotalCount = executionItems.Count(),
+            Skip = skip,
+            Take = take
+        };
+
+        return Ok(response);
+    }
+
+    /// <summary>
+    /// Execute a task standalone (without a workflow)
+    /// </summary>
+    /// <param name="taskName">Name of the task to execute</param>
+    /// <param name="request">Task execution request with input data</param>
+    /// <param name="namespace">Optional namespace (defaults to 'default')</param>
+    /// <returns>Task execution result with output and status</returns>
+    [HttpPost("tasks/{taskName}/execute")]
+    [ProducesResponseType(typeof(TaskExecutionResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ExecuteTask(
+        string taskName,
+        [FromBody] TaskExecutionRequest request,
+        [FromQuery] string? @namespace = null)
+    {
+        var ns = @namespace ?? "default";
+
+        // Check if task exists
+        var task = await _discoveryService.GetTaskByNameAsync(taskName, ns);
+        if (task == null)
+        {
+            return NotFound(new { message = $"Task '{taskName}' not found in namespace '{ns}'" });
+        }
+
+        // Create template context with input data
+        var context = new TemplateContext
+        {
+            Input = request.Input ?? new Dictionary<string, object>()
+        };
+
+        // Execute the task
+        var startedAt = DateTime.UtcNow;
+        var result = await _taskExecutor.ExecuteAsync(task.Spec, context, HttpContext?.RequestAborted ?? default);
+
+        // Map to response
+        var response = new TaskExecutionResponse
+        {
+            ExecutionId = Guid.NewGuid().ToString(),
+            TaskName = taskName,
+            Status = result.Success ? ExecutionStatus.Succeeded : ExecutionStatus.Failed,
+            DurationMs = (long)result.Duration.TotalMilliseconds,
+            StartedAt = startedAt,
+            CompletedAt = startedAt.Add(result.Duration),
+            Output = result.Output,
+            Error = result.Errors.Any() ? string.Join("; ", result.Errors) : null
+        };
+
+        return Ok(response);
+    }
+
+    /// <summary>
+    /// Get duration trends for a workflow over the last N days
+    /// </summary>
+    /// <param name="workflowName">Name of the workflow</param>
+    /// <param name="daysBack">Number of days to look back (default: 30, max: 90)</param>
+    /// <returns>Time-series data points with duration statistics</returns>
+    [HttpGet("workflows/{workflowName}/duration-trends")]
+    [ProducesResponseType(typeof(DurationTrendsResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> GetWorkflowDurationTrends(
+        string workflowName,
+        [FromQuery] int daysBack = 30)
+    {
+        // Validate daysBack parameter
+        if (daysBack < 1 || daysBack > 90)
+        {
+            return BadRequest(new { error = "daysBack must be between 1 and 90" });
+        }
+
+        // Check if workflow exists
+        var workflow = await _discoveryService.GetWorkflowByNameAsync(workflowName, null);
+        if (workflow == null)
+        {
+            return NotFound(new { error = $"Workflow '{workflowName}' not found" });
+        }
+
+        // Get duration trends from repository
+        var dataPoints = await _executionRepository.GetWorkflowDurationTrendsAsync(workflowName, daysBack);
+
+        var response = new DurationTrendsResponse
+        {
+            EntityType = "Workflow",
+            EntityName = workflowName,
+            DaysBack = daysBack,
+            DataPoints = dataPoints
+        };
+
+        return Ok(response);
+    }
+
+    /// <summary>
+    /// Get duration trends for a task over the last N days (across all workflows)
+    /// </summary>
+    /// <param name="taskName">Name of the task</param>
+    /// <param name="daysBack">Number of days to look back (default: 30, max: 90)</param>
+    /// <returns>Time-series data points with duration statistics</returns>
+    [HttpGet("tasks/{taskName}/duration-trends")]
+    [ProducesResponseType(typeof(DurationTrendsResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> GetTaskDurationTrends(
+        string taskName,
+        [FromQuery] int daysBack = 30)
+    {
+        // Validate daysBack parameter
+        if (daysBack < 1 || daysBack > 90)
+        {
+            return BadRequest(new { error = "daysBack must be between 1 and 90" });
+        }
+
+        // Check if task exists
+        var task = await _discoveryService.GetTaskByNameAsync(taskName, null);
+        if (task == null)
+        {
+            return NotFound(new { error = $"Task '{taskName}' not found" });
+        }
+
+        // Get duration trends from repository
+        var dataPoints = await _executionRepository.GetTaskDurationTrendsAsync(taskName, daysBack);
+
+        var response = new DurationTrendsResponse
+        {
+            EntityType = "Task",
+            EntityName = taskName,
+            DaysBack = daysBack,
+            DataPoints = dataPoints
+        };
+
+        return Ok(response);
     }
 }

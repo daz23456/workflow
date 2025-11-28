@@ -2,16 +2,19 @@ namespace WorkflowGateway.Models;
 
 /// <summary>
 /// Represents a dependency edge in the workflow execution graph visualization.
+/// The edge represents data flow direction: Source (prerequisite) → Target (dependent).
 /// </summary>
 public class GraphEdge
 {
     /// <summary>
-    /// The task that depends on another task (the dependent).
+    /// The source task ID (prerequisite that must complete first).
+    /// The arrow starts here in the visual graph.
     /// </summary>
-    public string From { get; set; } = string.Empty;
+    public string Source { get; set; } = string.Empty;
 
     /// <summary>
-    /// The task being depended upon (the dependency).
+    /// The target task ID (dependent task that waits for the source).
+    /// The arrow points here in the visual graph.
     /// </summary>
-    public string To { get; set; } = string.Empty;
+    public string Target { get; set; } = string.Empty;
 }

@@ -1,6 +1,11 @@
 import type { JSONSchema } from './workflow';
 
 /**
+ * Task alias for use in components (same as TaskListItem)
+ */
+export type Task = TaskListItem;
+
+/**
  * Task item displayed in the tasks list page
  */
 export interface TaskListItem {

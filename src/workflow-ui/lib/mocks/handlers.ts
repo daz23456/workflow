@@ -6,6 +6,7 @@ import {
   mockDryRunResponses,
   mockExecutionHistory,
 } from './executions';
+import { mockTaskDetails, mockTaskUsage, mockTaskExecutions } from './tasks';
 
 /**
  * MSW request handlers for all API endpoints
@@ -369,6 +370,130 @@ export const handlers = [
           },
         },
       ],
+    });
+  }),
+
+  // GET /api/tasks/:name - Get task details
+  http.get('/api/tasks/:name', async ({ params }) => {
+    await delay(200);
+    const { name } = params;
+    const task = mockTaskDetails[name as string];
+
+    if (!task) {
+      return HttpResponse.json(
+        { error: `Task "${name}" not found` },
+        { status: 404 }
+      );
+    }
+
+    return HttpResponse.json(task);
+  }),
+
+  // GET /api/tasks/:name/usage - Get workflows using this task
+  http.get('/api/tasks/:name/usage', async ({ params, request }) => {
+    await delay(200);
+    const { name } = params;
+    const url = new URL(request.url);
+    const skip = parseInt(url.searchParams.get('skip') || '0');
+    const take = parseInt(url.searchParams.get('take') || '20');
+
+    if (!mockTaskDetails[name as string]) {
+      return HttpResponse.json(
+        { error: `Task "${name}" not found` },
+        { status: 404 }
+      );
+    }
+
+    const usage = mockTaskUsage[name as string] || [];
+    const total = usage.length;
+    const paginated = usage.slice(skip, skip + take);
+
+    return HttpResponse.json({
+      taskName: name,
+      workflows: paginated,
+      totalCount: total,
+      skip,
+      take,
+    });
+  }),
+
+  // GET /api/tasks/:name/executions - Get task execution history
+  http.get('/api/tasks/:name/executions', async ({ params, request }) => {
+    await delay(200);
+    const { name } = params;
+    const url = new URL(request.url);
+    const skip = parseInt(url.searchParams.get('skip') || '0');
+    const take = parseInt(url.searchParams.get('take') || '20');
+    const status = url.searchParams.get('status');
+
+    if (!mockTaskDetails[name as string]) {
+      return HttpResponse.json(
+        { error: `Task "${name}" not found` },
+        { status: 404 }
+      );
+    }
+
+    let executions = mockTaskExecutions[name as string] || [];
+
+    // Filter by status if provided
+    if (status) {
+      executions = executions.filter((e) => e.status === status);
+    }
+
+    const total = executions.length;
+    const paginated = executions.slice(skip, skip + take);
+
+    // Calculate average duration
+    const avgDuration = executions.length > 0
+      ? executions.reduce((sum, e) => sum + e.durationMs, 0) / executions.length
+      : 0;
+
+    return HttpResponse.json({
+      taskName: name,
+      executions: paginated,
+      averageDurationMs: Math.round(avgDuration),
+      totalCount: total,
+      skip,
+      take,
+    });
+  }),
+
+  // POST /api/tasks/:name/execute - Execute task standalone
+  http.post('/api/tasks/:name/execute', async ({ params, request }) => {
+    await delay(300);
+    const { name } = params;
+    const body = await request.json();
+
+    if (!mockTaskDetails[name as string]) {
+      return HttpResponse.json(
+        { error: `Task "${name}" not found` },
+        { status: 404 }
+      );
+    }
+
+    // Simulate error if requested (input is wrapped in { input: ... })
+    if (body && typeof body === 'object' && body.input && 'simulateError' in body.input) {
+      return HttpResponse.json(
+        {
+          error: 'Task execution failed',
+          details: 'Simulated error',
+        },
+        { status: 400 }
+      );
+    }
+
+    // Return successful execution response
+    return HttpResponse.json({
+      executionId: `exec-${name}-${Date.now()}`,
+      status: 'succeeded',
+      durationMs: 245,
+      startedAt: new Date().toISOString(),
+      completedAt: new Date(Date.now() + 245).toISOString(),
+      outputs: {
+        id: '123',
+        name: 'John Doe',
+        email: 'john@example.com',
+      },
     });
   }),
 

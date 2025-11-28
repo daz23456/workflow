@@ -165,8 +165,8 @@ public class DynamicWorkflowController : ControllerBase
                         {
                             edges.Add(new GraphEdge
                             {
-                                From = taskId,
-                                To = dependency
+                                Source = dependency,  // Arrow starts at prerequisite
+                                Target = taskId       // Arrow points to dependent
                             });
                         }
                     }

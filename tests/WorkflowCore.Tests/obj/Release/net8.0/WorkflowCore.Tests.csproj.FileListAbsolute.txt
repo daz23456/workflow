@@ -9,7 +9,6 @@
 /Users/darren/dev/workflow/tests/WorkflowCore.Tests/bin/Release/net8.0/Castle.Core.dll
 /Users/darren/dev/workflow/tests/WorkflowCore.Tests/bin/Release/net8.0/FluentAssertions.dll
 /Users/darren/dev/workflow/tests/WorkflowCore.Tests/bin/Release/net8.0/Fractions.dll
-/Users/darren/dev/workflow/tests/WorkflowCore.Tests/bin/Release/net8.0/JetBrains.Annotations.dll
 /Users/darren/dev/workflow/tests/WorkflowCore.Tests/bin/Release/net8.0/Json.More.dll
 /Users/darren/dev/workflow/tests/WorkflowCore.Tests/bin/Release/net8.0/JsonPointer.Net.dll
 /Users/darren/dev/workflow/tests/WorkflowCore.Tests/bin/Release/net8.0/JsonSchema.Net.dll
@@ -135,3 +134,5 @@
 /Users/darren/dev/workflow/tests/WorkflowCore.Tests/bin/Release/net8.0/Microsoft.Extensions.Primitives.dll
 /Users/darren/dev/workflow/tests/WorkflowCore.Tests/bin/Release/net8.0/Npgsql.dll
 /Users/darren/dev/workflow/tests/WorkflowCore.Tests/bin/Release/net8.0/Npgsql.EntityFrameworkCore.PostgreSQL.dll
+/Users/darren/dev/workflow/tests/WorkflowCore.Tests/bin/Release/net8.0/Humanizer.dll
+/Users/darren/dev/workflow/tests/WorkflowCore.Tests/bin/Release/net8.0/JsonPath.Net.dll

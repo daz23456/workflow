@@ -48,14 +48,11 @@ namespace WorkflowCore.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("StartedAt")
-                        .HasDatabaseName("IX_ExecutionRecords_StartedAt");
-
                     b.HasIndex("Status")
                         .HasDatabaseName("IX_ExecutionRecords_Status");
 
-                    b.HasIndex("WorkflowName")
-                        .HasDatabaseName("IX_ExecutionRecords_WorkflowName");
+                    b.HasIndex("WorkflowName", "StartedAt", "Status")
+                        .HasDatabaseName("IX_ExecutionRecords_WorkflowName_StartedAt_Status");
 
                     b.ToTable("ExecutionRecords");
                 });
@@ -99,6 +96,9 @@ namespace WorkflowCore.Data.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ExecutionId");
+
+                    b.HasIndex("TaskRef", "StartedAt", "Status")
+                        .HasDatabaseName("IX_TaskExecutionRecords_TaskRef_StartedAt_Status");
 
                     b.ToTable("TaskExecutionRecords");
                 });

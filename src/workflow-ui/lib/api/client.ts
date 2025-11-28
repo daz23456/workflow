@@ -6,6 +6,10 @@
 import type {
   WorkflowListResponse,
   TaskListResponse,
+  TaskDetailResponse,
+  TaskUsageListResponse,
+  TaskExecutionListResponse,
+  TaskExecutionResponse,
   WorkflowDetailResponse,
   WorkflowExecutionRequest,
   WorkflowExecutionResponse,
@@ -15,6 +19,7 @@ import type {
   DetailedWorkflowExecutionResponse,
   ExecutionTraceResponse,
   WorkflowVersionListResponse,
+  DurationTrendsResponse,
   ApiError,
   ExecutionStatus,
 } from './types';
@@ -154,6 +159,19 @@ export async function listWorkflowExecutions(
   return apiFetch<ExecutionListResponse>(`/workflows/${encodeURIComponent(name)}/executions${query}`);
 }
 
+/**
+ * Get workflow duration trends over time
+ * GET /api/v1/workflows/{name}/duration-trends
+ */
+export async function getWorkflowDurationTrends(
+  name: string,
+  daysBack: number = 30
+): Promise<DurationTrendsResponse> {
+  return apiFetch<DurationTrendsResponse>(
+    `/workflows/${encodeURIComponent(name)}/duration-trends?daysBack=${daysBack}`
+  );
+}
+
 // ============================================================================
 // Execution History API
 // ============================================================================
@@ -193,6 +211,87 @@ export async function getExecutionDetail(id: string): Promise<DetailedWorkflowEx
  */
 export async function getExecutionTrace(id: string): Promise<ExecutionTraceResponse> {
   return apiFetch<ExecutionTraceResponse>(`/executions/${encodeURIComponent(id)}/trace`);
+}
+
+// ============================================================================
+// Task Management API
+// ============================================================================
+
+/**
+ * Get detailed task information
+ * GET /api/v1/tasks/{name}
+ */
+export async function getTaskDetail(name: string): Promise<TaskDetailResponse> {
+  return apiFetch<TaskDetailResponse>(`/tasks/${encodeURIComponent(name)}`);
+}
+
+/**
+ * List workflows using a specific task
+ * GET /api/v1/tasks/{name}/usage
+ */
+export async function getTaskUsage(
+  name: string,
+  options?: {
+    skip?: number;
+    take?: number;
+  }
+): Promise<TaskUsageListResponse> {
+  const params = new URLSearchParams();
+  if (options?.skip !== undefined) params.append('skip', options.skip.toString());
+  if (options?.take !== undefined) params.append('take', options.take.toString());
+
+  const query = params.toString() ? `?${params.toString()}` : '';
+  return apiFetch<TaskUsageListResponse>(`/tasks/${encodeURIComponent(name)}/usage${query}`);
+}
+
+/**
+ * List executions for a specific task across all workflows
+ * GET /api/v1/tasks/{name}/executions
+ */
+export async function getTaskExecutions(
+  name: string,
+  options?: {
+    workflow?: string;
+    status?: ExecutionStatus;
+    skip?: number;
+    take?: number;
+  }
+): Promise<TaskExecutionListResponse> {
+  const params = new URLSearchParams();
+  if (options?.workflow) params.append('workflow', options.workflow);
+  if (options?.status) params.append('status', options.status);
+  if (options?.skip !== undefined) params.append('skip', options.skip.toString());
+  if (options?.take !== undefined) params.append('take', options.take.toString());
+
+  const query = params.toString() ? `?${params.toString()}` : '';
+  return apiFetch<TaskExecutionListResponse>(`/tasks/${encodeURIComponent(name)}/executions${query}`);
+}
+
+/**
+ * Execute a task standalone (without workflow)
+ * POST /api/v1/tasks/{name}/execute
+ */
+export async function executeTask(
+  name: string,
+  input: Record<string, any>
+): Promise<TaskExecutionResponse> {
+  return apiFetch<TaskExecutionResponse>(`/tasks/${encodeURIComponent(name)}/execute`, {
+    method: 'POST',
+    body: JSON.stringify({ input }),
+  });
+}
+
+/**
+ * Get task duration trends over time (across all workflows)
+ * GET /api/v1/tasks/{name}/duration-trends
+ */
+export async function getTaskDurationTrends(
+  name: string,
+  daysBack: number = 30
+): Promise<DurationTrendsResponse> {
+  return apiFetch<DurationTrendsResponse>(
+    `/tasks/${encodeURIComponent(name)}/duration-trends?daysBack=${daysBack}`
+  );
 }
 
 // ============================================================================

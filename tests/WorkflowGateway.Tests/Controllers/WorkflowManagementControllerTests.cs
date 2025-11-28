@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Moq;
 using WorkflowCore.Data.Repositories;
 using WorkflowCore.Models;
+using WorkflowCore.Services;
 using WorkflowGateway.Controllers;
 using WorkflowGateway.Models;
 using WorkflowGateway.Services;
@@ -15,6 +16,8 @@ public class WorkflowManagementControllerTests
     private readonly Mock<IWorkflowDiscoveryService> _discoveryServiceMock;
     private readonly Mock<IDynamicEndpointService> _endpointServiceMock;
     private readonly Mock<IWorkflowVersionRepository> _versionRepositoryMock;
+    private readonly Mock<IExecutionRepository> _executionRepositoryMock;
+    private readonly Mock<IHttpTaskExecutor> _taskExecutorMock;
     private readonly WorkflowManagementController _controller;
 
     public WorkflowManagementControllerTests()
@@ -22,10 +25,14 @@ public class WorkflowManagementControllerTests
         _discoveryServiceMock = new Mock<IWorkflowDiscoveryService>();
         _endpointServiceMock = new Mock<IDynamicEndpointService>();
         _versionRepositoryMock = new Mock<IWorkflowVersionRepository>();
+        _executionRepositoryMock = new Mock<IExecutionRepository>();
+        _taskExecutorMock = new Mock<IHttpTaskExecutor>();
         _controller = new WorkflowManagementController(
             _discoveryServiceMock.Object,
             _endpointServiceMock.Object,
-            _versionRepositoryMock.Object);
+            _versionRepositoryMock.Object,
+            _executionRepositoryMock.Object,
+            _taskExecutorMock.Object);
     }
 
     [Fact]
@@ -35,7 +42,9 @@ public class WorkflowManagementControllerTests
         Assert.Throws<ArgumentNullException>(() => new WorkflowManagementController(
             null!,
             _endpointServiceMock.Object,
-            _versionRepositoryMock.Object));
+            _versionRepositoryMock.Object,
+            _executionRepositoryMock.Object,
+            _taskExecutorMock.Object));
     }
 
     [Fact]
@@ -45,7 +54,9 @@ public class WorkflowManagementControllerTests
         Assert.Throws<ArgumentNullException>(() => new WorkflowManagementController(
             _discoveryServiceMock.Object,
             null!,
-            _versionRepositoryMock.Object));
+            _versionRepositoryMock.Object,
+            _executionRepositoryMock.Object,
+            _taskExecutorMock.Object));
     }
 
     [Fact]
@@ -55,7 +66,21 @@ public class WorkflowManagementControllerTests
         Assert.Throws<ArgumentNullException>(() => new WorkflowManagementController(
             _discoveryServiceMock.Object,
             _endpointServiceMock.Object,
-            null!));
+            null!,
+            _executionRepositoryMock.Object,
+            _taskExecutorMock.Object));
+    }
+
+    [Fact]
+    public void Constructor_WithNullExecutionRepository_ShouldThrowArgumentNullException()
+    {
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() => new WorkflowManagementController(
+            _discoveryServiceMock.Object,
+            _endpointServiceMock.Object,
+            _versionRepositoryMock.Object,
+            null!,
+            _taskExecutorMock.Object));
     }
 
     [Fact]
@@ -584,4 +609,587 @@ public class WorkflowManagementControllerTests
         // Assert
         _versionRepositoryMock.Verify(x => x.GetVersionsAsync("my-workflow"), Times.Once);
     }
+
+    // ========== TASK DETAIL ENDPOINT TESTS ==========
+
+    [Fact]
+    public async Task GetTaskDetail_ShouldReturnTaskDetails()
+    {
+        // Arrange
+        var taskName = "fetch-user";
+        var task = new WorkflowTaskResource
+        {
+            Metadata = new ResourceMetadata { Name = taskName, Namespace = "default" },
+            Spec = new WorkflowTaskSpec
+            {
+                Type = "http",
+                InputSchema = new SchemaDefinition
+                {
+                    Type = "object",
+                    Properties = new Dictionary<string, PropertyDefinition>
+                    {
+                        ["userId"] = new PropertyDefinition { Type = "string" }
+                    }
+                },
+                OutputSchema = new SchemaDefinition
+                {
+                    Type = "object",
+                    Properties = new Dictionary<string, PropertyDefinition>
+                    {
+                        ["user"] = new PropertyDefinition { Type = "object" }
+                    }
+                },
+                Http = new HttpRequestDefinition
+                {
+                    Method = "GET",
+                    Url = "https://api.example.com/users/{{input.userId}}",
+                    Headers = new Dictionary<string, string> { ["Accept"] = "application/json" }
+                },
+                Timeout = "30s"
+            }
+        };
+
+        _discoveryServiceMock
+            .Setup(x => x.GetTaskByNameAsync(taskName, "default"))
+            .ReturnsAsync(task);
+
+        // Act
+        var result = await _controller.GetTaskDetail(taskName);
+
+        // Assert
+        result.Should().BeOfType<OkObjectResult>();
+        var okResult = result as OkObjectResult;
+        var response = okResult!.Value as TaskDetailResponse;
+
+        response.Should().NotBeNull();
+        response!.Name.Should().Be(taskName);
+        response.Namespace.Should().Be("default");
+        response.InputSchema.Should().NotBeNull();
+        response.OutputSchema.Should().NotBeNull();
+        response.HttpRequest.Should().NotBeNull();
+        response.HttpRequest!.Method.Should().Be("GET");
+        response.HttpRequest.Url.Should().Be("https://api.example.com/users/{{input.userId}}");
+        response.Timeout.Should().Be("30s");
+    }
+
+    [Fact]
+    public async Task GetTaskDetail_WithNonExistentTask_ShouldReturn404()
+    {
+        // Arrange
+        _discoveryServiceMock
+            .Setup(x => x.GetTaskByNameAsync("nonexistent-task", "default"))
+            .ReturnsAsync((WorkflowTaskResource?)null);
+
+        // Act
+        var result = await _controller.GetTaskDetail("nonexistent-task");
+
+        // Assert
+        result.Should().BeOfType<NotFoundObjectResult>();
+    }
+
+    [Fact]
+    public async Task GetTaskDetail_ShouldIncludeStatistics()
+    {
+        // Arrange
+        var taskName = "send-email";
+        var task = new WorkflowTaskResource
+        {
+            Metadata = new ResourceMetadata { Name = taskName, Namespace = "default" },
+            Spec = new WorkflowTaskSpec { Type = "http" }
+        };
+
+        _discoveryServiceMock
+            .Setup(x => x.GetTaskByNameAsync(taskName, "default"))
+            .ReturnsAsync(task);
+
+        // Act
+        var result = await _controller.GetTaskDetail(taskName);
+
+        // Assert
+        result.Should().BeOfType<OkObjectResult>();
+        var okResult = result as OkObjectResult;
+        var response = okResult!.Value as TaskDetailResponse;
+
+        response.Should().NotBeNull();
+        response!.Stats.Should().NotBeNull();
+        response.Stats!.UsedByWorkflows.Should().BeGreaterThanOrEqualTo(0);
+        response.Stats.TotalExecutions.Should().BeGreaterThanOrEqualTo(0);
+        response.Stats.AvgDurationMs.Should().BeGreaterThanOrEqualTo(0);
+        response.Stats.SuccessRate.Should().BeInRange(0, 100);
+    }
+
+    [Fact]
+    public async Task GetTaskDetail_WithCustomNamespace_ShouldUseProvidedNamespace()
+    {
+        // Arrange
+        var taskName = "prod-task";
+        var customNamespace = "production";
+        var task = new WorkflowTaskResource
+        {
+            Metadata = new ResourceMetadata { Name = taskName, Namespace = customNamespace },
+            Spec = new WorkflowTaskSpec { Type = "http" }
+        };
+
+        _discoveryServiceMock
+            .Setup(x => x.GetTaskByNameAsync(taskName, customNamespace))
+            .ReturnsAsync(task);
+
+        // Act
+        var result = await _controller.GetTaskDetail(taskName, customNamespace);
+
+        // Assert
+        result.Should().BeOfType<OkObjectResult>();
+        var okResult = result as OkObjectResult;
+        var response = okResult!.Value as TaskDetailResponse;
+
+        response.Should().NotBeNull();
+        response!.Namespace.Should().Be(customNamespace);
+
+        _discoveryServiceMock.Verify(x => x.GetTaskByNameAsync(taskName, customNamespace), Times.Once);
+    }
+
+    [Fact]
+    public async Task GetTaskUsage_ShouldReturnWorkflowsUsingTask()
+    {
+        // Arrange
+        var taskName = "fetch-user";
+        var task = new WorkflowTaskResource
+        {
+            Metadata = new ResourceMetadata { Name = taskName, Namespace = "default" },
+            Spec = new WorkflowTaskSpec { Type = "http" }
+        };
+
+        var workflows = new List<WorkflowResource>
+        {
+            new()
+            {
+                Metadata = new ResourceMetadata { Name = "user-workflow", Namespace = "default" },
+                Spec = new WorkflowSpec
+                {
+                    Tasks = new List<WorkflowTaskStep>
+                    {
+                        new() { Id = "task1", TaskRef = taskName },
+                        new() { Id = "task2", TaskRef = "other-task" }
+                    }
+                }
+            },
+            new()
+            {
+                Metadata = new ResourceMetadata { Name = "profile-workflow", Namespace = "default" },
+                Spec = new WorkflowSpec
+                {
+                    Tasks = new List<WorkflowTaskStep>
+                    {
+                        new() { Id = "task1", TaskRef = taskName }
+                    }
+                }
+            },
+            new()
+            {
+                Metadata = new ResourceMetadata { Name = "other-workflow", Namespace = "default" },
+                Spec = new WorkflowSpec
+                {
+                    Tasks = new List<WorkflowTaskStep>
+                    {
+                        new() { Id = "task1", TaskRef = "different-task" }
+                    }
+                }
+            }
+        };
+
+        _discoveryServiceMock.Setup(x => x.GetTaskByNameAsync(taskName, "default"))
+            .ReturnsAsync(task);
+        _discoveryServiceMock.Setup(x => x.DiscoverWorkflowsAsync("default"))
+            .ReturnsAsync(workflows);
+
+        // Act
+        var result = await _controller.GetTaskUsage(taskName);
+
+        // Assert
+        result.Should().BeOfType<OkObjectResult>();
+        var okResult = result as OkObjectResult;
+        var response = okResult!.Value as TaskUsageListResponse;
+
+        response.Should().NotBeNull();
+        response!.TaskName.Should().Be(taskName);
+        response.Workflows.Should().HaveCount(2);
+        response.Workflows.Should().Contain(u => u.WorkflowName == "user-workflow");
+        response.Workflows.Should().Contain(u => u.WorkflowName == "profile-workflow");
+        response.Workflows.Should().NotContain(u => u.WorkflowName == "other-workflow");
+    }
+
+    [Fact]
+    public async Task GetTaskUsage_WithNonExistentTask_ShouldReturn404()
+    {
+        // Arrange
+        var taskName = "non-existent-task";
+        _discoveryServiceMock.Setup(x => x.GetTaskByNameAsync(taskName, "default"))
+            .ReturnsAsync((WorkflowTaskResource?)null);
+
+        // Act
+        var result = await _controller.GetTaskUsage(taskName);
+
+        // Assert
+        result.Should().BeOfType<NotFoundObjectResult>();
+    }
+
+    [Fact]
+    public async Task GetTaskUsage_ShouldSupportPagination()
+    {
+        // Arrange
+        var taskName = "fetch-user";
+        var task = new WorkflowTaskResource
+        {
+            Metadata = new ResourceMetadata { Name = taskName, Namespace = "default" },
+            Spec = new WorkflowTaskSpec { Type = "http" }
+        };
+
+        var workflows = Enumerable.Range(1, 10)
+            .Select(i => new WorkflowResource
+            {
+                Metadata = new ResourceMetadata { Name = $"workflow-{i}", Namespace = "default" },
+                Spec = new WorkflowSpec
+                {
+                    Tasks = new List<WorkflowTaskStep>
+                    {
+                        new() { Id = "task1", TaskRef = taskName }
+                    }
+                }
+            }).ToList();
+
+        _discoveryServiceMock.Setup(x => x.GetTaskByNameAsync(taskName, "default"))
+            .ReturnsAsync(task);
+        _discoveryServiceMock.Setup(x => x.DiscoverWorkflowsAsync("default"))
+            .ReturnsAsync(workflows);
+
+        // Act - Get page 2 with 3 items per page
+        var result = await _controller.GetTaskUsage(taskName, skip: 3, take: 3);
+
+        // Assert
+        result.Should().BeOfType<OkObjectResult>();
+        var okResult = result as OkObjectResult;
+        var response = okResult!.Value as TaskUsageListResponse;
+
+        response.Should().NotBeNull();
+        response!.Workflows.Should().HaveCount(3);
+        response.TotalCount.Should().Be(10);
+        response.Workflows[0].WorkflowName.Should().Be("workflow-4");
+    }
+
+    [Fact]
+    public async Task GetTaskUsage_ShouldIncludeTaskCount()
+    {
+        // Arrange
+        var taskName = "fetch-user";
+        var task = new WorkflowTaskResource
+        {
+            Metadata = new ResourceMetadata { Name = taskName, Namespace = "default" },
+            Spec = new WorkflowTaskSpec { Type = "http" }
+        };
+
+        var workflows = new List<WorkflowResource>
+        {
+            new()
+            {
+                Metadata = new ResourceMetadata { Name = "multi-use-workflow", Namespace = "default" },
+                Spec = new WorkflowSpec
+                {
+                    Tasks = new List<WorkflowTaskStep>
+                    {
+                        new() { Id = "task1", TaskRef = taskName },
+                        new() { Id = "task2", TaskRef = taskName },
+                        new() { Id = "task3", TaskRef = "other-task" }
+                    }
+                }
+            }
+        };
+
+        _discoveryServiceMock.Setup(x => x.GetTaskByNameAsync(taskName, "default"))
+            .ReturnsAsync(task);
+        _discoveryServiceMock.Setup(x => x.DiscoverWorkflowsAsync("default"))
+            .ReturnsAsync(workflows);
+
+        // Act
+        var result = await _controller.GetTaskUsage(taskName);
+
+        // Assert
+        result.Should().BeOfType<OkObjectResult>();
+        var okResult = result as OkObjectResult;
+        var response = okResult!.Value as TaskUsageListResponse;
+
+        response.Should().NotBeNull();
+        response!.Workflows.Should().HaveCount(1);
+        response.Workflows[0].TaskCount.Should().Be(2); // Used twice in the workflow
+    }
+
+    [Fact]
+    public async Task GetTaskExecutions_ShouldReturnExecutionHistory()
+    {
+        // Arrange
+        var taskName = "fetch-user";
+        var task = new WorkflowTaskResource
+        {
+            Metadata = new ResourceMetadata { Name = taskName, Namespace = "default" },
+            Spec = new WorkflowTaskSpec { Type = "http" }
+        };
+
+        var executions = new List<(ExecutionRecord Execution, TaskExecutionRecord Task)>
+        {
+            (
+                new ExecutionRecord
+                {
+                    Id = Guid.NewGuid(),
+                    WorkflowName = "user-profile",
+                    Status = ExecutionStatus.Succeeded,
+                    StartedAt = DateTime.UtcNow.AddMinutes(-10)
+                },
+                new TaskExecutionRecord
+                {
+                    TaskRef = taskName,
+                    Status = "Succeeded",
+                    Duration = TimeSpan.FromMilliseconds(150),
+                    StartedAt = DateTime.UtcNow.AddMinutes(-10)
+                }
+            ),
+            (
+                new ExecutionRecord
+                {
+                    Id = Guid.NewGuid(),
+                    WorkflowName = "simple-fetch",
+                    Status = ExecutionStatus.Failed,
+                    StartedAt = DateTime.UtcNow.AddMinutes(-5)
+                },
+                new TaskExecutionRecord
+                {
+                    TaskRef = taskName,
+                    Status = "Failed",
+                    Duration = TimeSpan.FromMilliseconds(200),
+                    StartedAt = DateTime.UtcNow.AddMinutes(-5)
+                }
+            )
+        };
+
+        _discoveryServiceMock.Setup(x => x.GetTaskByNameAsync(taskName, "default"))
+            .ReturnsAsync(task);
+        _executionRepositoryMock.Setup(x => x.GetTaskExecutionsAsync(taskName, 0, 20))
+            .ReturnsAsync(executions);
+
+        // Act
+        var result = await _controller.GetTaskExecutions(taskName);
+
+        // Assert
+        result.Should().BeOfType<OkObjectResult>();
+        var okResult = result as OkObjectResult;
+        var response = okResult!.Value as TaskExecutionListResponse;
+
+        response.Should().NotBeNull();
+        response!.TaskName.Should().Be(taskName);
+        response.Executions.Should().HaveCount(2);
+        response.AverageDurationMs.Should().Be(175); // (150 + 200) / 2
+    }
+
+    [Fact]
+    public async Task GetTaskExecutions_WithNonExistentTask_ShouldReturn404()
+    {
+        // Arrange
+        var taskName = "non-existent-task";
+        _discoveryServiceMock.Setup(x => x.GetTaskByNameAsync(taskName, "default"))
+            .ReturnsAsync((WorkflowTaskResource?)null);
+
+        // Act
+        var result = await _controller.GetTaskExecutions(taskName);
+
+        // Assert
+        result.Should().BeOfType<NotFoundObjectResult>();
+    }
+
+    [Fact]
+    public async Task GetTaskExecutions_ShouldSupportPagination()
+    {
+        // Arrange
+        var taskName = "fetch-user";
+        var task = new WorkflowTaskResource
+        {
+            Metadata = new ResourceMetadata { Name = taskName, Namespace = "default" },
+            Spec = new WorkflowTaskSpec { Type = "http" }
+        };
+
+        var executions = Enumerable.Range(1, 3)
+            .Select(i => (
+                new ExecutionRecord
+                {
+                    Id = Guid.NewGuid(),
+                    WorkflowName = $"workflow-{i}",
+                    Status = ExecutionStatus.Succeeded,
+                    StartedAt = DateTime.UtcNow.AddMinutes(-i)
+                },
+                new TaskExecutionRecord
+                {
+                    TaskRef = taskName,
+                    Status = "Succeeded",
+                    Duration = TimeSpan.FromMilliseconds(100),
+                    StartedAt = DateTime.UtcNow.AddMinutes(-i)
+                }
+            )).ToList();
+
+        _discoveryServiceMock.Setup(x => x.GetTaskByNameAsync(taskName, "default"))
+            .ReturnsAsync(task);
+        _executionRepositoryMock.Setup(x => x.GetTaskExecutionsAsync(taskName, 2, 5))
+            .ReturnsAsync(executions.Skip(2).Take(5).ToList());
+
+        // Act - Get page 2 with 5 items per page
+        var result = await _controller.GetTaskExecutions(taskName, skip: 2, take: 5);
+
+        // Assert
+        result.Should().BeOfType<OkObjectResult>();
+        var okResult = result as OkObjectResult;
+        var response = okResult!.Value as TaskExecutionListResponse;
+
+        response.Should().NotBeNull();
+        response!.Executions.Should().HaveCount(1);
+        response.Skip.Should().Be(2);
+        response.Take.Should().Be(5);
+    }
+
+    #region ExecuteTask Tests
+
+    [Fact]
+    public async Task ExecuteTask_WithNonExistentTask_ShouldReturn404()
+    {
+        // Arrange
+        var taskName = "non-existent-task";
+        var request = new TaskExecutionRequest
+        {
+            Input = new Dictionary<string, object> { ["userId"] = "123" }
+        };
+
+        _discoveryServiceMock.Setup(x => x.GetTaskByNameAsync(taskName, "default"))
+            .ReturnsAsync((WorkflowTaskResource?)null);
+
+        // Act
+        var result = await _controller.ExecuteTask(taskName, request);
+
+        // Assert
+        result.Should().BeOfType<NotFoundObjectResult>();
+    }
+
+    [Fact]
+    public async Task ExecuteTask_WithValidInput_ShouldReturnSuccessResponse()
+    {
+        // Arrange
+        var taskName = "fetch-user";
+        var task = new WorkflowTaskResource
+        {
+            Metadata = new ResourceMetadata { Name = taskName, Namespace = "default" },
+            Spec = new WorkflowTaskSpec
+            {
+                Type = "http",
+                Http = new HttpRequestDefinition
+                {
+                    Method = "GET",
+                    Url = "https://api.example.com/users/{{input.userId}}",
+                    Headers = new Dictionary<string, string>()
+                },
+                InputSchema = new SchemaDefinition
+                {
+                    Type = "object",
+                    Properties = new Dictionary<string, PropertyDefinition>
+                    {
+                        ["userId"] = new PropertyDefinition { Type = "string" }
+                    }
+                }
+            }
+        };
+
+        var request = new TaskExecutionRequest
+        {
+            Input = new Dictionary<string, object> { ["userId"] = "123" }
+        };
+
+        _discoveryServiceMock.Setup(x => x.GetTaskByNameAsync(taskName, "default"))
+            .ReturnsAsync(task);
+
+        _taskExecutorMock.Setup(x => x.ExecuteAsync(
+                It.IsAny<WorkflowTaskSpec>(),
+                It.IsAny<TemplateContext>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new TaskExecutionResult
+            {
+                Success = true,
+                Output = new Dictionary<string, object> { ["id"] = "123", ["name"] = "John Doe" },
+                Duration = TimeSpan.FromMilliseconds(150),
+                RetryCount = 0
+            });
+
+        // Act
+        var result = await _controller.ExecuteTask(taskName, request);
+
+        // Assert
+        result.Should().BeOfType<OkObjectResult>();
+        var okResult = result as OkObjectResult;
+        var response = okResult!.Value as TaskExecutionResponse;
+
+        response.Should().NotBeNull();
+        response!.TaskName.Should().Be(taskName);
+        response.ExecutionId.Should().NotBeNullOrEmpty();
+        response.Status.Should().Be(ExecutionStatus.Succeeded);
+        response.DurationMs.Should().Be(150);
+        response.Output.Should().NotBeNull();
+        response.Error.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task ExecuteTask_WithEmptyInput_ShouldStillExecute()
+    {
+        // Arrange
+        var taskName = "simple-task";
+        var task = new WorkflowTaskResource
+        {
+            Metadata = new ResourceMetadata { Name = taskName, Namespace = "default" },
+            Spec = new WorkflowTaskSpec
+            {
+                Type = "http",
+                Http = new HttpRequestDefinition
+                {
+                    Method = "GET",
+                    Url = "https://api.example.com/ping",
+                    Headers = new Dictionary<string, string>()
+                }
+            }
+        };
+
+        var request = new TaskExecutionRequest
+        {
+            Input = new Dictionary<string, object>()
+        };
+
+        _discoveryServiceMock.Setup(x => x.GetTaskByNameAsync(taskName, "default"))
+            .ReturnsAsync(task);
+
+        _taskExecutorMock.Setup(x => x.ExecuteAsync(
+                It.IsAny<WorkflowTaskSpec>(),
+                It.IsAny<TemplateContext>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new TaskExecutionResult
+            {
+                Success = true,
+                Output = new Dictionary<string, object> { ["status"] = "ok" },
+                Duration = TimeSpan.FromMilliseconds(50),
+                RetryCount = 0
+            });
+
+        // Act
+        var result = await _controller.ExecuteTask(taskName, request);
+
+        // Assert
+        result.Should().BeOfType<OkObjectResult>();
+        var okResult = result as OkObjectResult;
+        var response = okResult!.Value as TaskExecutionResponse;
+
+        response.Should().NotBeNull();
+        response!.TaskName.Should().Be(taskName);
+        response.Status.Should().Be(ExecutionStatus.Succeeded);
+    }
+
+    #endregion
 }

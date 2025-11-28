@@ -39,17 +39,22 @@ public class WorkflowDbContext : DbContext
             .OnDelete(DeleteBehavior.Cascade);
 
         // Configure indexes for ExecutionRecord (for query performance)
+        // Composite index for duration trends queries (WorkflowName + StartedAt + Status)
+        // This index supports: WHERE WorkflowName = X AND StartedAt >= Y AND Status IN (...)
         modelBuilder.Entity<ExecutionRecord>()
-            .HasIndex(e => e.WorkflowName)
-            .HasDatabaseName("IX_ExecutionRecords_WorkflowName");
+            .HasIndex(e => new { e.WorkflowName, e.StartedAt, e.Status })
+            .HasDatabaseName("IX_ExecutionRecords_WorkflowName_StartedAt_Status");
 
+        // Keep individual indexes for other query patterns
         modelBuilder.Entity<ExecutionRecord>()
             .HasIndex(e => e.Status)
             .HasDatabaseName("IX_ExecutionRecords_Status");
 
-        modelBuilder.Entity<ExecutionRecord>()
-            .HasIndex(e => e.StartedAt)
-            .HasDatabaseName("IX_ExecutionRecords_StartedAt");
+        // Configure composite index for TaskExecutionRecord (for task duration trends)
+        // This index supports: WHERE TaskRef = X AND StartedAt >= Y AND Status IN (...)
+        modelBuilder.Entity<TaskExecutionRecord>()
+            .HasIndex(t => new { t.TaskRef, t.StartedAt, t.Status })
+            .HasDatabaseName("IX_TaskExecutionRecords_TaskRef_StartedAt_Status");
 
         // Configure indexes for WorkflowVersion (for query performance)
         modelBuilder.Entity<WorkflowVersion>()

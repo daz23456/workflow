@@ -29,6 +29,86 @@ export interface TaskListResponse {
 }
 
 // ============================================================================
+// Task Detail Types
+// ============================================================================
+
+export interface TaskStats {
+  usedByWorkflows: number;
+  totalExecutions: number;
+  avgDurationMs: number;
+  successRate: number;
+  lastExecuted?: string; // ISO 8601
+}
+
+export interface TaskDetailResponse {
+  name: string;
+  namespace: string;
+  description?: string;
+  inputSchema?: SchemaDefinition;
+  outputSchema?: SchemaDefinition;
+  httpRequest?: {
+    method: string;
+    url: string;
+    headers: Record<string, string>;
+    bodyTemplate?: string;
+  };
+  retryPolicy?: {
+    maxRetries: number;
+    backoffMs: number;
+  };
+  timeout?: string;
+  stats?: TaskStats;
+}
+
+export interface TaskUsageItem {
+  workflowName: string;
+  workflowNamespace: string;
+  taskCount: number;
+  lastExecuted?: string; // ISO 8601
+}
+
+export interface TaskUsageListResponse {
+  taskName: string;
+  workflows: TaskUsageItem[];
+  totalCount: number;
+  skip: number;
+  take: number;
+}
+
+export interface TaskExecutionItem {
+  executionId: string;
+  workflowName: string;
+  workflowNamespace: string;
+  status: ExecutionStatus;
+  durationMs: number;
+  startedAt: string; // ISO 8601
+  error?: string;
+}
+
+export interface TaskExecutionListResponse {
+  taskName: string;
+  executions: TaskExecutionItem[];
+  totalCount: number;
+  skip: number;
+  take: number;
+}
+
+export interface TaskExecutionRequest {
+  input: Record<string, any>;
+}
+
+export interface TaskExecutionResponse {
+  executionId: string;
+  taskName: string;
+  status: ExecutionStatus;
+  durationMs: number;
+  startedAt: string; // ISO 8601
+  completedAt?: string; // ISO 8601
+  output?: Record<string, any>;
+  error?: string;
+}
+
+// ============================================================================
 // Workflow Detail Types
 // ============================================================================
 
@@ -252,6 +332,29 @@ export interface WorkflowVersion {
 export interface WorkflowVersionListResponse {
   workflowName: string;
   versions: WorkflowVersion[];
+}
+
+// ============================================================================
+// Duration Trends Types
+// ============================================================================
+
+export interface DurationDataPoint {
+  date: Date;
+  averageDurationMs: number;
+  minDurationMs: number;
+  maxDurationMs: number;
+  p50DurationMs: number;
+  p95DurationMs: number;
+  executionCount: number;
+  successCount: number;
+  failureCount: number;
+}
+
+export interface DurationTrendsResponse {
+  entityType: 'Workflow' | 'Task';
+  entityName: string;
+  daysBack: number;
+  dataPoints: DurationDataPoint[];
 }
 
 // ============================================================================

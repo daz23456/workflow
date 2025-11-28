@@ -8,6 +8,13 @@ import type {
   ExecutionHistoryItem,
   DryRunResponse,
 } from '@/types/execution';
+import type {
+  TaskDetail,
+  TaskUsageItem,
+  TaskExecutionItem,
+  TaskExecutionResponse,
+} from '@/types/task';
+import type { DurationTrendsResponse } from './types';
 
 /**
  * TanStack Query hooks for API data fetching
@@ -74,8 +81,17 @@ export const queryKeys = {
   workflowDetail: (name: string) => ['workflows', name] as const,
   workflowExecutions: (name: string, filters?: { status?: string; limit?: number; offset?: number }) =>
     ['workflows', name, 'executions', filters] as const,
+  workflowDurationTrends: (name: string, daysBack: number) =>
+    ['workflows', name, 'duration-trends', daysBack] as const,
   executionDetail: (id: string) => ['executions', id] as const,
   tasks: ['tasks'] as const,
+  taskDetail: (name: string) => ['tasks', name] as const,
+  taskUsage: (name: string, filters?: { skip?: number; take?: number }) =>
+    ['tasks', name, 'usage', filters] as const,
+  taskExecutions: (name: string, filters?: { status?: string; skip?: number; take?: number }) =>
+    ['tasks', name, 'executions', filters] as const,
+  taskDurationTrends: (name: string, daysBack: number) =>
+    ['tasks', name, 'duration-trends', daysBack] as const,
 };
 
 // ============================================================================
@@ -177,6 +193,36 @@ export function useExecutionDetail(id: string, options?: { enabled?: boolean }) 
     staleTime: 60000, // 1 minute
     gcTime: 300000, // 5 minutes
     enabled: options?.enabled ?? true,
+  });
+}
+
+/**
+ * Fetch duration trends for a workflow over time
+ */
+export function useWorkflowDurationTrends(
+  name: string,
+  daysBack: number = 30,
+  options?: { enabled?: boolean }
+) {
+  return useQuery({
+    queryKey: queryKeys.workflowDurationTrends(name, daysBack),
+    queryFn: async () => {
+      const data = await fetchJson<DurationTrendsResponse>(
+        `${API_BASE_URL}/workflows/${name}/duration-trends?daysBack=${daysBack}`
+      );
+
+      // Parse date strings to Date objects
+      return {
+        ...data,
+        dataPoints: data.dataPoints.map(point => ({
+          ...point,
+          date: new Date(point.date),
+        })),
+      };
+    },
+    staleTime: 300000, // 5 minutes (trends change slowly)
+    gcTime: 900000, // 15 minutes
+    enabled: options?.enabled ?? !!name,
   });
 }
 
@@ -290,4 +336,182 @@ export function useInvalidateWorkflows() {
   return () => {
     queryClient.invalidateQueries({ queryKey: ['workflows'] });
   };
+}
+
+// ============================================================================
+// TASK DETAIL QUERIES
+// ============================================================================
+
+/**
+ * Fetch detailed task information by name
+ */
+export function useTaskDetail(name: string, options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: queryKeys.taskDetail(name),
+    queryFn: async () => {
+      const data = await fetchJson<TaskDetail>(
+        `${API_BASE_URL}/tasks/${name}`
+      );
+      return data;
+    },
+    staleTime: 60000, // 1 minute
+    gcTime: 300000, // 5 minutes
+    enabled: options?.enabled ?? true,
+  });
+}
+
+/**
+ * Prefetch task detail (useful for optimistic UI)
+ */
+export function usePrefetchTaskDetail() {
+  const queryClient = useQueryClient();
+
+  return (name: string) => {
+    queryClient.prefetchQuery({
+      queryKey: queryKeys.taskDetail(name),
+      queryFn: async () => {
+        const data = await fetchJson<TaskDetail>(
+          `${API_BASE_URL}/tasks/${name}`
+        );
+        return data;
+      },
+    });
+  };
+}
+
+/**
+ * Fetch workflows that use a specific task
+ */
+export function useTaskUsage(
+  name: string,
+  filters?: {
+    skip?: number;
+    take?: number;
+  }
+) {
+  const { skip = 0, take = 20 } = filters || {};
+
+  return useQuery({
+    queryKey: queryKeys.taskUsage(name, { skip, take }),
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      params.append('skip', String(skip));
+      params.append('take', String(take));
+
+      const data = await fetchJson<{
+        taskName: string;
+        workflows: TaskUsageItem[];
+        totalCount: number;
+        skip: number;
+        take: number;
+      }>(`${API_BASE_URL}/tasks/${name}/usage?${params}`);
+      return data;
+    },
+    staleTime: 30000, // 30 seconds
+    gcTime: 300000, // 5 minutes
+  });
+}
+
+/**
+ * Fetch execution history for a specific task across all workflows
+ */
+export function useTaskExecutions(
+  name: string,
+  filters?: {
+    status?: string;
+    skip?: number;
+    take?: number;
+  }
+) {
+  const { status, skip = 0, take = 20 } = filters || {};
+
+  return useQuery({
+    queryKey: queryKeys.taskExecutions(name, { status, skip, take }),
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (status) params.append('status', status);
+      params.append('skip', String(skip));
+      params.append('take', String(take));
+
+      const data = await fetchJson<{
+        taskName: string;
+        executions: TaskExecutionItem[];
+        averageDurationMs: number;
+        totalCount: number;
+        skip: number;
+        take: number;
+      }>(`${API_BASE_URL}/tasks/${name}/executions?${params}`);
+      return data;
+    },
+    staleTime: 10000, // 10 seconds (execution history updates frequently)
+    gcTime: 60000, // 1 minute
+  });
+}
+
+/**
+ * Fetch duration trends for a task over time (across all workflows)
+ */
+export function useTaskDurationTrends(
+  name: string,
+  daysBack: number = 30,
+  options?: { enabled?: boolean }
+) {
+  return useQuery({
+    queryKey: queryKeys.taskDurationTrends(name, daysBack),
+    queryFn: async () => {
+      const data = await fetchJson<DurationTrendsResponse>(
+        `${API_BASE_URL}/tasks/${name}/duration-trends?daysBack=${daysBack}`
+      );
+
+      // Parse date strings to Date objects
+      return {
+        ...data,
+        dataPoints: data.dataPoints.map(point => ({
+          ...point,
+          date: new Date(point.date),
+        })),
+      };
+    },
+    staleTime: 300000, // 5 minutes (trends change slowly)
+    gcTime: 900000, // 15 minutes
+    enabled: options?.enabled ?? !!name,
+  });
+}
+
+// ============================================================================
+// TASK MUTATIONS
+// ============================================================================
+
+/**
+ * Execute a task standalone (without workflow)
+ */
+export function useExecuteTask(name: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (input: Record<string, unknown>) => {
+      const data = await fetchJson<TaskExecutionResponse>(
+        `${API_BASE_URL}/tasks/${name}/execute`,
+        {
+          method: 'POST',
+          body: JSON.stringify({ input }),
+        }
+      );
+      return data;
+    },
+    onSuccess: () => {
+      // Invalidate task execution history to show new execution
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.taskExecutions(name),
+      });
+      // Invalidate task details to update stats
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.taskDetail(name),
+      });
+      // Invalidate tasks list to update overall stats
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.tasks,
+      });
+    },
+  });
 }

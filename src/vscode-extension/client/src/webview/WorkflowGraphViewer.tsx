@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   ReactFlow,
   Controls,
@@ -7,8 +7,12 @@ import {
   Node,
   Edge,
   MarkerType,
+  useReactFlow,
+  ReactFlowProvider,
+  Panel,
 } from '@xyflow/react';
 import dagre from 'dagre';
+import { toPng } from 'html-to-image';
 
 interface WorkflowGraph {
   nodes: Array<{
@@ -83,12 +87,15 @@ function convertToReactFlow(graph: WorkflowGraph): { nodes: Node[]; edges: Edge[
       data: { label: node.label, isParallel },
       position: { x: 0, y: 0 },
       style: {
-        background: isParallel ? '#e0f2fe' : '#ffffff',
-        border: isParallel ? '2px solid #0284c7' : '1px solid #d1d5db',
+        background: isParallel ? '#1e3a8a' : '#1e293b',
+        border: isParallel ? '2px solid #3b82f6' : '2px solid #475569',
         borderRadius: '8px',
-        padding: '10px 20px',
+        padding: '12px 24px',
         fontSize: '14px',
-        fontWeight: isParallel ? '600' : '400',
+        fontWeight: '500',
+        color: '#ffffff',
+        minWidth: '200px',
+        textAlign: 'center' as const,
       },
     };
   });
@@ -103,10 +110,11 @@ function convertToReactFlow(graph: WorkflowGraph): { nodes: Node[]; edges: Edge[
       type: MarkerType.ArrowClosed,
       width: 20,
       height: 20,
+      color: '#60a5fa',
     },
     style: {
-      strokeWidth: 2,
-      stroke: '#9ca3af',
+      strokeWidth: 3,
+      stroke: '#60a5fa',
     },
   }));
 
@@ -115,9 +123,10 @@ function convertToReactFlow(graph: WorkflowGraph): { nodes: Node[]; edges: Edge[
   return { nodes: layoutedNodes, edges };
 }
 
-export function WorkflowGraphViewer() {
+function WorkflowGraphViewerInner() {
   const [graph, setGraph] = useState<WorkflowGraph | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const { getNodes } = useReactFlow();
 
   const { nodes, edges } = useMemo(() => {
     if (!graph || graph.nodes.length === 0) {
@@ -126,22 +135,64 @@ export function WorkflowGraphViewer() {
     return convertToReactFlow(graph);
   }, [graph]);
 
+  const downloadImage = useCallback(() => {
+    const viewport = document.querySelector('.react-flow__viewport') as HTMLElement;
+    if (!viewport) {
+      console.error('[WorkflowGraphViewer] Could not find .react-flow__viewport element');
+      return;
+    }
+
+    console.log('[WorkflowGraphViewer] Starting PNG export...');
+    toPng(viewport, {
+      backgroundColor: '#0f172a',
+      pixelRatio: 2,
+      cacheBust: true,
+    })
+      .then((dataUrl) => {
+        console.log('[WorkflowGraphViewer] PNG generated successfully');
+        const link = document.createElement('a');
+        link.download = `workflow-graph-${Date.now()}.png`;
+        link.href = dataUrl;
+        link.click();
+        console.log('[WorkflowGraphViewer] Download triggered');
+      })
+      .catch((error) => {
+        console.error('[WorkflowGraphViewer] Error generating PNG:', error);
+      });
+  }, []);
+
   useEffect(() => {
     const vscode = acquireVsCodeApi();
 
-    window.addEventListener('message', (event) => {
+    const handleMessage = (event: MessageEvent) => {
       const message = event.data;
+      console.log('[WorkflowGraphViewer] Received message:', message);
 
       switch (message.type) {
         case 'updateGraph':
+          console.log('[WorkflowGraphViewer] Updating graph with', message.graph.nodes.length, 'nodes');
           setGraph(message.graph);
           setError(null);
           break;
         case 'error':
+          console.log('[WorkflowGraphViewer] Error:', message.message);
           setError(message.message);
           break;
+        default:
+          console.log('[WorkflowGraphViewer] Unknown message type:', message.type);
       }
-    });
+    };
+
+    console.log('[WorkflowGraphViewer] Component mounted, adding message listener');
+    window.addEventListener('message', handleMessage);
+
+    // Signal to the extension that we're ready
+    vscode.postMessage({ type: 'webviewReady' });
+
+    return () => {
+      console.log('[WorkflowGraphViewer] Component unmounting, removing message listener');
+      window.removeEventListener('message', handleMessage);
+    };
   }, []);
 
   if (error) {
@@ -184,7 +235,7 @@ export function WorkflowGraphViewer() {
   }
 
   return (
-    <div style={{ width: '100vw', height: '100vh' }}>
+    <div style={{ width: '100vw', height: '100vh', background: '#0f172a' }}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -194,9 +245,37 @@ export function WorkflowGraphViewer() {
         defaultViewport={{ x: 0, y: 0, zoom: 1 }}
         proOptions={{ hideAttribution: true }}
       >
-        <Controls />
-        <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
+        <Controls>
+          <button
+            onClick={downloadImage}
+            className="react-flow__controls-button"
+            title="Export as PNG"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+          </button>
+        </Controls>
+        <Background variant={BackgroundVariant.Dots} gap={12} size={1} color="#334155" />
       </ReactFlow>
     </div>
+  );
+}
+
+export function WorkflowGraphViewer() {
+  return (
+    <ReactFlowProvider>
+      <WorkflowGraphViewerInner />
+    </ReactFlowProvider>
   );
 }

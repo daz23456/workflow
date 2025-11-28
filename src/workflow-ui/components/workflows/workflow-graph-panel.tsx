@@ -49,6 +49,14 @@ function convertToReactFlow(
   graph: WorkflowGraph,
   direction: LayoutDirection = 'TB'
 ): { nodes: Node[]; edges: Edge[] } {
+  // Null safety: handle missing or empty nodes/edges
+  if (!graph?.nodes || graph.nodes.length === 0) {
+    return { nodes: [], edges: [] };
+  }
+  if (!graph.edges) {
+    graph.edges = [];
+  }
+
   // Convert graph nodes to React Flow nodes
   const initialNodes: Node[] = graph.nodes.map((node) => {
     const isParallel = isParallelNode(node.id, graph.parallelGroups);

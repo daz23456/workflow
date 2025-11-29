@@ -5,6 +5,8 @@ export interface WorkflowExecutionResponse {
   output: Record<string, any>;
   tasks: TaskExecutionDetail[];
   executionTimeMs: number;
+  /** Time taken to build the execution graph in microseconds. Typically under 1000μs (1ms) */
+  graphBuildDurationMicros?: number;
   startedAt: string;
   completedAt?: string;
   error?: string;
@@ -34,6 +36,8 @@ export interface ExecutionHistoryItem {
   startedAt: string;
   completedAt?: string;
   durationMs: number;
+  /** Time taken to build the execution graph in microseconds. Typically under 1000μs (1ms) */
+  graphBuildDurationMicros?: number;
   inputSnapshot: Record<string, any>;
   outputSnapshot?: Record<string, any>;
   error?: string;
@@ -61,7 +65,10 @@ export interface WorkflowTestResponse {
       edges: Array<{ source: string; target: string; error?: boolean }>;
     };
   };
-  templateResolution?: Record<string, Record<string, { template: string; resolved: string; source?: string }>>;
+  templateResolution?: Record<
+    string,
+    Record<string, { template: string; resolved: string; source?: string }>
+  >;
 }
 
 // Alias for backwards compatibility

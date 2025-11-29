@@ -1,0 +1,1311 @@
+
+> workflow-root@1.0.0 test:coverage
+> turbo run test:coverage
+
+turbo 2.6.1
+
+• Packages in scope: @workflow/api-client, @workflow/graph, @workflow/types, @workflow/ui-components, @workflow/validation, workflow-ui, workflow-vscode-client, workflow-vscode-server
+• Running test:coverage in 8 packages
+• Remote caching disabled
+workflow-ui:build: cache hit, replaying logs 4ee0cd9d0e87b83a
+workflow-ui:build: 
+workflow-ui:build: > workflow-ui@0.1.0 build /Users/darren/dev/workflow/src/workflow-ui
+workflow-ui:build: > next build
+workflow-ui:build: 
+workflow-ui:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+workflow-ui:build:  ⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+workflow-ui:build:  We detected multiple lockfiles and selected the directory of /Users/darren/package-lock.json as the root directory.
+workflow-ui:build:  To silence this warning, set `turbopack.root` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+workflow-ui:build:    See https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory for more information.
+workflow-ui:build:  Detected additional lockfiles: 
+workflow-ui:build:    * /Users/darren/dev/workflow/src/workflow-ui/package-lock.json
+workflow-ui:build:    * /Users/darren/dev/workflow/pnpm-lock.yaml
+workflow-ui:build: 
+workflow-ui:build:    ▲ Next.js 16.0.3 (Turbopack)
+workflow-ui:build:    - Environments: .env.local
+workflow-ui:build: 
+workflow-ui:build:    Creating an optimized production build ...
+workflow-ui:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+workflow-ui:build:  ✓ Compiled successfully in 4.8s
+workflow-ui:build:    Running TypeScript ...
+workflow-ui:build:    Collecting page data using 15 workers ...
+workflow-ui:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+workflow-ui:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+workflow-ui:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+workflow-ui:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+workflow-ui:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+workflow-ui:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+workflow-ui:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+workflow-ui:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+workflow-ui:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+workflow-ui:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+workflow-ui:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+workflow-ui:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+workflow-ui:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+workflow-ui:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+workflow-ui:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+workflow-ui:build:    Generating static pages using 15 workers (0/12) ...
+workflow-ui:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+workflow-ui:build:    Generating static pages using 15 workers (3/12) 
+workflow-ui:build:    Generating static pages using 15 workers (6/12) 
+workflow-ui:build:    Generating static pages using 15 workers (9/12) 
+workflow-ui:build:  ✓ Generating static pages using 15 workers (12/12) in 799.7ms
+workflow-ui:build:    Finalizing page optimization ...
+workflow-ui:build: 
+workflow-ui:build: Route (app)
+workflow-ui:build: ┌ ○ /
+workflow-ui:build: ├ ○ /_not-found
+workflow-ui:build: ├ ƒ /api/executions/[id]
+workflow-ui:build: ├ ƒ /api/tasks
+workflow-ui:build: ├ ƒ /api/tasks/[name]
+workflow-ui:build: ├ ƒ /api/tasks/[name]/duration-trends
+workflow-ui:build: ├ ƒ /api/tasks/[name]/execute
+workflow-ui:build: ├ ƒ /api/tasks/[name]/executions
+workflow-ui:build: ├ ƒ /api/tasks/[name]/usage
+workflow-ui:build: ├ ƒ /api/templates
+workflow-ui:build: ├ ƒ /api/templates/[name]
+workflow-ui:build: ├ ƒ /api/workflows
+workflow-ui:build: ├ ƒ /api/workflows/[name]
+workflow-ui:build: ├ ƒ /api/workflows/[name]/duration-trends
+workflow-ui:build: ├ ƒ /api/workflows/[name]/execute
+workflow-ui:build: ├ ƒ /api/workflows/[name]/executions
+workflow-ui:build: ├ ƒ /api/workflows/[name]/test
+workflow-ui:build: ├ ○ /tasks
+workflow-ui:build: ├ ƒ /tasks/[name]
+workflow-ui:build: ├ ○ /templates
+workflow-ui:build: ├ ○ /transforms
+workflow-ui:build: ├ ○ /workflows
+workflow-ui:build: ├ ƒ /workflows/[name]
+workflow-ui:build: └ ○ /workflows/new
+workflow-ui:build: 
+workflow-ui:build: 
+workflow-ui:build: ○  (Static)   prerendered as static content
+workflow-ui:build: ƒ  (Dynamic)  server-rendered on demand
+workflow-ui:build: 
+workflow-ui:test:coverage: cache miss, executing efd56ebc27524cef
+@workflow/types:build: cache hit, replaying logs 818dacd70cde2479
+@workflow/types:build: 
+@workflow/types:build: > @workflow/types@0.1.0 build /Users/darren/dev/workflow/packages/workflow-types
+@workflow/types:build: > tsc
+@workflow/types:build: 
+@workflow/validation:build: cache hit, replaying logs ce58dc476eae4c0e
+@workflow/validation:build: 
+@workflow/validation:build: > @workflow/validation@0.1.0 build /Users/darren/dev/workflow/packages/workflow-validation
+@workflow/validation:build: > tsc
+@workflow/validation:build: 
+@workflow/graph:build: cache hit, replaying logs 4b1b815661c2744f
+@workflow/graph:build: 
+@workflow/graph:build: > @workflow/graph@0.1.0 build /Users/darren/dev/workflow/packages/workflow-graph
+@workflow/graph:build: > tsc
+@workflow/graph:build: 
+workflow-vscode-client:build: cache miss, executing f669500e7f85f8fe
+@workflow/ui-components:build: cache hit, replaying logs b22a0becfdcec8e4
+@workflow/ui-components:build: 
+@workflow/ui-components:build: > @workflow/ui-components@0.1.0 build /Users/darren/dev/workflow/packages/workflow-ui-components
+@workflow/ui-components:build: > tsc
+@workflow/ui-components:build: 
+@workflow/api-client:build: cache hit, replaying logs 13d9d137575072d1
+@workflow/api-client:build: 
+@workflow/api-client:build: > @workflow/api-client@0.1.0 build /Users/darren/dev/workflow/packages/workflow-api-client
+@workflow/api-client:build: > tsc
+@workflow/api-client:build: 
+workflow-vscode-server:build: cache hit, replaying logs 3b88c25d0b2c0cdc
+workflow-vscode-server:build: 
+workflow-vscode-server:build: > workflow-vscode-server@0.1.0 build /Users/darren/dev/workflow/src/vscode-extension/server
+workflow-vscode-server:build: > webpack --mode production
+workflow-vscode-server:build: 
+workflow-vscode-server:build: asset server.js 395 KiB [compared for emit] [minimized] (name: main) 1 related asset
+workflow-vscode-server:build: runtime modules 670 bytes 3 modules
+workflow-vscode-server:build: modules by path ../../../node_modules/.pnpm/ 967 KiB
+workflow-vscode-server:build:   javascript modules 964 KiB 210 modules
+workflow-vscode-server:build:   json modules 3.07 KiB
+workflow-vscode-server:build:     ../../../node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/dist/refs/json-schema...(truncated) 2.72 KiB [built] [code generated]
+workflow-vscode-server:build:     ../../../node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/dist/refs/data.json 360 bytes [built] [code generated]
+workflow-vscode-server:build: modules by path ../../../packages/workflow-validation/dist/*.js 7 KiB
+workflow-vscode-server:build:   ../../../packages/workflow-validation/dist/index.js 732 bytes [built] [code generated]
+workflow-vscode-server:build:   ../../../packages/workflow-validation/dist/templateParser.js 2.75 KiB [built] [code generated]
+workflow-vscode-server:build:   ../../../packages/workflow-validation/dist/schemaValidator.js 3.53 KiB [built] [code generated]
+workflow-vscode-server:build: + 12 modules
+workflow-vscode-server:build: 
+workflow-vscode-server:build: WARNING in ../../../node_modules/.pnpm/vscode-languageserver-types@3.17.5/node_modules/vscode-languageserver-types/lib/umd/main.js 3:24-31
+workflow-vscode-server:build: Critical dependency: require function is used in a way in which dependencies cannot be statically extracted
+workflow-vscode-server:build:  @ ../../../node_modules/.pnpm/vscode-languageserver-protocol@3.17.5/node_modules/vscode-languageserver-protocol/lib/common/api.js 23:13-51
+workflow-vscode-server:build:  @ ../../../node_modules/.pnpm/vscode-languageserver-protocol@3.17.5/node_modules/vscode-languageserver-protocol/lib/node/main.js 24:13-37
+workflow-vscode-server:build:  @ ../../../node_modules/.pnpm/vscode-languageserver@9.0.1/node_modules/vscode-languageserver/lib/common/api.js 25:13-55
+workflow-vscode-server:build:  @ ../../../node_modules/.pnpm/vscode-languageserver@9.0.1/node_modules/vscode-languageserver/lib/node/main.js 29:13-37
+workflow-vscode-server:build:  @ ../../../node_modules/.pnpm/vscode-languageserver@9.0.1/node_modules/vscode-languageserver/node.js 7:0-43
+workflow-vscode-server:build:  @ ./src/server.ts 36:15-52
+workflow-vscode-server:build: 
+workflow-vscode-server:build: 1 warning has detailed information that is not shown.
+workflow-vscode-server:build: Use 'stats.errorDetails: true' resp. '--stats-error-details' to show it.
+workflow-vscode-server:build: 
+workflow-vscode-server:build: webpack 5.103.0 compiled with 1 warning in 18781 ms
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: > workflow-ui@0.1.0 test:coverage /Users/darren/dev/workflow/src/workflow-ui
+workflow-ui:test:coverage: > vitest run --coverage
+workflow-ui:test:coverage: 
+workflow-vscode-client:build: 
+workflow-vscode-client:build: > workflow-vscode-client@0.1.0 build /Users/darren/dev/workflow/src/vscode-extension/client
+workflow-vscode-client:build: > webpack --config webpack.extension.config.js --mode production && webpack --config webpack.config.js --mode production
+workflow-vscode-client:build: 
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: [1m[46m RUN [49m[22m [36mv4.0.14 [39m[90m/Users/darren/dev/workflow/src/workflow-ui[39m
+workflow-ui:test:coverage:       [2mCoverage enabled with [22m[33mv8[39m
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: [90mstderr[2m | components/workflows/workflow-list-accessibility.test.tsx[2m > [22m[2mWorkflowList Accessibility[2m > [22m[2mshould not have accessibility violations
+workflow-ui:test:coverage: [22m[39mAn update to WorkflowList inside a test was not wrapped in act(...).
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: When testing, code that causes React state updates should be wrapped into act(...):
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: act(() => {
+workflow-ui:test:coverage:   /* fire events that update state */
+workflow-ui:test:coverage: });
+workflow-ui:test:coverage: /* assert on the output */
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: [90mstderr[2m | app/transforms/page.test.tsx[2m > [22m[2mTransformsPage[2m > [22m[2mshould render all main sections
+workflow-ui:test:coverage: [22m[39mReact does not recognize the `fitView` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `fitview` instead. If you accidentally passed it from a parent component, remove it from the DOM element.
+workflow-ui:test:coverage: React does not recognize the `minZoom` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `minzoom` instead. If you accidentally passed it from a parent component, remove it from the DOM element.
+workflow-ui:test:coverage: React does not recognize the `maxZoom` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `maxzoom` instead. If you accidentally passed it from a parent component, remove it from the DOM element.
+workflow-ui:test:coverage: React does not recognize the `defaultEdgeOptions` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `defaultedgeoptions` instead. If you accidentally passed it from a parent component, remove it from the DOM element.
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: [90mstderr[2m | app/transforms/page.test.tsx[2m > [22m[2mTransformsPage[2m > [22m[2mshould render all main sections
+workflow-ui:test:coverage: [22m[39mAn update to PipelineBuilder inside a test was not wrapped in act(...).
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: When testing, code that causes React state updates should be wrapped into act(...):
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: act(() => {
+workflow-ui:test:coverage:   /* fire events that update state */
+workflow-ui:test:coverage: });
+workflow-ui:test:coverage: /* assert on the output */
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+workflow-ui:test:coverage: An update to PreviewPanel inside a test was not wrapped in act(...).
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: When testing, code that causes React state updates should be wrapped into act(...):
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: act(() => {
+workflow-ui:test:coverage:   /* fire events that update state */
+workflow-ui:test:coverage: });
+workflow-ui:test:coverage: /* assert on the output */
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+workflow-ui:test:coverage: An update to TransformsPage inside a test was not wrapped in act(...).
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: When testing, code that causes React state updates should be wrapped into act(...):
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: act(() => {
+workflow-ui:test:coverage:   /* fire events that update state */
+workflow-ui:test:coverage: });
+workflow-ui:test:coverage: /* assert on the output */
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: [90mstderr[2m | app/transforms/page.test.tsx[2m > [22m[2mTransformsPage[2m > [22m[2mshould show export button when pipeline has operations
+workflow-ui:test:coverage: [22m[39mAn update to OperationNode inside a test was not wrapped in act(...).
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: When testing, code that causes React state updates should be wrapped into act(...):
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: act(() => {
+workflow-ui:test:coverage:   /* fire events that update state */
+workflow-ui:test:coverage: });
+workflow-ui:test:coverage: /* assert on the output */
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+workflow-ui:test:coverage: An update to PipelineBuilder inside a test was not wrapped in act(...).
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: When testing, code that causes React state updates should be wrapped into act(...):
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: act(() => {
+workflow-ui:test:coverage:   /* fire events that update state */
+workflow-ui:test:coverage: });
+workflow-ui:test:coverage: /* assert on the output */
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+workflow-ui:test:coverage: An update to PreviewPanel inside a test was not wrapped in act(...).
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: When testing, code that causes React state updates should be wrapped into act(...):
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: act(() => {
+workflow-ui:test:coverage:   /* fire events that update state */
+workflow-ui:test:coverage: });
+workflow-ui:test:coverage: /* assert on the output */
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+workflow-ui:test:coverage: An update to TransformsPage inside a test was not wrapped in act(...).
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: When testing, code that causes React state updates should be wrapped into act(...):
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: act(() => {
+workflow-ui:test:coverage:   /* fire events that update state */
+workflow-ui:test:coverage: });
+workflow-ui:test:coverage: /* assert on the output */
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: [90mstderr[2m | components/debugging/accessibility.test.tsx[2m > [22m[2mDebugging Components Accessibility[2m > [22m[2mExecutionReplay should have no accessibility violations
+workflow-ui:test:coverage: [22m[39m[MSW] Error: intercepted a request without a matching request handler:
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage:   • GET /api/v1/workflows/test-workflow/executions
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: If you still wish to intercept this unhandled request, please create a request handler for it.
+workflow-ui:test:coverage: Read more: https://mswjs.io/docs/http/intercepting-requests
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: [90mstderr[2m | components/debugging/accessibility.test.tsx[2m > [22m[2mDebugging Components Accessibility[2m > [22m[2mExecutionReplay should have no accessibility violations
+workflow-ui:test:coverage: [22m[39mAn update to ExecutionReplay inside a test was not wrapped in act(...).
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: When testing, code that causes React state updates should be wrapped into act(...):
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: act(() => {
+workflow-ui:test:coverage:   /* fire events that update state */
+workflow-ui:test:coverage: });
+workflow-ui:test:coverage: /* assert on the output */
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+workflow-ui:test:coverage: An update to ExecutionReplay inside a test was not wrapped in act(...).
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: When testing, code that causes React state updates should be wrapped into act(...):
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: act(() => {
+workflow-ui:test:coverage:   /* fire events that update state */
+workflow-ui:test:coverage: });
+workflow-ui:test:coverage: /* assert on the output */
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage:  [32m✓[39m components/workflows/task-detail-panel.test.tsx [2m([22m[2m32 tests[22m[2m)[22m[33m 2764[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m renders close button [33m 637[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m can toggle HTTP request section [33m 304[2mms[22m[39m
+workflow-ui:test:coverage:  [32m✓[39m components/workflows/workflow-detail-header.test.tsx [2m([22m[2m27 tests[22m[2m)[22m[33m 2767[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m renders back to workflows link [33m 533[2mms[22m[39m
+workflow-ui:test:coverage:  [32m✓[39m components/debugging/accessibility.test.tsx [2m([22m[2m7 tests[22m[2m)[22m[33m 2895[2mms[22m[39m
+workflow-ui:test:coverage:      [33m[2m✓[22m[39m ExecutionTimeline should have no accessibility violations [33m 851[2mms[22m[39m
+workflow-ui:test:coverage:      [33m[2m✓[22m[39m TaskStateInspector should have no accessibility violations [33m 527[2mms[22m[39m
+workflow-ui:test:coverage:      [33m[2m✓[22m[39m VariableWatcher should have no accessibility violations [33m 451[2mms[22m[39m
+workflow-ui:test:coverage:      [33m[2m✓[22m[39m StepThroughController should have no accessibility violations [33m 377[2mms[22m[39m
+workflow-ui:test:coverage:      [33m[2m✓[22m[39m WorkflowGraphDebugger should have no accessibility violations [33m 353[2mms[22m[39m
+workflow-ui:test:coverage:  [32m✓[39m app/transforms/page.test.tsx [2m([22m[2m11 tests[22m[2m)[22m[33m 3063[2mms[22m[39m
+workflow-ui:test:coverage:      [33m[2m✓[22m[39m should render all main sections [33m 928[2mms[22m[39m
+workflow-ui:test:coverage:      [33m[2m✓[22m[39m should export YAML when button clicked [33m 327[2mms[22m[39m
+workflow-ui:test:coverage:  [32m✓[39m components/builder/task-palette.test.tsx [2m([22m[2m28 tests[22m[2m)[22m[33m 3451[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m should filter tasks by search query [33m 693[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m should expand palette when expand button clicked [33m 410[2mms[22m[39m
+workflow-ui:test:coverage:  [32m✓[39m app/workflows/new/page.test.tsx [2m([22m[2m14 tests[22m[2m)[22m[33m 3624[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m should render page header with title [33m 603[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m should render toolbar with actions [33m 412[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m should update workflow name on change [33m 372[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m should convert graph to YAML when save clicked [33m 473[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m should show confirmation dialog if workflow has unsaved changes [33m 477[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m should have keyboard-accessible toolbar [33m 344[2mms[22m[39m
+workflow-ui:test:coverage:  [32m✓[39m components/workflows/execution-result-panel.test.tsx [2m([22m[2m30 tests[22m[2m)[22m[33m 4010[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m can expand task to show details [33m 809[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m can collapse expanded task [33m 378[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m calls onClose when close button clicked [33m 304[2mms[22m[39m
+workflow-ui:test:coverage: [90mstderr[2m | components/workflows/workflow-list-accessibility.test.tsx[2m > [22m[2mWorkflowList Accessibility[2m > [22m[2mshould not have accessibility violations with filters applied
+workflow-ui:test:coverage: [22m[39mAn update to WorkflowList inside a test was not wrapped in act(...).
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: When testing, code that causes React state updates should be wrapped into act(...):
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: act(() => {
+workflow-ui:test:coverage:   /* fire events that update state */
+workflow-ui:test:coverage: });
+workflow-ui:test:coverage: /* assert on the output */
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage:  [32m✓[39m components/workflows/workflow-detail-tabs.test.tsx [2m([22m[2m18 tests[22m[2m)[22m[33m 4769[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m renders tab navigation [33m 670[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m switches to Execute tab when clicked [33m 340[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m can switch between tabs multiple times [33m 541[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m closes task detail panel when close button clicked [33m 371[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m shows execution result after submission [33m 446[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m shows execution result when history item clicked [33m 402[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m execution result panel appears on right side [33m 352[2mms[22m[39m
+workflow-ui:test:coverage:  [32m✓[39m components/workflows/workflow-list-accessibility.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[33m 5472[2mms[22m[39m
+workflow-ui:test:coverage:      [33m[2m✓[22m[39m should not have accessibility violations [33m 3734[2mms[22m[39m
+workflow-ui:test:coverage:      [33m[2m✓[22m[39m should not have accessibility violations with filters applied [33m 1730[2mms[22m[39m
+workflow-ui:test:coverage:  [32m✓[39m components/workflows/execution-input-form.test.tsx [2m([22m[2m30 tests[22m[2m)[22m[33m 6298[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m renders enum options correctly [33m 867[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m submits valid form data [33m 462[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m converts number strings to numbers [33m 432[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m handles boolean checkbox values correctly [33m 689[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m omits optional empty fields from submission [33m 341[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m calls onTest when Test button clicked with valid data [33m 348[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m disables buttons during submission [33m 408[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m shows loading text during execution [33m 367[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m shows loading text during testing [33m 387[2mms[22m[39m
+workflow-ui:test:coverage:  [32m✓[39m components/workflows/execution-history-panel.test.tsx [2m([22m[2m24 tests[22m[2m)[22m[33m 7119[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m renders filter buttons [33m 1393[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m filters to show only successful executions [33m 748[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m filters to show only failed executions [33m 733[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m can switch back to showing all executions [33m 1108[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m highlights active filter button [33m 322[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m can sort by oldest first [33m 695[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m can toggle sort order multiple times [33m 739[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m shows filtered empty state when filter has no results [33m 367[2mms[22m[39m
+workflow-ui:test:coverage:  [32m✓[39m components/analytics/duration-trends-chart.test.tsx [2m([22m[2m48 tests[22m[2m)[22m[33m 3916[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m should render metric toggle buttons [33m 795[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m should have P50, P95, and Min-Max disabled by default [33m 356[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m should toggle Average metric when clicked [33m 332[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m should allow multiple metrics to be enabled simultaneously [33m 580[2mms[22m[39m
+workflow-ui:test:coverage:  [32m✓[39m components/debugging/variable-watcher.test.tsx [2m([22m[2m12 tests[22m[2m)[22m[33m 2809[2mms[22m[39m
+workflow-ui:test:coverage:      [33m[2m✓[22m[39m should render variable watcher container [33m 570[2mms[22m[39m
+workflow-ui:test:coverage:      [33m[2m✓[22m[39m should allow filtering variables by name [33m 310[2mms[22m[39m
+workflow-ui:test:coverage:      [33m[2m✓[22m[39m should pin/unpin variables for tracking [33m 695[2mms[22m[39m
+workflow-ui:test:coverage:      [33m[2m✓[22m[39m should copy variable value to clipboard [33m 572[2mms[22m[39m
+workflow-ui:test:coverage:  [32m✓[39m components/workflows/workflow-card.test.tsx [2m([22m[2m31 tests[22m[2m)[22m[33m 2186[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m calls onClick with workflow name when clicked [33m 574[2mms[22m[39m
+workflow-ui:test:coverage:  [32m✓[39m components/builder/properties-panel.test.tsx [2m([22m[2m27 tests[22m[2m)[22m[33m 2859[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m should update node label on change [33m 921[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m should trim whitespace from label [33m 346[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m should update description on change [33m 406[2mms[22m[39m
+workflow-ui:test:coverage:  [32m✓[39m components/debugging/execution-comparison.test.tsx [2m([22m[2m12 tests[22m[2m)[22m[33m 2051[2mms[22m[39m
+workflow-ui:test:coverage:      [33m[2m✓[22m[39m should render comparison container [33m 703[2mms[22m[39m
+workflow-ui:test:coverage:      [33m[2m✓[22m[39m should support diff view toggle [33m 592[2mms[22m[39m
+workflow-ui:test:coverage:      [33m[2m✓[22m[39m should support swapping executions [32m 300[2mms[22m[39m
+workflow-ui:test:coverage:  [32m✓[39m components/debugging/workflow-graph-debugger.test.tsx [2m([22m[2m13 tests[22m[2m)[22m[33m 2033[2mms[22m[39m
+workflow-ui:test:coverage:      [33m[2m✓[22m[39m should render workflow graph container [33m 558[2mms[22m[39m
+workflow-ui:test:coverage:      [33m[2m✓[22m[39m should support zoom controls [33m 479[2mms[22m[39m
+workflow-ui:test:coverage:  [32m✓[39m components/builder/task-node.test.tsx [2m([22m[2m28 tests[22m[2m)[22m[33m 2653[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m should enter edit mode on double-click [33m 606[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m should save changes on blur [33m 442[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m should save changes on Enter key [33m 452[2mms[22m[39m
+workflow-ui:test:coverage:  [32m✓[39m components/debugging/step-through-controller.test.tsx [2m([22m[2m15 tests[22m[2m)[22m[33m 2543[2mms[22m[39m
+workflow-ui:test:coverage:      [33m[2m✓[22m[39m should render step-through controller [33m 724[2mms[22m[39m
+workflow-ui:test:coverage:      [33m[2m✓[22m[39m should support skip to task [33m 528[2mms[22m[39m
+workflow-ui:test:coverage:  [32m✓[39m lib/mocks/handlers.test.ts [2m([22m[2m34 tests[22m[2m)[22m[33m 10506[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m returns list of workflows [33m 364[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m includes workflow stats [33m 304[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m filters workflows by search query (name) [33m 304[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m filters workflows by search query (description) [33m 303[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m filters workflows by namespace [33m 303[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m sorts workflows by name (ascending) [33m 306[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m sorts workflows by success rate (descending) [33m 304[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m sorts workflows by total executions (descending) [33m 303[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m combines search and namespace filters [33m 302[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m returns empty array when no workflows match filters [33m 303[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m executes workflow successfully with valid input [33m 507[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m simulates payment failure for high amounts [33m 504[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m returns fallback execution for workflows without mock data [33m 508[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m returns 404 for non-existent workflow [33m 505[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m returns validation error for invalid input [33m 505[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m returns failed execution for schema mismatch workflow [33m 507[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m includes task execution details [33m 505[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m returns dry-run response for valid workflow [33m 306[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m includes execution plan with parallel groups [33m 306[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m returns validation errors for schema mismatch workflow [33m 306[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m includes template resolution preview [33m 305[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m returns fallback dry-run for workflows without mock data [33m 306[2mms[22m[39m
+workflow-ui:test:coverage:  [32m✓[39m components/templates/template-preview.test.tsx [2m([22m[2m16 tests[22m[2m)[22m[33m 2549[2mms[22m[39m
+workflow-ui:test:coverage:      [33m[2m✓[22m[39m should call onClose when Close button in footer is clicked [33m 661[2mms[22m[39m
+workflow-ui:test:coverage:      [33m[2m✓[22m[39m should call onDeploy and onClose when Deploy Template button is clicked [33m 402[2mms[22m[39m
+workflow-ui:test:coverage:      [33m[2m✓[22m[39m should have Download button when template is loaded [33m 465[2mms[22m[39m
+workflow-ui:test:coverage:  [32m✓[39m components/transforms/json-upload-panel.test.tsx [2m([22m[2m9 tests[22m[2m)[22m[33m 2385[2mms[22m[39m
+workflow-ui:test:coverage:      [33m[2m✓[22m[39m should handle file upload [33m 886[2mms[22m[39m
+workflow-ui:test:coverage:      [33m[2m✓[22m[39m should clear upload and allow re-upload [33m 355[2mms[22m[39m
+workflow-ui:test:coverage: [90mstderr[2m | components/debugging/execution-replay.test.tsx[2m > [22m[2mExecutionReplay[2m > [22m[2mshould render execution replay container
+workflow-ui:test:coverage: [22m[39mAn update to ExecutionReplay inside a test was not wrapped in act(...).
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: When testing, code that causes React state updates should be wrapped into act(...):
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: act(() => {
+workflow-ui:test:coverage:   /* fire events that update state */
+workflow-ui:test:coverage: });
+workflow-ui:test:coverage: /* assert on the output */
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+workflow-ui:test:coverage: An update to ExecutionReplay inside a test was not wrapped in act(...).
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: When testing, code that causes React state updates should be wrapped into act(...):
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: act(() => {
+workflow-ui:test:coverage:   /* fire events that update state */
+workflow-ui:test:coverage: });
+workflow-ui:test:coverage: /* assert on the output */
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+workflow-ui:test:coverage: 
+workflow-vscode-client:build: asset extension.js 459 KiB [compared for emit] [minimized] (name: main) 1 related asset
+workflow-vscode-client:build: runtime modules 88 bytes 1 module
+workflow-vscode-client:build: modules by path ../../../node_modules/.pnpm/ 1.13 MiB 198 modules
+workflow-vscode-client:build: modules by path ../../../packages/workflow-graph/dist/*.js 7.81 KiB
+workflow-vscode-client:build:   ../../../packages/workflow-graph/dist/index.js 783 bytes [built] [code generated]
+workflow-vscode-client:build:   ../../../packages/workflow-graph/dist/executionGraphBuilder.js 3.7 KiB [built] [code generated]
+workflow-vscode-client:build:   ../../../packages/workflow-graph/dist/dependencyAnalyzer.js 3.34 KiB [built] [code generated]
+workflow-vscode-client:build: modules by path ./src/*.ts 10.7 KiB
+workflow-vscode-client:build:   ./src/extension.ts 4.16 KiB [built] [code generated]
+workflow-vscode-client:build:   ./src/graphPanel.ts 6.55 KiB [built] [code generated]
+workflow-vscode-client:build: + 10 modules
+workflow-vscode-client:build: 
+workflow-vscode-client:build: WARNING in ../../../node_modules/.pnpm/vscode-languageserver-types@3.17.5/node_modules/vscode-languageserver-types/lib/umd/main.js 3:24-31
+workflow-vscode-client:build: Critical dependency: require function is used in a way in which dependencies cannot be statically extracted
+workflow-vscode-client:build:  @ ../../../node_modules/.pnpm/vscode-languageserver-protocol@3.17.5/node_modules/vscode-languageserver-protocol/lib/common/api.js 23:13-51
+workflow-vscode-client:build:  @ ../../../node_modules/.pnpm/vscode-languageserver-protocol@3.17.5/node_modules/vscode-languageserver-protocol/lib/node/main.js 24:13-37
+workflow-vscode-client:build:  @ ../../../node_modules/.pnpm/vscode-languageclient@9.0.1/node_modules/vscode-languageclient/lib/common/api.js 22:13-54
+workflow-vscode-client:build:  @ ../../../node_modules/.pnpm/vscode-languageclient@9.0.1/node_modules/vscode-languageclient/lib/node/main.js 34:13-37
+workflow-vscode-client:build:  @ ../../../node_modules/.pnpm/vscode-languageclient@9.0.1/node_modules/vscode-languageclient/node.js 7:0-43
+workflow-vscode-client:build:  @ ./src/extension.ts 40:15-52
+workflow-vscode-client:build: 
+workflow-vscode-client:build: 1 warning has detailed information that is not shown.
+workflow-vscode-client:build: Use 'stats.errorDetails: true' resp. '--stats-error-details' to show it.
+workflow-vscode-client:build: 
+workflow-vscode-client:build: webpack 5.103.0 compiled with 1 warning in 17318 ms
+workflow-ui:test:coverage:  [32m✓[39m components/transforms/nodes/aggregate-node.test.tsx [2m([22m[2m6 tests[22m[2m)[22m[33m 2717[2mms[22m[39m
+workflow-ui:test:coverage:      [33m[2m✓[22m[39m should render aggregate node with current values [33m 1093[2mms[22m[39m
+workflow-ui:test:coverage:      [33m[2m✓[22m[39m should add new aggregation [33m 355[2mms[22m[39m
+workflow-ui:test:coverage:      [33m[2m✓[22m[39m should remove aggregation [33m 570[2mms[22m[39m
+workflow-ui:test:coverage:      [33m[2m✓[22m[39m should update aggregation function [33m 331[2mms[22m[39m
+workflow-ui:test:coverage:      [33m[2m✓[22m[39m should update field input [33m 324[2mms[22m[39m
+workflow-ui:test:coverage: [90mstderr[2m | components/transforms/pipeline-builder.test.tsx[2m > [22m[2mPipelineBuilder[2m > [22m[2mRendering[2m > [22m[2mshould render empty canvas
+workflow-ui:test:coverage: [22m[39mReact does not recognize the `fitView` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `fitview` instead. If you accidentally passed it from a parent component, remove it from the DOM element.
+workflow-ui:test:coverage: React does not recognize the `minZoom` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `minzoom` instead. If you accidentally passed it from a parent component, remove it from the DOM element.
+workflow-ui:test:coverage: React does not recognize the `maxZoom` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `maxzoom` instead. If you accidentally passed it from a parent component, remove it from the DOM element.
+workflow-ui:test:coverage: React does not recognize the `defaultEdgeOptions` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `defaultedgeoptions` instead. If you accidentally passed it from a parent component, remove it from the DOM element.
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage:  [32m✓[39m components/workflows/workflow-list.test.tsx [2m([22m[2m32 tests[22m[2m)[22m[33m 14275[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m renders workflow cards after loading [33m 1112[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m hides loading skeletons after data loads [33m 879[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m applies default namespace filter [33m 396[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m filters workflows by namespace [33m 510[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m filters workflows by search query [33m 451[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m shows empty state when no results match [33m 387[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m sorts workflows by name by default [33m 958[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m sorts workflows by success rate when selected [33m 573[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m extracts unique namespaces from workflows [33m 802[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m has proper ARIA roles and labels [33m 741[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m displays last updated timestamp after data loads [33m 541[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m focuses search input when "/" key is pressed [33m 476[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m clears all filters when "Escape" key is pressed [33m 472[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m does not trigger "/" shortcut when typing in an input field [33m 392[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m displays workflow count after loading [33m 556[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m displays correct count with filters applied [33m 540[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m handles rapid filter changes gracefully [33m 1166[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m handles empty workflow list gracefully [33m 402[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m does not display clear filters button when no filters are active [33m 753[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m clears all filters when clear button is clicked [33m 335[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m counts only non-default filters (excludes default sort) [33m 538[2mms[22m[39m
+workflow-ui:test:coverage:  [32m✓[39m components/debugging/execution-replay.test.tsx [2m([22m[2m11 tests[22m[2m)[22m[33m 2893[2mms[22m[39m
+workflow-ui:test:coverage:      [33m[2m✓[22m[39m should render execution replay container [33m 816[2mms[22m[39m
+workflow-ui:test:coverage:      [33m[2m✓[22m[39m should filter executions by status [33m 615[2mms[22m[39m
+workflow-ui:test:coverage:      [33m[2m✓[22m[39m should support pagination [33m 397[2mms[22m[39m
+workflow-ui:test:coverage:      [33m[2m✓[22m[39m should allow replaying execution with visualizations [33m 454[2mms[22m[39m
+workflow-ui:test:coverage:  [32m✓[39m components/debugging/task-state-inspector.test.tsx [2m([22m[2m10 tests[22m[2m)[22m[33m 1885[2mms[22m[39m
+workflow-ui:test:coverage:      [33m[2m✓[22m[39m should render inspector container [33m 808[2mms[22m[39m
+workflow-ui:test:coverage:      [33m[2m✓[22m[39m should show task output data [33m 373[2mms[22m[39m
+workflow-ui:test:coverage:  [32m✓[39m app/workflows/page.test.tsx [2m([22m[2m9 tests[22m[2m)[22m[33m 2112[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m should render page title [33m 919[2mms[22m[39m
+workflow-ui:test:coverage:  [32m✓[39m components/transforms/pipeline-builder.test.tsx [2m([22m[2m15 tests[22m[2m)[22m[33m 1574[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m should render operation nodes with selection state [33m 708[2mms[22m[39m
+workflow-ui:test:coverage:  [32m✓[39m components/workflows/workflow-filters.test.tsx [2m([22m[2m16 tests[22m[2m)[22m[33m 1563[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m renders all namespace options [33m 851[2mms[22m[39m
+workflow-ui:test:coverage:  [32m✓[39m components/debugging/execution-timeline.test.tsx [2m([22m[2m12 tests[22m[2m)[22m[33m 1771[2mms[22m[39m
+workflow-ui:test:coverage:      [33m[2m✓[22m[39m should render timeline container [33m 732[2mms[22m[39m
+workflow-ui:test:coverage:  [32m✓[39m components/transforms/nodes/filter-node.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 1406[2mms[22m[39m
+workflow-ui:test:coverage:      [33m[2m✓[22m[39m should update condition field [33m 785[2mms[22m[39m
+workflow-ui:test:coverage:  [32m✓[39m components/transforms/preview-panel.test.tsx [2m([22m[2m10 tests[22m[2m)[22m[33m 1415[2mms[22m[39m
+workflow-ui:test:coverage:      [33m[2m✓[22m[39m should handle pagination for large datasets [33m 828[2mms[22m[39m
+workflow-ui:test:coverage:  [32m✓[39m components/transforms/nodes/join-node.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 1381[2mms[22m[39m
+workflow-ui:test:coverage:      [33m[2m✓[22m[39m should render join node [33m 786[2mms[22m[39m
+workflow-ui:test:coverage:  [32m✓[39m components/transforms/nodes/enrich-node.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 1224[2mms[22m[39m
+workflow-ui:test:coverage:      [33m[2m✓[22m[39m should render enrich node [33m 674[2mms[22m[39m
+workflow-ui:test:coverage:      [33m[2m✓[22m[39m should update enrich field path [33m 302[2mms[22m[39m
+workflow-ui:test:coverage:  [32m✓[39m components/transforms/nodes/select-node.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 1703[2mms[22m[39m
+workflow-ui:test:coverage:      [33m[2m✓[22m[39m should add new field [33m 847[2mms[22m[39m
+workflow-ui:test:coverage:      [33m[2m✓[22m[39m should remove field [33m 329[2mms[22m[39m
+workflow-ui:test:coverage:      [33m[2m✓[22m[39m should update field JSONPath [33m 320[2mms[22m[39m
+workflow-ui:test:coverage:  [32m✓[39m components/transforms/nodes/groupby-node.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 1381[2mms[22m[39m
+workflow-ui:test:coverage:      [33m[2m✓[22m[39m should render groupby node [33m 899[2mms[22m[39m
+workflow-ui:test:coverage: [90mstdout[2m | components/workflows/workflow-graph-panel.test.tsx[2m > [22m[2mWorkflowGraphPanel[2m > [22m[2mBasic Rendering[2m > [22m[2mrenders React Flow component
+workflow-ui:test:coverage: [22m[39mGraph has 1 edges: [
+workflow-ui:test:coverage:   { id: [32m'e1-2'[39m, source: [32m'task1'[39m, target: [32m'task2'[39m, type: [32m'dependency'[39m }
+workflow-ui:test:coverage: ]
+workflow-ui:test:coverage: Converted to 1 React Flow edges: [
+workflow-ui:test:coverage:   {
+workflow-ui:test:coverage:     id: [32m'edge-task1-task2-0'[39m,
+workflow-ui:test:coverage:     source: [32m'task1'[39m,
+workflow-ui:test:coverage:     target: [32m'task2'[39m,
+workflow-ui:test:coverage:     type: [32m'smoothstep'[39m,
+workflow-ui:test:coverage:     animated: [33mfalse[39m,
+workflow-ui:test:coverage:     markerEnd: { type: [32m'arrowclosed'[39m, width: [33m20[39m, height: [33m20[39m },
+workflow-ui:test:coverage:     style: { strokeWidth: [33m2[39m, stroke: [32m'#9ca3af'[39m }
+workflow-ui:test:coverage:   }
+workflow-ui:test:coverage: ]
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: [90mstdout[2m | components/workflows/workflow-graph-panel.test.tsx[2m > [22m[2mWorkflowGraphPanel[2m > [22m[2mBasic Rendering[2m > [22m[2mrenders all nodes from graph
+workflow-ui:test:coverage: [22m[39mGraph has 1 edges: [
+workflow-ui:test:coverage:   { id: [32m'e1-2'[39m, source: [32m'task1'[39m, target: [32m'task2'[39m, type: [32m'dependency'[39m }
+workflow-ui:test:coverage: ]
+workflow-ui:test:coverage: Converted to 1 React Flow edges: [
+workflow-ui:test:coverage:   {
+workflow-ui:test:coverage:     id: [32m'edge-task1-task2-0'[39m,
+workflow-ui:test:coverage:     source: [32m'task1'[39m,
+workflow-ui:test:coverage:     target: [32m'task2'[39m,
+workflow-ui:test:coverage:     type: [32m'smoothstep'[39m,
+workflow-ui:test:coverage:     animated: [33mfalse[39m,
+workflow-ui:test:coverage:     markerEnd: { type: [32m'arrowclosed'[39m, width: [33m20[39m, height: [33m20[39m },
+workflow-ui:test:coverage:     style: { strokeWidth: [33m2[39m, stroke: [32m'#9ca3af'[39m }
+workflow-ui:test:coverage:   }
+workflow-ui:test:coverage: ]
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: [90mstdout[2m | components/workflows/workflow-graph-panel.test.tsx[2m > [22m[2mWorkflowGraphPanel[2m > [22m[2mBasic Rendering[2m > [22m[2mrenders node labels
+workflow-ui:test:coverage: [22m[39mGraph has 1 edges: [
+workflow-ui:test:coverage:   { id: [32m'e1-2'[39m, source: [32m'task1'[39m, target: [32m'task2'[39m, type: [32m'dependency'[39m }
+workflow-ui:test:coverage: ]
+workflow-ui:test:coverage: Converted to 1 React Flow edges: [
+workflow-ui:test:coverage:   {
+workflow-ui:test:coverage:     id: [32m'edge-task1-task2-0'[39m,
+workflow-ui:test:coverage:     source: [32m'task1'[39m,
+workflow-ui:test:coverage:     target: [32m'task2'[39m,
+workflow-ui:test:coverage:     type: [32m'smoothstep'[39m,
+workflow-ui:test:coverage:     animated: [33mfalse[39m,
+workflow-ui:test:coverage:     markerEnd: { type: [32m'arrowclosed'[39m, width: [33m20[39m, height: [33m20[39m },
+workflow-ui:test:coverage:     style: { strokeWidth: [33m2[39m, stroke: [32m'#9ca3af'[39m }
+workflow-ui:test:coverage:   }
+workflow-ui:test:coverage: ]
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: [90mstdout[2m | components/workflows/workflow-graph-panel.test.tsx[2m > [22m[2mWorkflowGraphPanel[2m > [22m[2mBasic Rendering[2m > [22m[2mrenders all edges from graph
+workflow-ui:test:coverage: [22m[39mGraph has 1 edges: [
+workflow-ui:test:coverage:   { id: [32m'e1-2'[39m, source: [32m'task1'[39m, target: [32m'task2'[39m, type: [32m'dependency'[39m }
+workflow-ui:test:coverage: ]
+workflow-ui:test:coverage: Converted to 1 React Flow edges: [
+workflow-ui:test:coverage:   {
+workflow-ui:test:coverage:     id: [32m'edge-task1-task2-0'[39m,
+workflow-ui:test:coverage:     source: [32m'task1'[39m,
+workflow-ui:test:coverage:     target: [32m'task2'[39m,
+workflow-ui:test:coverage:     type: [32m'smoothstep'[39m,
+workflow-ui:test:coverage:     animated: [33mfalse[39m,
+workflow-ui:test:coverage:     markerEnd: { type: [32m'arrowclosed'[39m, width: [33m20[39m, height: [33m20[39m },
+workflow-ui:test:coverage:     style: { strokeWidth: [33m2[39m, stroke: [32m'#9ca3af'[39m }
+workflow-ui:test:coverage:   }
+workflow-ui:test:coverage: ]
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: [90mstdout[2m | components/workflows/workflow-graph-panel.test.tsx[2m > [22m[2mWorkflowGraphPanel[2m > [22m[2mBasic Rendering[2m > [22m[2mrenders controls
+workflow-ui:test:coverage: [22m[39mGraph has 1 edges: [
+workflow-ui:test:coverage:   { id: [32m'e1-2'[39m, source: [32m'task1'[39m, target: [32m'task2'[39m, type: [32m'dependency'[39m }
+workflow-ui:test:coverage: ]
+workflow-ui:test:coverage: Converted to 1 React Flow edges: [
+workflow-ui:test:coverage:   {
+workflow-ui:test:coverage:     id: [32m'edge-task1-task2-0'[39m,
+workflow-ui:test:coverage:     source: [32m'task1'[39m,
+workflow-ui:test:coverage:     target: [32m'task2'[39m,
+workflow-ui:test:coverage:     type: [32m'smoothstep'[39m,
+workflow-ui:test:coverage:     animated: [33mfalse[39m,
+workflow-ui:test:coverage:     markerEnd: { type: [32m'arrowclosed'[39m, width: [33m20[39m, height: [33m20[39m },
+workflow-ui:test:coverage:     style: { strokeWidth: [33m2[39m, stroke: [32m'#9ca3af'[39m }
+workflow-ui:test:coverage:   }
+workflow-ui:test:coverage: ]
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: [90mstdout[2m | components/workflows/workflow-graph-panel.test.tsx[2m > [22m[2mWorkflowGraphPanel[2m > [22m[2mBasic Rendering[2m > [22m[2mrenders background
+workflow-ui:test:coverage: [22m[39mGraph has 1 edges: [
+workflow-ui:test:coverage:   { id: [32m'e1-2'[39m, source: [32m'task1'[39m, target: [32m'task2'[39m, type: [32m'dependency'[39m }
+workflow-ui:test:coverage: ]
+workflow-ui:test:coverage: Converted to 1 React Flow edges: [
+workflow-ui:test:coverage:   {
+workflow-ui:test:coverage:     id: [32m'edge-task1-task2-0'[39m,
+workflow-ui:test:coverage:     source: [32m'task1'[39m,
+workflow-ui:test:coverage:     target: [32m'task2'[39m,
+workflow-ui:test:coverage:     type: [32m'smoothstep'[39m,
+workflow-ui:test:coverage:     animated: [33mfalse[39m,
+workflow-ui:test:coverage:     markerEnd: { type: [32m'arrowclosed'[39m, width: [33m20[39m, height: [33m20[39m },
+workflow-ui:test:coverage:     style: { strokeWidth: [33m2[39m, stroke: [32m'#9ca3af'[39m }
+workflow-ui:test:coverage:   }
+workflow-ui:test:coverage: ]
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: [90mstdout[2m | components/workflows/workflow-graph-panel.test.tsx[2m > [22m[2mWorkflowGraphPanel[2m > [22m[2mNode Types[2m > [22m[2mrenders task nodes with correct type
+workflow-ui:test:coverage: [22m[39mGraph has 1 edges: [
+workflow-ui:test:coverage:   { id: [32m'e1-2'[39m, source: [32m'task1'[39m, target: [32m'task2'[39m, type: [32m'dependency'[39m }
+workflow-ui:test:coverage: ]
+workflow-ui:test:coverage: Converted to 1 React Flow edges: [
+workflow-ui:test:coverage:   {
+workflow-ui:test:coverage:     id: [32m'edge-task1-task2-0'[39m,
+workflow-ui:test:coverage:     source: [32m'task1'[39m,
+workflow-ui:test:coverage:     target: [32m'task2'[39m,
+workflow-ui:test:coverage:     type: [32m'smoothstep'[39m,
+workflow-ui:test:coverage:     animated: [33mfalse[39m,
+workflow-ui:test:coverage:     markerEnd: { type: [32m'arrowclosed'[39m, width: [33m20[39m, height: [33m20[39m },
+workflow-ui:test:coverage:     style: { strokeWidth: [33m2[39m, stroke: [32m'#9ca3af'[39m }
+workflow-ui:test:coverage:   }
+workflow-ui:test:coverage: ]
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: [90mstdout[2m | components/workflows/workflow-graph-panel.test.tsx[2m > [22m[2mWorkflowGraphPanel[2m > [22m[2mNode Types[2m > [22m[2mrenders start node with correct type
+workflow-ui:test:coverage: [22m[39mGraph has 5 edges: [
+workflow-ui:test:coverage:   {
+workflow-ui:test:coverage:     id: [32m'e-start-1'[39m,
+workflow-ui:test:coverage:     source: [32m'start'[39m,
+workflow-ui:test:coverage:     target: [32m'task1'[39m,
+workflow-ui:test:coverage:     type: [32m'dependency'[39m
+workflow-ui:test:coverage:   },
+workflow-ui:test:coverage:   {
+workflow-ui:test:coverage:     id: [32m'e-start-2'[39m,
+workflow-ui:test:coverage:     source: [32m'start'[39m,
+workflow-ui:test:coverage:     target: [32m'task2'[39m,
+workflow-ui:test:coverage:     type: [32m'dependency'[39m
+workflow-ui:test:coverage:   },
+workflow-ui:test:coverage:   { id: [32m'e-1-3'[39m, source: [32m'task1'[39m, target: [32m'task3'[39m, type: [32m'dependency'[39m },
+workflow-ui:test:coverage:   { id: [32m'e-2-3'[39m, source: [32m'task2'[39m, target: [32m'task3'[39m, type: [32m'dependency'[39m },
+workflow-ui:test:coverage:   { id: [32m'e-3-end'[39m, source: [32m'task3'[39m, target: [32m'end'[39m, type: [32m'dependency'[39m }
+workflow-ui:test:coverage: ]
+workflow-ui:test:coverage: Converted to 5 React Flow edges: [
+workflow-ui:test:coverage:   {
+workflow-ui:test:coverage:     id: [32m'edge-start-task1-0'[39m,
+workflow-ui:test:coverage:     source: [32m'start'[39m,
+workflow-ui:test:coverage:     target: [32m'task1'[39m,
+workflow-ui:test:coverage:     type: [32m'smoothstep'[39m,
+workflow-ui:test:coverage:     animated: [33mfalse[39m,
+workflow-ui:test:coverage:     markerEnd: { type: [32m'arrowclosed'[39m, width: [33m20[39m, height: [33m20[39m },
+workflow-ui:test:coverage:     style: { strokeWidth: [33m2[39m, stroke: [32m'#9ca3af'[39m }
+workflow-ui:test:coverage:   },
+workflow-ui:test:coverage:   {
+workflow-ui:test:coverage:     id: [32m'edge-start-task2-1'[39m,
+workflow-ui:test:coverage:     source: [32m'start'[39m,
+workflow-ui:test:coverage:     target: [32m'task2'[39m,
+workflow-ui:test:coverage:     type: [32m'smoothstep'[39m,
+workflow-ui:test:coverage:     animated: [33mfalse[39m,
+workflow-ui:test:coverage:     markerEnd: { type: [32m'arrowclosed'[39m, width: [33m20[39m, height: [33m20[39m },
+workflow-ui:test:coverage:     style: { strokeWidth: [33m2[39m, stroke: [32m'#9ca3af'[39m }
+workflow-ui:test:coverage:   },
+workflow-ui:test:coverage:   {
+workflow-ui:test:coverage:     id: [32m'edge-task1-task3-2'[39m,
+workflow-ui:test:coverage:     source: [32m'task1'[39m,
+workflow-ui:test:coverage:     target: [32m'task3'[39m,
+workflow-ui:test:coverage:     type: [32m'smoothstep'[39m,
+workflow-ui:test:coverage:     animated: [33mfalse[39m,
+workflow-ui:test:coverage:     markerEnd: { type: [32m'arrowclosed'[39m, width: [33m20[39m, height: [33m20[39m },
+workflow-ui:test:coverage:     style: { strokeWidth: [33m2[39m, stroke: [32m'#9ca3af'[39m }
+workflow-ui:test:coverage:   },
+workflow-ui:test:coverage:   {
+workflow-ui:test:coverage:     id: [32m'edge-task2-task3-3'[39m,
+workflow-ui:test:coverage:     source: [32m'task2'[39m,
+workflow-ui:test:coverage:     target: [32m'task3'[39m,
+workflow-ui:test:coverage:     type: [32m'smoothstep'[39m,
+workflow-ui:test:coverage:     animated: [33mfalse[39m,
+workflow-ui:test:coverage:     markerEnd: { type: [32m'arrowclosed'[39m, width: [33m20[39m, height: [33m20[39m },
+workflow-ui:test:coverage:     style: { strokeWidth: [33m2[39m, stroke: [32m'#9ca3af'[39m }
+workflow-ui:test:coverage:   },
+workflow-ui:test:coverage:   {
+workflow-ui:test:coverage:     id: [32m'edge-task3-end-4'[39m,
+workflow-ui:test:coverage:     source: [32m'task3'[39m,
+workflow-ui:test:coverage:     target: [32m'end'[39m,
+workflow-ui:test:coverage:     type: [32m'smoothstep'[39m,
+workflow-ui:test:coverage:     animated: [33mfalse[39m,
+workflow-ui:test:coverage:     markerEnd: { type: [32m'arrowclosed'[39m, width: [33m20[39m, height: [33m20[39m },
+workflow-ui:test:coverage:     style: { strokeWidth: [33m2[39m, stroke: [32m'#9ca3af'[39m }
+workflow-ui:test:coverage:   }
+workflow-ui:test:coverage: ]
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: [90mstdout[2m | components/workflows/workflow-graph-panel.test.tsx[2m > [22m[2mWorkflowGraphPanel[2m > [22m[2mNode Types[2m > [22m[2mrenders end node with correct type
+workflow-ui:test:coverage: [22m[39mGraph has 5 edges: [
+workflow-ui:test:coverage:   {
+workflow-ui:test:coverage:     id: [32m'e-start-1'[39m,
+workflow-ui:test:coverage:     source: [32m'start'[39m,
+workflow-ui:test:coverage:     target: [32m'task1'[39m,
+workflow-ui:test:coverage:     type: [32m'dependency'[39m
+workflow-ui:test:coverage:   },
+workflow-ui:test:coverage:   {
+workflow-ui:test:coverage:     id: [32m'e-start-2'[39m,
+workflow-ui:test:coverage:     source: [32m'start'[39m,
+workflow-ui:test:coverage:     target: [32m'task2'[39m,
+workflow-ui:test:coverage:     type: [32m'dependency'[39m
+workflow-ui:test:coverage:   },
+workflow-ui:test:coverage:   { id: [32m'e-1-3'[39m, source: [32m'task1'[39m, target: [32m'task3'[39m, type: [32m'dependency'[39m },
+workflow-ui:test:coverage:   { id: [32m'e-2-3'[39m, source: [32m'task2'[39m, target: [32m'task3'[39m, type: [32m'dependency'[39m },
+workflow-ui:test:coverage:   { id: [32m'e-3-end'[39m, source: [32m'task3'[39m, target: [32m'end'[39m, type: [32m'dependency'[39m }
+workflow-ui:test:coverage: ]
+workflow-ui:test:coverage: Converted to 5 React Flow edges: [
+workflow-ui:test:coverage:   {
+workflow-ui:test:coverage:     id: [32m'edge-start-task1-0'[39m,
+workflow-ui:test:coverage:     source: [32m'start'[39m,
+workflow-ui:test:coverage:     target: [32m'task1'[39m,
+workflow-ui:test:coverage:     type: [32m'smoothstep'[39m,
+workflow-ui:test:coverage:     animated: [33mfalse[39m,
+workflow-ui:test:coverage:     markerEnd: { type: [32m'arrowclosed'[39m, width: [33m20[39m, height: [33m20[39m },
+workflow-ui:test:coverage:     style: { strokeWidth: [33m2[39m, stroke: [32m'#9ca3af'[39m }
+workflow-ui:test:coverage:   },
+workflow-ui:test:coverage:   {
+workflow-ui:test:coverage:     id: [32m'edge-start-task2-1'[39m,
+workflow-ui:test:coverage:     source: [32m'start'[39m,
+workflow-ui:test:coverage:     target: [32m'task2'[39m,
+workflow-ui:test:coverage:     type: [32m'smoothstep'[39m,
+workflow-ui:test:coverage:     animated: [33mfalse[39m,
+workflow-ui:test:coverage:     markerEnd: { type: [32m'arrowclosed'[39m, width: [33m20[39m, height: [33m20[39m },
+workflow-ui:test:coverage:     style: { strokeWidth: [33m2[39m, stroke: [32m'#9ca3af'[39m }
+workflow-ui:test:coverage:   },
+workflow-ui:test:coverage:   {
+workflow-ui:test:coverage:     id: [32m'edge-task1-task3-2'[39m,
+workflow-ui:test:coverage:     source: [32m'task1'[39m,
+workflow-ui:test:coverage:     target: [32m'task3'[39m,
+workflow-ui:test:coverage:     type: [32m'smoothstep'[39m,
+workflow-ui:test:coverage:     animated: [33mfalse[39m,
+workflow-ui:test:coverage:     markerEnd: { type: [32m'arrowclosed'[39m, width: [33m20[39m, height: [33m20[39m },
+workflow-ui:test:coverage:     style: { strokeWidth: [33m2[39m, stroke: [32m'#9ca3af'[39m }
+workflow-ui:test:coverage:   },
+workflow-ui:test:coverage:   {
+workflow-ui:test:coverage:     id: [32m'edge-task2-task3-3'[39m,
+workflow-ui:test:coverage:     source: [32m'task2'[39m,
+workflow-ui:test:coverage:     target: [32m'task3'[39m,
+workflow-ui:test:coverage:     type: [32m'smoothstep'[39m,
+workflow-ui:test:coverage:     animated: [33mfalse[39m,
+workflow-ui:test:coverage:     markerEnd: { type: [32m'arrowclosed'[39m, width: [33m20[39m, height: [33m20[39m },
+workflow-ui:test:coverage:     style: { strokeWidth: [33m2[39m, stroke: [32m'#9ca3af'[39m }
+workflow-ui:test:coverage:   },
+workflow-ui:test:coverage:   {
+workflow-ui:test:coverage:     id: [32m'edge-task3-end-4'[39m,
+workflow-ui:test:coverage:     source: [32m'task3'[39m,
+workflow-ui:test:coverage:     target: [32m'end'[39m,
+workflow-ui:test:coverage:     type: [32m'smoothstep'[39m,
+workflow-ui:test:coverage:     animated: [33mfalse[39m,
+workflow-ui:test:coverage:     markerEnd: { type: [32m'arrowclosed'[39m, width: [33m20[39m, height: [33m20[39m },
+workflow-ui:test:coverage:     style: { strokeWidth: [33m2[39m, stroke: [32m'#9ca3af'[39m }
+workflow-ui:test:coverage:   }
+workflow-ui:test:coverage: ]
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: [90mstdout[2m | components/workflows/workflow-graph-panel.test.tsx[2m > [22m[2mWorkflowGraphPanel[2m > [22m[2mGraph Layout[2m > [22m[2mapplies auto-layout to nodes using graph-layout utility
+workflow-ui:test:coverage: [22m[39mGraph has 1 edges: [
+workflow-ui:test:coverage:   { id: [32m'e1-2'[39m, source: [32m'task1'[39m, target: [32m'task2'[39m, type: [32m'dependency'[39m }
+workflow-ui:test:coverage: ]
+workflow-ui:test:coverage: Converted to 1 React Flow edges: [
+workflow-ui:test:coverage:   {
+workflow-ui:test:coverage:     id: [32m'edge-task1-task2-0'[39m,
+workflow-ui:test:coverage:     source: [32m'task1'[39m,
+workflow-ui:test:coverage:     target: [32m'task2'[39m,
+workflow-ui:test:coverage:     type: [32m'smoothstep'[39m,
+workflow-ui:test:coverage:     animated: [33mfalse[39m,
+workflow-ui:test:coverage:     markerEnd: { type: [32m'arrowclosed'[39m, width: [33m20[39m, height: [33m20[39m },
+workflow-ui:test:coverage:     style: { strokeWidth: [33m2[39m, stroke: [32m'#9ca3af'[39m }
+workflow-ui:test:coverage:   }
+workflow-ui:test:coverage: ]
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: [90mstdout[2m | components/workflows/workflow-graph-panel.test.tsx[2m > [22m[2mWorkflowGraphPanel[2m > [22m[2mGraph Layout[2m > [22m[2muses top-to-bottom direction by default
+workflow-ui:test:coverage: [22m[39mGraph has 1 edges: [
+workflow-ui:test:coverage:   { id: [32m'e1-2'[39m, source: [32m'task1'[39m, target: [32m'task2'[39m, type: [32m'dependency'[39m }
+workflow-ui:test:coverage: ]
+workflow-ui:test:coverage: Converted to 1 React Flow edges: [
+workflow-ui:test:coverage:   {
+workflow-ui:test:coverage:     id: [32m'edge-task1-task2-0'[39m,
+workflow-ui:test:coverage:     source: [32m'task1'[39m,
+workflow-ui:test:coverage:     target: [32m'task2'[39m,
+workflow-ui:test:coverage:     type: [32m'smoothstep'[39m,
+workflow-ui:test:coverage:     animated: [33mfalse[39m,
+workflow-ui:test:coverage:     markerEnd: { type: [32m'arrowclosed'[39m, width: [33m20[39m, height: [33m20[39m },
+workflow-ui:test:coverage:     style: { strokeWidth: [33m2[39m, stroke: [32m'#9ca3af'[39m }
+workflow-ui:test:coverage:   }
+workflow-ui:test:coverage: ]
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: [90mstdout[2m | components/workflows/workflow-graph-panel.test.tsx[2m > [22m[2mWorkflowGraphPanel[2m > [22m[2mGraph Layout[2m > [22m[2maccepts custom layout direction
+workflow-ui:test:coverage: [22m[39mGraph has 1 edges: [
+workflow-ui:test:coverage:   { id: [32m'e1-2'[39m, source: [32m'task1'[39m, target: [32m'task2'[39m, type: [32m'dependency'[39m }
+workflow-ui:test:coverage: ]
+workflow-ui:test:coverage: Converted to 1 React Flow edges: [
+workflow-ui:test:coverage:   {
+workflow-ui:test:coverage:     id: [32m'edge-task1-task2-0'[39m,
+workflow-ui:test:coverage:     source: [32m'task1'[39m,
+workflow-ui:test:coverage:     target: [32m'task2'[39m,
+workflow-ui:test:coverage:     type: [32m'smoothstep'[39m,
+workflow-ui:test:coverage:     animated: [33mfalse[39m,
+workflow-ui:test:coverage:     markerEnd: { type: [32m'arrowclosed'[39m, width: [33m20[39m, height: [33m20[39m },
+workflow-ui:test:coverage:     style: { strokeWidth: [33m2[39m, stroke: [32m'#9ca3af'[39m }
+workflow-ui:test:coverage:   }
+workflow-ui:test:coverage: ]
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: [90mstdout[2m | components/workflows/workflow-graph-panel.test.tsx[2m > [22m[2mWorkflowGraphPanel[2m > [22m[2mParallel Groups[2m > [22m[2mhighlights parallel tasks visually
+workflow-ui:test:coverage: [22m[39mGraph has 5 edges: [
+workflow-ui:test:coverage:   {
+workflow-ui:test:coverage:     id: [32m'e-start-1'[39m,
+workflow-ui:test:coverage:     source: [32m'start'[39m,
+workflow-ui:test:coverage:     target: [32m'task1'[39m,
+workflow-ui:test:coverage:     type: [32m'dependency'[39m
+workflow-ui:test:coverage:   },
+workflow-ui:test:coverage:   {
+workflow-ui:test:coverage:     id: [32m'e-start-2'[39m,
+workflow-ui:test:coverage:     source: [32m'start'[39m,
+workflow-ui:test:coverage:     target: [32m'task2'[39m,
+workflow-ui:test:coverage:     type: [32m'dependency'[39m
+workflow-ui:test:coverage:   },
+workflow-ui:test:coverage:   { id: [32m'e-1-3'[39m, source: [32m'task1'[39m, target: [32m'task3'[39m, type: [32m'dependency'[39m },
+workflow-ui:test:coverage:   { id: [32m'e-2-3'[39m, source: [32m'task2'[39m, target: [32m'task3'[39m, type: [32m'dependency'[39m },
+workflow-ui:test:coverage:   { id: [32m'e-3-end'[39m, source: [32m'task3'[39m, target: [32m'end'[39m, type: [32m'dependency'[39m }
+workflow-ui:test:coverage: ]
+workflow-ui:test:coverage: Converted to 5 React Flow edges: [
+workflow-ui:test:coverage:   {
+workflow-ui:test:coverage:     id: [32m'edge-start-task1-0'[39m,
+workflow-ui:test:coverage:     source: [32m'start'[39m,
+workflow-ui:test:coverage:     target: [32m'task1'[39m,
+workflow-ui:test:coverage:     type: [32m'smoothstep'[39m,
+workflow-ui:test:coverage:     animated: [33mfalse[39m,
+workflow-ui:test:coverage:     markerEnd: { type: [32m'arrowclosed'[39m, width: [33m20[39m, height: [33m20[39m },
+workflow-ui:test:coverage:     style: { strokeWidth: [33m2[39m, stroke: [32m'#9ca3af'[39m }
+workflow-ui:test:coverage:   },
+workflow-ui:test:coverage:   {
+workflow-ui:test:coverage:     id: [32m'edge-start-task2-1'[39m,
+workflow-ui:test:coverage:     source: [32m'start'[39m,
+workflow-ui:test:coverage:     target: [32m'task2'[39m,
+workflow-ui:test:coverage:     type: [32m'smoothstep'[39m,
+workflow-ui:test:coverage:     animated: [33mfalse[39m,
+workflow-ui:test:coverage:     markerEnd: { type: [32m'arrowclosed'[39m, width: [33m20[39m, height: [33m20[39m },
+workflow-ui:test:coverage:     style: { strokeWidth: [33m2[39m, stroke: [32m'#9ca3af'[39m }
+workflow-ui:test:coverage:   },
+workflow-ui:test:coverage:   {
+workflow-ui:test:coverage:     id: [32m'edge-task1-task3-2'[39m,
+workflow-ui:test:coverage:     source: [32m'task1'[39m,
+workflow-ui:test:coverage:     target: [32m'task3'[39m,
+workflow-ui:test:coverage:     type: [32m'smoothstep'[39m,
+workflow-ui:test:coverage:     animated: [33mfalse[39m,
+workflow-ui:test:coverage:     markerEnd: { type: [32m'arrowclosed'[39m, width: [33m20[39m, height: [33m20[39m },
+workflow-ui:test:coverage:     style: { strokeWidth: [33m2[39m, stroke: [32m'#9ca3af'[39m }
+workflow-ui:test:coverage:   },
+workflow-ui:test:coverage:   {
+workflow-ui:test:coverage:     id: [32m'edge-task2-task3-3'[39m,
+workflow-ui:test:coverage:     source: [32m'task2'[39m,
+workflow-ui:test:coverage:     target: [32m'task3'[39m,
+workflow-ui:test:coverage:     type: [32m'smoothstep'[39m,
+workflow-ui:test:coverage:     animated: [33mfalse[39m,
+workflow-ui:test:coverage:     markerEnd: { type: [32m'arrowclosed'[39m, width: [33m20[39m, height: [33m20[39m },
+workflow-ui:test:coverage:     style: { strokeWidth: [33m2[39m, stroke: [32m'#9ca3af'[39m }
+workflow-ui:test:coverage:   },
+workflow-ui:test:coverage:   {
+workflow-ui:test:coverage:     id: [32m'edge-task3-end-4'[39m,
+workflow-ui:test:coverage:     source: [32m'task3'[39m,
+workflow-ui:test:coverage:     target: [32m'end'[39m,
+workflow-ui:test:coverage:     type: [32m'smoothstep'[39m,
+workflow-ui:test:coverage:     animated: [33mfalse[39m,
+workflow-ui:test:coverage:     markerEnd: { type: [32m'arrowclosed'[39m, width: [33m20[39m, height: [33m20[39m },
+workflow-ui:test:coverage:     style: { strokeWidth: [33m2[39m, stroke: [32m'#9ca3af'[39m }
+workflow-ui:test:coverage:   }
+workflow-ui:test:coverage: ]
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage:  [32m✓[39m lib/api/queries.test.tsx [2m([22m[2m68 tests[22m[2m)[22m[33m 19244[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m creates ApiError with status and details [33m 307[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m fetches workflow list successfully [33m 383[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m includes workflow metadata [33m 314[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m filters workflows by search query [33m 361[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m filters workflows by namespace [33m 314[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m sorts workflows by name [33m 360[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m combines multiple filters [33m 361[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m uses different cache keys for different filters [33m 671[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m executes workflow successfully [33m 516[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m handles execution errors [33m 514[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m handles schema mismatch errors [33m 562[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m performs dry-run successfully [33m 361[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m returns validation errors for invalid workflow [33m 360[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m includes execution plan with parallel groups [33m 359[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m executes task successfully [33m 359[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m handles execution errors [33m 444[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m includes output data on success [33m 360[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m invalidates task execution history on success [33m 360[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m fetches all templates [33m 363[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m filters by category [33m 360[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m filters by difficulty [33m 358[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m filters by search [33m 363[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m filters by tags [33m 362[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m filters by maxEstimatedTime [33m 362[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m filters by parallelOnly [33m 363[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m deploys template successfully [33m 358[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m handles deployment errors [33m 359[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m invalidates workflows on success [33m 358[2mms[22m[39m
+workflow-ui:test:coverage: [90mstdout[2m | components/workflows/workflow-graph-panel.test.tsx[2m > [22m[2mWorkflowGraphPanel[2m > [22m[2mNode Interaction[2m > [22m[2mcalls onNodeClick when node is clicked
+workflow-ui:test:coverage: [22m[39mGraph has 1 edges: [
+workflow-ui:test:coverage:   { id: [32m'e1-2'[39m, source: [32m'task1'[39m, target: [32m'task2'[39m, type: [32m'dependency'[39m }
+workflow-ui:test:coverage: ]
+workflow-ui:test:coverage: Converted to 1 React Flow edges: [
+workflow-ui:test:coverage:   {
+workflow-ui:test:coverage:     id: [32m'edge-task1-task2-0'[39m,
+workflow-ui:test:coverage:     source: [32m'task1'[39m,
+workflow-ui:test:coverage:     target: [32m'task2'[39m,
+workflow-ui:test:coverage:     type: [32m'smoothstep'[39m,
+workflow-ui:test:coverage:     animated: [33mfalse[39m,
+workflow-ui:test:coverage:     markerEnd: { type: [32m'arrowclosed'[39m, width: [33m20[39m, height: [33m20[39m },
+workflow-ui:test:coverage:     style: { strokeWidth: [33m2[39m, stroke: [32m'#9ca3af'[39m }
+workflow-ui:test:coverage:   }
+workflow-ui:test:coverage: ]
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage:  [32m✓[39m components/transforms/nodes/sort-node.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 1403[2mms[22m[39m
+workflow-ui:test:coverage:      [33m[2m✓[22m[39m should render sort node with current values [33m 773[2mms[22m[39m
+workflow-ui:test:coverage:      [33m[2m✓[22m[39m should update sort direction [33m 327[2mms[22m[39m
+workflow-ui:test:coverage: [90mstdout[2m | components/workflows/workflow-graph-panel.test.tsx[2m > [22m[2mWorkflowGraphPanel[2m > [22m[2mNode Interaction[2m > [22m[2mdoes not crash when onNodeClick is not provided
+workflow-ui:test:coverage: [22m[39mGraph has 1 edges: [
+workflow-ui:test:coverage:   { id: [32m'e1-2'[39m, source: [32m'task1'[39m, target: [32m'task2'[39m, type: [32m'dependency'[39m }
+workflow-ui:test:coverage: ]
+workflow-ui:test:coverage: Converted to 1 React Flow edges: [
+workflow-ui:test:coverage:   {
+workflow-ui:test:coverage:     id: [32m'edge-task1-task2-0'[39m,
+workflow-ui:test:coverage:     source: [32m'task1'[39m,
+workflow-ui:test:coverage:     target: [32m'task2'[39m,
+workflow-ui:test:coverage:     type: [32m'smoothstep'[39m,
+workflow-ui:test:coverage:     animated: [33mfalse[39m,
+workflow-ui:test:coverage:     markerEnd: { type: [32m'arrowclosed'[39m, width: [33m20[39m, height: [33m20[39m },
+workflow-ui:test:coverage:     style: { strokeWidth: [33m2[39m, stroke: [32m'#9ca3af'[39m }
+workflow-ui:test:coverage:   }
+workflow-ui:test:coverage: ]
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: [90mstdout[2m | components/workflows/workflow-graph-panel.test.tsx[2m > [22m[2mWorkflowGraphPanel[2m > [22m[2mComplex Workflows[2m > [22m[2mhandles workflows with multiple parallel groups
+workflow-ui:test:coverage: [22m[39mGraph has 2 edges: [
+workflow-ui:test:coverage:   { id: [32m'e-1-3'[39m, source: [32m't1'[39m, target: [32m't3'[39m, type: [32m'dependency'[39m },
+workflow-ui:test:coverage:   { id: [32m'e-2-4'[39m, source: [32m't2'[39m, target: [32m't4'[39m, type: [32m'dependency'[39m }
+workflow-ui:test:coverage: ]
+workflow-ui:test:coverage: Converted to 2 React Flow edges: [
+workflow-ui:test:coverage:   {
+workflow-ui:test:coverage:     id: [32m'edge-t1-t3-0'[39m,
+workflow-ui:test:coverage:     source: [32m't1'[39m,
+workflow-ui:test:coverage:     target: [32m't3'[39m,
+workflow-ui:test:coverage:     type: [32m'smoothstep'[39m,
+workflow-ui:test:coverage:     animated: [33mfalse[39m,
+workflow-ui:test:coverage:     markerEnd: { type: [32m'arrowclosed'[39m, width: [33m20[39m, height: [33m20[39m },
+workflow-ui:test:coverage:     style: { strokeWidth: [33m2[39m, stroke: [32m'#9ca3af'[39m }
+workflow-ui:test:coverage:   },
+workflow-ui:test:coverage:   {
+workflow-ui:test:coverage:     id: [32m'edge-t2-t4-1'[39m,
+workflow-ui:test:coverage:     source: [32m't2'[39m,
+workflow-ui:test:coverage:     target: [32m't4'[39m,
+workflow-ui:test:coverage:     type: [32m'smoothstep'[39m,
+workflow-ui:test:coverage:     animated: [33mfalse[39m,
+workflow-ui:test:coverage:     markerEnd: { type: [32m'arrowclosed'[39m, width: [33m20[39m, height: [33m20[39m },
+workflow-ui:test:coverage:     style: { strokeWidth: [33m2[39m, stroke: [32m'#9ca3af'[39m }
+workflow-ui:test:coverage:   }
+workflow-ui:test:coverage: ]
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: [90mstdout[2m | components/workflows/workflow-graph-panel.test.tsx[2m > [22m[2mWorkflowGraphPanel[2m > [22m[2mComplex Workflows[2m > [22m[2mhandles workflows with disconnected nodes
+workflow-ui:test:coverage: [22m[39mGraph has 0 edges: []
+workflow-ui:test:coverage: Converted to 0 React Flow edges: []
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: [90mstdout[2m | components/workflows/workflow-graph-panel.test.tsx[2m > [22m[2mWorkflowGraphPanel[2m > [22m[2mAccessibility[2m > [22m[2mhas descriptive container
+workflow-ui:test:coverage: [22m[39mGraph has 1 edges: [
+workflow-ui:test:coverage:   { id: [32m'e1-2'[39m, source: [32m'task1'[39m, target: [32m'task2'[39m, type: [32m'dependency'[39m }
+workflow-ui:test:coverage: ]
+workflow-ui:test:coverage: Converted to 1 React Flow edges: [
+workflow-ui:test:coverage:   {
+workflow-ui:test:coverage:     id: [32m'edge-task1-task2-0'[39m,
+workflow-ui:test:coverage:     source: [32m'task1'[39m,
+workflow-ui:test:coverage:     target: [32m'task2'[39m,
+workflow-ui:test:coverage:     type: [32m'smoothstep'[39m,
+workflow-ui:test:coverage:     animated: [33mfalse[39m,
+workflow-ui:test:coverage:     markerEnd: { type: [32m'arrowclosed'[39m, width: [33m20[39m, height: [33m20[39m },
+workflow-ui:test:coverage:     style: { strokeWidth: [33m2[39m, stroke: [32m'#9ca3af'[39m }
+workflow-ui:test:coverage:   }
+workflow-ui:test:coverage: ]
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage:  [32m✓[39m components/transforms/nodes/map-node.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[33m 1222[2mms[22m[39m
+workflow-ui:test:coverage:      [33m[2m✓[22m[39m should render map node [33m 851[2mms[22m[39m
+workflow-ui:test:coverage:      [33m[2m✓[22m[39m should add new mapping [33m 307[2mms[22m[39m
+workflow-ui:test:coverage:  [32m✓[39m components/workflows/workflow-graph-panel.test.tsx [2m([22m[2m20 tests[22m[2m)[22m[33m 1445[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m calls onNodeClick when node is clicked [33m 642[2mms[22m[39m
+workflow-ui:test:coverage:  [32m✓[39m components/transforms/nodes/skip-node.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 1171[2mms[22m[39m
+workflow-ui:test:coverage:      [33m[2m✓[22m[39m should update skip count on input change [33m 690[2mms[22m[39m
+workflow-ui:test:coverage:  [32m✓[39m components/workflows/workflow-card-skeleton.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[33m 829[2mms[22m[39m
+workflow-ui:test:coverage:      [33m[2m✓[22m[39m renders with loading status role [33m 786[2mms[22m[39m
+workflow-ui:test:coverage:  [32m✓[39m components/transforms/nodes/flatmap-node.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[33m 1061[2mms[22m[39m
+workflow-ui:test:coverage:      [33m[2m✓[22m[39m should update field [33m 891[2mms[22m[39m
+workflow-ui:test:coverage:  [32m✓[39m components/templates/template-filters.test.tsx [2m([22m[2m18 tests[22m[2m)[22m[33m 1223[2mms[22m[39m
+workflow-ui:test:coverage:  [32m✓[39m components/templates/template-card.test.tsx [2m([22m[2m13 tests[22m[2m)[22m[33m 886[2mms[22m[39m
+workflow-ui:test:coverage:  [32m✓[39m components/templates/template-browser.test.tsx [2m([22m[2m10 tests[22m[2m)[22m[33m 1142[2mms[22m[39m
+workflow-ui:test:coverage:      [33m[2m✓[22m[39m should display error state when API call fails [33m 652[2mms[22m[39m
+workflow-ui:test:coverage:  [32m✓[39m components/workflows/empty-state.test.tsx [2m([22m[2m10 tests[22m[2m)[22m[33m 1397[2mms[22m[39m
+workflow-ui:test:coverage:        [33m[2m✓[22m[39m renders action button when actionLabel is provided [33m 751[2mms[22m[39m
+workflow-ui:test:coverage:  [32m✓[39m components/transforms/nodes/limit-node.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 1242[2mms[22m[39m
+workflow-ui:test:coverage:      [33m[2m✓[22m[39m should update limit count on input change [33m 876[2mms[22m[39m
+workflow-ui:test:coverage:  [32m✓[39m components/builder/workflow-canvas.test.tsx [2m([22m[2m24 tests[22m[2m)[22m[33m 613[2mms[22m[39m
+workflow-ui:test:coverage:  [32m✓[39m lib/stores/workflow-builder-store.test.ts [2m([22m[2m23 tests[22m[2m)[22m[33m 379[2mms[22m[39m
+workflow-ui:test:coverage:  [32m✓[39m lib/utils/graph-layout.test.ts [2m([22m[2m20 tests[22m[2m)[22m[32m 193[2mms[22m[39m
+workflow-ui:test:coverage:  [32m✓[39m lib/utils.test.ts [2m([22m[2m20 tests[22m[2m)[22m[32m 217[2mms[22m[39m
+workflow-ui:test:coverage:  [32m✓[39m lib/stores/transform-builder-store.test.ts [2m([22m[2m25 tests[22m[2m)[22m[32m 105[2mms[22m[39m
+workflow-ui:test:coverage: [90mstderr[2m | app/api/workflows/[name]/execute/route.test.ts[2m > [22m[2mPOST /api/workflows/[name]/execute[2m > [22m[2mshould return 400 for invalid input (validation error)
+workflow-ui:test:coverage: [22m[39mError executing workflow: Error: HTTP 400: Input validation failed
+workflow-ui:test:coverage:     at [90m/Users/darren/dev/workflow/src/workflow-ui/[39mapp/api/workflows/[name]/execute/route.test.ts:80:29
+workflow-ui:test:coverage:     at file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:145:11
+workflow-ui:test:coverage:     at file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:919:26
+workflow-ui:test:coverage:     at file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:1244:20
+workflow-ui:test:coverage:     at new Promise (<anonymous>)
+workflow-ui:test:coverage:     at runWithTimeout (file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:1210:10)
+workflow-ui:test:coverage:     at file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:1654:37
+workflow-ui:test:coverage:     at Traces.$ (file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/vitest@4.0.14_@types+node@20.19.25_@vitest+ui@4.0.14_jiti@2.6.1_jsdom@27.2.0_lightningc_a2cd3d612214c5b6b20e06f1a488037c/node_modules/[4mvitest[24m/dist/chunks/traces.U4xDYhzZ.js:115:27)
+workflow-ui:test:coverage:     at trace (file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/vitest@4.0.14_@types+node@20.19.25_@vitest+ui@4.0.14_jiti@2.6.1_jsdom@27.2.0_lightningc_a2cd3d612214c5b6b20e06f1a488037c/node_modules/[4mvitest[24m/dist/chunks/test.DqQZzsWf.js:234:21)
+workflow-ui:test:coverage:     at runTest (file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:1654:12)
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: [90mstderr[2m | app/api/workflows/[name]/execute/route.test.ts[2m > [22m[2mPOST /api/workflows/[name]/execute[2m > [22m[2mshould return 404 for non-existent workflow
+workflow-ui:test:coverage: [22m[39mError executing workflow: Error: HTTP 404: Workflow not found
+workflow-ui:test:coverage:     at [90m/Users/darren/dev/workflow/src/workflow-ui/[39mapp/api/workflows/[name]/execute/route.test.ts:102:27
+workflow-ui:test:coverage:     at file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:145:11
+workflow-ui:test:coverage:     at file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:919:26
+workflow-ui:test:coverage:     at file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:1244:20
+workflow-ui:test:coverage:     at new Promise (<anonymous>)
+workflow-ui:test:coverage:     at runWithTimeout (file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:1210:10)
+workflow-ui:test:coverage:     at file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:1654:37
+workflow-ui:test:coverage:     at Traces.$ (file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/vitest@4.0.14_@types+node@20.19.25_@vitest+ui@4.0.14_jiti@2.6.1_jsdom@27.2.0_lightningc_a2cd3d612214c5b6b20e06f1a488037c/node_modules/[4mvitest[24m/dist/chunks/traces.U4xDYhzZ.js:115:27)
+workflow-ui:test:coverage:     at trace (file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/vitest@4.0.14_@types+node@20.19.25_@vitest+ui@4.0.14_jiti@2.6.1_jsdom@27.2.0_lightningc_a2cd3d612214c5b6b20e06f1a488037c/node_modules/[4mvitest[24m/dist/chunks/test.DqQZzsWf.js:234:21)
+workflow-ui:test:coverage:     at runTest (file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:1654:12)
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: [90mstderr[2m | app/api/workflows/[name]/execute/route.test.ts[2m > [22m[2mPOST /api/workflows/[name]/execute[2m > [22m[2mshould return 500 for backend errors
+workflow-ui:test:coverage: [22m[39mError executing workflow: Error: Internal server error
+workflow-ui:test:coverage:     at [90m/Users/darren/dev/workflow/src/workflow-ui/[39mapp/api/workflows/[name]/execute/route.test.ts:124:25
+workflow-ui:test:coverage:     at file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:145:11
+workflow-ui:test:coverage:     at file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:919:26
+workflow-ui:test:coverage:     at file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:1244:20
+workflow-ui:test:coverage:     at new Promise (<anonymous>)
+workflow-ui:test:coverage:     at runWithTimeout (file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:1210:10)
+workflow-ui:test:coverage:     at file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:1654:37
+workflow-ui:test:coverage:     at Traces.$ (file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/vitest@4.0.14_@types+node@20.19.25_@vitest+ui@4.0.14_jiti@2.6.1_jsdom@27.2.0_lightningc_a2cd3d612214c5b6b20e06f1a488037c/node_modules/[4mvitest[24m/dist/chunks/traces.U4xDYhzZ.js:115:27)
+workflow-ui:test:coverage:     at trace (file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/vitest@4.0.14_@types+node@20.19.25_@vitest+ui@4.0.14_jiti@2.6.1_jsdom@27.2.0_lightningc_a2cd3d612214c5b6b20e06f1a488037c/node_modules/[4mvitest[24m/dist/chunks/test.DqQZzsWf.js:234:21)
+workflow-ui:test:coverage:     at runTest (file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:1654:12)
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: [90mstderr[2m | app/api/workflows/[name]/execute/route.test.ts[2m > [22m[2mPOST /api/workflows/[name]/execute[2m > [22m[2mshould handle workflow execution timeout (HTTP 408)
+workflow-ui:test:coverage: [22m[39mError executing workflow: Error: HTTP 408: Request Timeout
+workflow-ui:test:coverage:     at [90m/Users/darren/dev/workflow/src/workflow-ui/[39mapp/api/workflows/[name]/execute/route.test.ts:167:26
+workflow-ui:test:coverage:     at file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:145:11
+workflow-ui:test:coverage:     at file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:919:26
+workflow-ui:test:coverage:     at file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:1244:20
+workflow-ui:test:coverage:     at new Promise (<anonymous>)
+workflow-ui:test:coverage:     at runWithTimeout (file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:1210:10)
+workflow-ui:test:coverage:     at file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:1654:37
+workflow-ui:test:coverage:     at Traces.$ (file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/vitest@4.0.14_@types+node@20.19.25_@vitest+ui@4.0.14_jiti@2.6.1_jsdom@27.2.0_lightningc_a2cd3d612214c5b6b20e06f1a488037c/node_modules/[4mvitest[24m/dist/chunks/traces.U4xDYhzZ.js:115:27)
+workflow-ui:test:coverage:     at trace (file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/vitest@4.0.14_@types+node@20.19.25_@vitest+ui@4.0.14_jiti@2.6.1_jsdom@27.2.0_lightningc_a2cd3d612214c5b6b20e06f1a488037c/node_modules/[4mvitest[24m/dist/chunks/test.DqQZzsWf.js:234:21)
+workflow-ui:test:coverage:     at runTest (file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:1654:12)
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage:  [32m✓[39m lib/transforms/transform-engine.test.ts [2m([22m[2m41 tests[22m[2m)[22m[32m 96[2mms[22m[39m
+workflow-ui:test:coverage:  [32m✓[39m app/api/workflows/[name]/execute/route.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 57[2mms[22m[39m
+workflow-ui:test:coverage: [90mstderr[2m | app/api/workflows/[name]/executions/route.test.ts[2m > [22m[2mGET /api/workflows/[name]/executions[2m > [22m[2mshould return 500 for backend errors
+workflow-ui:test:coverage: [22m[39mError fetching workflow executions: Error: Database connection failed
+workflow-ui:test:coverage:     at [90m/Users/darren/dev/workflow/src/workflow-ui/[39mapp/api/workflows/[name]/executions/route.test.ts:303:25
+workflow-ui:test:coverage:     at file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:145:11
+workflow-ui:test:coverage:     at file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:919:26
+workflow-ui:test:coverage:     at file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:1244:20
+workflow-ui:test:coverage:     at new Promise (<anonymous>)
+workflow-ui:test:coverage:     at runWithTimeout (file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:1210:10)
+workflow-ui:test:coverage:     at file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:1654:37
+workflow-ui:test:coverage:     at Traces.$ (file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/vitest@4.0.14_@types+node@20.19.25_@vitest+ui@4.0.14_jiti@2.6.1_jsdom@27.2.0_lightningc_a2cd3d612214c5b6b20e06f1a488037c/node_modules/[4mvitest[24m/dist/chunks/traces.U4xDYhzZ.js:115:27)
+workflow-ui:test:coverage:     at trace (file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/vitest@4.0.14_@types+node@20.19.25_@vitest+ui@4.0.14_jiti@2.6.1_jsdom@27.2.0_lightningc_a2cd3d612214c5b6b20e06f1a488037c/node_modules/[4mvitest[24m/dist/chunks/test.DqQZzsWf.js:234:21)
+workflow-ui:test:coverage:     at runTest (file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:1654:12)
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: [90mstderr[2m | app/api/workflows/[name]/executions/route.test.ts[2m > [22m[2mGET /api/workflows/[name]/executions[2m > [22m[2mshould include error details in response for debugging
+workflow-ui:test:coverage: [22m[39mError fetching workflow executions: Error: Specific error message
+workflow-ui:test:coverage:     at [90m/Users/darren/dev/workflow/src/workflow-ui/[39mapp/api/workflows/[name]/executions/route.test.ts:321:19
+workflow-ui:test:coverage:     at file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:145:11
+workflow-ui:test:coverage:     at file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:919:26
+workflow-ui:test:coverage:     at file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:1244:20
+workflow-ui:test:coverage:     at new Promise (<anonymous>)
+workflow-ui:test:coverage:     at runWithTimeout (file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:1210:10)
+workflow-ui:test:coverage:     at file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:1654:37
+workflow-ui:test:coverage:     at Traces.$ (file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/vitest@4.0.14_@types+node@20.19.25_@vitest+ui@4.0.14_jiti@2.6.1_jsdom@27.2.0_lightningc_a2cd3d612214c5b6b20e06f1a488037c/node_modules/[4mvitest[24m/dist/chunks/traces.U4xDYhzZ.js:115:27)
+workflow-ui:test:coverage:     at trace (file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/vitest@4.0.14_@types+node@20.19.25_@vitest+ui@4.0.14_jiti@2.6.1_jsdom@27.2.0_lightningc_a2cd3d612214c5b6b20e06f1a488037c/node_modules/[4mvitest[24m/dist/chunks/test.DqQZzsWf.js:234:21)
+workflow-ui:test:coverage:     at runTest (file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:1654:12)
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: [90mstderr[2m | app/api/workflows/[name]/executions/route.test.ts[2m > [22m[2mGET /api/workflows/[name]/executions[2m > [22m[2mshould handle non-Error exceptions gracefully
+workflow-ui:test:coverage: [22m[39mError fetching workflow executions: String error
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: [90mstderr[2m | app/api/workflows/[name]/test/route.test.ts[2m > [22m[2mPOST /api/workflows/[name]/test[2m > [22m[2mshould return 404 for non-existent workflow
+workflow-ui:test:coverage: [22m[39mError testing workflow: Error: HTTP 404: Workflow not found
+workflow-ui:test:coverage:     at [90m/Users/darren/dev/workflow/src/workflow-ui/[39mapp/api/workflows/[name]/test/route.test.ts:104:27
+workflow-ui:test:coverage:     at file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:145:11
+workflow-ui:test:coverage:     at file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:919:26
+workflow-ui:test:coverage:     at file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:1244:20
+workflow-ui:test:coverage:     at new Promise (<anonymous>)
+workflow-ui:test:coverage:     at runWithTimeout (file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:1210:10)
+workflow-ui:test:coverage:     at file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:1654:37
+workflow-ui:test:coverage:     at Traces.$ (file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/vitest@4.0.14_@types+node@20.19.25_@vitest+ui@4.0.14_jiti@2.6.1_jsdom@27.2.0_lightningc_a2cd3d612214c5b6b20e06f1a488037c/node_modules/[4mvitest[24m/dist/chunks/traces.U4xDYhzZ.js:115:27)
+workflow-ui:test:coverage:     at trace (file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/vitest@4.0.14_@types+node@20.19.25_@vitest+ui@4.0.14_jiti@2.6.1_jsdom@27.2.0_lightningc_a2cd3d612214c5b6b20e06f1a488037c/node_modules/[4mvitest[24m/dist/chunks/test.DqQZzsWf.js:234:21)
+workflow-ui:test:coverage:     at runTest (file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:1654:12)
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage:  [32m✓[39m lib/api/client.test.ts [2m([22m[2m45 tests[22m[2m)[22m[32m 140[2mms[22m[39m
+workflow-ui:test:coverage: [90mstderr[2m | app/api/workflows/[name]/test/route.test.ts[2m > [22m[2mPOST /api/workflows/[name]/test[2m > [22m[2mshould return 500 for backend errors
+workflow-ui:test:coverage: [22m[39mError testing workflow: Error: Internal server error
+workflow-ui:test:coverage:     at [90m/Users/darren/dev/workflow/src/workflow-ui/[39mapp/api/workflows/[name]/test/route.test.ts:126:25
+workflow-ui:test:coverage:     at file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:145:11
+workflow-ui:test:coverage:     at file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:919:26
+workflow-ui:test:coverage:     at file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:1244:20
+workflow-ui:test:coverage:     at new Promise (<anonymous>)
+workflow-ui:test:coverage:     at runWithTimeout (file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:1210:10)
+workflow-ui:test:coverage:     at file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:1654:37
+workflow-ui:test:coverage:     at Traces.$ (file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/vitest@4.0.14_@types+node@20.19.25_@vitest+ui@4.0.14_jiti@2.6.1_jsdom@27.2.0_lightningc_a2cd3d612214c5b6b20e06f1a488037c/node_modules/[4mvitest[24m/dist/chunks/traces.U4xDYhzZ.js:115:27)
+workflow-ui:test:coverage:     at trace (file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/vitest@4.0.14_@types+node@20.19.25_@vitest+ui@4.0.14_jiti@2.6.1_jsdom@27.2.0_lightningc_a2cd3d612214c5b6b20e06f1a488037c/node_modules/[4mvitest[24m/dist/chunks/test.DqQZzsWf.js:234:21)
+workflow-ui:test:coverage:     at runTest (file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:1654:12)
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage:  [32m✓[39m app/api/workflows/[name]/executions/route.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 128[2mms[22m[39m
+workflow-ui:test:coverage: [90mstderr[2m | app/api/tasks/route.test.ts[2m > [22m[2mGET /api/tasks[2m > [22m[2mshould return 500 for backend errors
+workflow-ui:test:coverage: [22m[39mError fetching tasks: Error: Internal server error
+workflow-ui:test:coverage:     at [90m/Users/darren/dev/workflow/src/workflow-ui/[39mapp/api/tasks/route.test.ts:114:25
+workflow-ui:test:coverage:     at file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:145:11
+workflow-ui:test:coverage:     at file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:919:26
+workflow-ui:test:coverage:     at file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:1244:20
+workflow-ui:test:coverage:     at new Promise (<anonymous>)
+workflow-ui:test:coverage:     at runWithTimeout (file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:1210:10)
+workflow-ui:test:coverage:     at file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:1654:37
+workflow-ui:test:coverage:     at Traces.$ (file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/vitest@4.0.14_@types+node@20.19.25_@vitest+ui@4.0.14_jiti@2.6.1_jsdom@27.2.0_lightningc_a2cd3d612214c5b6b20e06f1a488037c/node_modules/[4mvitest[24m/dist/chunks/traces.U4xDYhzZ.js:115:27)
+workflow-ui:test:coverage:     at trace (file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/vitest@4.0.14_@types+node@20.19.25_@vitest+ui@4.0.14_jiti@2.6.1_jsdom@27.2.0_lightningc_a2cd3d612214c5b6b20e06f1a488037c/node_modules/[4mvitest[24m/dist/chunks/test.DqQZzsWf.js:234:21)
+workflow-ui:test:coverage:     at runTest (file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:1654:12)
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage:  [32m✓[39m app/api/workflows/[name]/test/route.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 86[2mms[22m[39m
+workflow-ui:test:coverage:  [32m✓[39m app/api/tasks/route.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 60[2mms[22m[39m
+workflow-ui:test:coverage: [90mstderr[2m | app/api/executions/[id]/route.test.ts[2m > [22m[2mGET /api/executions/[id][2m > [22m[2mshould return 404 for non-existent execution ID
+workflow-ui:test:coverage: [22m[39mError fetching execution: Error: HTTP 404: Execution not found
+workflow-ui:test:coverage:     at [90m/Users/darren/dev/workflow/src/workflow-ui/[39mapp/api/executions/[id]/route.test.ts:81:27
+workflow-ui:test:coverage:     at file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:145:11
+workflow-ui:test:coverage:     at file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:919:26
+workflow-ui:test:coverage:     at file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:1244:20
+workflow-ui:test:coverage:     at new Promise (<anonymous>)
+workflow-ui:test:coverage:     at runWithTimeout (file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:1210:10)
+workflow-ui:test:coverage:     at file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:1654:37
+workflow-ui:test:coverage:     at Traces.$ (file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/vitest@4.0.14_@types+node@20.19.25_@vitest+ui@4.0.14_jiti@2.6.1_jsdom@27.2.0_lightningc_a2cd3d612214c5b6b20e06f1a488037c/node_modules/[4mvitest[24m/dist/chunks/traces.U4xDYhzZ.js:115:27)
+workflow-ui:test:coverage:     at trace (file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/vitest@4.0.14_@types+node@20.19.25_@vitest+ui@4.0.14_jiti@2.6.1_jsdom@27.2.0_lightningc_a2cd3d612214c5b6b20e06f1a488037c/node_modules/[4mvitest[24m/dist/chunks/test.DqQZzsWf.js:234:21)
+workflow-ui:test:coverage:     at runTest (file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:1654:12)
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: [90mstderr[2m | app/api/executions/[id]/route.test.ts[2m > [22m[2mGET /api/executions/[id][2m > [22m[2mshould return 500 for backend errors
+workflow-ui:test:coverage: [22m[39mError fetching execution: Error: Internal server error
+workflow-ui:test:coverage:     at [90m/Users/darren/dev/workflow/src/workflow-ui/[39mapp/api/executions/[id]/route.test.ts:99:25
+workflow-ui:test:coverage:     at file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:145:11
+workflow-ui:test:coverage:     at file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:919:26
+workflow-ui:test:coverage:     at file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:1244:20
+workflow-ui:test:coverage:     at new Promise (<anonymous>)
+workflow-ui:test:coverage:     at runWithTimeout (file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:1210:10)
+workflow-ui:test:coverage:     at file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:1654:37
+workflow-ui:test:coverage:     at Traces.$ (file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/vitest@4.0.14_@types+node@20.19.25_@vitest+ui@4.0.14_jiti@2.6.1_jsdom@27.2.0_lightningc_a2cd3d612214c5b6b20e06f1a488037c/node_modules/[4mvitest[24m/dist/chunks/traces.U4xDYhzZ.js:115:27)
+workflow-ui:test:coverage:     at trace (file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/vitest@4.0.14_@types+node@20.19.25_@vitest+ui@4.0.14_jiti@2.6.1_jsdom@27.2.0_lightningc_a2cd3d612214c5b6b20e06f1a488037c/node_modules/[4mvitest[24m/dist/chunks/test.DqQZzsWf.js:234:21)
+workflow-ui:test:coverage:     at runTest (file:///Users/darren/dev/workflow/node_modules/[4m.pnpm[24m/@vitest+runner@4.0.14/node_modules/[4m@vitest[24m/runner/dist/index.js:1654:12)
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage:  [32m✓[39m lib/utils/schema-form-builder.test.ts [2m([22m[2m22 tests[22m[2m)[22m[32m 27[2mms[22m[39m
+workflow-ui:test:coverage:  [32m✓[39m app/api/executions/[id]/route.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 45[2mms[22m[39m
+workflow-ui:test:coverage:  [32m✓[39m lib/api/workflow-websocket-client.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 28[2mms[22m[39m
+workflow-ui:test:coverage:  [32m✓[39m lib/adapters/yaml-adapter.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 41[2mms[22m[39m
+workflow-ui:test:coverage:  [32m✓[39m types/template.test.ts [2m([22m[2m21 tests[22m[2m)[22m[32m 24[2mms[22m[39m
+workflow-ui:test:coverage:  [32m✓[39m lib/adapters/transform-yaml-adapter.test.ts [2m([22m[2m25 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+workflow-ui:test:coverage:  [32m✓[39m lib/types/workflow-builder.test.ts [2m([22m[2m26 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: [2m Test Files [22m [1m[32m66 passed[39m[22m[90m (66)[39m
+workflow-ui:test:coverage: [2m      Tests [22m [1m[32m1133 passed[39m[22m[90m (1133)[39m
+workflow-ui:test:coverage: [2m   Start at [22m 20:54:20
+workflow-ui:test:coverage: [2m   Duration [22m 30.64s[2m (transform 9.93s, setup 88.83s, import 27.95s, tests 154.56s, environment 120.22s)[22m
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: [34m % [39m[2mCoverage report from [22m[33mv8[39m
+workflow-ui:test:coverage: -------------------|---------|----------|---------|---------|-------------------
+workflow-ui:test:coverage: File               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+workflow-ui:test:coverage: -------------------|---------|----------|---------|---------|-------------------
+workflow-ui:test:coverage: All files          |   90.09 |    84.72 |   89.87 |    91.2 |                   
+workflow-ui:test:coverage:  ...xecutions/[id] |    90.9 |       75 |     100 |    90.9 |                   
+workflow-ui:test:coverage:   route.ts         |    90.9 |       75 |     100 |    90.9 | 40                
+workflow-ui:test:coverage:  app/api/tasks     |   88.88 |       75 |     100 |   88.88 |                   
+workflow-ui:test:coverage:   route.ts         |   88.88 |       75 |     100 |   88.88 | 31                
+workflow-ui:test:coverage:  ...[name]/execute |   94.73 |    91.66 |     100 |   94.73 |                   
+workflow-ui:test:coverage:   route.ts         |   94.73 |    91.66 |     100 |   94.73 | 69                
+workflow-ui:test:coverage:  ...me]/executions |     100 |      100 |     100 |     100 |                   
+workflow-ui:test:coverage:   route.ts         |     100 |      100 |     100 |     100 |                   
+workflow-ui:test:coverage:  ...ws/[name]/test |   92.85 |       75 |     100 |   92.85 |                   
+workflow-ui:test:coverage:   route.ts         |   92.85 |       75 |     100 |   92.85 | 54                
+workflow-ui:test:coverage:  app/transforms    |   81.48 |     87.5 |   54.54 |   81.48 |                   
+workflow-ui:test:coverage:   page.tsx         |   81.48 |     87.5 |   54.54 |   81.48 | 129-160           
+workflow-ui:test:coverage:  app/workflows     |     100 |      100 |     100 |     100 |                   
+workflow-ui:test:coverage:   page.tsx         |     100 |      100 |     100 |     100 |                   
+workflow-ui:test:coverage:  app/workflows/new |      76 |    58.57 |   81.25 |   75.22 |                   
+workflow-ui:test:coverage:   page.tsx         |      76 |    58.57 |   81.25 |   75.22 | ...22,226,336-343 
+workflow-ui:test:coverage:  ...ents/analytics |   85.18 |    83.87 |   92.85 |    87.5 |                   
+workflow-ui:test:coverage:   ...nds-chart.tsx |   85.18 |    83.87 |   92.85 |    87.5 | 111-115           
+workflow-ui:test:coverage:  ...onents/builder |    90.1 |    83.09 |   87.36 |   89.27 |                   
+workflow-ui:test:coverage:   ...ies-panel.tsx |   96.92 |    86.53 |     100 |     100 | 28,38,76,80,95-96 
+workflow-ui:test:coverage:   task-node.tsx    |   96.66 |    98.07 |   93.75 |   96.55 | 89,169            
+workflow-ui:test:coverage:   task-palette.tsx |   95.23 |    94.44 |      92 |   94.73 | 216,277-278       
+workflow-ui:test:coverage:   ...ow-canvas.tsx |   76.47 |    51.02 |      75 |   70.14 | ...05,115-122,138 
+workflow-ui:test:coverage:  ...ents/debugging |   91.46 |    87.76 |   87.75 |   92.44 |                   
+workflow-ui:test:coverage:   ...omparison.tsx |   85.29 |    88.09 |     100 |   85.29 | 51-53,72,142,224  
+workflow-ui:test:coverage:   ...on-replay.tsx |      90 |    71.42 |   88.88 |   91.04 | ...90,113,128-130 
+workflow-ui:test:coverage:   ...-timeline.tsx |   97.43 |       88 |   91.66 |   97.36 | 118               
+workflow-ui:test:coverage:   ...ontroller.tsx |    90.9 |    93.33 |    87.5 |    90.9 | 52-53             
+workflow-ui:test:coverage:   ...inspector.tsx |   95.45 |       85 |     100 |     100 | 41,52,73          
+workflow-ui:test:coverage:   ...e-watcher.tsx |     100 |    97.36 |     100 |     100 | 63                
+workflow-ui:test:coverage:   ...-debugger.tsx |   82.69 |    87.03 |   57.89 |   84.78 | ...,98-99,166-172 
+workflow-ui:test:coverage:  ...ents/templates |      84 |    89.53 |   93.33 |   84.72 |                   
+workflow-ui:test:coverage:   ...e-browser.tsx |   95.23 |     87.5 |   83.33 |   94.73 | 92                
+workflow-ui:test:coverage:   ...late-card.tsx |     100 |      100 |     100 |     100 |                   
+workflow-ui:test:coverage:   ...e-filters.tsx |     100 |    92.85 |     100 |     100 | 44,119,191        
+workflow-ui:test:coverage:   ...e-preview.tsx |      45 |    81.81 |      80 |   47.36 | 23-33             
+workflow-ui:test:coverage:  ...nts/transforms |   89.21 |    84.31 |      75 |   89.58 |                   
+workflow-ui:test:coverage:   ...oad-panel.tsx |   89.13 |    76.47 |      70 |   89.13 | 50,82-83,87,95    
+workflow-ui:test:coverage:   ...e-builder.tsx |   89.74 |    83.33 |   78.57 |   88.57 | 32,39-40,169      
+workflow-ui:test:coverage:   ...iew-panel.tsx |   88.23 |      100 |      75 |   93.33 | 57                
+workflow-ui:test:coverage:  ...ansforms/nodes |   76.16 |       65 |   75.86 |   83.52 |                   
+workflow-ui:test:coverage:   ...gate-node.tsx |   88.88 |       70 |     100 |     100 | 24-53             
+workflow-ui:test:coverage:   enrich-node.tsx  |   68.18 |       50 |   71.42 |   78.94 | 33-35,77          
+workflow-ui:test:coverage:   filter-node.tsx  |   91.66 |    66.66 |     100 |     100 | 21,98             
+workflow-ui:test:coverage:   flatmap-node.tsx |     100 |      100 |     100 |     100 |                   
+workflow-ui:test:coverage:   groupby-node.tsx |   55.17 |     37.5 |   44.44 |   61.53 | ...,52-57,100-116 
+workflow-ui:test:coverage:   join-node.tsx    |    90.9 |      100 |      75 |    90.9 | 37                
+workflow-ui:test:coverage:   limit-node.tsx   |     100 |      100 |     100 |     100 |                   
+workflow-ui:test:coverage:   map-node.tsx     |   54.16 |       50 |   42.85 |    61.9 | 33-36,43-44,75-80 
+workflow-ui:test:coverage:   select-node.tsx  |   68.96 |    42.85 |   77.77 |      80 | 47-50,75,106      
+workflow-ui:test:coverage:   skip-node.tsx    |      90 |     87.5 |     100 |      90 | 27                
+workflow-ui:test:coverage:   sort-node.tsx    |     100 |      100 |     100 |     100 |                   
+workflow-ui:test:coverage:  components/ui     |     100 |      100 |     100 |     100 |                   
+workflow-ui:test:coverage:   tooltip.tsx      |     100 |      100 |     100 |     100 |                   
+workflow-ui:test:coverage:  ...ents/workflows |   82.03 |    84.19 |   85.71 |   82.36 |                   
+workflow-ui:test:coverage:   empty-state.tsx  |     100 |      100 |     100 |     100 |                   
+workflow-ui:test:coverage:   ...ory-panel.tsx |   70.42 |    73.58 |   70.83 |   72.05 | ...-56,85,293-348 
+workflow-ui:test:coverage:   ...nput-form.tsx |   80.88 |    81.81 |      90 |   82.08 | ...93,103,125,279 
+workflow-ui:test:coverage:   ...ult-panel.tsx |   60.86 |    67.85 |   91.66 |   60.86 | ...38,351-357,371 
+workflow-ui:test:coverage:   ...ail-panel.tsx |   93.33 |    95.12 |     100 |   93.33 | 237               
+workflow-ui:test:coverage:   ...-skeleton.tsx |     100 |      100 |     100 |     100 |                   
+workflow-ui:test:coverage:   ...flow-card.tsx |     100 |    85.71 |     100 |     100 | 16-19,37          
+workflow-ui:test:coverage:   ...il-header.tsx |     100 |    96.77 |     100 |     100 | 70                
+workflow-ui:test:coverage:   ...tail-tabs.tsx |   81.81 |     87.5 |   69.23 |   81.81 | ...,90-91,104-105 
+workflow-ui:test:coverage:   ...w-filters.tsx |   86.36 |    86.95 |     100 |   86.36 | 48,51,54          
+workflow-ui:test:coverage:   ...aph-panel.tsx |    93.1 |    91.66 |     100 |   92.59 | 54,57             
+workflow-ui:test:coverage:   ...flow-list.tsx |    92.1 |    91.07 |   81.81 |   91.66 | 48,94,191         
+workflow-ui:test:coverage:  lib               |     100 |      100 |     100 |     100 |                   
+workflow-ui:test:coverage:   utils.ts         |     100 |      100 |     100 |     100 |                   
+workflow-ui:test:coverage:  lib/adapters      |   97.39 |    90.36 |     100 |   97.34 |                   
+workflow-ui:test:coverage:   ...ml-adapter.ts |   97.46 |    95.74 |     100 |    97.4 | 142,158           
+workflow-ui:test:coverage:   yaml-adapter.ts  |   97.22 |    83.33 |     100 |   97.22 | 82                
+workflow-ui:test:coverage:  lib/api           |   97.63 |    97.72 |   96.07 |   98.23 |                   
+workflow-ui:test:coverage:   client.ts        |     100 |       98 |     100 |     100 | 50                
+workflow-ui:test:coverage:   queries.ts       |     100 |      100 |     100 |     100 |                   
+workflow-ui:test:coverage:   ...ket-client.ts |   86.66 |     90.9 |   81.81 |   89.74 | 114,125,149,160   
+workflow-ui:test:coverage:  lib/mocks         |   95.75 |    80.64 |     100 |   95.47 |                   
+workflow-ui:test:coverage:   executions.ts    |     100 |      100 |     100 |     100 |                   
+workflow-ui:test:coverage:   handlers.ts      |   95.26 |    80.64 |     100 |   94.91 | ...58,499,534,614 
+workflow-ui:test:coverage:   server.ts        |     100 |      100 |     100 |     100 |                   
+workflow-ui:test:coverage:   tasks.ts         |     100 |      100 |     100 |     100 |                   
+workflow-ui:test:coverage:   templates.ts     |     100 |      100 |     100 |     100 |                   
+workflow-ui:test:coverage:   workflows.ts     |     100 |      100 |     100 |     100 |                   
+workflow-ui:test:coverage:  lib/stores        |   96.35 |    68.96 |     100 |    98.7 |                   
+workflow-ui:test:coverage:   ...lder-store.ts |   94.94 |    70.83 |     100 |   98.93 | 214               
+workflow-ui:test:coverage:   ...lder-store.ts |   97.29 |    67.64 |     100 |   98.55 | 283,289           
+workflow-ui:test:coverage:  lib/transforms    |   97.95 |    85.71 |     100 |   97.95 |                   
+workflow-ui:test:coverage:   ...orm-engine.ts |   97.95 |    85.71 |     100 |   97.95 | 142,227           
+workflow-ui:test:coverage:  lib/types         |   78.78 |    86.79 |     100 |     100 |                   
+workflow-ui:test:coverage:   ...ow-builder.ts |   78.78 |    86.79 |     100 |     100 | ...23,233-234,237 
+workflow-ui:test:coverage:  lib/utils         |    99.1 |    97.18 |     100 |   99.08 |                   
+workflow-ui:test:coverage:   graph-layout.ts  |     100 |    95.83 |     100 |     100 | 151               
+workflow-ui:test:coverage:   ...rm-builder.ts |   98.18 |    97.87 |     100 |   98.18 | 163               
+workflow-ui:test:coverage:  types             |     100 |      100 |     100 |     100 |                   
+workflow-ui:test:coverage:   template.ts      |     100 |      100 |     100 |     100 |                   
+workflow-ui:test:coverage: -------------------|---------|----------|---------|---------|-------------------
+workflow-vscode-client:build: asset bundle.js 435 KiB [compared for emit] [minimized] [big] (name: main) 1 related asset
+workflow-vscode-client:build: orphan modules 31.7 KiB [orphan] 9 modules
+workflow-vscode-client:build: runtime modules 1.29 KiB 7 modules
+workflow-vscode-client:build: modules by path ../../../node_modules/.pnpm/lodash@4.17.21/node_modules/lodash/*.js 187 KiB 240 modules
+workflow-vscode-client:build: modules by path ../../../node_modules/.pnpm/dagre@0.8.5/node_modules/dagre/ 77.1 KiB 30 modules
+workflow-vscode-client:build: modules by path ../../../node_modules/.pnpm/graphlib@2.1.8/node_modules/graphlib/ 28 KiB 20 modules
+workflow-vscode-client:build: modules by path ../../../node_modules/.pnpm/style-loader@4.0.0_webpack@5.103.0/node_modules/styl...(truncated) 5.84 KiB 6 modules
+workflow-vscode-client:build: modules by path ../../../node_modules/.pnpm/react@18.3.1/node_modules/react/ 8 KiB 4 modules
+workflow-vscode-client:build: modules by path ../../../node_modules/.pnpm/react-dom@18.3.1_react@18.3.1/node_modu...(truncated) 131 KiB 3 modules
+workflow-vscode-client:build: modules by path ../../../node_modules/.pnpm/@xyflow+react@12.9.3_@types+react@19.2.7_immer@11.0....(truncated) 200 KiB 3 modules
+workflow-vscode-client:build: modules by path ./src/webview/*.tsx 10.1 KiB 2 modules
+workflow-vscode-client:build: modules by path ../../../node_modules/.pnpm/css-loader@7.1.2_webpack@5.103.0/node_modules/css-lo...(truncated) 2.31 KiB 2 modules
+workflow-vscode-client:build: modules by path ../../../node_modules/.pnpm/scheduler@0.23.2/node_modules/scheduler/ 4.33 KiB 2 modules
+workflow-vscode-client:build: ../../../node_modules/.pnpm/html-to-image@1.11.13/node_modules/html-to-image/es/...(truncated) 34.1 KiB [built] [code generated]
+workflow-vscode-client:build: 
+workflow-vscode-client:build: WARNING in asset size limit: The following asset(s) exceed the recommended size limit (244 KiB).
+workflow-vscode-client:build: This can impact web performance.
+workflow-vscode-client:build: Assets: 
+workflow-vscode-client:build:   bundle.js (435 KiB)
+workflow-vscode-client:build: 
+workflow-vscode-client:build: WARNING in entrypoint size limit: The following entrypoint(s) combined asset size exceeds the recommended limit (244 KiB). This can impact web performance.
+workflow-vscode-client:build: Entrypoints:
+workflow-vscode-client:build:   main (435 KiB)
+workflow-vscode-client:build:       bundle.js
+workflow-vscode-client:build: 
+workflow-vscode-client:build: WARNING in webpack performance recommendations: 
+workflow-vscode-client:build: You can limit the size of your bundles by using import() or require.ensure to lazy load some parts of your application.
+workflow-vscode-client:build: For more info visit https://webpack.js.org/guides/code-splitting/
+workflow-vscode-client:build: 
+workflow-vscode-client:build: webpack 5.103.0 compiled with 3 warnings in 13329 ms
+
+ Tasks:    9 successful, 9 total
+Cached:    7 cached, 9 total
+  Time:    34.53s 
+

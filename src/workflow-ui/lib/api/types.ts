@@ -179,6 +179,8 @@ export interface WorkflowExecutionResponse {
   executedTasks: string[];
   taskDetails: TaskExecutionDetail[];
   executionTimeMs: number;
+  /** Time taken to build the execution graph in microseconds. Typically under 1000μs (1ms) */
+  graphBuildDurationMicros?: number;
   error?: string;
 }
 
@@ -274,6 +276,8 @@ export interface DetailedWorkflowExecutionResponse {
   startedAt: string; // ISO 8601
   completedAt?: string; // ISO 8601
   durationMs?: number;
+  /** Time taken to build the execution graph in microseconds. Typically under 1000μs (1ms) */
+  graphBuildDurationMicros?: number;
   inputSnapshot: Record<string, any>;
   outputSnapshot?: Record<string, any>;
   taskExecutions: DetailedTaskExecution[];

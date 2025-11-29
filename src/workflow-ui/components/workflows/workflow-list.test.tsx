@@ -67,7 +67,9 @@ describe('WorkflowList', () => {
         // Skeletons (with role="status") should be hidden
         // Note: Workflow count also has role="status" for screen readers, so count will be 1
         const statusElements = screen.queryAllByRole('status');
-        const skeletons = statusElements.filter(el => el.getAttribute('aria-label') === 'Loading workflow');
+        const skeletons = statusElements.filter(
+          (el) => el.getAttribute('aria-label') === 'Loading workflow'
+        );
         expect(skeletons.length).toBe(0);
       });
     });
@@ -173,7 +175,9 @@ describe('WorkflowList', () => {
         // Extract success rates (they should be in descending order)
         const rates: number[] = [];
         cards.forEach((card) => {
-          const badge = card.querySelector('[class*="bg-green"], [class*="bg-yellow"], [class*="bg-red"]');
+          const badge = card.querySelector(
+            '[class*="bg-green"], [class*="bg-yellow"], [class*="bg-red"]'
+          );
           if (badge) {
             const text = badge.textContent || '';
             const match = text.match(/(\d+\.?\d*)%/);
@@ -314,7 +318,11 @@ describe('WorkflowList', () => {
     });
 
     it('clears all filters when "Escape" key is pressed', async () => {
-      renderWithQuery(<WorkflowList defaultFilters={{ search: 'order', namespace: 'production', sort: 'success-rate' }} />);
+      renderWithQuery(
+        <WorkflowList
+          defaultFilters={{ search: 'order', namespace: 'production', sort: 'success-rate' }}
+        />
+      );
 
       // Wait for workflows to load and filters to be applied
       await waitFor(() => {
@@ -417,7 +425,7 @@ describe('WorkflowList', () => {
 
   describe('Edge Cases', () => {
     it('handles rapid filter changes gracefully', async () => {
-      const user = await import('@testing-library/user-event').then(m => m.userEvent.setup());
+      const user = await import('@testing-library/user-event').then((m) => m.userEvent.setup());
       renderWithQuery(<WorkflowList />);
 
       await waitFor(() => {
@@ -498,8 +506,12 @@ describe('WorkflowList', () => {
     });
 
     it('clears all filters when clear button is clicked', async () => {
-      const user = await import('@testing-library/user-event').then(m => m.userEvent.setup());
-      renderWithQuery(<WorkflowList defaultFilters={{ search: 'order', namespace: 'production', sort: 'success-rate' }} />);
+      const user = await import('@testing-library/user-event').then((m) => m.userEvent.setup());
+      renderWithQuery(
+        <WorkflowList
+          defaultFilters={{ search: 'order', namespace: 'production', sort: 'success-rate' }}
+        />
+      );
 
       // Wait for filters to be applied
       await waitFor(() => {

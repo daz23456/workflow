@@ -31,11 +31,7 @@ const DEFAULT_RANK_SPACING = 100;
  * });
  * ```
  */
-export function layoutGraph(
-  nodes: Node[],
-  edges: Edge[],
-  options: LayoutOptions = {}
-): Node[] {
+export function layoutGraph(nodes: Node[], edges: Edge[], options: LayoutOptions = {}): Node[] {
   const {
     direction = 'TB',
     nodeSpacing = DEFAULT_NODE_SPACING,

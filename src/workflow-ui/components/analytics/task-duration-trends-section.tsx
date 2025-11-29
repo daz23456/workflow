@@ -21,10 +21,7 @@ export function TaskDurationTrendsSection({
 }: TaskDurationTrendsSectionProps) {
   const [daysBack, setDaysBack] = useState(initialDaysBack);
 
-  const { data, isLoading, error } = useTaskDurationTrends(
-    taskName,
-    daysBack
-  );
+  const { data, isLoading, error } = useTaskDurationTrends(taskName, daysBack);
 
   // Date range presets
   const dateRangeOptions = [

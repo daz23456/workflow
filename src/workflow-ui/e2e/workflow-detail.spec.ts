@@ -1,11 +1,15 @@
 import { test, expect, Page } from '@playwright/test';
 
 // Helper function to set up mocked workflow API responses
-async function mockWorkflowAPIs(page: Page, workflowName: string, options: {
-  workflowData?: any;
-  executionHistory?: any[];
-  delay?: number;
-} = {}) {
+async function mockWorkflowAPIs(
+  page: Page,
+  workflowName: string,
+  options: {
+    workflowData?: any;
+    executionHistory?: any[];
+    delay?: number;
+  } = {}
+) {
   const {
     workflowData = {
       name: workflowName,
@@ -28,9 +32,7 @@ async function mockWorkflowAPIs(page: Page, workflowName: string, options: {
         },
       ],
       graph: {
-        nodes: [
-          { id: 'task-1', label: 'Test Task', type: 'task' },
-        ],
+        nodes: [{ id: 'task-1', label: 'Test Task', type: 'task' }],
         edges: [],
         parallelGroups: [],
       },
@@ -76,7 +78,10 @@ test.describe('Workflow Detail Page', () => {
       await expect(page.getByText('test-workflow')).toBeVisible();
 
       // Should show Overview tab by default
-      await expect(page.getByRole('tab', { name: /overview/i })).toHaveAttribute('aria-selected', 'true');
+      await expect(page.getByRole('tab', { name: /overview/i })).toHaveAttribute(
+        'aria-selected',
+        'true'
+      );
     });
 
     test('should show error state for 404', async ({ page }) => {
@@ -109,18 +114,27 @@ test.describe('Workflow Detail Page', () => {
 
     test('should switch between tabs', async ({ page }) => {
       // Start on Overview tab
-      await expect(page.getByRole('tab', { name: /overview/i })).toHaveAttribute('aria-selected', 'true');
+      await expect(page.getByRole('tab', { name: /overview/i })).toHaveAttribute(
+        'aria-selected',
+        'true'
+      );
 
       // Switch to Execute tab
       await page.getByRole('tab', { name: /execute/i }).click();
-      await expect(page.getByRole('tab', { name: /execute/i })).toHaveAttribute('aria-selected', 'true');
+      await expect(page.getByRole('tab', { name: /execute/i })).toHaveAttribute(
+        'aria-selected',
+        'true'
+      );
 
       // Should show execute form
       await expect(page.getByRole('button', { name: /execute/i })).toBeVisible();
 
       // Switch to History tab
       await page.getByRole('tab', { name: /history/i }).click();
-      await expect(page.getByRole('tab', { name: /history/i })).toHaveAttribute('aria-selected', 'true');
+      await expect(page.getByRole('tab', { name: /history/i })).toHaveAttribute(
+        'aria-selected',
+        'true'
+      );
 
       // Should show "Execution History" heading
       await expect(page.getByRole('heading', { name: /execution history/i })).toBeVisible();
@@ -254,14 +268,20 @@ test.describe('Workflow Detail Page', () => {
 
       // Click "Success" filter
       const allButtons = page.getByRole('button');
-      await allButtons.filter({ hasText: /^Success$/i }).first().click();
+      await allButtons
+        .filter({ hasText: /^Success$/i })
+        .first()
+        .click();
 
       // Only success execution should be visible
       await expect(page.getByText('exec-success')).toBeVisible();
       await expect(page.getByText('exec-failed')).not.toBeVisible();
 
       // Click "Failed" filter
-      await allButtons.filter({ hasText: /^Failed$/i }).first().click();
+      await allButtons
+        .filter({ hasText: /^Failed$/i })
+        .first()
+        .click();
 
       // Only failed execution should be visible
       await expect(page.getByText('exec-success')).not.toBeVisible();
@@ -338,7 +358,10 @@ test.describe('Workflow Detail Page', () => {
       await page.keyboard.press('Enter');
 
       // Execute tab should be active
-      await expect(page.getByRole('tab', { name: /execute/i })).toHaveAttribute('aria-selected', 'true');
+      await expect(page.getByRole('tab', { name: /execute/i })).toHaveAttribute(
+        'aria-selected',
+        'true'
+      );
     });
   });
 

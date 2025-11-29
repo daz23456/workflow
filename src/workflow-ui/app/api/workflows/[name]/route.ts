@@ -6,10 +6,7 @@ import { transformWorkflowDetail } from '@/lib/api/transformers';
  * GET /api/workflows/{name}
  * Get workflow details (proxied to backend)
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ name: string }> }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ name: string }> }) {
   try {
     const { name } = await params;
 

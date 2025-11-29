@@ -15,11 +15,11 @@ export interface TaskListItem {
   endpoint: string;
   inputSchemaPreview?: string;
   stats: {
-    usedByWorkflows: number;  // Count of workflows using this task
-    totalExecutions: number;   // Total times executed across all workflows
+    usedByWorkflows: number; // Count of workflows using this task
+    totalExecutions: number; // Total times executed across all workflows
     avgDurationMs: number;
-    successRate: number;       // 0-100
-    lastExecuted?: string;     // ISO timestamp
+    successRate: number; // 0-100
+    lastExecuted?: string; // ISO timestamp
   };
 }
 
@@ -42,7 +42,7 @@ export interface TaskDetail {
     maxRetries: number;
     backoffMs: number;
   };
-  timeout?: string;  // e.g., "30s", "5m"
+  timeout?: string; // e.g., "30s", "5m"
   stats: {
     usedByWorkflows: number;
     totalExecutions: number;
@@ -64,8 +64,8 @@ export interface TaskDetail {
 export interface TaskUsageItem {
   workflowName: string;
   workflowNamespace: string;
-  taskCount: number;          // Total tasks in the workflow
-  lastExecuted?: string;      // ISO timestamp
+  taskCount: number; // Total tasks in the workflow
+  lastExecuted?: string; // ISO timestamp
 }
 
 /**
@@ -77,7 +77,7 @@ export interface TaskExecutionItem {
   workflowNamespace: string;
   status: 'success' | 'succeeded' | 'failed' | 'running';
   durationMs: number;
-  startedAt: string;          // ISO timestamp
+  startedAt: string; // ISO timestamp
   error?: string;
 }
 
@@ -98,12 +98,12 @@ export interface TaskExecutionResponse {
  * Filters for task executions list
  */
 export interface TaskExecutionFilters {
-  workflow?: string;      // Filter by workflow name
+  workflow?: string; // Filter by workflow name
   status?: 'all' | 'success' | 'failed';
-  dateFrom?: string;     // ISO timestamp
-  dateTo?: string;       // ISO timestamp
-  skip?: number;         // Pagination offset
-  take?: number;         // Pagination limit
+  dateFrom?: string; // ISO timestamp
+  dateTo?: string; // ISO timestamp
+  skip?: number; // Pagination offset
+  take?: number; // Pagination limit
 }
 
 /**

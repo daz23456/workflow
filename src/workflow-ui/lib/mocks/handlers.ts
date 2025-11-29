@@ -7,6 +7,7 @@ import {
   mockExecutionHistory,
 } from './executions';
 import { mockTaskDetails, mockTaskUsage, mockTaskExecutions } from './tasks';
+import { mockTemplateList, mockTemplateDetails } from './templates';
 
 /**
  * MSW request handlers for all API endpoints
@@ -36,9 +37,7 @@ export const handlers = [
     // Apply search filter (searches name and description)
     if (search) {
       filtered = filtered.filter(
-        (w) =>
-          w.name.toLowerCase().includes(search) ||
-          w.description.toLowerCase().includes(search)
+        (w) => w.name.toLowerCase().includes(search) || w.description.toLowerCase().includes(search)
       );
     }
 
@@ -81,10 +80,7 @@ export const handlers = [
     const workflow = mockWorkflowDetails[name as string];
 
     if (!workflow) {
-      return HttpResponse.json(
-        { error: `Workflow "${name}" not found` },
-        { status: 404 }
-      );
+      return HttpResponse.json({ error: `Workflow "${name}" not found` }, { status: 404 });
     }
 
     return HttpResponse.json(workflow);
@@ -102,10 +98,7 @@ export const handlers = [
 
     // Check if workflow exists
     if (!mockWorkflowDetails[name as string]) {
-      return HttpResponse.json(
-        { error: `Workflow "${name}" not found` },
-        { status: 404 }
-      );
+      return HttpResponse.json({ error: `Workflow "${name}" not found` }, { status: 404 });
     }
 
     // Simulate validation error for invalid input
@@ -120,7 +113,13 @@ export const handlers = [
     }
 
     // Return successful or failed execution based on workflow
-    if (name === 'payment-flow' && body && typeof body === 'object' && 'amount' in body && (body as { amount: number }).amount > 100) {
+    if (
+      name === 'payment-flow' &&
+      body &&
+      typeof body === 'object' &&
+      'amount' in body &&
+      (body as { amount: number }).amount > 100
+    ) {
       // Simulate payment failure for amounts > 100
       return HttpResponse.json(mockFailedExecutions['payment-flow']);
     }
@@ -157,10 +156,7 @@ export const handlers = [
 
     // Check if workflow exists
     if (!mockWorkflowDetails[name as string]) {
-      return HttpResponse.json(
-        { error: `Workflow "${name}" not found` },
-        { status: 404 }
-      );
+      return HttpResponse.json({ error: `Workflow "${name}" not found` }, { status: 404 });
     }
 
     // Simulate validation error for invalid input
@@ -205,10 +201,7 @@ export const handlers = [
 
     // Check if workflow exists
     if (!mockWorkflowDetails[name as string]) {
-      return HttpResponse.json(
-        { error: `Workflow "${name}" not found` },
-        { status: 404 }
-      );
+      return HttpResponse.json({ error: `Workflow "${name}" not found` }, { status: 404 });
     }
 
     let executions = mockExecutionHistory[name as string] || [];
@@ -241,8 +234,7 @@ export const handlers = [
       if (historyItem) {
         // Return full execution details
         const fullExecution =
-          mockSuccessfulExecutions[workflowName] ||
-          mockFailedExecutions[workflowName];
+          mockSuccessfulExecutions[workflowName] || mockFailedExecutions[workflowName];
 
         if (fullExecution && fullExecution.executionId === id) {
           return HttpResponse.json(fullExecution);
@@ -257,10 +249,7 @@ export const handlers = [
       }
     }
 
-    return HttpResponse.json(
-      { error: `Execution "${id}" not found` },
-      { status: 404 }
-    );
+    return HttpResponse.json({ error: `Execution "${id}" not found` }, { status: 404 });
   }),
 
   // ============================================================================
@@ -389,10 +378,7 @@ export const handlers = [
     const task = mockTaskDetails[name as string];
 
     if (!task) {
-      return HttpResponse.json(
-        { error: `Task "${name}" not found` },
-        { status: 404 }
-      );
+      return HttpResponse.json({ error: `Task "${name}" not found` }, { status: 404 });
     }
 
     return HttpResponse.json(task);
@@ -407,10 +393,7 @@ export const handlers = [
     const take = parseInt(url.searchParams.get('take') || '20');
 
     if (!mockTaskDetails[name as string]) {
-      return HttpResponse.json(
-        { error: `Task "${name}" not found` },
-        { status: 404 }
-      );
+      return HttpResponse.json({ error: `Task "${name}" not found` }, { status: 404 });
     }
 
     const usage = mockTaskUsage[name as string] || [];
@@ -436,10 +419,7 @@ export const handlers = [
     const status = url.searchParams.get('status');
 
     if (!mockTaskDetails[name as string]) {
-      return HttpResponse.json(
-        { error: `Task "${name}" not found` },
-        { status: 404 }
-      );
+      return HttpResponse.json({ error: `Task "${name}" not found` }, { status: 404 });
     }
 
     let executions = mockTaskExecutions[name as string] || [];
@@ -453,9 +433,10 @@ export const handlers = [
     const paginated = executions.slice(skip, skip + take);
 
     // Calculate average duration
-    const avgDuration = executions.length > 0
-      ? executions.reduce((sum, e) => sum + e.durationMs, 0) / executions.length
-      : 0;
+    const avgDuration =
+      executions.length > 0
+        ? executions.reduce((sum, e) => sum + e.durationMs, 0) / executions.length
+        : 0;
 
     return HttpResponse.json({
       taskName: name,
@@ -474,10 +455,7 @@ export const handlers = [
     const body = await request.json();
 
     if (!mockTaskDetails[name as string]) {
-      return HttpResponse.json(
-        { error: `Task "${name}" not found` },
-        { status: 404 }
-      );
+      return HttpResponse.json({ error: `Task "${name}" not found` }, { status: 404 });
     }
 
     // Simulate error if requested (input is wrapped in { input: ... })
@@ -518,10 +496,7 @@ export const handlers = [
     const daysBack = parseInt(url.searchParams.get('daysBack') || '30');
 
     if (!mockWorkflowDetails[name as string]) {
-      return HttpResponse.json(
-        { error: `Workflow "${name}" not found` },
-        { status: 404 }
-      );
+      return HttpResponse.json({ error: `Workflow "${name}" not found` }, { status: 404 });
     }
 
     // Generate mock trend data
@@ -556,10 +531,7 @@ export const handlers = [
     const daysBack = parseInt(url.searchParams.get('daysBack') || '30');
 
     if (!mockTaskDetails[name as string]) {
-      return HttpResponse.json(
-        { error: `Task "${name}" not found` },
-        { status: 404 }
-      );
+      return HttpResponse.json({ error: `Task "${name}" not found` }, { status: 404 });
     }
 
     // Generate mock trend data
@@ -583,6 +555,95 @@ export const handlers = [
     return HttpResponse.json({
       taskName: name,
       dataPoints,
+    });
+  }),
+
+  // ============================================================================
+  // TEMPLATE ENDPOINTS
+  // ============================================================================
+
+  // GET /api/templates - List all templates
+  http.get('/api/templates', async ({ request }) => {
+    await delay(300);
+
+    const url = new URL(request.url);
+    const search = url.searchParams.get('search')?.toLowerCase();
+    const category = url.searchParams.get('category');
+    const difficulty = url.searchParams.get('difficulty');
+
+    // Filter templates
+    let filtered = [...mockTemplateList];
+
+    // Apply search filter
+    if (search) {
+      filtered = filtered.filter(
+        (t) =>
+          t.name.toLowerCase().includes(search) ||
+          t.description.toLowerCase().includes(search) ||
+          t.tags.some((tag) => tag.toLowerCase().includes(search))
+      );
+    }
+
+    // Apply category filter
+    if (category) {
+      filtered = filtered.filter((t) => t.category === category);
+    }
+
+    // Apply difficulty filter
+    if (difficulty) {
+      filtered = filtered.filter((t) => t.difficulty === difficulty);
+    }
+
+    // Sort alphabetically by name
+    filtered.sort((a, b) => a.name.localeCompare(b.name));
+
+    return HttpResponse.json({
+      templates: filtered,
+      total: filtered.length,
+    });
+  }),
+
+  // GET /api/templates/:name - Get template details
+  http.get('/api/templates/:name', async ({ params }) => {
+    await delay(200);
+    const { name } = params;
+
+    const template = mockTemplateDetails[name as string];
+
+    if (!template) {
+      return HttpResponse.json({ error: `Template "${name}" not found` }, { status: 404 });
+    }
+
+    return HttpResponse.json(template);
+  }),
+
+  // POST /api/templates/deploy - Deploy a template
+  http.post('/api/templates/deploy', async ({ request }) => {
+    await delay(300);
+    const body = (await request.json()) as {
+      templateName: string;
+      workflowName?: string;
+      namespace?: string;
+      inputValues?: Record<string, string>;
+    };
+
+    const { templateName, workflowName, namespace } = body;
+
+    // Check if template exists
+    if (!mockTemplateDetails[templateName]) {
+      return HttpResponse.json(
+        { error: `Template "${templateName}" not found` },
+        { status: 404 }
+      );
+    }
+
+    const deployedName = workflowName || templateName;
+    const deployedNamespace = namespace || 'default';
+
+    return HttpResponse.json({
+      workflowName: deployedName,
+      namespace: deployedNamespace,
+      message: `Template "${templateName}" deployed successfully as "${deployedName}"`,
     });
   }),
 

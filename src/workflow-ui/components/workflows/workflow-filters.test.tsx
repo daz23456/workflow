@@ -13,30 +13,22 @@ describe('WorkflowFilters', () => {
 
   describe('Rendering', () => {
     it('renders search input', () => {
-      render(
-        <WorkflowFilters namespaces={mockNamespaces} onFilterChange={mockOnFilterChange} />
-      );
+      render(<WorkflowFilters namespaces={mockNamespaces} onFilterChange={mockOnFilterChange} />);
       expect(screen.getByPlaceholderText(/search workflows/i)).toBeInTheDocument();
     });
 
     it('renders namespace select', () => {
-      render(
-        <WorkflowFilters namespaces={mockNamespaces} onFilterChange={mockOnFilterChange} />
-      );
+      render(<WorkflowFilters namespaces={mockNamespaces} onFilterChange={mockOnFilterChange} />);
       expect(screen.getByLabelText(/namespace/i)).toBeInTheDocument();
     });
 
     it('renders sort select', () => {
-      render(
-        <WorkflowFilters namespaces={mockNamespaces} onFilterChange={mockOnFilterChange} />
-      );
+      render(<WorkflowFilters namespaces={mockNamespaces} onFilterChange={mockOnFilterChange} />);
       expect(screen.getByLabelText(/sort by/i)).toBeInTheDocument();
     });
 
     it('renders all namespace options', () => {
-      render(
-        <WorkflowFilters namespaces={mockNamespaces} onFilterChange={mockOnFilterChange} />
-      );
+      render(<WorkflowFilters namespaces={mockNamespaces} onFilterChange={mockOnFilterChange} />);
       const select = screen.getByLabelText(/namespace/i);
       const options = within(select).getAllByRole('option');
 
@@ -49,9 +41,7 @@ describe('WorkflowFilters', () => {
     });
 
     it('renders all sort options', () => {
-      render(
-        <WorkflowFilters namespaces={mockNamespaces} onFilterChange={mockOnFilterChange} />
-      );
+      render(<WorkflowFilters namespaces={mockNamespaces} onFilterChange={mockOnFilterChange} />);
       const select = screen.getByLabelText(/sort by/i);
       const options = within(select).getAllByRole('option');
 
@@ -108,9 +98,7 @@ describe('WorkflowFilters', () => {
 
   describe('Namespace Filter', () => {
     it('calls onFilterChange immediately when namespace changes', () => {
-      render(
-        <WorkflowFilters namespaces={mockNamespaces} onFilterChange={mockOnFilterChange} />
-      );
+      render(<WorkflowFilters namespaces={mockNamespaces} onFilterChange={mockOnFilterChange} />);
 
       const select = screen.getByLabelText(/namespace/i) as HTMLSelectElement;
 
@@ -152,9 +140,7 @@ describe('WorkflowFilters', () => {
 
   describe('Sort Filter', () => {
     it('calls onFilterChange immediately when sort changes', () => {
-      render(
-        <WorkflowFilters namespaces={mockNamespaces} onFilterChange={mockOnFilterChange} />
-      );
+      render(<WorkflowFilters namespaces={mockNamespaces} onFilterChange={mockOnFilterChange} />);
 
       const select = screen.getByLabelText(/sort by/i) as HTMLSelectElement;
 
@@ -171,9 +157,7 @@ describe('WorkflowFilters', () => {
     });
 
     it('defaults to name sorting', () => {
-      render(
-        <WorkflowFilters namespaces={mockNamespaces} onFilterChange={mockOnFilterChange} />
-      );
+      render(<WorkflowFilters namespaces={mockNamespaces} onFilterChange={mockOnFilterChange} />);
 
       const select = screen.getByLabelText(/sort by/i) as HTMLSelectElement;
       expect(select.value).toBe('name');
@@ -216,9 +200,7 @@ describe('WorkflowFilters', () => {
 
   describe('Accessibility', () => {
     it('has proper labels for all inputs', () => {
-      render(
-        <WorkflowFilters namespaces={mockNamespaces} onFilterChange={mockOnFilterChange} />
-      );
+      render(<WorkflowFilters namespaces={mockNamespaces} onFilterChange={mockOnFilterChange} />);
 
       expect(screen.getByLabelText(/search/i)).toBeInTheDocument();
       expect(screen.getByLabelText(/namespace/i)).toBeInTheDocument();
@@ -226,9 +208,7 @@ describe('WorkflowFilters', () => {
     });
 
     it('search input has proper placeholder', () => {
-      render(
-        <WorkflowFilters namespaces={mockNamespaces} onFilterChange={mockOnFilterChange} />
-      );
+      render(<WorkflowFilters namespaces={mockNamespaces} onFilterChange={mockOnFilterChange} />);
 
       const input = screen.getByPlaceholderText(/search workflows/i);
       expect(input).toHaveAttribute('type', 'search');

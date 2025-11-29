@@ -125,6 +125,35 @@ export function ExecutionResultPanel({ execution, onClose }: ExecutionResultPane
               </div>
             )}
           </div>
+
+          {/* Graph Build Warning - only shown when slow (> 1ms) */}
+          {isGraphBuildSlow(execution.graphBuildDurationMicros) && (
+            <div className="mt-3 rounded-md bg-amber-50 border border-amber-300 px-4 py-3">
+              <div className="flex items-center gap-2">
+                <svg
+                  className="h-5 w-5 text-amber-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="1.5"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
+                  />
+                </svg>
+                <div>
+                  <div className="text-sm font-semibold text-amber-800">Slow Graph Build</div>
+                  <div className="text-xs text-amber-700">
+                    Graph build took {formatMicroseconds(execution.graphBuildDurationMicros)}{' '}
+                    (expected &lt;1ms). Consider simplifying workflow or reviewing task
+                    dependencies.
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Error Message */}
@@ -275,6 +304,38 @@ function formatDuration(ms: number): string {
   const minutes = Math.floor(seconds / 60);
   const remainingSeconds = Math.floor(seconds % 60);
   return `${minutes}m ${remainingSeconds}s`;
+}
+
+/**
+ * Formats duration in microseconds to human-readable string
+ */
+function formatMicroseconds(micros: number | undefined): string {
+  if (micros === undefined || micros === null) {
+    return 'N/A';
+  }
+
+  if (micros < 1000) {
+    return `${micros}μs`;
+  }
+
+  const ms = micros / 1000;
+  if (ms < 1000) {
+    return `${ms.toFixed(2)}ms`;
+  }
+
+  return `${(ms / 1000).toFixed(2)}s`;
+}
+
+/**
+ * Returns true if graph build time exceeds threshold (1ms = 1000μs)
+ * Per ADR-0001, graph build should be < 1ms for typical workflows
+ */
+function isGraphBuildSlow(micros: number | undefined): boolean {
+  if (micros === undefined || micros === null) {
+    return false;
+  }
+  // Threshold: 1ms (1000 microseconds)
+  return micros > 1000;
 }
 
 /**

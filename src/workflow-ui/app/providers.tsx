@@ -46,9 +46,5 @@ export function Providers({ children }: { children: React.ReactNode }) {
     return <div>Loading...</div>;
   }
 
-  return (
-    <QueryClientProvider client={queryClient}>
-      {children}
-    </QueryClientProvider>
-  );
+  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
 }

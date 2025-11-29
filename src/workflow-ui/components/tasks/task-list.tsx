@@ -31,34 +31,36 @@ export function TaskList({ defaultFilters }: TaskListProps) {
   const { data, isLoading, error, dataUpdatedAt } = useTasks();
 
   // Extract tasks and convert to Task[] for local filtering
-  const allTasks: Task[] = data?.tasks ? data.tasks.map((task: any) => ({
-    name: task.name,
-    namespace: task.namespace || 'default',
-    description: task.description || '',
-    endpoint: task.endpoint || '',
-    inputSchemaPreview: task.inputSchemaPreview,
-    stats: {
-      usedByWorkflows: task.stats?.usedByWorkflows || 0,
-      totalExecutions: task.stats?.totalExecutions || 0,
-      avgDurationMs: task.stats?.avgDurationMs || 0,
-      successRate: task.stats?.successRate || 0,
-      lastExecuted: task.stats?.lastExecuted,
-    },
-  })) : [];
+  const allTasks: Task[] = data?.tasks
+    ? data.tasks.map((task: any) => ({
+        name: task.name,
+        namespace: task.namespace || 'default',
+        description: task.description || '',
+        endpoint: task.endpoint || '',
+        inputSchemaPreview: task.inputSchemaPreview,
+        stats: {
+          usedByWorkflows: task.stats?.usedByWorkflows || 0,
+          totalExecutions: task.stats?.totalExecutions || 0,
+          avgDurationMs: task.stats?.avgDurationMs || 0,
+          successRate: task.stats?.successRate || 0,
+          lastExecuted: task.stats?.lastExecuted,
+        },
+      }))
+    : [];
 
   const lastUpdated = dataUpdatedAt ? formatRelativeTime(dataUpdatedAt) : null;
 
   // Extract unique namespaces from tasks
-  const namespaces = allTasks.length > 0
-    ? Array.from(new Set(allTasks.map((t) => t.namespace))).sort()
-    : [];
+  const namespaces =
+    allTasks.length > 0 ? Array.from(new Set(allTasks.map((t) => t.namespace))).sort() : [];
 
   // Client-side filtering
   const filteredTasks = allTasks.filter((task) => {
     // Filter by search
     if (filters.search) {
       const searchLower = filters.search.toLowerCase();
-      const matchesSearch = task.name.toLowerCase().includes(searchLower) ||
+      const matchesSearch =
+        task.name.toLowerCase().includes(searchLower) ||
         task.description.toLowerCase().includes(searchLower);
       if (!matchesSearch) return false;
     }
@@ -114,9 +116,7 @@ export function TaskList({ defaultFilters }: TaskListProps) {
       // Ignore shortcuts when typing in input/textarea/select
       const target = event.target as HTMLElement;
       const isInputElement =
-        target.tagName === 'INPUT' ||
-        target.tagName === 'TEXTAREA' ||
-        target.tagName === 'SELECT';
+        target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT';
 
       // "/" to focus search (unless already in an input)
       if (event.key === '/' && !isInputElement) {
@@ -159,7 +159,8 @@ export function TaskList({ defaultFilters }: TaskListProps) {
       <div className="mb-4 rounded-md bg-blue-50 border border-blue-200 px-4 py-2 text-xs text-blue-700">
         <span className="font-medium">Keyboard shortcuts:</span>{' '}
         <kbd className="rounded bg-white px-1.5 py-0.5 border border-blue-300">/</kbd> to search,{' '}
-        <kbd className="rounded bg-white px-1.5 py-0.5 border border-blue-300">Esc</kbd> to clear filters
+        <kbd className="rounded bg-white px-1.5 py-0.5 border border-blue-300">Esc</kbd> to clear
+        filters
       </div>
 
       {/* Filters */}
@@ -190,16 +191,19 @@ export function TaskList({ defaultFilters }: TaskListProps) {
 
       {/* Task Count */}
       {!isLoading && sortedTasks.length > 0 && (
-        <div className="mb-4 text-sm text-gray-600" role="status" aria-live="polite" aria-atomic="true">
+        <div
+          className="mb-4 text-sm text-gray-600"
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+        >
           Showing {sortedTasks.length} {sortedTasks.length === 1 ? 'task' : 'tasks'}
         </div>
       )}
 
       {/* Last Updated Timestamp */}
       {!isLoading && lastUpdated && (
-        <div className="mb-4 text-sm text-gray-500">
-          Updated {lastUpdated}
-        </div>
+        <div className="mb-4 text-sm text-gray-500">Updated {lastUpdated}</div>
       )}
 
       {/* Loading State - Skeleton Cards */}
@@ -213,10 +217,7 @@ export function TaskList({ defaultFilters }: TaskListProps) {
 
       {/* Empty State - No Tasks */}
       {!isLoading && sortedTasks.length === 0 && !filters.search && !filters.namespace && (
-        <EmptyState
-          title="No tasks yet"
-          description="Get started by creating your first task."
-        />
+        <EmptyState title="No tasks yet" description="Get started by creating your first task." />
       )}
 
       {/* Empty State - No Results */}
@@ -233,11 +234,7 @@ export function TaskList({ defaultFilters }: TaskListProps) {
       {!isLoading && sortedTasks.length > 0 && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {sortedTasks.map((task) => (
-            <TaskCard
-              key={task.name}
-              task={task}
-              onClick={() => handleCardClick(task.name)}
-            />
+            <TaskCard key={task.name} task={task} onClick={() => handleCardClick(task.name)} />
           ))}
         </div>
       )}

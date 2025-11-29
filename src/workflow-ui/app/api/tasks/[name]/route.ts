@@ -5,10 +5,7 @@ import { getTaskDetail } from '@/lib/api/client';
  * GET /api/tasks/[name]
  * Get detailed information about a specific task (proxied to backend)
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ name: string }> }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ name: string }> }) {
   try {
     const { name } = await params;
 

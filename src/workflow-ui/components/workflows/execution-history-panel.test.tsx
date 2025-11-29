@@ -82,8 +82,8 @@ describe('ExecutionHistoryPanel', () => {
       // Use getAllByRole since status badges also contain these texts
       const buttons = screen.getAllByRole('button');
       const filterButtons = buttons.slice(0, 4); // First 4 are filter+sort buttons
-      expect(filterButtons.some(btn => btn.textContent?.match(/^Success$/i))).toBe(true);
-      expect(filterButtons.some(btn => btn.textContent?.match(/^Failed$/i))).toBe(true);
+      expect(filterButtons.some((btn) => btn.textContent?.match(/^Success$/i))).toBe(true);
+      expect(filterButtons.some((btn) => btn.textContent?.match(/^Failed$/i))).toBe(true);
     });
 
     it('shows all executions by default', () => {
@@ -134,7 +134,9 @@ describe('ExecutionHistoryPanel', () => {
 
       // Find the Success filter button (should be the second button)
       const buttons = screen.getAllByRole('button');
-      const successButton = buttons.find(btn => btn.textContent === 'Success' && !btn.textContent?.includes('exec'));
+      const successButton = buttons.find(
+        (btn) => btn.textContent === 'Success' && !btn.textContent?.includes('exec')
+      );
 
       expect(successButton).toBeDefined();
       await user.click(successButton!);
@@ -186,7 +188,9 @@ describe('ExecutionHistoryPanel', () => {
       const user = userEvent.setup();
       const onExecutionClick = vi.fn();
 
-      render(<ExecutionHistoryPanel executions={mockExecutions} onExecutionClick={onExecutionClick} />);
+      render(
+        <ExecutionHistoryPanel executions={mockExecutions} onExecutionClick={onExecutionClick} />
+      );
 
       const execution = screen.getByText('exec-1').closest('button');
       await user.click(execution!);

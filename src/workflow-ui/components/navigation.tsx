@@ -37,6 +37,10 @@ export function Navigation() {
               Workflows
             </Link>
 
+            <Link href="/templates" className={linkClasses('/templates')}>
+              Templates
+            </Link>
+
             <Link href="/tasks" className={linkClasses('/tasks')}>
               Tasks
             </Link>

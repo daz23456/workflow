@@ -29,9 +29,7 @@ describe('POST /api/workflows/[name]/test', () => {
           { id: 'task1', taskRef: 'fetch-data', level: 0 },
           { id: 'task2', taskRef: 'process-data', level: 1 },
         ],
-        edges: [
-          { from: 'task1', to: 'task2' },
-        ],
+        edges: [{ from: 'task1', to: 'task2' }],
         parallelGroups: [],
         executionOrder: ['task1', 'task2'],
         validationResult: {
@@ -181,9 +179,7 @@ describe('POST /api/workflows/[name]/test', () => {
           { from: 'task1', to: 'task2' },
           { from: 'task1', to: 'task3' },
         ],
-        parallelGroups: [
-          { level: 1, taskIds: ['task2', 'task3'] },
-        ],
+        parallelGroups: [{ level: 1, taskIds: ['task2', 'task3'] }],
         executionOrder: ['task1', 'task2', 'task3'],
         validationResult: {
           isValid: true,
@@ -220,9 +216,7 @@ describe('POST /api/workflows/[name]/test', () => {
       valid: true,
       validationErrors: [],
       executionPlan: {
-        nodes: [
-          { id: 'task1', taskRef: 'fetch-user', level: 0 },
-        ],
+        nodes: [{ id: 'task1', taskRef: 'fetch-user', level: 0 }],
         edges: [],
         parallelGroups: [],
         executionOrder: ['task1'],

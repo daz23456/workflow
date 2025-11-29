@@ -12,7 +12,16 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { Search, ChevronDown, ChevronRight, Database, Mail, FileCheck, X, AlertTriangle } from 'lucide-react';
+import {
+  Search,
+  ChevronDown,
+  ChevronRight,
+  Database,
+  Mail,
+  FileCheck,
+  X,
+  AlertTriangle,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTasks } from '@/lib/api/queries';
 
@@ -41,7 +50,7 @@ interface TaskItem extends ApiTask {
 const toDisplayName = (name: string): string => {
   return name
     .split('-')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
 };
 
@@ -64,7 +73,7 @@ export function TaskPalette() {
   // Transform API tasks to include displayName and category
   const tasks: TaskItem[] = useMemo(() => {
     if (!data?.tasks) return [];
-    return data.tasks.map(task => ({
+    return data.tasks.map((task) => ({
       ...task,
       displayName: toDisplayName(task.name),
       category: toCategory(task.name),
@@ -74,16 +83,17 @@ export function TaskPalette() {
   // Get unique categories
   const categories = useMemo(() => {
     if (!tasks || tasks.length === 0) return [];
-    return Array.from(new Set(tasks.map(task => task.category)));
+    return Array.from(new Set(tasks.map((task) => task.category)));
   }, [tasks]);
 
   // Filter tasks by search and category
   const filteredTasks = useMemo(() => {
     if (!tasks || tasks.length === 0) return [];
 
-    return tasks.filter(task => {
+    return tasks.filter((task) => {
       // Search filter
-      const matchesSearch = searchQuery === '' ||
+      const matchesSearch =
+        searchQuery === '' ||
         task.displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         task.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
         task.name.toLowerCase().includes(searchQuery.toLowerCase());
@@ -172,10 +182,7 @@ export function TaskPalette() {
   return (
     <div
       data-testid="task-palette"
-      className={cn(
-        "w-64 bg-white border-r border-gray-200 flex flex-col",
-        isCollapsed && "w-12"
-      )}
+      className={cn('w-64 bg-white border-r border-gray-200 flex flex-col', isCollapsed && 'w-12')}
       aria-label="Task palette"
     >
       {/* Header */}
@@ -184,7 +191,7 @@ export function TaskPalette() {
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
           className="p-1 hover:bg-gray-100 rounded"
-          aria-label={isCollapsed ? "Expand palette" : "Collapse palette"}
+          aria-label={isCollapsed ? 'Expand palette' : 'Collapse palette'}
         >
           {isCollapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
         </button>
@@ -224,10 +231,10 @@ export function TaskPalette() {
                   key={category}
                   onClick={() => toggleCategoryFilter(category)}
                   className={cn(
-                    "px-3 py-1 text-sm rounded-full border transition-colors",
+                    'px-3 py-1 text-sm rounded-full border transition-colors',
                     selectedCategory === category
-                      ? "bg-blue-500 text-white border-blue-500"
-                      : "bg-white text-gray-700 border-gray-300 hover:border-blue-400"
+                      ? 'bg-blue-500 text-white border-blue-500'
+                      : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400'
                   )}
                   aria-label={`Filter by ${category}`}
                 >
@@ -260,9 +267,9 @@ export function TaskPalette() {
                       onClick={() => toggleTaskExpansion(task.name)}
                       data-dragging={isDragging}
                       className={cn(
-                        "p-3 border rounded-lg cursor-move transition-all",
-                        isDragging && "opacity-50 border-blue-400",
-                        !isDragging && "border-gray-200 hover:border-blue-400 hover:shadow-md"
+                        'p-3 border rounded-lg cursor-move transition-all',
+                        isDragging && 'opacity-50 border-blue-400',
+                        !isDragging && 'border-gray-200 hover:border-blue-400 hover:shadow-md'
                       )}
                       aria-label={`Drag ${task.displayName} to canvas`}
                       tabIndex={0}
@@ -281,9 +288,7 @@ export function TaskPalette() {
                           <div className="font-semibold text-sm text-gray-900">
                             {task.displayName}
                           </div>
-                          <div className="text-xs text-gray-600 mt-1">
-                            {task.description}
-                          </div>
+                          <div className="text-xs text-gray-600 mt-1">{task.description}</div>
                           <div className="mt-2">
                             <span className="inline-block px-2 py-0.5 text-xs bg-gray-100 text-gray-700 rounded">
                               {task.category}

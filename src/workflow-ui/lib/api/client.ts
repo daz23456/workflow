@@ -30,10 +30,7 @@ const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:5000/api/v1';
 /**
  * Base fetch wrapper with error handling
  */
-async function apiFetch<T>(
-  endpoint: string,
-  options?: RequestInit
-): Promise<T> {
+async function apiFetch<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
 
   try {
@@ -156,7 +153,9 @@ export async function listWorkflowExecutions(
   if (options?.take !== undefined) params.append('take', options.take.toString());
 
   const query = params.toString() ? `?${params.toString()}` : '';
-  return apiFetch<ExecutionListResponse>(`/workflows/${encodeURIComponent(name)}/executions${query}`);
+  return apiFetch<ExecutionListResponse>(
+    `/workflows/${encodeURIComponent(name)}/executions${query}`
+  );
 }
 
 /**
@@ -194,7 +193,9 @@ export async function listExecutionsForWorkflow(
   if (options?.take !== undefined) params.append('take', options.take.toString());
 
   const query = params.toString() ? `?${params.toString()}` : '';
-  return apiFetch<ExecutionListResponse>(`/executions/workflows/${encodeURIComponent(name)}/list${query}`);
+  return apiFetch<ExecutionListResponse>(
+    `/executions/workflows/${encodeURIComponent(name)}/list${query}`
+  );
 }
 
 /**
@@ -264,7 +265,9 @@ export async function getTaskExecutions(
   if (options?.take !== undefined) params.append('take', options.take.toString());
 
   const query = params.toString() ? `?${params.toString()}` : '';
-  return apiFetch<TaskExecutionListResponse>(`/tasks/${encodeURIComponent(name)}/executions${query}`);
+  return apiFetch<TaskExecutionListResponse>(
+    `/tasks/${encodeURIComponent(name)}/executions${query}`
+  );
 }
 
 /**

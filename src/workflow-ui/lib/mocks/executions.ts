@@ -2,7 +2,7 @@ import {
   WorkflowExecutionResponse,
   ExecutionHistoryItem,
   DryRunResponse,
-  TaskExecutionDetail
+  TaskExecutionDetail,
 } from '@/types/execution';
 
 /**
@@ -233,7 +233,8 @@ export const mockFailedExecutions: Record<string, WorkflowExecutionResponse> = {
         taskRef: 'billing-service',
         status: 'failed',
         output: {},
-        error: 'Template resolution failed: tasks.create-profile.output.accountId does not exist (available: profileId, settings)',
+        error:
+          'Template resolution failed: tasks.create-profile.output.accountId does not exist (available: profileId, settings)',
         startedAt: '2025-11-23T08:20:00.500Z',
         completedAt: '2025-11-23T08:20:00.520Z',
         durationMs: 20,
@@ -466,7 +467,8 @@ export const mockDryRunResponses: Record<string, DryRunResponse> = {
         field: 'limits',
         message:
           'Type mismatch: Task "assign-resources" outputs "limits" as object, but task "send-welcome" expects array',
-        suggestion: 'Update the output schema of "assign-resources" or input mapping of "send-welcome"',
+        suggestion:
+          'Update the output schema of "assign-resources" or input mapping of "send-welcome"',
       },
     ],
     executionPlan: {

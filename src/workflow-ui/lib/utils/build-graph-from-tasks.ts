@@ -1,4 +1,10 @@
-import type { TaskDetail, WorkflowGraph, GraphNode, GraphEdge, ParallelGroup } from '@/types/workflow';
+import type {
+  TaskDetail,
+  WorkflowGraph,
+  GraphNode,
+  GraphEdge,
+  ParallelGroup,
+} from '@/types/workflow';
 
 /**
  * Builds a workflow graph visualization from tasks array
@@ -23,14 +29,14 @@ export function buildGraphFromTasks(tasks: TaskDetail[]): WorkflowGraph {
     id: task.id,
     type: 'task' as const,
     data: {
-      label: task.taskRef || task.id,  // Use taskRef as label, fallback to id
+      label: task.taskRef || task.id, // Use taskRef as label, fallback to id
       taskRef: task.taskRef,
       description: task.description,
       status: 'idle',
     },
     position: {
-      x: index * 300,  // Horizontal spacing: 300px between tasks
-      y: 100,          // Fixed vertical position
+      x: index * 300, // Horizontal spacing: 300px between tasks
+      y: 100, // Fixed vertical position
     },
   }));
 
@@ -63,7 +69,7 @@ export function buildGraphFromTasks(tasks: TaskDetail[]): WorkflowGraph {
     // No dependencies - all tasks run in parallel
     parallelGroups.push({
       level: 0,
-      taskIds: tasks.map(t => t.id),
+      taskIds: tasks.map((t) => t.id),
     });
   } else {
     // TODO: Implement proper dependency level calculation

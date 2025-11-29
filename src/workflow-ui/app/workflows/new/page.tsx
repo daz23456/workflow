@@ -8,17 +8,21 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Save, Upload, X, AlertTriangle } from 'lucide-react';
 import { TaskPalette } from '@/components/builder/task-palette';
 import { WorkflowCanvas } from '@/components/builder/workflow-canvas';
 import { PropertiesPanel } from '@/components/builder/properties-panel';
 import { useWorkflowBuilderStore } from '@/lib/stores/workflow-builder-store';
 import { graphToYaml, yamlToGraph } from '@/lib/adapters/yaml-adapter';
+import { useTemplateDetail } from '@/lib/api/queries';
 import { cn } from '@/lib/utils';
 
 export default function WorkflowBuilderPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const templateName = searchParams.get('template');
+
   const graph = useWorkflowBuilderStore((state) => state.graph);
   const metadata = useWorkflowBuilderStore((state) => state.metadata);
   const inputSchema = useWorkflowBuilderStore((state) => state.inputSchema);
@@ -30,6 +34,12 @@ export default function WorkflowBuilderPage() {
   const importFromYaml = useWorkflowBuilderStore((state) => state.importFromYaml);
   const reset = useWorkflowBuilderStore((state) => state.reset);
   const setMetadata = useWorkflowBuilderStore((state) => state.setMetadata);
+
+  // Load template from URL parameter
+  const { data: templateData, isLoading: templateLoading } = useTemplateDetail(
+    templateName || '',
+    { enabled: !!templateName }
+  );
 
   const [workflowName, setWorkflowName] = useState('');
   const [nameError, setNameError] = useState('');
@@ -49,6 +59,21 @@ export default function WorkflowBuilderPage() {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  // Auto-import template when loaded from URL parameter
+  useEffect(() => {
+    if (templateData?.yamlDefinition && !templateLoading) {
+      try {
+        // Import template YAML into workflow builder
+        importFromYaml(templateData.yamlDefinition);
+
+        // Set workflow name from template name
+        setWorkflowName(templateData.name);
+      } catch (error) {
+        setErrorMessage('Failed to load template. Please try again.');
+      }
+    }
+  }, [templateData, templateLoading, importFromYaml]);
 
   // Validate workflow name (lowercase with hyphens only)
   const validateWorkflowName = (name: string): boolean => {
@@ -220,10 +245,7 @@ export default function WorkflowBuilderPage() {
   return (
     <div
       data-testid="workflow-builder-page"
-      className={cn(
-        'h-screen flex flex-col bg-gray-50',
-        isMobile && 'flex-col'
-      )}
+      className={cn('h-screen flex flex-col bg-gray-50', isMobile && 'flex-col')}
     >
       {/* Header */}
       <header className="bg-white border-b border-gray-200 px-6 py-4">
@@ -231,7 +253,10 @@ export default function WorkflowBuilderPage() {
           <div className="flex-1 max-w-md">
             <h1 className="text-2xl font-bold text-gray-900 mb-2">Create New Workflow</h1>
             <div>
-              <label htmlFor="workflow-name" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="workflow-name"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Workflow Name
               </label>
               <input
@@ -249,9 +274,7 @@ export default function WorkflowBuilderPage() {
                 )}
                 aria-label="Workflow Name"
               />
-              {nameError && (
-                <p className="mt-1 text-sm text-red-600">{nameError}</p>
-              )}
+              {nameError && <p className="mt-1 text-sm text-red-600">{nameError}</p>}
             </div>
           </div>
 
@@ -270,9 +293,7 @@ export default function WorkflowBuilderPage() {
               disabled={!canSave()}
               className={cn(
                 'px-4 py-2 text-white rounded focus:outline-none focus:ring-2 focus:ring-blue-500',
-                canSave()
-                  ? 'bg-blue-600 hover:bg-blue-700'
-                  : 'bg-gray-300 cursor-not-allowed'
+                canSave() ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-300 cursor-not-allowed'
               )}
               aria-label="Save workflow to file"
             >
@@ -352,11 +373,10 @@ export default function WorkflowBuilderPage() {
             <div className="flex items-start gap-3 mb-4">
               <AlertTriangle className="w-6 h-6 text-yellow-500 flex-shrink-0" />
               <div>
-                <h2 className="text-lg font-semibold text-gray-900 mb-2">
-                  Unsaved Changes
-                </h2>
+                <h2 className="text-lg font-semibold text-gray-900 mb-2">Unsaved Changes</h2>
                 <p className="text-sm text-gray-600">
-                  You have unsaved changes. Are you sure you want to leave? Your changes will be lost.
+                  You have unsaved changes. Are you sure you want to leave? Your changes will be
+                  lost.
                 </p>
               </div>
             </div>

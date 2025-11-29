@@ -164,9 +164,7 @@ export function PropertiesPanel() {
             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
               <AlertCircle className="w-8 h-8 text-gray-400" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              No Task Selected
-            </h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">No Task Selected</h3>
             <p className="text-sm text-gray-600">
               Select a task on the canvas to view and edit its properties
             </p>
@@ -239,9 +237,7 @@ export function PropertiesPanel() {
                 placeholder="Task description (optional)"
                 aria-label="Description"
               />
-              <p className="mt-1 text-xs text-gray-500">
-                Describe what this task does
-              </p>
+              <p className="mt-1 text-xs text-gray-500">Describe what this task does</p>
             </div>
           </div>
         )}

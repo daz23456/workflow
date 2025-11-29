@@ -50,7 +50,9 @@ describe('GET /api/workflows/[name]/executions', () => {
 
     vi.mocked(listWorkflowExecutions).mockResolvedValue(mockResponse);
 
-    const request = new NextRequest('http://localhost:3000/api/workflows/test-workflow/executions?limit=10&offset=0');
+    const request = new NextRequest(
+      'http://localhost:3000/api/workflows/test-workflow/executions?limit=10&offset=0'
+    );
     const params = Promise.resolve({ name: 'test-workflow' });
 
     // Act
@@ -73,7 +75,15 @@ describe('GET /api/workflows/[name]/executions', () => {
   it('should NOT return just an array (regression test for the bug)', async () => {
     // Arrange
     const mockResponse = {
-      executions: [{ id: 'exec-1', workflowName: 'test', status: 'Succeeded' as const, startedAt: '2025-11-25T10:00:00Z', durationMs: 100 }],
+      executions: [
+        {
+          id: 'exec-1',
+          workflowName: 'test',
+          status: 'Succeeded' as const,
+          startedAt: '2025-11-25T10:00:00Z',
+          durationMs: 100,
+        },
+      ],
       totalCount: 1,
       take: 10,
       skip: 0,
@@ -105,7 +115,9 @@ describe('GET /api/workflows/[name]/executions', () => {
 
     vi.mocked(listWorkflowExecutions).mockResolvedValue(mockResponse);
 
-    const request = new NextRequest('http://localhost:3000/api/workflows/test-workflow/executions?limit=20&offset=10');
+    const request = new NextRequest(
+      'http://localhost:3000/api/workflows/test-workflow/executions?limit=20&offset=10'
+    );
     const params = Promise.resolve({ name: 'test-workflow' });
 
     // Act
@@ -131,7 +143,9 @@ describe('GET /api/workflows/[name]/executions', () => {
 
     vi.mocked(listWorkflowExecutions).mockResolvedValue(mockResponse);
 
-    const request = new NextRequest('http://localhost:3000/api/workflows/test-workflow/executions?take=5&skip=15');
+    const request = new NextRequest(
+      'http://localhost:3000/api/workflows/test-workflow/executions?take=5&skip=15'
+    );
     const params = Promise.resolve({ name: 'test-workflow' });
 
     // Act
@@ -157,7 +171,9 @@ describe('GET /api/workflows/[name]/executions', () => {
 
     vi.mocked(listWorkflowExecutions).mockResolvedValue(mockResponse);
 
-    const request = new NextRequest('http://localhost:3000/api/workflows/test/executions?take=100&skip=200&limit=10&offset=20');
+    const request = new NextRequest(
+      'http://localhost:3000/api/workflows/test/executions?take=100&skip=200&limit=10&offset=20'
+    );
     const params = Promise.resolve({ name: 'test' });
 
     // Act
@@ -183,7 +199,9 @@ describe('GET /api/workflows/[name]/executions', () => {
 
     vi.mocked(listWorkflowExecutions).mockResolvedValue(mockResponse);
 
-    const request = new NextRequest('http://localhost:3000/api/workflows/test-workflow/executions?status=failed');
+    const request = new NextRequest(
+      'http://localhost:3000/api/workflows/test-workflow/executions?status=failed'
+    );
     const params = Promise.resolve({ name: 'test-workflow' });
 
     // Act
@@ -209,7 +227,9 @@ describe('GET /api/workflows/[name]/executions', () => {
 
     vi.mocked(listWorkflowExecutions).mockResolvedValue(mockResponse);
 
-    const request = new NextRequest('http://localhost:3000/api/workflows/test/executions?namespace=production');
+    const request = new NextRequest(
+      'http://localhost:3000/api/workflows/test/executions?namespace=production'
+    );
     const params = Promise.resolve({ name: 'test' });
 
     // Act
@@ -263,7 +283,9 @@ describe('GET /api/workflows/[name]/executions', () => {
 
     vi.mocked(listWorkflowExecutions).mockResolvedValue(mockResponse);
 
-    const request = new NextRequest('http://localhost:3000/api/workflows/empty-workflow/executions');
+    const request = new NextRequest(
+      'http://localhost:3000/api/workflows/empty-workflow/executions'
+    );
     const params = Promise.resolve({ name: 'empty-workflow' });
 
     // Act
@@ -339,7 +361,9 @@ describe('GET /api/workflows/[name]/executions', () => {
 
     vi.mocked(listWorkflowExecutions).mockResolvedValue(mockResponse);
 
-    const request = new NextRequest('http://localhost:3000/api/workflows/test/executions?limit=25&offset=50');
+    const request = new NextRequest(
+      'http://localhost:3000/api/workflows/test/executions?limit=25&offset=50'
+    );
     const params = Promise.resolve({ name: 'test' });
 
     // Act

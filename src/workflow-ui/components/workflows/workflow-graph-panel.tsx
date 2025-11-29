@@ -65,7 +65,7 @@ function convertToReactFlow(
       id: node.id,
       type: getReactFlowNodeType(node.type),
       data: {
-        label: node.data.label,  // ← Fixed: access label from node.data
+        label: node.data.label, // ← Fixed: access label from node.data
         isParallel,
       },
       position: { x: 0, y: 0 }, // Will be set by layout
@@ -106,7 +106,11 @@ function convertToReactFlow(
   return { nodes: layoutedNodes, edges };
 }
 
-export function WorkflowGraphPanel({ graph, direction = 'TB', onNodeClick }: WorkflowGraphPanelProps) {
+export function WorkflowGraphPanel({
+  graph,
+  direction = 'TB',
+  onNodeClick,
+}: WorkflowGraphPanelProps) {
   const { nodes, edges } = useMemo(() => {
     if (graph.nodes.length === 0) {
       return { nodes: [], edges: [] };

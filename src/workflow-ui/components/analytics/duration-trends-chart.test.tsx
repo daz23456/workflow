@@ -105,23 +105,17 @@ describe('DurationTrendsChart', () => {
   describe('Empty State', () => {
     it('should render empty state message when no data points', () => {
       renderWithQuery(
-        <DurationTrendsChart
-          dataPoints={[]}
-          entityType="Workflow"
-          entityName="test-workflow"
-        />
+        <DurationTrendsChart dataPoints={[]} entityType="Workflow" entityName="test-workflow" />
       );
 
-      expect(screen.getByText('No execution data available for the selected time period.')).toBeInTheDocument();
+      expect(
+        screen.getByText('No execution data available for the selected time period.')
+      ).toBeInTheDocument();
     });
 
     it('should show entity-specific empty message for workflow', () => {
       renderWithQuery(
-        <DurationTrendsChart
-          dataPoints={[]}
-          entityType="Workflow"
-          entityName="test-workflow"
-        />
+        <DurationTrendsChart dataPoints={[]} entityType="Workflow" entityName="test-workflow" />
       );
 
       expect(screen.getByText(/Execute the workflow to see trends/i)).toBeInTheDocument();
@@ -129,11 +123,7 @@ describe('DurationTrendsChart', () => {
 
     it('should show entity-specific empty message for task', () => {
       renderWithQuery(
-        <DurationTrendsChart
-          dataPoints={[]}
-          entityType="Task"
-          entityName="fetch-user"
-        />
+        <DurationTrendsChart dataPoints={[]} entityType="Task" entityName="fetch-user" />
       );
 
       expect(screen.getByText(/Execute the task to see trends/i)).toBeInTheDocument();
@@ -318,7 +308,10 @@ describe('DurationTrendsChart', () => {
 
       expect(p50Button).toHaveAttribute('aria-pressed', 'true');
       expect(p95Button).toHaveAttribute('aria-pressed', 'true');
-      expect(screen.getByRole('button', { name: /Average/i })).toHaveAttribute('aria-pressed', 'true');
+      expect(screen.getByRole('button', { name: /Average/i })).toHaveAttribute(
+        'aria-pressed',
+        'true'
+      );
     });
   });
 
@@ -685,11 +678,7 @@ describe('DurationTrendsChart', () => {
   describe('String Case Sensitivity', () => {
     it('should use lowercase "workflow" in empty state message', () => {
       renderWithQuery(
-        <DurationTrendsChart
-          dataPoints={[]}
-          entityType="Workflow"
-          entityName="test-workflow"
-        />
+        <DurationTrendsChart dataPoints={[]} entityType="Workflow" entityName="test-workflow" />
       );
 
       // Exact text match (case-sensitive) - will catch toLowerCase → toUpperCase mutation
@@ -698,11 +687,7 @@ describe('DurationTrendsChart', () => {
 
     it('should use lowercase "task" in empty state message', () => {
       renderWithQuery(
-        <DurationTrendsChart
-          dataPoints={[]}
-          entityType="Task"
-          entityName="fetch-user"
-        />
+        <DurationTrendsChart dataPoints={[]} entityType="Task" entityName="fetch-user" />
       );
 
       // Exact text match (case-sensitive) - will catch toLowerCase → toUpperCase mutation

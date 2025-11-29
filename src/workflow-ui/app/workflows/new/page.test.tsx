@@ -17,6 +17,7 @@ const mockSetGraph = vi.hoisted(() => vi.fn());
 const mockClearGraph = vi.hoisted(() => vi.fn());
 const mockPush = vi.hoisted(() => vi.fn());
 const mockBack = vi.hoisted(() => vi.fn());
+const mockUseTemplateDetail = vi.hoisted(() => vi.fn());
 
 // Mock TaskPalette
 vi.mock('@/components/builder/task-palette', () => ({
@@ -86,6 +87,14 @@ vi.mock('next/navigation', () => ({
     push: mockPush,
     back: mockBack,
   }),
+  useSearchParams: () => ({
+    get: vi.fn().mockReturnValue(null),
+  }),
+}));
+
+// Mock API queries
+vi.mock('@/lib/api/queries', () => ({
+  useTemplateDetail: mockUseTemplateDetail,
 }));
 
 describe('WorkflowBuilderPage', () => {
@@ -105,6 +114,12 @@ describe('WorkflowBuilderPage', () => {
       validation: { isValid: true, errors: [], warnings: [] },
       history: { past: [], future: [], currentCheckpoint: null },
       autosave: { isDirty: false, lastSaved: null, isAutosaving: false },
+    });
+    // Mock template detail hook
+    mockUseTemplateDetail.mockReturnValue({
+      data: null,
+      isLoading: false,
+      error: null,
     });
     // Reset graph state
     mockGraphState = {
@@ -185,7 +200,12 @@ describe('WorkflowBuilderPage', () => {
       const user = userEvent.setup();
 
       mockGraphState.nodes = [
-        { id: 'node-1', type: 'task', position: { x: 0, y: 0 }, data: { taskRef: 'fetch-user', label: 'Fetch User' } },
+        {
+          id: 'node-1',
+          type: 'task',
+          position: { x: 0, y: 0 },
+          data: { taskRef: 'fetch-user', label: 'Fetch User' },
+        },
       ];
 
       const mockFileHandle = {

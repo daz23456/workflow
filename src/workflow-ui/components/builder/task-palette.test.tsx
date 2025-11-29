@@ -34,7 +34,10 @@ const mockTasks = {
     {
       name: 'send-email',
       description: 'Sends an email notification',
-      inputSchema: { type: 'object', properties: { to: { type: 'string' }, subject: { type: 'string' } } },
+      inputSchema: {
+        type: 'object',
+        properties: { to: { type: 'string' }, subject: { type: 'string' } },
+      },
       outputSchema: { type: 'object', properties: { messageId: { type: 'string' } } },
     },
     {

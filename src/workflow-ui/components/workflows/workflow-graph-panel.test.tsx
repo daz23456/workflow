@@ -40,16 +40,19 @@ describe('WorkflowGraphPanel', () => {
       { id: 'task1', type: 'task', data: { label: 'Validate Email' }, position: { x: 0, y: 0 } },
       { id: 'task2', type: 'task', data: { label: 'Create User' }, position: { x: 0, y: 100 } },
     ],
-    edges: [
-      { id: 'e1-2', source: 'task1', target: 'task2', type: 'dependency' },
-    ],
+    edges: [{ id: 'e1-2', source: 'task1', target: 'task2', type: 'dependency' }],
     parallelGroups: [],
   };
 
   const mockComplexGraph: WorkflowGraph = {
     nodes: [
       { id: 'start', type: 'start', data: { label: 'Start' }, position: { x: 200, y: 0 } },
-      { id: 'task1', type: 'task', data: { label: 'Validate Email' }, position: { x: 100, y: 100 } },
+      {
+        id: 'task1',
+        type: 'task',
+        data: { label: 'Validate Email' },
+        position: { x: 100, y: 100 },
+      },
       { id: 'task2', type: 'task', data: { label: 'Check Credit' }, position: { x: 300, y: 100 } },
       { id: 'task3', type: 'task', data: { label: 'Create User' }, position: { x: 200, y: 200 } },
       { id: 'end', type: 'end', data: { label: 'End' }, position: { x: 200, y: 300 } },
@@ -61,9 +64,7 @@ describe('WorkflowGraphPanel', () => {
       { id: 'e-2-3', source: 'task2', target: 'task3', type: 'dependency' },
       { id: 'e-3-end', source: 'task3', target: 'end', type: 'dependency' },
     ],
-    parallelGroups: [
-      { level: 0, taskIds: ['task1', 'task2'] },
-    ],
+    parallelGroups: [{ level: 0, taskIds: ['task1', 'task2'] }],
   };
 
   describe('Basic Rendering', () => {

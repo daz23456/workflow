@@ -47,10 +47,7 @@ export async function POST(
       }
 
       // Generic server error
-      return NextResponse.json(
-        { error: 'Test failed', message: message },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'Test failed', message: message }, { status: 500 });
     }
 
     // Unknown error

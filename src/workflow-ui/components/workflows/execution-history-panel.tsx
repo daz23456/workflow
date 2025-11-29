@@ -211,12 +211,7 @@ export function ExecutionHistoryPanel({
             onClick={toggleSortOrder}
             className="flex items-center gap-1 rounded-md bg-gray-100 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors"
           >
-            <svg
-              className="h-4 w-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -233,9 +228,7 @@ export function ExecutionHistoryPanel({
       <div className="flex-1 overflow-y-auto">
         {showFilteredEmpty ? (
           <div className="flex h-full items-center justify-center text-gray-500">
-            <p className="text-sm">
-              No {statusFilter} executions found
-            </p>
+            <p className="text-sm">No {statusFilter} executions found</p>
           </div>
         ) : (
           <div className="divide-y divide-gray-200">
@@ -257,13 +250,9 @@ export function ExecutionHistoryPanel({
                       {execution.status}
                     </span>
                     <div>
-                      <div className="text-sm font-mono text-gray-900">
-                        {execution.executionId}
-                      </div>
+                      <div className="text-sm font-mono text-gray-900">{execution.executionId}</div>
                       {execution.error && (
-                        <div className="mt-1 text-xs text-red-600">
-                          {execution.error}
-                        </div>
+                        <div className="mt-1 text-xs text-red-600">{execution.error}</div>
                       )}
                     </div>
                   </div>
@@ -297,8 +286,7 @@ export function ExecutionHistoryPanel({
                 <span className="font-medium">
                   {Math.min(currentPage * pageSize, filteredAndSortedExecutions.length)}
                 </span>{' '}
-                of{' '}
-                <span className="font-medium">{filteredAndSortedExecutions.length}</span> results
+                of <span className="font-medium">{filteredAndSortedExecutions.length}</span> results
               </p>
               <select
                 value={pageSize}

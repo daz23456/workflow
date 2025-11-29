@@ -31,7 +31,7 @@ import { useWorkflowBuilderStore } from '@/lib/stores/workflow-builder-store';
 // Register custom node types
 const nodeTypes = {
   task: TaskNode,
-};
+} as any; // Type assertion to handle React 19 type incompatibility
 
 function WorkflowCanvasInner() {
   const { fitView } = useReactFlow();
@@ -170,16 +170,7 @@ function WorkflowCanvasInner() {
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [
-    selectedNodeIds,
-    selectedEdgeIds,
-    deleteNode,
-    deleteEdge,
-    undo,
-    redo,
-    canUndo,
-    canRedo,
-  ]);
+  }, [selectedNodeIds, selectedEdgeIds, deleteNode, deleteEdge, undo, redo, canUndo, canRedo]);
 
   // Fit view when nodes change
   useEffect(() => {
@@ -215,9 +206,7 @@ function WorkflowCanvasInner() {
         {nodes.length === 0 && (
           <Panel position="top-center">
             <div className="bg-white rounded-lg shadow-lg p-6 text-center max-w-md">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Get Started
-              </h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Get Started</h3>
               <p className="text-sm text-gray-600">
                 Drag and drop tasks from the palette on the left to create your workflow
               </p>

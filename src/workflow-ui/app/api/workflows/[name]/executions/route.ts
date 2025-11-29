@@ -6,10 +6,7 @@ import type { ExecutionStatus } from '@/lib/api/types';
  * GET /api/workflows/{name}/executions
  * List workflow executions (proxied to backend)
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ name: string }> }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ name: string }> }) {
   try {
     const { name } = await params;
 

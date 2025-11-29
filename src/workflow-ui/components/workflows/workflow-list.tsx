@@ -33,9 +33,8 @@ export function WorkflowList({ defaultFilters }: WorkflowListProps) {
   const lastUpdated = dataUpdatedAt ? formatRelativeTime(dataUpdatedAt) : null;
 
   // Extract unique namespaces from workflows
-  const namespaces = workflows.length > 0
-    ? Array.from(new Set(workflows.map((w) => w.namespace))).sort()
-    : [];
+  const namespaces =
+    workflows.length > 0 ? Array.from(new Set(workflows.map((w) => w.namespace))).sort() : [];
 
   // Calculate active filter count (excluding default sort)
   const activeFilterCount =
@@ -65,9 +64,7 @@ export function WorkflowList({ defaultFilters }: WorkflowListProps) {
       // Ignore shortcuts when typing in input/textarea/select
       const target = event.target as HTMLElement;
       const isInputElement =
-        target.tagName === 'INPUT' ||
-        target.tagName === 'TEXTAREA' ||
-        target.tagName === 'SELECT';
+        target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT';
 
       // "/" to focus search (unless already in an input)
       if (event.key === '/' && !isInputElement) {
@@ -110,7 +107,8 @@ export function WorkflowList({ defaultFilters }: WorkflowListProps) {
       <div className="mb-4 rounded-md bg-blue-50 border border-blue-200 px-4 py-2 text-xs text-blue-700">
         <span className="font-medium">Keyboard shortcuts:</span>{' '}
         <kbd className="rounded bg-white px-1.5 py-0.5 border border-blue-300">/</kbd> to search,{' '}
-        <kbd className="rounded bg-white px-1.5 py-0.5 border border-blue-300">Esc</kbd> to clear filters
+        <kbd className="rounded bg-white px-1.5 py-0.5 border border-blue-300">Esc</kbd> to clear
+        filters
       </div>
 
       {/* Filters */}
@@ -141,16 +139,19 @@ export function WorkflowList({ defaultFilters }: WorkflowListProps) {
 
       {/* Workflow Count */}
       {!isLoading && workflows.length > 0 && (
-        <div className="mb-4 text-sm text-gray-600" role="status" aria-live="polite" aria-atomic="true">
+        <div
+          className="mb-4 text-sm text-gray-600"
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+        >
           Showing {workflows.length} {workflows.length === 1 ? 'workflow' : 'workflows'}
         </div>
       )}
 
       {/* Last Updated Timestamp */}
       {!isLoading && lastUpdated && (
-        <div className="mb-4 text-sm text-gray-500">
-          Updated {lastUpdated}
-        </div>
+        <div className="mb-4 text-sm text-gray-500">Updated {lastUpdated}</div>
       )}
 
       {/* Loading State - Skeleton Cards */}

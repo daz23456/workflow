@@ -13,10 +13,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useWorkflowBuilderStore } from './workflow-builder-store';
-import type {
-  WorkflowBuilderNode,
-  WorkflowBuilderEdge,
-} from '../types/workflow-builder';
+import type { WorkflowBuilderNode, WorkflowBuilderEdge } from '../types/workflow-builder';
 
 describe('Workflow Builder Store', () => {
   beforeEach(() => {
@@ -267,7 +264,9 @@ describe('Workflow Builder Store', () => {
       // Either the edge is not added, or validation errors are set
       const hasCircularError =
         result.current.graph.edges.length === 1 ||
-        result.current.validation.errors.some((err) => err.includes('circular') || err.includes('cycle'));
+        result.current.validation.errors.some(
+          (err) => err.includes('circular') || err.includes('cycle')
+        );
 
       expect(hasCircularError).toBe(true);
     });

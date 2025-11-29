@@ -5,10 +5,7 @@ import { getTaskUsage } from '@/lib/api/client';
  * GET /api/tasks/[name]/usage
  * Get workflows that use a specific task (proxied to backend)
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ name: string }> }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ name: string }> }) {
   try {
     const { name } = await params;
 

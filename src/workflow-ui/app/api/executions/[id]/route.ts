@@ -5,10 +5,7 @@ import { getExecutionDetail } from '@/lib/api/client';
  * GET /api/executions/{id}
  * Get detailed execution information (proxied to backend)
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
   try {

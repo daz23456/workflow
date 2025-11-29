@@ -108,7 +108,11 @@ export function TaskDetailPanel({ task, onClose }: TaskDetailPanelProps) {
                 strokeWidth="1.5"
                 stroke="currentColor"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M19.5 8.25l-7.5 7.5-7.5-7.5"
+                />
               </svg>
             </button>
             {inputExpanded && (
@@ -141,14 +145,20 @@ export function TaskDetailPanel({ task, onClose }: TaskDetailPanelProps) {
                 strokeWidth="1.5"
                 stroke="currentColor"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M19.5 8.25l-7.5 7.5-7.5-7.5"
+                />
               </svg>
             </button>
             {httpExpanded && (
               <div className="space-y-3">
                 {/* Method and URL */}
                 <div className="flex items-center gap-2">
-                  <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${getHttpMethodColor(task.httpRequest.method)}`}>
+                  <span
+                    className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${getHttpMethodColor(task.httpRequest.method)}`}
+                  >
                     {task.httpRequest.method}
                   </span>
                   <span className="text-sm font-mono text-gray-700 break-all">

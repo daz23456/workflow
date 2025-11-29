@@ -37,22 +37,22 @@ describe('WorkflowList Accessibility', () => {
     const { container } = renderWithQuery(<WorkflowList />);
 
     // Wait a bit for async loading
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
     const results = await axe(container);
     // @ts-ignore - toHaveNoViolations is extended from jest-axe
     expect(results).toHaveNoViolations();
-  });
+  }, 10000); // Increase timeout for axe analysis
 
   it('should not have accessibility violations with filters applied', async () => {
     const { container } = renderWithQuery(
       <WorkflowList defaultFilters={{ search: 'user', namespace: 'default' }} />
     );
 
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
     const results = await axe(container);
     // @ts-ignore - toHaveNoViolations is extended from jest-axe
     expect(results).toHaveNoViolations();
-  });
+  }, 10000); // Increase timeout for axe analysis
 });

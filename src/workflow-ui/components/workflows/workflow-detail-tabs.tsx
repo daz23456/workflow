@@ -40,7 +40,9 @@ export function WorkflowDetailTabs({
 }: WorkflowDetailTabsProps) {
   const [activeTab, setActiveTab] = useState<TabType>('overview');
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
-  const [selectedExecution, setSelectedExecution] = useState<WorkflowExecutionResponse | null>(null);
+  const [selectedExecution, setSelectedExecution] = useState<WorkflowExecutionResponse | null>(
+    null
+  );
   const [executionResult, setExecutionResult] = useState<WorkflowExecutionResponse | null>(null);
 
   // Find selected task details
@@ -90,7 +92,8 @@ export function WorkflowDetailTabs({
   };
 
   // Determine if side panel is open
-  const isSidePanelOpen = selectedTask !== null || selectedExecution !== null || executionResult !== null;
+  const isSidePanelOpen =
+    selectedTask !== null || selectedExecution !== null || executionResult !== null;
 
   return (
     <div className="flex h-screen flex-col bg-gray-50">

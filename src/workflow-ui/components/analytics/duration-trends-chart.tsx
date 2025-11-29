@@ -100,9 +100,10 @@ export function DurationTrendsChart({
     executions: point.executionCount,
     successCount: point.successCount,
     failureCount: point.failureCount,
-    successRate: point.executionCount > 0
-      ? ((point.successCount / point.executionCount) * 100).toFixed(1)
-      : '0.0',
+    successRate:
+      point.executionCount > 0
+        ? ((point.successCount / point.executionCount) * 100).toFixed(1)
+        : '0.0',
   }));
 
   // Custom tooltip component
@@ -148,16 +149,14 @@ export function DurationTrendsChart({
   };
 
   const toggleMetric = (metric: keyof typeof selectedMetrics) => {
-    setSelectedMetrics(prev => ({ ...prev, [metric]: !prev[metric] }));
+    setSelectedMetrics((prev) => ({ ...prev, [metric]: !prev[metric] }));
   };
 
   return (
     <div className="bg-white p-6 rounded-lg border">
       <div className="mb-4">
         <h2 className="text-xl font-semibold">Duration Trends</h2>
-        <p className="text-sm text-gray-500 mt-1">
-          {entityType} execution performance over time
-        </p>
+        <p className="text-sm text-gray-500 mt-1">{entityType} execution performance over time</p>
       </div>
 
       {/* Metric toggles */}
@@ -210,10 +209,7 @@ export function DurationTrendsChart({
 
       {/* Chart */}
       <ResponsiveContainer width="100%" height={400}>
-        <ComposedChart
-          data={chartData}
-          margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-        >
+        <ComposedChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
           <defs>
             {/* Gradient for min-max area */}
             <linearGradient id="minMaxGradient" x1="0" y1="0" x2="0" y2="1">
@@ -240,10 +236,7 @@ export function DurationTrendsChart({
 
           <Tooltip content={<CustomTooltip />} />
 
-          <Legend
-            wrapperStyle={{ fontSize: '14px' }}
-            iconType="line"
-          />
+          <Legend wrapperStyle={{ fontSize: '14px' }} iconType="line" />
 
           {/* Min-Max shaded area */}
           {selectedMetrics.minMax && (
@@ -301,12 +294,7 @@ export function DurationTrendsChart({
           )}
 
           {/* Brush for zooming */}
-          <Brush
-            dataKey="dateStr"
-            height={30}
-            stroke="#8b5cf6"
-            fill="#f5f3ff"
-          />
+          <Brush dataKey="dateStr" height={30} stroke="#8b5cf6" fill="#f5f3ff" />
         </ComposedChart>
       </ResponsiveContainer>
 
@@ -333,8 +321,7 @@ export function DurationTrendsChart({
           <div className="text-sm text-gray-500">Avg Duration (Period)</div>
           <div className="text-lg font-semibold">
             {Math.round(
-              dataPoints.reduce((sum, p) => sum + p.averageDurationMs, 0) /
-                dataPoints.length
+              dataPoints.reduce((sum, p) => sum + p.averageDurationMs, 0) / dataPoints.length
             )}
             ms
           </div>
@@ -343,8 +330,7 @@ export function DurationTrendsChart({
           <div className="text-sm text-gray-500">P95 Duration (Period)</div>
           <div className="text-lg font-semibold">
             {Math.round(
-              dataPoints.reduce((sum, p) => sum + p.p95DurationMs, 0) /
-                dataPoints.length
+              dataPoints.reduce((sum, p) => sum + p.p95DurationMs, 0) / dataPoints.length
             )}
             ms
           </div>

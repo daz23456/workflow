@@ -11,7 +11,9 @@
     "lint": "turbo run lint",
     "test": "jest",
     "test:schema": "jest tests/schema-validation.test.ts",
-    "test:packages": "turbo run test --filter='./packages/*'"
+    "test:packages": "turbo run test --filter='./packages/*'",
+    "test:coverage": "turbo run test:coverage",
+    "type-check": "turbo run type-check"
   },
   "devDependencies": {
     "@types/jest": "^29.5.11",
@@ -23,5 +25,11 @@
     "turbo": "^2.6.1",
     "typescript": "^5.3.3",
     "yaml": "^2.3.4"
+  },
+  "pnpm": {
+    "overrides": {
+      "@types/react": "19.2.7",
+      "@types/react-dom": "19.2.0"
+    }
   }
 }

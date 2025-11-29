@@ -52,10 +52,12 @@ const userSignupDetail: WorkflowDetail = {
       inputMapping: {
         email: '{{input.email}}',
       },
-      outputSchema: { type: "object", properties: {
-        valid: { type: 'boolean' },
-        reason: { type: 'string' },
-      },
+      outputSchema: {
+        type: 'object',
+        properties: {
+          valid: { type: 'boolean' },
+          reason: { type: 'string' },
+        },
       },
       dependencies: [],
     },
@@ -70,10 +72,12 @@ const userSignupDetail: WorkflowDetail = {
         password: '{{input.password}}',
         username: '{{input.username}}',
       },
-      outputSchema: { type: "object", properties: {
-        id: { type: 'string' },
-        createdAt: { type: 'string' },
-      },
+      outputSchema: {
+        type: 'object',
+        properties: {
+          id: { type: 'string' },
+          createdAt: { type: 'string' },
+        },
       },
       dependencies: ['validate-email'],
     },
@@ -88,23 +92,52 @@ const userSignupDetail: WorkflowDetail = {
         userId: '{{tasks.create-user.output.id}}',
         username: '{{input.username}}',
       },
-      outputSchema: { type: "object", properties: {
-        token: { type: 'string' },
-        sentAt: { type: 'string' },
-      },
+      outputSchema: {
+        type: 'object',
+        properties: {
+          token: { type: 'string' },
+          sentAt: { type: 'string' },
+        },
       },
       dependencies: ['create-user'],
     },
   ],
   graph: {
     nodes: [
-      { id: 'validate-email', type: 'task', position: { x: 0, y: 0 }, data: { label: 'validate-email', status: 'idle' } },
-      { id: 'create-user', type: 'task', position: { x: 0, y: 100 }, data: { label: 'create-user', status: 'idle' } },
-      { id: 'send-email', type: 'task', position: { x: 0, y: 200 }, data: { label: 'send-email', status: 'idle' } },
+      {
+        id: 'validate-email',
+        type: 'task',
+        position: { x: 0, y: 0 },
+        data: { label: 'validate-email', status: 'idle' },
+      },
+      {
+        id: 'create-user',
+        type: 'task',
+        position: { x: 0, y: 100 },
+        data: { label: 'create-user', status: 'idle' },
+      },
+      {
+        id: 'send-email',
+        type: 'task',
+        position: { x: 0, y: 200 },
+        data: { label: 'send-email', status: 'idle' },
+      },
     ],
     edges: [
-      { id: 'e1', source: 'validate-email', target: 'create-user', type: 'dependency', animated: false },
-      { id: 'e2', source: 'create-user', target: 'send-email', type: 'dependency', animated: false },
+      {
+        id: 'e1',
+        source: 'validate-email',
+        target: 'create-user',
+        type: 'dependency',
+        animated: false,
+      },
+      {
+        id: 'e2',
+        source: 'create-user',
+        target: 'send-email',
+        type: 'dependency',
+        animated: false,
+      },
     ],
     parallelGroups: [
       { level: 0, taskIds: ['validate-email'] },
@@ -176,9 +209,11 @@ const orderProcessingDetail: WorkflowDetail = {
         orderId: '{{input.orderId}}',
         items: '{{input.items}}',
       },
-      outputSchema: { type: "object", properties: {
-        valid: { type: 'boolean' },
-      },
+      outputSchema: {
+        type: 'object',
+        properties: {
+          valid: { type: 'boolean' },
+        },
       },
       dependencies: [],
     },
@@ -191,10 +226,12 @@ const orderProcessingDetail: WorkflowDetail = {
       inputMapping: {
         items: '{{input.items}}',
       },
-      outputSchema: { type: "object", properties: {
-        available: { type: 'boolean' },
-        reservationId: { type: 'string' },
-      },
+      outputSchema: {
+        type: 'object',
+        properties: {
+          available: { type: 'boolean' },
+          reservationId: { type: 'string' },
+        },
       },
       dependencies: ['validate-order'],
     },
@@ -208,10 +245,12 @@ const orderProcessingDetail: WorkflowDetail = {
         orderId: '{{input.orderId}}',
         method: '{{input.paymentMethod}}',
       },
-      outputSchema: { type: "object", properties: {
-        transactionId: { type: 'string' },
-        status: { type: 'string' },
-      },
+      outputSchema: {
+        type: 'object',
+        properties: {
+          transactionId: { type: 'string' },
+          status: { type: 'string' },
+        },
       },
       dependencies: ['validate-order'],
     },
@@ -226,10 +265,12 @@ const orderProcessingDetail: WorkflowDetail = {
         reservationId: '{{tasks.check-inventory.output.reservationId}}',
         transactionId: '{{tasks.process-payment.output.transactionId}}',
       },
-      outputSchema: { type: "object", properties: {
-        status: { type: 'string' },
-        confirmedAt: { type: 'string' },
-      },
+      outputSchema: {
+        type: 'object',
+        properties: {
+          status: { type: 'string' },
+          confirmedAt: { type: 'string' },
+        },
       },
       dependencies: ['check-inventory', 'process-payment'],
     },
@@ -243,9 +284,11 @@ const orderProcessingDetail: WorkflowDetail = {
         orderId: '{{input.orderId}}',
         status: '{{tasks.confirm-order.output.status}}',
       },
-      outputSchema: { type: "object", properties: {
-        sent: { type: 'boolean' },
-      },
+      outputSchema: {
+        type: 'object',
+        properties: {
+          sent: { type: 'boolean' },
+        },
       },
       dependencies: ['confirm-order'],
     },
@@ -258,29 +301,97 @@ const orderProcessingDetail: WorkflowDetail = {
       inputMapping: {
         orderId: '{{input.orderId}}',
       },
-      outputSchema: { type: "object", properties: {
-        trackingNumber: { type: 'string' },
-      },
+      outputSchema: {
+        type: 'object',
+        properties: {
+          trackingNumber: { type: 'string' },
+        },
       },
       dependencies: ['confirm-order'],
     },
   ],
   graph: {
     nodes: [
-      { id: 'validate-order', type: 'task', position: { x: 200, y: 0 }, data: { label: 'validate-order', status: 'idle' } },
-      { id: 'check-inventory', type: 'task', position: { x: 0, y: 100 }, data: { label: 'check-inventory', status: 'idle' } },
-      { id: 'process-payment', type: 'task', position: { x: 400, y: 100 }, data: { label: 'process-payment', status: 'idle' } },
-      { id: 'confirm-order', type: 'task', position: { x: 200, y: 200 }, data: { label: 'confirm-order', status: 'idle' } },
-      { id: 'send-confirmation', type: 'task', position: { x: 0, y: 300 }, data: { label: 'send-confirmation', status: 'idle' } },
-      { id: 'ship-order', type: 'task', position: { x: 400, y: 300 }, data: { label: 'ship-order', status: 'idle' } },
+      {
+        id: 'validate-order',
+        type: 'task',
+        position: { x: 200, y: 0 },
+        data: { label: 'validate-order', status: 'idle' },
+      },
+      {
+        id: 'check-inventory',
+        type: 'task',
+        position: { x: 0, y: 100 },
+        data: { label: 'check-inventory', status: 'idle' },
+      },
+      {
+        id: 'process-payment',
+        type: 'task',
+        position: { x: 400, y: 100 },
+        data: { label: 'process-payment', status: 'idle' },
+      },
+      {
+        id: 'confirm-order',
+        type: 'task',
+        position: { x: 200, y: 200 },
+        data: { label: 'confirm-order', status: 'idle' },
+      },
+      {
+        id: 'send-confirmation',
+        type: 'task',
+        position: { x: 0, y: 300 },
+        data: { label: 'send-confirmation', status: 'idle' },
+      },
+      {
+        id: 'ship-order',
+        type: 'task',
+        position: { x: 400, y: 300 },
+        data: { label: 'ship-order', status: 'idle' },
+      },
     ],
     edges: [
-      { id: 'e1', source: 'validate-order', target: 'check-inventory', type: 'dependency', animated: false },
-      { id: 'e2', source: 'validate-order', target: 'process-payment', type: 'dependency', animated: false },
-      { id: 'e3', source: 'check-inventory', target: 'confirm-order', type: 'dependency', animated: false },
-      { id: 'e4', source: 'process-payment', target: 'confirm-order', type: 'dependency', animated: false },
-      { id: 'e5', source: 'confirm-order', target: 'send-confirmation', type: 'dependency', animated: false },
-      { id: 'e6', source: 'confirm-order', target: 'ship-order', type: 'dependency', animated: false },
+      {
+        id: 'e1',
+        source: 'validate-order',
+        target: 'check-inventory',
+        type: 'dependency',
+        animated: false,
+      },
+      {
+        id: 'e2',
+        source: 'validate-order',
+        target: 'process-payment',
+        type: 'dependency',
+        animated: false,
+      },
+      {
+        id: 'e3',
+        source: 'check-inventory',
+        target: 'confirm-order',
+        type: 'dependency',
+        animated: false,
+      },
+      {
+        id: 'e4',
+        source: 'process-payment',
+        target: 'confirm-order',
+        type: 'dependency',
+        animated: false,
+      },
+      {
+        id: 'e5',
+        source: 'confirm-order',
+        target: 'send-confirmation',
+        type: 'dependency',
+        animated: false,
+      },
+      {
+        id: 'e6',
+        source: 'confirm-order',
+        target: 'ship-order',
+        type: 'dependency',
+        animated: false,
+      },
     ],
     parallelGroups: [
       { level: 0, taskIds: ['validate-order'] },
@@ -342,10 +453,12 @@ const dataPipelineDetail: WorkflowDetail = {
       inputMapping: {
         url: '{{input.sourceUrl}}',
       },
-      outputSchema: { type: "object", properties: {
-        data: { type: 'string' },
-        size: { type: 'integer' },
-      },
+      outputSchema: {
+        type: 'object',
+        properties: {
+          data: { type: 'string' },
+          size: { type: 'integer' },
+        },
       },
       dependencies: [],
     },
@@ -359,9 +472,11 @@ const dataPipelineDetail: WorkflowDetail = {
         data: '{{tasks.fetch-data.output.data}}',
         format: '{{input.format}}',
       },
-      outputSchema: { type: "object", properties: {
-        records: { type: 'array' },
-      },
+      outputSchema: {
+        type: 'object',
+        properties: {
+          records: { type: 'array' },
+        },
       },
       dependencies: ['fetch-data'],
     },
@@ -375,10 +490,12 @@ const dataPipelineDetail: WorkflowDetail = {
         records: '{{tasks.parse-data.output.records}}',
         rules: '{{input.validationRules}}',
       },
-      outputSchema: { type: "object", properties: {
-        valid: { type: 'boolean' },
-        errors: { type: 'array' },
-      },
+      outputSchema: {
+        type: 'object',
+        properties: {
+          valid: { type: 'boolean' },
+          errors: { type: 'array' },
+        },
       },
       dependencies: ['parse-data'],
     },
@@ -391,9 +508,11 @@ const dataPipelineDetail: WorkflowDetail = {
       inputMapping: {
         records: '{{tasks.parse-data.output.records}}',
       },
-      outputSchema: { type: "object", properties: {
-        transformed: { type: 'array' },
-      },
+      outputSchema: {
+        type: 'object',
+        properties: {
+          transformed: { type: 'array' },
+        },
       },
       dependencies: ['validate-schema'],
     },
@@ -406,9 +525,11 @@ const dataPipelineDetail: WorkflowDetail = {
       inputMapping: {
         records: '{{tasks.transform-data.output.transformed}}',
       },
-      outputSchema: { type: "object", properties: {
-        enriched: { type: 'array' },
-      },
+      outputSchema: {
+        type: 'object',
+        properties: {
+          enriched: { type: 'array' },
+        },
       },
       dependencies: ['transform-data'],
     },
@@ -421,9 +542,11 @@ const dataPipelineDetail: WorkflowDetail = {
       inputMapping: {
         records: '{{tasks.enrich-data.output.enriched}}',
       },
-      outputSchema: { type: "object", properties: {
-        unique: { type: 'array' },
-      },
+      outputSchema: {
+        type: 'object',
+        properties: {
+          unique: { type: 'array' },
+        },
       },
       dependencies: ['enrich-data'],
     },
@@ -436,10 +559,12 @@ const dataPipelineDetail: WorkflowDetail = {
       inputMapping: {
         records: '{{tasks.deduplicate.output.unique}}',
       },
-      outputSchema: { type: "object", properties: {
-        totalRecords: { type: 'integer' },
-        report: { type: 'object' },
-      },
+      outputSchema: {
+        type: 'object',
+        properties: {
+          totalRecords: { type: 'integer' },
+          report: { type: 'object' },
+        },
       },
       dependencies: ['deduplicate'],
     },
@@ -453,32 +578,110 @@ const dataPipelineDetail: WorkflowDetail = {
         data: '{{tasks.deduplicate.output.unique}}',
         report: '{{tasks.generate-report.output.report}}',
       },
-      outputSchema: { type: "object", properties: {
-        url: { type: 'string' },
-      },
+      outputSchema: {
+        type: 'object',
+        properties: {
+          url: { type: 'string' },
+        },
       },
       dependencies: ['generate-report'],
     },
   ],
   graph: {
     nodes: [
-      { id: 'fetch-data', type: 'task', position: { x: 200, y: 0 }, data: { label: 'fetch-data', status: 'idle' } },
-      { id: 'parse-data', type: 'task', position: { x: 200, y: 100 }, data: { label: 'parse-data', status: 'idle' } },
-      { id: 'validate-schema', type: 'task', position: { x: 200, y: 200 }, data: { label: 'validate-schema', status: 'idle' } },
-      { id: 'transform-data', type: 'task', position: { x: 200, y: 300 }, data: { label: 'transform-data', status: 'idle' } },
-      { id: 'enrich-data', type: 'task', position: { x: 200, y: 400 }, data: { label: 'enrich-data', status: 'idle' } },
-      { id: 'deduplicate', type: 'task', position: { x: 200, y: 500 }, data: { label: 'deduplicate', status: 'idle' } },
-      { id: 'generate-report', type: 'task', position: { x: 200, y: 600 }, data: { label: 'generate-report', status: 'idle' } },
-      { id: 'upload-results', type: 'task', position: { x: 200, y: 700 }, data: { label: 'upload-results', status: 'idle' } },
+      {
+        id: 'fetch-data',
+        type: 'task',
+        position: { x: 200, y: 0 },
+        data: { label: 'fetch-data', status: 'idle' },
+      },
+      {
+        id: 'parse-data',
+        type: 'task',
+        position: { x: 200, y: 100 },
+        data: { label: 'parse-data', status: 'idle' },
+      },
+      {
+        id: 'validate-schema',
+        type: 'task',
+        position: { x: 200, y: 200 },
+        data: { label: 'validate-schema', status: 'idle' },
+      },
+      {
+        id: 'transform-data',
+        type: 'task',
+        position: { x: 200, y: 300 },
+        data: { label: 'transform-data', status: 'idle' },
+      },
+      {
+        id: 'enrich-data',
+        type: 'task',
+        position: { x: 200, y: 400 },
+        data: { label: 'enrich-data', status: 'idle' },
+      },
+      {
+        id: 'deduplicate',
+        type: 'task',
+        position: { x: 200, y: 500 },
+        data: { label: 'deduplicate', status: 'idle' },
+      },
+      {
+        id: 'generate-report',
+        type: 'task',
+        position: { x: 200, y: 600 },
+        data: { label: 'generate-report', status: 'idle' },
+      },
+      {
+        id: 'upload-results',
+        type: 'task',
+        position: { x: 200, y: 700 },
+        data: { label: 'upload-results', status: 'idle' },
+      },
     ],
     edges: [
       { id: 'e1', source: 'fetch-data', target: 'parse-data', type: 'dependency', animated: false },
-      { id: 'e2', source: 'parse-data', target: 'validate-schema', type: 'dependency', animated: false },
-      { id: 'e3', source: 'validate-schema', target: 'transform-data', type: 'dependency', animated: false },
-      { id: 'e4', source: 'transform-data', target: 'enrich-data', type: 'dependency', animated: false },
-      { id: 'e5', source: 'enrich-data', target: 'deduplicate', type: 'dependency', animated: false },
-      { id: 'e6', source: 'deduplicate', target: 'generate-report', type: 'dependency', animated: false },
-      { id: 'e7', source: 'generate-report', target: 'upload-results', type: 'dependency', animated: false },
+      {
+        id: 'e2',
+        source: 'parse-data',
+        target: 'validate-schema',
+        type: 'dependency',
+        animated: false,
+      },
+      {
+        id: 'e3',
+        source: 'validate-schema',
+        target: 'transform-data',
+        type: 'dependency',
+        animated: false,
+      },
+      {
+        id: 'e4',
+        source: 'transform-data',
+        target: 'enrich-data',
+        type: 'dependency',
+        animated: false,
+      },
+      {
+        id: 'e5',
+        source: 'enrich-data',
+        target: 'deduplicate',
+        type: 'dependency',
+        animated: false,
+      },
+      {
+        id: 'e6',
+        source: 'deduplicate',
+        target: 'generate-report',
+        type: 'dependency',
+        animated: false,
+      },
+      {
+        id: 'e7',
+        source: 'generate-report',
+        target: 'upload-results',
+        type: 'dependency',
+        animated: false,
+      },
     ],
     parallelGroups: [
       { level: 0, taskIds: ['fetch-data'] },
@@ -520,7 +723,8 @@ const userOnboardingList: WorkflowListItem = {
 const userOnboardingDetail: WorkflowDetail = {
   name: 'user-onboarding',
   namespace: 'default',
-  description: 'Complete user onboarding with profile setup and welcome email (CONTAINS SCHEMA MISMATCH FOR TESTING)',
+  description:
+    'Complete user onboarding with profile setup and welcome email (CONTAINS SCHEMA MISMATCH FOR TESTING)',
   inputSchema: {
     type: 'object',
     properties: {
@@ -550,10 +754,12 @@ const userOnboardingDetail: WorkflowDetail = {
         userId: '{{input.userId}}',
         preferences: '{{input.preferences}}',
       },
-      outputSchema: { type: "object", properties: {
-        profileId: { type: 'string' },
-        settings: { type: 'object' },
-      },
+      outputSchema: {
+        type: 'object',
+        properties: {
+          profileId: { type: 'string' },
+          settings: { type: 'object' },
+        },
       },
       dependencies: [],
     },
@@ -569,10 +775,12 @@ const userOnboardingDetail: WorkflowDetail = {
         // SCHEMA MISMATCH: Output is 'profileId' but we reference 'accountId'
         accountId: '{{tasks.create-profile.output.accountId}}',
       },
-      outputSchema: { type: "object", properties: {
-        billingId: { type: 'string' },
-        nextBillingDate: { type: 'string' },
-      },
+      outputSchema: {
+        type: 'object',
+        properties: {
+          billingId: { type: 'string' },
+          nextBillingDate: { type: 'string' },
+        },
       },
       dependencies: ['create-profile'],
     },
@@ -586,11 +794,13 @@ const userOnboardingDetail: WorkflowDetail = {
         plan: '{{input.plan}}',
         billingId: '{{tasks.setup-billing.output.billingId}}',
       },
-      outputSchema: { type: "object", properties: {
-        resources: { type: 'array' },
-        // SCHEMA MISMATCH: Outputs 'limits' as object but next task expects array
-        limits: { type: 'object' },
-      },
+      outputSchema: {
+        type: 'object',
+        properties: {
+          resources: { type: 'array' },
+          // SCHEMA MISMATCH: Outputs 'limits' as object but next task expects array
+          limits: { type: 'object' },
+        },
       },
       dependencies: ['setup-billing'],
     },
@@ -606,24 +816,66 @@ const userOnboardingDetail: WorkflowDetail = {
         // SCHEMA MISMATCH: Expects array but gets object
         limits: '{{tasks.assign-resources.output.limits}}',
       },
-      outputSchema: { type: "object", properties: {
-        sent: { type: 'boolean' },
-      },
+      outputSchema: {
+        type: 'object',
+        properties: {
+          sent: { type: 'boolean' },
+        },
       },
       dependencies: ['assign-resources'],
     },
   ],
   graph: {
     nodes: [
-      { id: 'create-profile', type: 'task', position: { x: 0, y: 0 }, data: { label: 'create-profile', status: 'idle' } },
-      { id: 'setup-billing', type: 'task', position: { x: 0, y: 100 }, data: { label: 'setup-billing', status: 'idle', schemaMismatch: true } },
-      { id: 'assign-resources', type: 'task', position: { x: 0, y: 200 }, data: { label: 'assign-resources', status: 'idle', schemaMismatch: true } },
-      { id: 'send-welcome', type: 'task', position: { x: 0, y: 300 }, data: { label: 'send-welcome', status: 'idle', schemaMismatch: true } },
+      {
+        id: 'create-profile',
+        type: 'task',
+        position: { x: 0, y: 0 },
+        data: { label: 'create-profile', status: 'idle' },
+      },
+      {
+        id: 'setup-billing',
+        type: 'task',
+        position: { x: 0, y: 100 },
+        data: { label: 'setup-billing', status: 'idle', schemaMismatch: true },
+      },
+      {
+        id: 'assign-resources',
+        type: 'task',
+        position: { x: 0, y: 200 },
+        data: { label: 'assign-resources', status: 'idle', schemaMismatch: true },
+      },
+      {
+        id: 'send-welcome',
+        type: 'task',
+        position: { x: 0, y: 300 },
+        data: { label: 'send-welcome', status: 'idle', schemaMismatch: true },
+      },
     ],
     edges: [
-      { id: 'e1', source: 'create-profile', target: 'setup-billing', type: 'dependency', animated: false, style: { stroke: '#ef4444' } },
-      { id: 'e2', source: 'setup-billing', target: 'assign-resources', type: 'dependency', animated: false },
-      { id: 'e3', source: 'assign-resources', target: 'send-welcome', type: 'dependency', animated: false, style: { stroke: '#ef4444' } },
+      {
+        id: 'e1',
+        source: 'create-profile',
+        target: 'setup-billing',
+        type: 'dependency',
+        animated: false,
+        style: { stroke: '#ef4444' },
+      },
+      {
+        id: 'e2',
+        source: 'setup-billing',
+        target: 'assign-resources',
+        type: 'dependency',
+        animated: false,
+      },
+      {
+        id: 'e3',
+        source: 'assign-resources',
+        target: 'send-welcome',
+        type: 'dependency',
+        animated: false,
+        style: { stroke: '#ef4444' },
+      },
     ],
     parallelGroups: [
       { level: 0, taskIds: ['create-profile'] },
@@ -687,10 +939,12 @@ const paymentFlowDetail: WorkflowDetail = {
         amount: '{{input.amount}}',
         customerId: '{{input.customerId}}',
       },
-      outputSchema: { type: "object", properties: {
-        riskScore: { type: 'number' },
-        approved: { type: 'boolean' },
-      },
+      outputSchema: {
+        type: 'object',
+        properties: {
+          riskScore: { type: 'number' },
+          approved: { type: 'boolean' },
+        },
       },
       dependencies: [],
     },
@@ -704,10 +958,12 @@ const paymentFlowDetail: WorkflowDetail = {
         cardToken: '{{input.cardToken}}',
         amount: '{{input.amount}}',
       },
-      outputSchema: { type: "object", properties: {
-        verified: { type: 'boolean' },
-        authToken: { type: 'string' },
-      },
+      outputSchema: {
+        type: 'object',
+        properties: {
+          verified: { type: 'boolean' },
+          authToken: { type: 'string' },
+        },
       },
       dependencies: ['fraud-check'],
     },
@@ -723,10 +979,12 @@ const paymentFlowDetail: WorkflowDetail = {
         cardToken: '{{input.cardToken}}',
         authToken: '{{tasks.verify-3ds.output.authToken}}',
       },
-      outputSchema: { type: "object", properties: {
-        authorizationId: { type: 'string' },
-        status: { type: 'string' },
-      },
+      outputSchema: {
+        type: 'object',
+        properties: {
+          authorizationId: { type: 'string' },
+          status: { type: 'string' },
+        },
       },
       dependencies: ['verify-3ds'],
     },
@@ -741,9 +999,11 @@ const paymentFlowDetail: WorkflowDetail = {
         amount: '{{input.amount}}',
         authorizationId: '{{tasks.authorize-payment.output.authorizationId}}',
       },
-      outputSchema: { type: "object", properties: {
-        ledgerEntryId: { type: 'string' },
-      },
+      outputSchema: {
+        type: 'object',
+        properties: {
+          ledgerEntryId: { type: 'string' },
+        },
       },
       dependencies: ['authorize-payment'],
     },
@@ -756,27 +1016,78 @@ const paymentFlowDetail: WorkflowDetail = {
       inputMapping: {
         authorizationId: '{{tasks.authorize-payment.output.authorizationId}}',
       },
-      outputSchema: { type: "object", properties: {
-        transactionId: { type: 'string' },
-        status: { type: 'string' },
-      },
+      outputSchema: {
+        type: 'object',
+        properties: {
+          transactionId: { type: 'string' },
+          status: { type: 'string' },
+        },
       },
       dependencies: ['update-ledger'],
     },
   ],
   graph: {
     nodes: [
-      { id: 'fraud-check', type: 'task', position: { x: 0, y: 0 }, data: { label: 'fraud-check', status: 'idle' } },
-      { id: 'verify-3ds', type: 'task', position: { x: 0, y: 100 }, data: { label: 'verify-3ds', status: 'idle' } },
-      { id: 'authorize-payment', type: 'task', position: { x: 0, y: 200 }, data: { label: 'authorize-payment', status: 'idle' } },
-      { id: 'update-ledger', type: 'task', position: { x: 0, y: 300 }, data: { label: 'update-ledger', status: 'idle' } },
-      { id: 'capture-payment', type: 'task', position: { x: 0, y: 400 }, data: { label: 'capture-payment', status: 'idle' } },
+      {
+        id: 'fraud-check',
+        type: 'task',
+        position: { x: 0, y: 0 },
+        data: { label: 'fraud-check', status: 'idle' },
+      },
+      {
+        id: 'verify-3ds',
+        type: 'task',
+        position: { x: 0, y: 100 },
+        data: { label: 'verify-3ds', status: 'idle' },
+      },
+      {
+        id: 'authorize-payment',
+        type: 'task',
+        position: { x: 0, y: 200 },
+        data: { label: 'authorize-payment', status: 'idle' },
+      },
+      {
+        id: 'update-ledger',
+        type: 'task',
+        position: { x: 0, y: 300 },
+        data: { label: 'update-ledger', status: 'idle' },
+      },
+      {
+        id: 'capture-payment',
+        type: 'task',
+        position: { x: 0, y: 400 },
+        data: { label: 'capture-payment', status: 'idle' },
+      },
     ],
     edges: [
-      { id: 'e1', source: 'fraud-check', target: 'verify-3ds', type: 'dependency', animated: false },
-      { id: 'e2', source: 'verify-3ds', target: 'authorize-payment', type: 'dependency', animated: false },
-      { id: 'e3', source: 'authorize-payment', target: 'update-ledger', type: 'dependency', animated: false },
-      { id: 'e4', source: 'update-ledger', target: 'capture-payment', type: 'dependency', animated: false },
+      {
+        id: 'e1',
+        source: 'fraud-check',
+        target: 'verify-3ds',
+        type: 'dependency',
+        animated: false,
+      },
+      {
+        id: 'e2',
+        source: 'verify-3ds',
+        target: 'authorize-payment',
+        type: 'dependency',
+        animated: false,
+      },
+      {
+        id: 'e3',
+        source: 'authorize-payment',
+        target: 'update-ledger',
+        type: 'dependency',
+        animated: false,
+      },
+      {
+        id: 'e4',
+        source: 'update-ledger',
+        target: 'capture-payment',
+        type: 'dependency',
+        animated: false,
+      },
     ],
     parallelGroups: [
       { level: 0, taskIds: ['fraud-check'] },

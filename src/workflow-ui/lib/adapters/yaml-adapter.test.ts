@@ -12,11 +12,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import {
-  graphToYaml,
-  yamlToGraph,
-  type WorkflowYaml,
-} from './yaml-adapter';
+import { graphToYaml, yamlToGraph, type WorkflowYaml } from './yaml-adapter';
 import type {
   WorkflowBuilderState,
   WorkflowBuilderNode,
@@ -260,7 +256,11 @@ describe('YAML Adapter', () => {
       expect(state.graph.nodes[0].data.label).toBeDefined();
       expect(state.graph.nodes[0].position).toBeDefined();
       expect(state.graph.nodes[0].data.input).toEqual({ userId: '{{input.userId}}' });
-      expect(state.inputSchema.userId).toEqual({ type: 'string', required: true, description: 'User ID' });
+      expect(state.inputSchema.userId).toEqual({
+        type: 'string',
+        required: true,
+        description: 'User ID',
+      });
       expect(state.outputMapping.name).toBe('{{tasks.get-user.output.name}}');
     });
 
@@ -286,8 +286,8 @@ describe('YAML Adapter', () => {
       expect(state.graph.nodes).toHaveLength(3);
       expect(state.graph.edges).toHaveLength(2);
 
-      const edge1 = state.graph.edges.find(e => e.source === 'task-1' && e.target === 'task-3');
-      const edge2 = state.graph.edges.find(e => e.source === 'task-2' && e.target === 'task-3');
+      const edge1 = state.graph.edges.find((e) => e.source === 'task-1' && e.target === 'task-3');
+      const edge2 = state.graph.edges.find((e) => e.source === 'task-2' && e.target === 'task-3');
 
       expect(edge1).toBeDefined();
       expect(edge1!.type).toBe('dependency');
@@ -409,7 +409,11 @@ spec:
 
       const originalState: WorkflowBuilderState = {
         graph: { nodes: originalNodes, edges: originalEdges, parallelGroups: [] },
-        metadata: { name: 'roundtrip-test', namespace: 'production', description: 'Roundtrip test' },
+        metadata: {
+          name: 'roundtrip-test',
+          namespace: 'production',
+          description: 'Roundtrip test',
+        },
         inputSchema: {
           userId: { type: 'string', required: true },
           enabled: { type: 'boolean', default: true },
@@ -438,8 +442,8 @@ spec:
 
       // Verify nodes preserved (positions may differ due to auto-layout)
       expect(reconstructedState.graph.nodes).toHaveLength(2);
-      const node1 = reconstructedState.graph.nodes.find(n => n.id === 'task-1')!;
-      const node2 = reconstructedState.graph.nodes.find(n => n.id === 'task-2')!;
+      const node1 = reconstructedState.graph.nodes.find((n) => n.id === 'task-1')!;
+      const node2 = reconstructedState.graph.nodes.find((n) => n.id === 'task-2')!;
 
       expect(node1.data.taskRef).toBe('fetch-user');
       expect(node1.data.timeout).toBe('30s');

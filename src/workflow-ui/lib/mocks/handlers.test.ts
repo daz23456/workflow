@@ -68,7 +68,9 @@ describe('MSW Handlers', () => {
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      expect(data.workflows.every((w: { namespace: string }) => w.namespace === 'production')).toBe(true);
+      expect(data.workflows.every((w: { namespace: string }) => w.namespace === 'production')).toBe(
+        true
+      );
     });
 
     it('sorts workflows by name (ascending)', async () => {
@@ -86,7 +88,9 @@ describe('MSW Handlers', () => {
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      const rates = data.workflows.map((w: { stats: { successRate: number } }) => w.stats.successRate);
+      const rates = data.workflows.map(
+        (w: { stats: { successRate: number } }) => w.stats.successRate
+      );
       for (let i = 0; i < rates.length - 1; i++) {
         expect(rates[i]).toBeGreaterThanOrEqual(rates[i + 1]);
       }
@@ -97,7 +101,9 @@ describe('MSW Handlers', () => {
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      const executions = data.workflows.map((w: { stats: { totalExecutions: number } }) => w.stats.totalExecutions);
+      const executions = data.workflows.map(
+        (w: { stats: { totalExecutions: number } }) => w.stats.totalExecutions
+      );
       for (let i = 0; i < executions.length - 1; i++) {
         expect(executions[i]).toBeGreaterThanOrEqual(executions[i + 1]);
       }
@@ -109,8 +115,9 @@ describe('MSW Handlers', () => {
 
       expect(response.status).toBe(200);
       expect(
-        data.workflows.every((w: { name: string; namespace: string }) =>
-          w.name.includes('order') && w.namespace === 'production'
+        data.workflows.every(
+          (w: { name: string; namespace: string }) =>
+            w.name.includes('order') && w.namespace === 'production'
         )
       ).toBe(true);
     });
@@ -372,9 +379,7 @@ describe('MSW Handlers', () => {
     });
 
     it('supports pagination', async () => {
-      const response = await fetch(
-        '/api/workflows/user-signup/executions?limit=2&offset=0'
-      );
+      const response = await fetch('/api/workflows/user-signup/executions?limit=2&offset=0');
       const data = await response.json();
 
       expect(data.limit).toBe(2);
@@ -383,9 +388,7 @@ describe('MSW Handlers', () => {
     });
 
     it('supports status filtering', async () => {
-      const response = await fetch(
-        '/api/workflows/user-signup/executions?status=succeeded'
-      );
+      const response = await fetch('/api/workflows/user-signup/executions?status=succeeded');
       const data = await response.json();
 
       data.executions.forEach((exec: { status: string }) => {

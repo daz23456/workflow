@@ -1,0 +1,8 @@
+node_modules/
+.next/
+out/
+coverage/
+stryker-output/
+playwright-report/
+test-results/
+*.min.js

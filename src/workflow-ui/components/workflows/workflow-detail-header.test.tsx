@@ -66,7 +66,9 @@ describe('WorkflowDetailHeader', () => {
 
     it('renders workflow description', () => {
       render(<WorkflowDetailHeader workflow={mockWorkflow} stats={mockStats} />);
-      expect(screen.getByText('Simple user registration flow with email verification')).toBeInTheDocument();
+      expect(
+        screen.getByText('Simple user registration flow with email verification')
+      ).toBeInTheDocument();
     });
 
     it('renders task count', () => {
@@ -145,11 +147,7 @@ describe('WorkflowDetailHeader', () => {
       const onExecute = vi.fn();
 
       render(
-        <WorkflowDetailHeader
-          workflow={mockWorkflow}
-          stats={mockStats}
-          onExecute={onExecute}
-        />
+        <WorkflowDetailHeader workflow={mockWorkflow} stats={mockStats} onExecute={onExecute} />
       );
 
       await user.click(screen.getByRole('button', { name: /execute/i }));
@@ -160,51 +158,27 @@ describe('WorkflowDetailHeader', () => {
       const user = userEvent.setup();
       const onTest = vi.fn();
 
-      render(
-        <WorkflowDetailHeader
-          workflow={mockWorkflow}
-          stats={mockStats}
-          onTest={onTest}
-        />
-      );
+      render(<WorkflowDetailHeader workflow={mockWorkflow} stats={mockStats} onTest={onTest} />);
 
       await user.click(screen.getByRole('button', { name: /test.*dry.*run/i }));
       expect(onTest).toHaveBeenCalledTimes(1);
     });
 
     it('disables action buttons when loading', () => {
-      render(
-        <WorkflowDetailHeader
-          workflow={mockWorkflow}
-          stats={mockStats}
-          isExecuting={true}
-        />
-      );
+      render(<WorkflowDetailHeader workflow={mockWorkflow} stats={mockStats} isExecuting={true} />);
 
       expect(screen.getByRole('button', { name: /execut/i })).toBeDisabled();
       expect(screen.getByRole('button', { name: /test.*dry.*run/i })).toBeDisabled();
     });
 
     it('shows loading text when executing', () => {
-      render(
-        <WorkflowDetailHeader
-          workflow={mockWorkflow}
-          stats={mockStats}
-          isExecuting={true}
-        />
-      );
+      render(<WorkflowDetailHeader workflow={mockWorkflow} stats={mockStats} isExecuting={true} />);
 
       expect(screen.getByRole('button', { name: /executing/i })).toBeInTheDocument();
     });
 
     it('shows loading text when testing', () => {
-      render(
-        <WorkflowDetailHeader
-          workflow={mockWorkflow}
-          stats={mockStats}
-          isTesting={true}
-        />
-      );
+      render(<WorkflowDetailHeader workflow={mockWorkflow} stats={mockStats} isTesting={true} />);
 
       expect(screen.getByRole('button', { name: /testing/i })).toBeInTheDocument();
     });

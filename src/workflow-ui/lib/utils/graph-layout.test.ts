@@ -175,7 +175,9 @@ describe('layoutGraph', () => {
       const layoutedDefault = layoutGraph(nodes, edges);
       const layoutedCustom = layoutGraph(nodes, edges, { nodeSpacing: 200 });
 
-      const spacingDefault = Math.abs(layoutedDefault[1].position.y - layoutedDefault[0].position.y);
+      const spacingDefault = Math.abs(
+        layoutedDefault[1].position.y - layoutedDefault[0].position.y
+      );
       const spacingCustom = Math.abs(layoutedCustom[1].position.y - layoutedCustom[0].position.y);
 
       expect(spacingCustom).toBeGreaterThan(spacingDefault);
@@ -195,9 +197,7 @@ describe('identifyParallelGroups', () => {
     });
 
     it('returns single group for single node', () => {
-      const nodes: Node[] = [
-        { id: 'task1', position: { x: 0, y: 0 }, data: { label: 'Task 1' } },
-      ];
+      const nodes: Node[] = [{ id: 'task1', position: { x: 0, y: 0 }, data: { label: 'Task 1' } }];
       const edges: Edge[] = [];
 
       const groups = identifyParallelGroups(nodes, edges);
@@ -365,9 +365,7 @@ describe('identifyParallelGroups', () => {
         { id: 'task3', position: { x: 0, y: 0 }, data: { label: 'Task 3' } },
       ];
       // task2 and task3 connected, but task1 disconnected
-      const edges: Edge[] = [
-        { id: 'e2-3', source: 'task2', target: 'task3' },
-      ];
+      const edges: Edge[] = [{ id: 'e2-3', source: 'task2', target: 'task3' }];
 
       const groups = identifyParallelGroups(nodes, edges);
 

@@ -133,9 +133,7 @@ describe('API Client', () => {
         json: async () => ({ message: 'Workflow not found' }),
       });
 
-      await expect(client.getWorkflowDetail('non-existent')).rejects.toThrow(
-        'Workflow not found'
-      );
+      await expect(client.getWorkflowDetail('non-existent')).rejects.toThrow('Workflow not found');
     });
 
     it('should throw error for HTTP 500 with JSON error response', async () => {

@@ -81,9 +81,7 @@ vi.mock('@xyflow/react', async () => {
     Background: () => <div data-testid="background" />,
     Controls: () => <div data-testid="controls" />,
     MiniMap: () => <div data-testid="minimap" />,
-    Panel: ({ children, position }: any) => (
-      <div data-testid={`panel-${position}`}>{children}</div>
-    ),
+    Panel: ({ children, position }: any) => <div data-testid={`panel-${position}`}>{children}</div>,
     useReactFlow: () => ({
       fitView: vi.fn(),
       zoomIn: vi.fn(),

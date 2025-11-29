@@ -1,8 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import type {
-  WorkflowListItem,
-  WorkflowDetail,
-} from '@/types/workflow';
+import type { WorkflowListItem, WorkflowDetail } from '@/types/workflow';
 import type {
   WorkflowExecutionResponse,
   ExecutionHistoryItem,
@@ -14,6 +11,12 @@ import type {
   TaskExecutionItem,
   TaskExecutionResponse,
 } from '@/types/task';
+import type {
+  TemplateListItem,
+  TemplateDetail,
+  TemplateFilters,
+  TemplateDeployRequest,
+} from '@/types/template';
 import type { DurationTrendsResponse } from './types';
 
 /**
@@ -61,11 +64,7 @@ async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
   const data = await response.json();
 
   if (!response.ok) {
-    throw new ApiError(
-      data.error || 'An error occurred',
-      response.status,
-      data.details
-    );
+    throw new ApiError(data.error || 'An error occurred', response.status, data.details);
   }
 
   return data;
@@ -79,8 +78,10 @@ export const queryKeys = {
   workflows: (filters?: { search?: string; namespace?: string; sort?: string }) =>
     ['workflows', filters] as const,
   workflowDetail: (name: string) => ['workflows', name] as const,
-  workflowExecutions: (name: string, filters?: { status?: string; limit?: number; offset?: number }) =>
-    ['workflows', name, 'executions', filters] as const,
+  workflowExecutions: (
+    name: string,
+    filters?: { status?: string; limit?: number; offset?: number }
+  ) => ['workflows', name, 'executions', filters] as const,
   workflowDurationTrends: (name: string, daysBack: number) =>
     ['workflows', name, 'duration-trends', daysBack] as const,
   executionDetail: (id: string) => ['executions', id] as const,
@@ -92,6 +93,8 @@ export const queryKeys = {
     ['tasks', name, 'executions', filters] as const,
   taskDurationTrends: (name: string, daysBack: number) =>
     ['tasks', name, 'duration-trends', daysBack] as const,
+  templates: (filters?: TemplateFilters) => ['templates', filters] as const,
+  templateDetail: (name: string) => ['templates', name] as const,
 };
 
 // ============================================================================
@@ -101,11 +104,7 @@ export const queryKeys = {
 /**
  * Fetch all workflows with optional filters
  */
-export function useWorkflows(filters?: {
-  search?: string;
-  namespace?: string;
-  sort?: string;
-}) {
+export function useWorkflows(filters?: { search?: string; namespace?: string; sort?: string }) {
   return useQuery({
     queryKey: queryKeys.workflows(filters),
     queryFn: async () => {
@@ -133,9 +132,7 @@ export function useWorkflowDetail(name: string, options?: { enabled?: boolean })
   return useQuery({
     queryKey: queryKeys.workflowDetail(name),
     queryFn: async () => {
-      const data = await fetchJson<WorkflowDetail>(
-        `${API_BASE_URL}/workflows/${name}`
-      );
+      const data = await fetchJson<WorkflowDetail>(`${API_BASE_URL}/workflows/${name}`);
       return data;
     },
     staleTime: 60000, // 1 minute
@@ -185,9 +182,7 @@ export function useExecutionDetail(id: string, options?: { enabled?: boolean }) 
   return useQuery({
     queryKey: queryKeys.executionDetail(id),
     queryFn: async () => {
-      const data = await fetchJson<WorkflowExecutionResponse>(
-        `${API_BASE_URL}/executions/${id}`
-      );
+      const data = await fetchJson<WorkflowExecutionResponse>(`${API_BASE_URL}/executions/${id}`);
       return data;
     },
     staleTime: 60000, // 1 minute
@@ -214,7 +209,7 @@ export function useWorkflowDurationTrends(
       // Parse date strings to Date objects
       return {
         ...data,
-        dataPoints: data.dataPoints.map(point => ({
+        dataPoints: data.dataPoints.map((point) => ({
           ...point,
           date: new Date(point.date),
         })),
@@ -266,13 +261,10 @@ export function useExecuteWorkflow(name: string) {
 export function useDryRun(name: string) {
   return useMutation({
     mutationFn: async (input: Record<string, unknown>) => {
-      const data = await fetchJson<DryRunResponse>(
-        `${API_BASE_URL}/workflows/${name}/test`,
-        {
-          method: 'POST',
-          body: JSON.stringify(input),
-        }
-      );
+      const data = await fetchJson<DryRunResponse>(`${API_BASE_URL}/workflows/${name}/test`, {
+        method: 'POST',
+        body: JSON.stringify(input),
+      });
       return data;
     },
   });
@@ -318,9 +310,7 @@ export function usePrefetchWorkflowDetail() {
     queryClient.prefetchQuery({
       queryKey: queryKeys.workflowDetail(name),
       queryFn: async () => {
-        const data = await fetchJson<WorkflowDetail>(
-          `${API_BASE_URL}/workflows/${name}`
-        );
+        const data = await fetchJson<WorkflowDetail>(`${API_BASE_URL}/workflows/${name}`);
         return data;
       },
     });
@@ -349,9 +339,7 @@ export function useTaskDetail(name: string, options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: queryKeys.taskDetail(name),
     queryFn: async () => {
-      const data = await fetchJson<TaskDetail>(
-        `${API_BASE_URL}/tasks/${name}`
-      );
+      const data = await fetchJson<TaskDetail>(`${API_BASE_URL}/tasks/${name}`);
       return data;
     },
     staleTime: 60000, // 1 minute
@@ -370,9 +358,7 @@ export function usePrefetchTaskDetail() {
     queryClient.prefetchQuery({
       queryKey: queryKeys.taskDetail(name),
       queryFn: async () => {
-        const data = await fetchJson<TaskDetail>(
-          `${API_BASE_URL}/tasks/${name}`
-        );
+        const data = await fetchJson<TaskDetail>(`${API_BASE_URL}/tasks/${name}`);
         return data;
       },
     });
@@ -466,7 +452,7 @@ export function useTaskDurationTrends(
       // Parse date strings to Date objects
       return {
         ...data,
-        dataPoints: data.dataPoints.map(point => ({
+        dataPoints: data.dataPoints.map((point) => ({
           ...point,
           date: new Date(point.date),
         })),
@@ -490,13 +476,10 @@ export function useExecuteTask(name: string) {
 
   return useMutation({
     mutationFn: async (input: Record<string, unknown>) => {
-      const data = await fetchJson<TaskExecutionResponse>(
-        `${API_BASE_URL}/tasks/${name}/execute`,
-        {
-          method: 'POST',
-          body: JSON.stringify({ input }),
-        }
-      );
+      const data = await fetchJson<TaskExecutionResponse>(`${API_BASE_URL}/tasks/${name}/execute`, {
+        method: 'POST',
+        body: JSON.stringify({ input }),
+      });
       return data;
     },
     onSuccess: () => {
@@ -511,6 +494,106 @@ export function useExecuteTask(name: string) {
       // Invalidate tasks list to update overall stats
       queryClient.invalidateQueries({
         queryKey: queryKeys.tasks,
+      });
+    },
+  });
+}
+
+// ============================================================================
+// TEMPLATE QUERIES
+// ============================================================================
+
+/**
+ * Fetch all workflow templates with optional filters
+ */
+export function useTemplates(filters?: TemplateFilters) {
+  return useQuery({
+    queryKey: queryKeys.templates(filters),
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (filters?.category) params.append('category', filters.category);
+      if (filters?.difficulty) params.append('difficulty', filters.difficulty);
+      if (filters?.search) params.append('search', filters.search);
+      if (filters?.tags && filters.tags.length > 0) {
+        filters.tags.forEach((tag) => params.append('tags', tag));
+      }
+      if (filters?.maxEstimatedTime) {
+        params.append('maxEstimatedTime', String(filters.maxEstimatedTime));
+      }
+      if (filters?.parallelOnly) {
+        params.append('parallelOnly', 'true');
+      }
+
+      const url = params.toString()
+        ? `${API_BASE_URL}/templates?${params}`
+        : `${API_BASE_URL}/templates`;
+
+      const data = await fetchJson<{ templates: TemplateListItem[]; total: number }>(url);
+      return data;
+    },
+    staleTime: 60000, // 1 minute (templates don't change often)
+    gcTime: 300000, // 5 minutes
+  });
+}
+
+/**
+ * Fetch template details including YAML definition
+ */
+export function useTemplateDetail(name: string, options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: queryKeys.templateDetail(name),
+    queryFn: async () => {
+      const data = await fetchJson<TemplateDetail>(`${API_BASE_URL}/templates/${name}`);
+      return data;
+    },
+    staleTime: 60000, // 1 minute
+    gcTime: 300000, // 5 minutes
+    enabled: options?.enabled ?? true,
+  });
+}
+
+/**
+ * Prefetch template detail (useful for hover previews)
+ */
+export function usePrefetchTemplateDetail() {
+  const queryClient = useQueryClient();
+
+  return (name: string) => {
+    queryClient.prefetchQuery({
+      queryKey: queryKeys.templateDetail(name),
+      queryFn: async () => {
+        const data = await fetchJson<TemplateDetail>(`${API_BASE_URL}/templates/${name}`);
+        return data;
+      },
+    });
+  };
+}
+
+// ============================================================================
+// TEMPLATE MUTATIONS
+// ============================================================================
+
+/**
+ * Deploy a template (creates a new workflow from template)
+ */
+export function useDeployTemplate() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (request: TemplateDeployRequest) => {
+      const data = await fetchJson<{ workflowName: string; namespace: string; message: string }>(
+        `${API_BASE_URL}/templates/deploy`,
+        {
+          method: 'POST',
+          body: JSON.stringify(request),
+        }
+      );
+      return data;
+    },
+    onSuccess: () => {
+      // Invalidate workflows to show newly deployed workflow
+      queryClient.invalidateQueries({
+        queryKey: ['workflows'],
       });
     },
   });

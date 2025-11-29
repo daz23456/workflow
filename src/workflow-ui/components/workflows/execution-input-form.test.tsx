@@ -42,7 +42,9 @@ describe('ExecutionInputForm', () => {
     });
 
     it('shows required indicator for required fields', () => {
-      const { container } = render(<ExecutionInputForm schema={mockSimpleSchema} onSubmit={vi.fn()} />);
+      const { container } = render(
+        <ExecutionInputForm schema={mockSimpleSchema} onSubmit={vi.fn()} />
+      );
       const emailInput = screen.getByLabelText(/email/i);
       const fieldDiv = emailInput.closest('div');
       const asterisk = fieldDiv?.querySelector('.text-red-600');
@@ -51,7 +53,9 @@ describe('ExecutionInputForm', () => {
     });
 
     it('does not show required indicator for optional fields', () => {
-      const { container } = render(<ExecutionInputForm schema={mockSimpleSchema} onSubmit={vi.fn()} />);
+      const { container } = render(
+        <ExecutionInputForm schema={mockSimpleSchema} onSubmit={vi.fn()} />
+      );
       const ageInput = screen.getByLabelText(/age/i);
       const fieldDiv = ageInput.closest('div');
       const asterisk = fieldDiv?.querySelector('.text-red-600');

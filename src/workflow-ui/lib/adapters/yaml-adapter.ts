@@ -144,40 +144,36 @@ export function graphToYaml(
  * @param input - Workflow YAML object or YAML string
  * @returns WorkflowBuilderState for use in the visual builder
  */
-export function yamlToGraph(
-  input: WorkflowYaml | string
-): WorkflowBuilderState {
+export function yamlToGraph(input: WorkflowYaml | string): WorkflowBuilderState {
   // Parse YAML string if needed
   const workflowYaml: WorkflowYaml =
     typeof input === 'string' ? (yaml.load(input) as WorkflowYaml) : input;
 
   // Convert tasks to nodes
-  const nodes: WorkflowBuilderNode[] = workflowYaml.spec.tasks.map(
-    (task, index) => {
-      // Auto-layout: arrange nodes in a grid (can be improved with dagre later)
-      const position = {
-        x: (index % 3) * 300 + 100, // 3 columns
-        y: Math.floor(index / 3) * 150 + 100, // Row height 150px
-      };
+  const nodes: WorkflowBuilderNode[] = workflowYaml.spec.tasks.map((task, index) => {
+    // Auto-layout: arrange nodes in a grid (can be improved with dagre later)
+    const position = {
+      x: (index % 3) * 300 + 100, // 3 columns
+      y: Math.floor(index / 3) * 150 + 100, // Row height 150px
+    };
 
-      return {
-        id: task.id,
-        type: 'task' as const,
-        position,
-        data: {
-          label: task.description || task.taskRef || task.id,
-          taskRef: task.taskRef,
-          description: task.description,
-          input: task.input,
-          inputMapping: task.inputMapping,
-          timeout: task.timeout,
-          condition: task.condition,
-          retryCount: task.retryCount,
-          dependencies: task.dependencies,
-        },
-      };
-    }
-  );
+    return {
+      id: task.id,
+      type: 'task' as const,
+      position,
+      data: {
+        label: task.description || task.taskRef || task.id,
+        taskRef: task.taskRef,
+        description: task.description,
+        input: task.input,
+        inputMapping: task.inputMapping,
+        timeout: task.timeout,
+        condition: task.condition,
+        retryCount: task.retryCount,
+        dependencies: task.dependencies,
+      },
+    };
+  });
 
   // Convert task dependencies to edges
   const edges: WorkflowBuilderEdge[] = [];

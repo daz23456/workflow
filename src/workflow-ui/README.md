@@ -5,6 +5,7 @@
 ## 🎯 Goal
 
 Build a production-quality UI prototype to validate UX/design with:
+
 - **TDD** (Test-Driven Development with Vitest)
 - **Storybook** component library
 - **Visual regression testing** (Chromatic)
@@ -14,6 +15,7 @@ Build a production-quality UI prototype to validate UX/design with:
 ## 🚀 Tech Stack
 
 ### Core
+
 - **Next.js 14** (App Router) + TypeScript
 - **React 19** + React Hook Form
 - **Tailwind CSS 4** + shadcn/ui
@@ -22,6 +24,7 @@ Build a production-quality UI prototype to validate UX/design with:
 - **Zod** (schema validation)
 
 ### Testing
+
 - **Vitest** (fast unit/component tests)
 - **React Testing Library** (component testing)
 - **Storybook 10** (component development & docs)
@@ -32,17 +35,20 @@ Build a production-quality UI prototype to validate UX/design with:
 ## 📦 Project Setup
 
 ### Installation
+
 ```bash
 npm install
 ```
 
 ### Development
+
 ```bash
 npm run dev                 # Start Next.js dev server (http://localhost:3000)
 npm run storybook           # Start Storybook (http://localhost:6006)
 ```
 
 ### Testing
+
 ```bash
 npm run test                # Run tests in watch mode
 npm run test:watch          # Run tests with UI
@@ -56,12 +62,14 @@ npm run chromatic           # Run visual regression tests
 ```
 
 ### Quality Checks
+
 ```bash
 npm run type-check          # TypeScript type checking
 npm run lint                # ESLint
 ```
 
 ### Build
+
 ```bash
 npm run build               # Production build
 npm run start               # Start production server
@@ -99,6 +107,7 @@ src/workflow-ui/
 ### TDD Workflow (RED-GREEN-REFACTOR)
 
 **For every component:**
+
 1. Write Storybook story first (visual spec)
 2. Write failing test (RED)
 3. Write minimum code to pass test (GREEN)
@@ -108,6 +117,7 @@ src/workflow-ui/
 ### Test Organization
 
 Every component has three files:
+
 ```
 components/workflows/
 ├── workflow-card.tsx           # Component
@@ -125,12 +135,14 @@ components/workflows/
 ## 📚 Storybook
 
 Storybook serves as:
+
 - **Living documentation** (auto-generated component docs)
 - **Visual testing** (see all component states in isolation)
 - **Development environment** (build components in isolation)
 - **Design system** (single source of truth)
 
 ### Addons
+
 - **a11y** - Accessibility testing
 - **vitest** - Integration with Vitest
 - **interactions** - User interaction testing
@@ -139,6 +151,7 @@ Storybook serves as:
 ## 🎨 Visual Regression Testing
 
 Uses **Chromatic** for automated visual regression:
+
 - Every Storybook story = visual regression test
 - Catches UI bugs before deployment
 - Review UI changes like code changes
@@ -146,6 +159,7 @@ Uses **Chromatic** for automated visual regression:
 ## 🔄 Development Workflow
 
 1. **Start dev environment:**
+
    ```bash
    npm run dev          # Terminal 1
    npm run storybook    # Terminal 2
@@ -181,6 +195,7 @@ Uses **Chromatic** for automated visual regression:
 - [x] First test passing
 
 **Metrics:**
+
 - Tests: 3/3 passing ✅
 - Coverage: 100% ✅
 - TypeScript: No errors ✅
@@ -216,6 +231,7 @@ Uses **Chromatic** for automated visual regression:
 - [x] Comprehensive test coverage
 
 **Metrics:**
+
 - Tests: 50/50 passing ✅
 - Coverage: 97.77% statements, 90.47% branches ✅
 - TypeScript: No errors ✅
@@ -262,6 +278,7 @@ Uses **Chromatic** for automated visual regression:
   - Integrates WorkflowList component
 
 **Metrics:**
+
 - Tests: 142/142 passing (3 skipped) ✅
 - Coverage: 96.84% statements, 92.14% branches ✅
 - TypeScript: No errors ✅

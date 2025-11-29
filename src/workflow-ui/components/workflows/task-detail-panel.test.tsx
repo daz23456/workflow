@@ -28,7 +28,7 @@ describe('TaskDetailPanel', () => {
       url: 'https://api.example.com/users',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer {{env.API_TOKEN}}',
+        Authorization: 'Bearer {{env.API_TOKEN}}',
       },
       bodyTemplate: '{"email": "{{input.email}}", "password": "{{input.password}}"}',
     },

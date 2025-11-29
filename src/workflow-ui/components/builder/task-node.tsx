@@ -214,9 +214,7 @@ export const TaskNode = memo(({ id, data, selected, isConnectable, dragging }: N
             aria-label="Edit task label"
           />
         ) : (
-          <div className="font-semibold text-gray-900 text-sm">
-            {nodeData.label}
-          </div>
+          <div className="font-semibold text-gray-900 text-sm">{nodeData.label}</div>
         )}
       </div>
 

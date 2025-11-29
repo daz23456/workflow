@@ -29,7 +29,7 @@ function hasCycle(
   newEdge?: WorkflowBuilderEdge
 ): boolean {
   const allEdges = newEdge ? [...edges, newEdge] : edges;
-  const nodeIds = new Set(nodes.map(n => n.id));
+  const nodeIds = new Set(nodes.map((n) => n.id));
 
   // Build adjacency list
   const adjacency = new Map<string, string[]>();
@@ -91,10 +91,7 @@ function createCheckpoint(state: WorkflowBuilderState): HistoryCheckpoint {
 /**
  * Restore state from a checkpoint
  */
-function restoreCheckpoint(
-  state: WorkflowBuilderState,
-  checkpoint: HistoryCheckpoint
-): void {
+function restoreCheckpoint(state: WorkflowBuilderState, checkpoint: HistoryCheckpoint): void {
   state.graph = {
     nodes: JSON.parse(JSON.stringify(checkpoint.graph.nodes)),
     edges: JSON.parse(JSON.stringify(checkpoint.graph.edges)),
@@ -189,9 +186,7 @@ export const useWorkflowBuilderStore = create<WorkflowBuilderStore>()(
         state.graph.nodes = state.graph.nodes.filter((n) => n.id !== id);
 
         // Remove connected edges
-        state.graph.edges = state.graph.edges.filter(
-          (e) => e.source !== id && e.target !== id
-        );
+        state.graph.edges = state.graph.edges.filter((e) => e.source !== id && e.target !== id);
 
         state.autosave.isDirty = true;
       }),
@@ -285,19 +280,13 @@ export const useWorkflowBuilderStore = create<WorkflowBuilderStore>()(
 
         // Check for circular dependencies
         if (hasCycle(state.graph.nodes, state.graph.edges)) {
-          state.validation.errors.push(
-            'Workflow contains circular dependencies'
-          );
+          state.validation.errors.push('Workflow contains circular dependencies');
         }
 
         // Check for nodes without taskRef
-        const nodesWithoutTaskRef = state.graph.nodes.filter(
-          (n) => !n.data.taskRef
-        );
+        const nodesWithoutTaskRef = state.graph.nodes.filter((n) => !n.data.taskRef);
         if (nodesWithoutTaskRef.length > 0) {
-          state.validation.errors.push(
-            `${nodesWithoutTaskRef.length} task(s) missing taskRef`
-          );
+          state.validation.errors.push(`${nodesWithoutTaskRef.length} task(s) missing taskRef`);
         }
 
         // Check for empty workflow name

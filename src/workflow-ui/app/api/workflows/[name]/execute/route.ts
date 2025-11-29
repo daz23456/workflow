@@ -42,10 +42,7 @@ export async function POST(
 
       // Check for validation error (HTTP 400)
       if (message.includes('400') || message.toLowerCase().includes('validation')) {
-        return NextResponse.json(
-          { error: 'Validation failed', message },
-          { status: 400 }
-        );
+        return NextResponse.json({ error: 'Validation failed', message }, { status: 400 });
       }
 
       // Check for not found error (HTTP 404)
@@ -65,10 +62,7 @@ export async function POST(
       }
 
       // Generic server error
-      return NextResponse.json(
-        { error: 'Execution failed', message: message },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'Execution failed', message: message }, { status: 500 });
     }
 
     // Unknown error

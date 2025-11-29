@@ -58,7 +58,9 @@ describe('GET /api/executions/[id]', () => {
 
     vi.mocked(getExecutionDetail).mockResolvedValue(mockBackendResponse);
 
-    const request = new NextRequest('http://localhost:3000/api/executions/123e4567-e89b-12d3-a456-426614174000');
+    const request = new NextRequest(
+      'http://localhost:3000/api/executions/123e4567-e89b-12d3-a456-426614174000'
+    );
     const params = Promise.resolve({ id: '123e4567-e89b-12d3-a456-426614174000' });
 
     // Act
@@ -121,11 +123,11 @@ describe('GET /api/executions/[id]', () => {
       durationMs: 2000,
       inputSnapshot: {
         data: [1, 2, 3, 4, 5],
-        operation: 'sum'
+        operation: 'sum',
       },
       outputSnapshot: {
         result: 15,
-        processedCount: 5
+        processedCount: 5,
       },
       taskExecutions: [],
     };

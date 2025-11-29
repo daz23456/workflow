@@ -202,9 +202,7 @@ export function createEmptyState(): WorkflowBuilderState {
 /**
  * Create workflow metadata with default values
  */
-export function createWorkflowMetadata(
-  partial?: Partial<WorkflowMetadata>
-): WorkflowMetadata {
+export function createWorkflowMetadata(partial?: Partial<WorkflowMetadata>): WorkflowMetadata {
   return {
     name: partial?.name ?? '',
     namespace: partial?.namespace ?? 'default',
@@ -219,7 +217,8 @@ export function isValidNode(node: any): node is WorkflowBuilderNode {
   if (!node || typeof node !== 'object') return false;
   if (typeof node.id !== 'string' || !node.id) return false;
   if (node.type !== 'task') return false;
-  if (!node.position || typeof node.position.x !== 'number' || typeof node.position.y !== 'number') return false;
+  if (!node.position || typeof node.position.x !== 'number' || typeof node.position.y !== 'number')
+    return false;
   if (!node.data || typeof node.data !== 'object') return false;
   if (typeof node.data.label !== 'string') return false;
   if (!node.data.taskRef || typeof node.data.taskRef !== 'string') return false;

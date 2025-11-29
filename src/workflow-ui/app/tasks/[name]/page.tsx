@@ -5,11 +5,7 @@ import { TaskDurationTrendsSection } from '@/components/analytics/task-duration-
 import { use } from 'react';
 import Link from 'next/link';
 
-export default function TaskDetailPage({
-  params,
-}: {
-  params: Promise<{ name: string }>;
-}) {
+export default function TaskDetailPage({ params }: { params: Promise<{ name: string }> }) {
   const { name } = use(params);
   const { data: task, isLoading, error } = useTaskDetail(name);
   const { data: usage } = useTaskUsage(name, { skip: 0, take: 5 });
@@ -45,7 +41,9 @@ export default function TaskDetailPage({
       {/* Header */}
       <div className="mb-6">
         <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
-          <Link href="/tasks" className="hover:text-blue-600">Tasks</Link>
+          <Link href="/tasks" className="hover:text-blue-600">
+            Tasks
+          </Link>
           <span>/</span>
           <span>{name}</span>
         </div>
@@ -116,9 +114,7 @@ export default function TaskDetailPage({
       <div className="bg-white p-6 rounded-lg border mb-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold">Workflows Using This Task</h2>
-          <span className="text-sm text-gray-500">
-            {usage?.totalCount || 0} total
-          </span>
+          <span className="text-sm text-gray-500">{usage?.totalCount || 0} total</span>
         </div>
         <div className="space-y-2">
           {usage?.workflows.map((workflow) => (
@@ -128,9 +124,7 @@ export default function TaskDetailPage({
               className="block p-3 bg-gray-50 rounded hover:bg-gray-100"
             >
               <div className="font-semibold">{workflow.workflowName}</div>
-              <div className="text-sm text-gray-500">
-                {workflow.taskCount} tasks
-              </div>
+              <div className="text-sm text-gray-500">{workflow.taskCount} tasks</div>
             </Link>
           ))}
         </div>
@@ -157,9 +151,11 @@ export default function TaskDetailPage({
                 <div className="text-sm text-gray-500">{exec.workflowName}</div>
               </div>
               <div className="text-right">
-                <div className={`text-sm font-semibold ${
-                  exec.status === 'succeeded' ? 'text-green-600' : 'text-red-600'
-                }`}>
+                <div
+                  className={`text-sm font-semibold ${
+                    exec.status === 'succeeded' ? 'text-green-600' : 'text-red-600'
+                  }`}
+                >
                   {exec.status}
                 </div>
                 <div className="text-sm text-gray-500">{exec.durationMs}ms</div>

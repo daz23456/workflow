@@ -100,12 +100,20 @@ describe('WorkflowDetailTabs', () => {
     ],
     graph: {
       nodes: [
-        { id: 'validate-email', type: 'task', data: { label: 'Validate Email' }, position: { x: 0, y: 0 } },
-        { id: 'create-user', type: 'task', data: { label: 'Create User' }, position: { x: 0, y: 100 } },
+        {
+          id: 'validate-email',
+          type: 'task',
+          data: { label: 'Validate Email' },
+          position: { x: 0, y: 0 },
+        },
+        {
+          id: 'create-user',
+          type: 'task',
+          data: { label: 'Create User' },
+          position: { x: 0, y: 100 },
+        },
       ],
-      edges: [
-        { id: 'e1', source: 'validate-email', target: 'create-user', type: 'dependency' },
-      ],
+      edges: [{ id: 'e1', source: 'validate-email', target: 'create-user', type: 'dependency' }],
       parallelGroups: [],
     },
     endpoints: {
@@ -136,20 +144,38 @@ describe('WorkflowDetailTabs', () => {
 
   describe('Basic Rendering', () => {
     it('renders workflow detail header', () => {
-      render(<WorkflowDetailTabs workflow={mockWorkflow} stats={mockStats} executionHistory={mockExecutionHistory} />);
+      render(
+        <WorkflowDetailTabs
+          workflow={mockWorkflow}
+          stats={mockStats}
+          executionHistory={mockExecutionHistory}
+        />
+      );
       expect(screen.getByTestId('workflow-detail-header')).toBeInTheDocument();
       expect(screen.getByText('user-signup')).toBeInTheDocument();
     });
 
     it('renders tab navigation', () => {
-      render(<WorkflowDetailTabs workflow={mockWorkflow} stats={mockStats} executionHistory={mockExecutionHistory} />);
+      render(
+        <WorkflowDetailTabs
+          workflow={mockWorkflow}
+          stats={mockStats}
+          executionHistory={mockExecutionHistory}
+        />
+      );
       expect(screen.getByRole('tab', { name: /overview/i })).toBeInTheDocument();
       expect(screen.getByRole('tab', { name: /execute/i })).toBeInTheDocument();
       expect(screen.getByRole('tab', { name: /history/i })).toBeInTheDocument();
     });
 
     it('shows Overview tab by default', () => {
-      render(<WorkflowDetailTabs workflow={mockWorkflow} stats={mockStats} executionHistory={mockExecutionHistory} />);
+      render(
+        <WorkflowDetailTabs
+          workflow={mockWorkflow}
+          stats={mockStats}
+          executionHistory={mockExecutionHistory}
+        />
+      );
       expect(screen.getByTestId('workflow-graph-panel')).toBeInTheDocument();
     });
   });
@@ -157,7 +183,13 @@ describe('WorkflowDetailTabs', () => {
   describe('Tab Navigation', () => {
     it('switches to Execute tab when clicked', async () => {
       const user = userEvent.setup();
-      render(<WorkflowDetailTabs workflow={mockWorkflow} stats={mockStats} executionHistory={mockExecutionHistory} />);
+      render(
+        <WorkflowDetailTabs
+          workflow={mockWorkflow}
+          stats={mockStats}
+          executionHistory={mockExecutionHistory}
+        />
+      );
 
       await user.click(screen.getByRole('tab', { name: /execute/i }));
 
@@ -167,7 +199,13 @@ describe('WorkflowDetailTabs', () => {
 
     it('switches to History tab when clicked', async () => {
       const user = userEvent.setup();
-      render(<WorkflowDetailTabs workflow={mockWorkflow} stats={mockStats} executionHistory={mockExecutionHistory} />);
+      render(
+        <WorkflowDetailTabs
+          workflow={mockWorkflow}
+          stats={mockStats}
+          executionHistory={mockExecutionHistory}
+        />
+      );
 
       await user.click(screen.getByRole('tab', { name: /history/i }));
 
@@ -177,7 +215,13 @@ describe('WorkflowDetailTabs', () => {
 
     it('can switch between tabs multiple times', async () => {
       const user = userEvent.setup();
-      render(<WorkflowDetailTabs workflow={mockWorkflow} stats={mockStats} executionHistory={mockExecutionHistory} />);
+      render(
+        <WorkflowDetailTabs
+          workflow={mockWorkflow}
+          stats={mockStats}
+          executionHistory={mockExecutionHistory}
+        />
+      );
 
       await user.click(screen.getByRole('tab', { name: /execute/i }));
       expect(screen.getByTestId('execution-input-form')).toBeInTheDocument();
@@ -191,7 +235,13 @@ describe('WorkflowDetailTabs', () => {
 
     it('highlights active tab', async () => {
       const user = userEvent.setup();
-      render(<WorkflowDetailTabs workflow={mockWorkflow} stats={mockStats} executionHistory={mockExecutionHistory} />);
+      render(
+        <WorkflowDetailTabs
+          workflow={mockWorkflow}
+          stats={mockStats}
+          executionHistory={mockExecutionHistory}
+        />
+      );
 
       const executeTab = screen.getByRole('tab', { name: /execute/i });
       await user.click(executeTab);
@@ -202,14 +252,26 @@ describe('WorkflowDetailTabs', () => {
 
   describe('Overview Tab', () => {
     it('displays workflow graph', () => {
-      render(<WorkflowDetailTabs workflow={mockWorkflow} stats={mockStats} executionHistory={mockExecutionHistory} />);
+      render(
+        <WorkflowDetailTabs
+          workflow={mockWorkflow}
+          stats={mockStats}
+          executionHistory={mockExecutionHistory}
+        />
+      );
       expect(screen.getByTestId('workflow-graph-panel')).toBeInTheDocument();
       expect(screen.getByText('Nodes: 2')).toBeInTheDocument();
     });
 
     it('shows task detail panel when graph node clicked', async () => {
       const user = userEvent.setup();
-      render(<WorkflowDetailTabs workflow={mockWorkflow} stats={mockStats} executionHistory={mockExecutionHistory} />);
+      render(
+        <WorkflowDetailTabs
+          workflow={mockWorkflow}
+          stats={mockStats}
+          executionHistory={mockExecutionHistory}
+        />
+      );
 
       await user.click(screen.getByRole('button', { name: /validate email/i }));
 
@@ -219,12 +281,20 @@ describe('WorkflowDetailTabs', () => {
 
     it('closes task detail panel when close button clicked', async () => {
       const user = userEvent.setup();
-      render(<WorkflowDetailTabs workflow={mockWorkflow} stats={mockStats} executionHistory={mockExecutionHistory} />);
+      render(
+        <WorkflowDetailTabs
+          workflow={mockWorkflow}
+          stats={mockStats}
+          executionHistory={mockExecutionHistory}
+        />
+      );
 
       await user.click(screen.getByRole('button', { name: /validate email/i }));
       expect(screen.getByTestId('task-detail-panel')).toBeInTheDocument();
 
-      const closeButton = within(screen.getByTestId('task-detail-panel')).getByRole('button', { name: /close/i });
+      const closeButton = within(screen.getByTestId('task-detail-panel')).getByRole('button', {
+        name: /close/i,
+      });
       await user.click(closeButton);
 
       expect(screen.queryByTestId('task-detail-panel')).not.toBeInTheDocument();
@@ -234,7 +304,13 @@ describe('WorkflowDetailTabs', () => {
   describe('Execute Tab', () => {
     it('displays execution input form', async () => {
       const user = userEvent.setup();
-      render(<WorkflowDetailTabs workflow={mockWorkflow} stats={mockStats} executionHistory={mockExecutionHistory} />);
+      render(
+        <WorkflowDetailTabs
+          workflow={mockWorkflow}
+          stats={mockStats}
+          executionHistory={mockExecutionHistory}
+        />
+      );
 
       await user.click(screen.getByRole('tab', { name: /execute/i }));
 
@@ -274,7 +350,13 @@ describe('WorkflowDetailTabs', () => {
   describe('History Tab', () => {
     it('displays execution history', async () => {
       const user = userEvent.setup();
-      render(<WorkflowDetailTabs workflow={mockWorkflow} stats={mockStats} executionHistory={mockExecutionHistory} />);
+      render(
+        <WorkflowDetailTabs
+          workflow={mockWorkflow}
+          stats={mockStats}
+          executionHistory={mockExecutionHistory}
+        />
+      );
 
       await user.click(screen.getByRole('tab', { name: /history/i }));
 
@@ -315,7 +397,13 @@ describe('WorkflowDetailTabs', () => {
   describe('Side Panels', () => {
     it('task detail panel appears on right side', async () => {
       const user = userEvent.setup();
-      render(<WorkflowDetailTabs workflow={mockWorkflow} stats={mockStats} executionHistory={mockExecutionHistory} />);
+      render(
+        <WorkflowDetailTabs
+          workflow={mockWorkflow}
+          stats={mockStats}
+          executionHistory={mockExecutionHistory}
+        />
+      );
 
       await user.click(screen.getByRole('button', { name: /validate email/i }));
 
@@ -359,7 +447,13 @@ describe('WorkflowDetailTabs', () => {
 
   describe('Accessibility', () => {
     it('has proper tab structure', () => {
-      render(<WorkflowDetailTabs workflow={mockWorkflow} stats={mockStats} executionHistory={mockExecutionHistory} />);
+      render(
+        <WorkflowDetailTabs
+          workflow={mockWorkflow}
+          stats={mockStats}
+          executionHistory={mockExecutionHistory}
+        />
+      );
 
       expect(screen.getByRole('tablist')).toBeInTheDocument();
       expect(screen.getAllByRole('tab').length).toBeGreaterThanOrEqual(3);
@@ -367,7 +461,13 @@ describe('WorkflowDetailTabs', () => {
 
     it('tabs are keyboard accessible', async () => {
       const user = userEvent.setup();
-      render(<WorkflowDetailTabs workflow={mockWorkflow} stats={mockStats} executionHistory={mockExecutionHistory} />);
+      render(
+        <WorkflowDetailTabs
+          workflow={mockWorkflow}
+          stats={mockStats}
+          executionHistory={mockExecutionHistory}
+        />
+      );
 
       const executeTab = screen.getByRole('tab', { name: /execute/i });
       executeTab.focus();

@@ -16,7 +16,7 @@ export function transformWorkflowDetail(backendResponse: WorkflowDetailResponse)
   const graph = generateGraphFromTasks(tasks);
 
   // Transform tasks to match frontend expectations
-  const transformedTasks = tasks.map(task => ({
+  const transformedTasks = tasks.map((task) => ({
     id: task.id,
     taskRef: task.taskRef,
     description: task.description || `Task: ${task.taskRef}`,
@@ -39,19 +39,21 @@ export function transformWorkflowDetail(backendResponse: WorkflowDetailResponse)
 /**
  * Generate graph visualization data from tasks
  */
-function generateGraphFromTasks(tasks: Array<{
-  id: string;
-  taskRef: string;
-  description?: string;
-  dependencies: string[];
-}>): { nodes: GraphNode[]; edges: GraphEdge[]; parallelGroups: ParallelGroup[] } {
+function generateGraphFromTasks(
+  tasks: Array<{
+    id: string;
+    taskRef: string;
+    description?: string;
+    dependencies: string[];
+  }>
+): { nodes: GraphNode[]; edges: GraphEdge[]; parallelGroups: ParallelGroup[] } {
   // Build dependency map
   const dependencyMap = new Map<string, string[]>();
   const reverseDependencyMap = new Map<string, string[]>();
 
-  tasks.forEach(task => {
+  tasks.forEach((task) => {
     dependencyMap.set(task.id, task.dependencies || []);
-    task.dependencies?.forEach(depId => {
+    task.dependencies?.forEach((depId) => {
       if (!reverseDependencyMap.has(depId)) {
         reverseDependencyMap.set(depId, []);
       }
@@ -83,8 +85,8 @@ function generateGraphFromTasks(tasks: Array<{
 
   // Generate edges from dependencies
   const edges: GraphEdge[] = [];
-  tasks.forEach(task => {
-    task.dependencies?.forEach(depId => {
+  tasks.forEach((task) => {
+    task.dependencies?.forEach((depId) => {
       edges.push({
         id: `${depId}-${task.id}`,
         source: depId,
@@ -107,7 +109,9 @@ function generateGraphFromTasks(tasks: Array<{
 /**
  * Calculate execution level for each task (0 = no dependencies, 1 = depends on level 0, etc.)
  */
-function calculateExecutionLevels(tasks: Array<{ id: string; dependencies: string[] }>): Map<string, number> {
+function calculateExecutionLevels(
+  tasks: Array<{ id: string; dependencies: string[] }>
+): Map<string, number> {
   const levels = new Map<string, number>();
   const visited = new Set<string>();
 
@@ -123,19 +127,19 @@ function calculateExecutionLevels(tasks: Array<{ id: string; dependencies: strin
 
     visited.add(taskId);
 
-    const task = tasks.find(t => t.id === taskId);
+    const task = tasks.find((t) => t.id === taskId);
     if (!task || !task.dependencies || task.dependencies.length === 0) {
       levels.set(taskId, 0);
       return 0;
     }
 
-    const maxDepLevel = Math.max(...task.dependencies.map(depId => calculateLevel(depId)));
+    const maxDepLevel = Math.max(...task.dependencies.map((depId) => calculateLevel(depId)));
     const level = maxDepLevel + 1;
     levels.set(taskId, level);
     return level;
   }
 
-  tasks.forEach(task => calculateLevel(task.id));
+  tasks.forEach((task) => calculateLevel(task.id));
   return levels;
 }
 
@@ -148,7 +152,7 @@ function findParallelGroups(
 ): ParallelGroup[] {
   const groupsByLevel = new Map<number, string[]>();
 
-  tasks.forEach(task => {
+  tasks.forEach((task) => {
     const level = levels.get(task.id) || 0;
     if (!groupsByLevel.has(level)) {
       groupsByLevel.set(level, []);
@@ -169,27 +173,33 @@ function findParallelGroups(
 /**
  * Adjust node Y positions to distribute parallel tasks vertically
  */
-function adjustNodePositionsForParallelGroups(nodes: GraphNode[], parallelGroups: ParallelGroup[]): void {
-  parallelGroups.forEach(group => {
-    const groupNodes = nodes.filter(node => group.taskIds.includes(node.id));
+function adjustNodePositionsForParallelGroups(
+  nodes: GraphNode[],
+  parallelGroups: ParallelGroup[]
+): void {
+  parallelGroups.forEach((group) => {
+    const groupNodes = nodes.filter((node) => group.taskIds.includes(node.id));
     const startY = 50;
     const spacing = 120;
 
     groupNodes.forEach((node, index) => {
-      node.position.y = startY + (index * spacing);
+      node.position.y = startY + index * spacing;
     });
   });
 
   // Adjust non-parallel nodes
-  const parallelTaskIds = new Set(parallelGroups.flatMap(g => g.taskIds));
-  let currentY = parallelGroups.length > 0
-    ? Math.max(...nodes.filter(n => parallelTaskIds.has(n.id)).map(n => n.position.y)) + 150
-    : 50;
+  const parallelTaskIds = new Set(parallelGroups.flatMap((g) => g.taskIds));
+  let currentY =
+    parallelGroups.length > 0
+      ? Math.max(...nodes.filter((n) => parallelTaskIds.has(n.id)).map((n) => n.position.y)) + 150
+      : 50;
 
-  nodes.filter(node => !parallelTaskIds.has(node.id)).forEach(node => {
-    node.position.y = currentY;
-    currentY += 120;
-  });
+  nodes
+    .filter((node) => !parallelTaskIds.has(node.id))
+    .forEach((node) => {
+      node.position.y = currentY;
+      currentY += 120;
+    });
 }
 
 /**

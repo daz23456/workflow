@@ -21,10 +21,7 @@ export function WorkflowDurationTrendsSection({
 }: WorkflowDurationTrendsSectionProps) {
   const [daysBack, setDaysBack] = useState(initialDaysBack);
 
-  const { data, isLoading, error } = useWorkflowDurationTrends(
-    workflowName,
-    daysBack
-  );
+  const { data, isLoading, error } = useWorkflowDurationTrends(workflowName, daysBack);
 
   // Date range presets
   const dateRangeOptions = [

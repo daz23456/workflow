@@ -7,18 +7,14 @@ import {
   useWorkflowExecutions,
   useExecuteWorkflow,
   useDryRun,
-  useExecutionDetail
+  useExecutionDetail,
 } from '@/lib/api/queries';
 import { WorkflowDetailTabs } from '@/components/workflows/workflow-detail-tabs';
 import { WorkflowDurationTrendsSection } from '@/components/analytics/workflow-duration-trends-section';
 import { buildGraphFromTasks } from '@/lib/utils/build-graph-from-tasks';
 import type { WorkflowExecutionResponse } from '@/types/execution';
 
-export default function WorkflowDetailPage({
-  params,
-}: {
-  params: Promise<{ name: string }>;
-}) {
+export default function WorkflowDetailPage({ params }: { params: Promise<{ name: string }> }) {
   const { name: workflowName } = use(params);
 
   // Fetch workflow data using TanStack Query

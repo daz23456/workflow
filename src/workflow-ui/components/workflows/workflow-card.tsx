@@ -65,7 +65,8 @@ export function WorkflowCard({ workflow, onClick }: WorkflowCardProps) {
     <article
       className={cn(
         'rounded-lg border border-gray-200 bg-white p-6 shadow-sm transition-all duration-200 ease-in-out hover:shadow-md',
-        onClick && 'cursor-pointer hover:border-gray-300 hover:-translate-y-1 focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-offset-2'
+        onClick &&
+          'cursor-pointer hover:border-gray-300 hover:-translate-y-1 focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-offset-2'
       )}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
@@ -78,10 +79,12 @@ export function WorkflowCard({ workflow, onClick }: WorkflowCardProps) {
       <div className="mb-3">
         <div className="mb-2 flex items-start justify-between gap-3">
           <h3 className="text-lg font-semibold text-gray-900">{name}</h3>
-          <span className={cn(
-            "inline-flex shrink-0 rounded-md border px-2 py-1 text-xs font-medium",
-            getNamespaceColor(namespace)
-          )}>
+          <span
+            className={cn(
+              'inline-flex shrink-0 rounded-md border px-2 py-1 text-xs font-medium',
+              getNamespaceColor(namespace)
+            )}
+          >
             {namespace}
           </span>
         </div>
@@ -134,9 +137,7 @@ export function WorkflowCard({ workflow, onClick }: WorkflowCardProps) {
           <Tooltip content="Average time to complete workflow execution">
             <div className="mb-1 text-xs font-medium text-gray-500">Avg Duration</div>
           </Tooltip>
-          <div className="text-sm font-medium text-gray-900">
-            {formatDuration(avgDurationMs)}
-          </div>
+          <div className="text-sm font-medium text-gray-900">{formatDuration(avgDurationMs)}</div>
         </div>
 
         {/* Tasks */}
@@ -154,7 +155,9 @@ export function WorkflowCard({ workflow, onClick }: WorkflowCardProps) {
             <span className="font-medium text-gray-600">Never executed</span>
           </div>
         ) : (
-          <span className="text-gray-500">Last executed: {new Date(lastExecuted!).toLocaleString()}</span>
+          <span className="text-gray-500">
+            Last executed: {new Date(lastExecuted!).toLocaleString()}
+          </span>
         )}
       </div>
     </article>

@@ -15,7 +15,8 @@ export default function WorkflowsPage() {
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Workflows</h1>
           <p className="mt-2 text-gray-600">
-            Browse and manage all workflows. Filter by namespace, search by name, or sort by metrics.
+            Browse and manage all workflows. Filter by namespace, search by name, or sort by
+            metrics.
           </p>
         </div>
         <Link

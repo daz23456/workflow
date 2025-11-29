@@ -107,7 +107,7 @@ test.describe('Tasks Pages', () => {
       const workflowLinks = page.locator('a[href^="/workflows/"]');
       const firstLink = workflowLinks.first();
 
-      if (await firstLink.count() > 0) {
+      if ((await firstLink.count()) > 0) {
         const href = await firstLink.getAttribute('href');
         await firstLink.click();
         await expect(page).toHaveURL(href!);
@@ -177,7 +177,9 @@ test.describe('Tasks Pages', () => {
       await expect(page.getByRole('heading', { name: 'complex-aggregation' })).toBeVisible();
 
       // Should show empty state message
-      await expect(page.getByText(/No execution data available|Execute the task to see trends/i)).toBeVisible();
+      await expect(
+        page.getByText(/No execution data available|Execute the task to see trends/i)
+      ).toBeVisible();
     });
   });
 });

@@ -1,6 +1,12 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { cn, formatDuration, getSuccessRateVariant, useDebounce, formatRelativeTime } from './utils';
+import {
+  cn,
+  formatDuration,
+  getSuccessRateVariant,
+  useDebounce,
+  formatRelativeTime,
+} from './utils';
 
 describe('utils', () => {
   describe('cn', () => {
@@ -86,12 +92,9 @@ describe('utils', () => {
     });
 
     it('debounces value changes', () => {
-      const { result, rerender } = renderHook(
-        ({ value, delay }) => useDebounce(value, delay),
-        {
-          initialProps: { value: 'initial', delay: 500 },
-        }
-      );
+      const { result, rerender } = renderHook(({ value, delay }) => useDebounce(value, delay), {
+        initialProps: { value: 'initial', delay: 500 },
+      });
 
       expect(result.current).toBe('initial');
 
@@ -117,12 +120,9 @@ describe('utils', () => {
     });
 
     it('resets timer on rapid changes', () => {
-      const { result, rerender } = renderHook(
-        ({ value, delay }) => useDebounce(value, delay),
-        {
-          initialProps: { value: 'initial', delay: 500 },
-        }
-      );
+      const { result, rerender } = renderHook(({ value, delay }) => useDebounce(value, delay), {
+        initialProps: { value: 'initial', delay: 500 },
+      });
 
       rerender({ value: 'first', delay: 500 });
       act(() => {

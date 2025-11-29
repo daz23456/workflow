@@ -31,9 +31,7 @@ export function formatDuration(ms: number): string {
  * @param successRate Success rate percentage (0-100)
  * @returns Badge variant
  */
-export function getSuccessRateVariant(
-  successRate: number
-): 'success' | 'warning' | 'destructive' {
+export function getSuccessRateVariant(successRate: number): 'success' | 'warning' | 'destructive' {
   if (successRate >= 90) return 'success';
   if (successRate >= 70) return 'warning';
   return 'destructive';

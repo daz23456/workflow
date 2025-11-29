@@ -59,7 +59,12 @@ function jsonSchemaToZod(schema: ExecutionInputFormProps['schema']): z.ZodObject
           zodType = z.preprocess((val) => {
             // Convert empty values to undefined to skip validation
             // React Hook Form's valueAsNumber converts empty inputs to NaN
-            if (val === '' || val === null || val === undefined || (typeof val === 'number' && isNaN(val))) {
+            if (
+              val === '' ||
+              val === null ||
+              val === undefined ||
+              (typeof val === 'number' && isNaN(val))
+            ) {
               return undefined;
             }
             // Manual coercion to number (z.coerce causes NaN issues with optional fields)
@@ -89,7 +94,12 @@ function jsonSchemaToZod(schema: ExecutionInputFormProps['schema']): z.ZodObject
     }
 
     // Handle optional for non-number, non-boolean types
-    if (!isRequired && prop.type !== 'number' && prop.type !== 'integer' && prop.type !== 'boolean') {
+    if (
+      !isRequired &&
+      prop.type !== 'number' &&
+      prop.type !== 'integer' &&
+      prop.type !== 'boolean'
+    ) {
       zodType = zodType.optional();
     }
 
@@ -102,7 +112,10 @@ function jsonSchemaToZod(schema: ExecutionInputFormProps['schema']): z.ZodObject
 /**
  * Cleans form data by removing empty optional fields and NaN values
  */
-function cleanFormData(data: Record<string, any>, schema: ExecutionInputFormProps['schema']): Record<string, any> {
+function cleanFormData(
+  data: Record<string, any>,
+  schema: ExecutionInputFormProps['schema']
+): Record<string, any> {
   const cleaned: Record<string, any> = {};
   const required = schema.required || [];
 
@@ -167,9 +180,7 @@ export function ExecutionInputForm({ schema, onSubmit, onTest }: ExecutionInputF
       <h3 className="text-lg font-semibold text-gray-900 mb-4">Workflow Input</h3>
 
       {!hasFields ? (
-        <div className="text-sm text-gray-500 italic mb-4">
-          No input required for this workflow
-        </div>
+        <div className="text-sm text-gray-500 italic mb-4">No input required for this workflow</div>
       ) : (
         <form onSubmit={handleSubmit(onSubmitWrapper)} className="space-y-4">
           {formFields.map((field) => (
@@ -221,9 +232,7 @@ export function ExecutionInputForm({ schema, onSubmit, onTest }: ExecutionInputF
 
               {/* Field Error */}
               {errors[field.name] && (
-                <p className="mt-1 text-sm text-red-600">
-                  {errors[field.name]?.message as string}
-                </p>
+                <p className="mt-1 text-sm text-red-600">{errors[field.name]?.message as string}</p>
               )}
             </div>
           ))}

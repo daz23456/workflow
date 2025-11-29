@@ -188,7 +188,10 @@ describe('WorkflowCard', () => {
 
   describe('Number Formatting', () => {
     it('formats large execution counts with commas', () => {
-      const workflow = { ...mockWorkflow, stats: { ...mockWorkflow.stats, totalExecutions: 123456 } };
+      const workflow = {
+        ...mockWorkflow,
+        stats: { ...mockWorkflow.stats, totalExecutions: 123456 },
+      };
       renderWithQuery(<WorkflowCard workflow={workflow} />);
       expect(screen.getByText(/123,456/i)).toBeInTheDocument();
     });
@@ -210,7 +213,10 @@ describe('WorkflowCard', () => {
     });
 
     it('displays downward trend with arrow', () => {
-      const workflow = { ...mockWorkflow, stats: { ...mockWorkflow.stats, successRateTrend: -1.5 } };
+      const workflow = {
+        ...mockWorkflow,
+        stats: { ...mockWorkflow.stats, successRateTrend: -1.5 },
+      };
       renderWithQuery(<WorkflowCard workflow={workflow} />);
 
       expect(screen.getByText(/↓/)).toBeInTheDocument();
@@ -227,7 +233,10 @@ describe('WorkflowCard', () => {
     });
 
     it('applies red color for downward trend', () => {
-      const workflow = { ...mockWorkflow, stats: { ...mockWorkflow.stats, successRateTrend: -1.5 } };
+      const workflow = {
+        ...mockWorkflow,
+        stats: { ...mockWorkflow.stats, successRateTrend: -1.5 },
+      };
       const { container } = renderWithQuery(<WorkflowCard workflow={workflow} />);
 
       const trendElement = container.querySelector('.text-red-600');
@@ -236,7 +245,10 @@ describe('WorkflowCard', () => {
     });
 
     it('does not display trend when not provided', () => {
-      const workflow = { ...mockWorkflow, stats: { ...mockWorkflow.stats, successRateTrend: undefined } };
+      const workflow = {
+        ...mockWorkflow,
+        stats: { ...mockWorkflow.stats, successRateTrend: undefined },
+      };
       const { container } = renderWithQuery(<WorkflowCard workflow={workflow} />);
 
       const trendElement = container.querySelector('.text-green-600, .text-red-600');

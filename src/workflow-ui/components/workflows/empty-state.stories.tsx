@@ -36,7 +36,7 @@ export const NoWorkflows: Story = {
 export const NoResults: Story = {
   args: {
     title: 'No workflows match your filters',
-    description: 'Try adjusting your search or filters to find what you\'re looking for.',
+    description: "Try adjusting your search or filters to find what you're looking for.",
   },
 };
 

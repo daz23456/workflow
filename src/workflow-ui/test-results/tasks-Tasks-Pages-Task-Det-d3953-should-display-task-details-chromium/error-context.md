@@ -2,58 +2,17 @@
 
 ```yaml
 - generic [active] [ref=e1]:
-  - alert [ref=e2]
-  - generic [ref=e3]:
-    - generic [ref=e4]:
-      - generic [ref=e5]:
-        - link "Tasks" [ref=e6] [cursor=pointer]:
-          - /url: /tasks
-        - generic [ref=e7]: /
-        - generic [ref=e8]: fetch-user
-      - heading "fetch-user" [level=1] [ref=e9]
-      - paragraph
-    - generic [ref=e10]:
-      - generic [ref=e11]:
-        - generic [ref=e12]: Used By
-        - generic [ref=e13]: "0"
-      - generic [ref=e14]:
-        - generic [ref=e15]: Executions
-        - generic [ref=e16]: "0"
-      - generic [ref=e17]:
-        - generic [ref=e18]: Avg Duration
-        - generic [ref=e19]: 0ms
-      - generic [ref=e20]:
-        - generic [ref=e21]: Success Rate
-        - generic [ref=e22]: 0.0%
-    - generic [ref=e23]:
-      - generic [ref=e24]:
-        - heading "Input Schema" [level=2] [ref=e25]
-        - generic [ref=e26]: "{ \"type\": \"object\", \"properties\": { \"userId\": { \"type\": \"string\", \"description\": \"The user ID to fetch\", \"format\": null, \"properties\": null, \"items\": null, \"enum\": null, \"minimum\": null, \"maximum\": null, \"pattern\": null, \"required\": null } }, \"required\": [ \"userId\" ], \"description\": null }"
-      - generic [ref=e27]:
-        - heading "Output Schema" [level=2] [ref=e28]
-        - generic [ref=e29]: "{ \"type\": \"object\", \"properties\": { \"address\": { \"type\": \"object\", \"description\": null, \"format\": null, \"properties\": { \"city\": { \"type\": \"string\", \"description\": null, \"format\": null, \"properties\": null, \"items\": null, \"enum\": null, \"minimum\": null, \"maximum\": null, \"pattern\": null, \"required\": null }, \"street\": { \"type\": \"string\", \"description\": null, \"format\": null, \"properties\": null, \"items\": null, \"enum\": null, \"minimum\": null, \"maximum\": null, \"pattern\": null, \"required\": null }, \"zipcode\": { \"type\": \"string\", \"description\": null, \"format\": null, \"properties\": null, \"items\": null, \"enum\": null, \"minimum\": null, \"maximum\": null, \"pattern\": null, \"required\": null } }, \"items\": null, \"enum\": null, \"minimum\": null, \"maximum\": null, \"pattern\": null, \"required\": null }, \"email\": { \"type\": \"string\", \"description\": null, \"format\": null, \"properties\": null, \"items\": null, \"enum\": null, \"minimum\": null, \"maximum\": null, \"pattern\": null, \"required\": null }, \"id\": { \"type\": \"integer\", \"description\": null, \"format\": null, \"properties\": null, \"items\": null, \"enum\": null, \"minimum\": null, \"maximum\": null, \"pattern\": null, \"required\": null }, \"name\": { \"type\": \"string\", \"description\": null, \"format\": null, \"properties\": null, \"items\": null, \"enum\": null, \"minimum\": null, \"maximum\": null, \"pattern\": null, \"required\": null }, \"phone\": { \"type\": \"string\", \"description\": null, \"format\": null, \"properties\": null, \"items\": null, \"enum\": null, \"minimum\": null, \"maximum\": null, \"pattern\": null, \"required\": null }, \"website\": { \"type\": \"string\", \"description\": null, \"format\": null, \"properties\": null, \"items\": null, \"enum\": null, \"minimum\": null, \"maximum\": null, \"pattern\": null, \"required\": null } }, \"required\": [ \"id\", \"name\", \"email\" ], \"description\": null }"
-    - generic [ref=e30]:
-      - generic [ref=e31]:
-        - heading "Workflows Using This Task" [level=2] [ref=e32]
-        - generic [ref=e33]: 4 total
-      - generic [ref=e34]:
-        - link "currency-convert 1 tasks" [ref=e35] [cursor=pointer]:
-          - /url: /workflows/currency-convert
-          - generic [ref=e36]: currency-convert
-          - generic [ref=e37]: 1 tasks
-        - link "get-todo 1 tasks" [ref=e38] [cursor=pointer]:
-          - /url: /workflows/get-todo
-          - generic [ref=e39]: get-todo
-          - generic [ref=e40]: 1 tasks
-        - link "simple-fetch 1 tasks" [ref=e41] [cursor=pointer]:
-          - /url: /workflows/simple-fetch
-          - generic [ref=e42]: simple-fetch
-          - generic [ref=e43]: 1 tasks
-        - link "user-profile 1 tasks" [ref=e44] [cursor=pointer]:
-          - /url: /workflows/user-profile
-          - generic [ref=e45]: user-profile
-          - generic [ref=e46]: 1 tasks
-    - generic [ref=e48]:
-      - heading "Recent Executions" [level=2] [ref=e49]
-      - generic [ref=e50]: "Avg: 0ms"
+  - button "Open Next.js Dev Tools" [ref=e7] [cursor=pointer]:
+    - img [ref=e8]
+  - alert [ref=e11]
+  - navigation [ref=e12]:
+    - generic [ref=e15]:
+      - link "W Workflow" [ref=e16] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e18]: W
+        - generic [ref=e19]: Workflow
+      - link "Workflows" [ref=e20] [cursor=pointer]:
+        - /url: /workflows
+      - link "Tasks" [ref=e21] [cursor=pointer]:
+        - /url: /tasks
 ```

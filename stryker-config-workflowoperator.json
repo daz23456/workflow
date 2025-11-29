@@ -1,8 +1,9 @@
 {
   "$schema": "https://raw.githubusercontent.com/stryker-mutator/stryker-net/master/src/Stryker.CLI/Stryker.CLI/schema.json",
   "stryker-config": {
-    "project": "WorkflowOperator.csproj",
-    "test-projects": ["WorkflowOperator.Tests.csproj"],
+    "solution": "WorkflowOperator.sln",
+    "project": "src/WorkflowOperator/WorkflowOperator.csproj",
+    "test-projects": ["tests/WorkflowOperator.Tests/WorkflowOperator.Tests.csproj"],
     "reporters": ["html", "progress", "cleartext", "json"],
     "thresholds": {
       "high": 80,

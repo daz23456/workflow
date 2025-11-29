@@ -127,11 +127,12 @@ spec:
       input:
         to: "{{tasks.fetch-customer-data.output.customers[0].email}}"
         subject: "Order Confirmation - {{input.orderId}}"
-        body:
-          orderId: "{{input.orderId}}"
-          shipmentId: "{{tasks.create-shipment.output.shipmentId}}"
-          total: "{{tasks.calculate-order-total.output.totalSpent}}"
+        body: {
+          orderId: "{{input.orderId}}",
+          shipmentId: "{{tasks.create-shipment.output.shipmentId}}",
+          total: "{{tasks.calculate-order-total.output.totalSpent}}",
           trackingUrl: "{{tasks.create-shipment.output.trackingUrl}}"
+        }
       timeout: 10s
 
     - id: send-sms-notification

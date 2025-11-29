@@ -6,10 +6,10 @@ export interface WorkflowListItem {
   inputSchemaPreview: string;
   endpoint: string;
   stats?: {  // ← Made optional - backend may not provide stats yet
-    totalExecutions: number;
-    successRate: number;
+    totalExecutions?: number;
+    successRate?: number;
     successRateTrend?: number; // Percentage change (e.g., 2.3 for +2.3%, -1.5 for -1.5%)
-    avgDurationMs: number;
+    avgDurationMs?: number;
     lastExecuted?: string;
   };
 }
@@ -70,14 +70,14 @@ export interface PropertyDefinition {
   minimum?: number;
   maximum?: number;
   pattern?: string;
-  enum?: string[];
+  enum?: Array<string | number | boolean>;
   items?: PropertyDefinition | JSONSchema;
   properties?: Record<string, PropertyDefinition>;
 }
 
 export interface GraphNode {
   id: string;
-  type: 'task';
+  type: 'task' | 'start' | 'end';
   data: {
     label: string;
     taskRef?: string;
@@ -90,10 +90,10 @@ export interface GraphNode {
 }
 
 export interface GraphEdge {
-  id: string;
+  id?: string;
   source: string;
   target: string;
-  type: 'dependency';
+  type?: 'dependency';
   label?: string;
   animated?: boolean;
   style?: Record<string, string>;

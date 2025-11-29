@@ -37,29 +37,29 @@ vi.mock('@xyflow/react', () => ({
 describe('WorkflowGraphPanel', () => {
   const mockSimpleGraph: WorkflowGraph = {
     nodes: [
-      { id: 'task1', label: 'Validate Email', type: 'task' },
-      { id: 'task2', label: 'Create User', type: 'task' },
+      { id: 'task1', type: 'task', data: { label: 'Validate Email' }, position: { x: 0, y: 0 } },
+      { id: 'task2', type: 'task', data: { label: 'Create User' }, position: { x: 0, y: 100 } },
     ],
     edges: [
-      { source: 'task1', target: 'task2' },
+      { id: 'e1-2', source: 'task1', target: 'task2', type: 'dependency' },
     ],
     parallelGroups: [],
   };
 
   const mockComplexGraph: WorkflowGraph = {
     nodes: [
-      { id: 'start', label: 'Start', type: 'start' },
-      { id: 'task1', label: 'Validate Email', type: 'task' },
-      { id: 'task2', label: 'Check Credit', type: 'task' },
-      { id: 'task3', label: 'Create User', type: 'task' },
-      { id: 'end', label: 'End', type: 'end' },
+      { id: 'start', type: 'start', data: { label: 'Start' }, position: { x: 200, y: 0 } },
+      { id: 'task1', type: 'task', data: { label: 'Validate Email' }, position: { x: 100, y: 100 } },
+      { id: 'task2', type: 'task', data: { label: 'Check Credit' }, position: { x: 300, y: 100 } },
+      { id: 'task3', type: 'task', data: { label: 'Create User' }, position: { x: 200, y: 200 } },
+      { id: 'end', type: 'end', data: { label: 'End' }, position: { x: 200, y: 300 } },
     ],
     edges: [
-      { source: 'start', target: 'task1' },
-      { source: 'start', target: 'task2' },
-      { source: 'task1', target: 'task3' },
-      { source: 'task2', target: 'task3' },
-      { source: 'task3', target: 'end' },
+      { id: 'e-start-1', source: 'start', target: 'task1', type: 'dependency' },
+      { id: 'e-start-2', source: 'start', target: 'task2', type: 'dependency' },
+      { id: 'e-1-3', source: 'task1', target: 'task3', type: 'dependency' },
+      { id: 'e-2-3', source: 'task2', target: 'task3', type: 'dependency' },
+      { id: 'e-3-end', source: 'task3', target: 'end', type: 'dependency' },
     ],
     parallelGroups: [
       { level: 0, taskIds: ['task1', 'task2'] },
@@ -198,14 +198,14 @@ describe('WorkflowGraphPanel', () => {
     it('handles workflows with multiple parallel groups', () => {
       const complexGraph: WorkflowGraph = {
         nodes: [
-          { id: 't1', label: 'Task 1', type: 'task' },
-          { id: 't2', label: 'Task 2', type: 'task' },
-          { id: 't3', label: 'Task 3', type: 'task' },
-          { id: 't4', label: 'Task 4', type: 'task' },
+          { id: 't1', type: 'task', data: { label: 'Task 1' }, position: { x: 100, y: 0 } },
+          { id: 't2', type: 'task', data: { label: 'Task 2' }, position: { x: 300, y: 0 } },
+          { id: 't3', type: 'task', data: { label: 'Task 3' }, position: { x: 100, y: 100 } },
+          { id: 't4', type: 'task', data: { label: 'Task 4' }, position: { x: 300, y: 100 } },
         ],
         edges: [
-          { source: 't1', target: 't3' },
-          { source: 't2', target: 't4' },
+          { id: 'e-1-3', source: 't1', target: 't3', type: 'dependency' },
+          { id: 'e-2-4', source: 't2', target: 't4', type: 'dependency' },
         ],
         parallelGroups: [
           { level: 0, taskIds: ['t1', 't2'] },
@@ -223,8 +223,8 @@ describe('WorkflowGraphPanel', () => {
     it('handles workflows with disconnected nodes', () => {
       const disconnectedGraph: WorkflowGraph = {
         nodes: [
-          { id: 't1', label: 'Task 1', type: 'task' },
-          { id: 't2', label: 'Task 2', type: 'task' },
+          { id: 't1', type: 'task', data: { label: 'Task 1' }, position: { x: 0, y: 0 } },
+          { id: 't2', type: 'task', data: { label: 'Task 2' }, position: { x: 0, y: 100 } },
         ],
         edges: [],
         parallelGroups: [],

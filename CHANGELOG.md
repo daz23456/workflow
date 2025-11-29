@@ -12,6 +12,20 @@ The format is based on stage completion, and this project follows strict TDD and
 - Stage 7.85: Enhanced Dry-Run Visualization (Deliverable 3 remaining)
 
 ### Recent Changes
+
+- **2025-11-29**: ⚠️ **BREAKING CHANGE** - Gate 5 now enforces zero skipped tests
+  - **Change:** Gate 5 (All Tests Passing) now fails if ANY skipped tests are detected
+  - **Impact:** Workflows with skipped tests (`.skip()`, `it.skip()`, `[Fact(Skip)]`) will fail Gate 5
+  - **Why:** Strict TDD requires RED → GREEN → REFACTOR. Skipped tests = incomplete implementation.
+  - **Migration:**
+    - .NET: Find skipped tests with `grep -r "\[Fact(Skip" tests/`
+    - TypeScript: Find skipped tests with `grep -r "test.skip\|it.skip" src/`
+    - Fix: Either implement the test (complete TDD) or delete it (not needed)
+  - **Files Changed:**
+    - `scripts/run-quality-gates.sh`: Added skip count validation for both .NET and TypeScript
+    - `STAGE_EXECUTION_FRAMEWORK.md`: Added "Why Zero Skipped Tests?" section with troubleshooting
+    - `.claude/stage-completion-checklist.md`: Added troubleshooting guide
+  - **Testing:** Validated with intentional skips - correctly detected and failed
 - **2025-11-23**: Stage 7.85 (Partial) - Parallel Groups & Enhanced Execution Plan (Deliverables 1 & 2)
   - ✅ Deliverable 1: Parallel Group Detection (7 tests)
   - ✅ Deliverable 2: Enhanced Execution Plan Model (6 tests)

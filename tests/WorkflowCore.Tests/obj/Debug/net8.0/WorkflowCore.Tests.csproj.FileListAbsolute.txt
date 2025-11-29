@@ -4,6 +4,11 @@
 /Users/darren/dev/workflow/tests/WorkflowCore.Tests/bin/Debug/net8.0/xunit.runner.utility.netcoreapp10.dll
 /Users/darren/dev/workflow/tests/WorkflowCore.Tests/bin/Debug/net8.0/WorkflowCore.Tests.deps.json
 /Users/darren/dev/workflow/tests/WorkflowCore.Tests/bin/Debug/net8.0/WorkflowCore.Tests.runtimeconfig.json
+/Users/darren/dev/workflow/tests/WorkflowCore.Tests/obj/Debug/net8.0/WorkflowCore.Tests.GeneratedMSBuildEditorConfig.editorconfig
+/Users/darren/dev/workflow/tests/WorkflowCore.Tests/obj/Debug/net8.0/WorkflowCore.Tests.AssemblyInfoInputs.cache
+/Users/darren/dev/workflow/tests/WorkflowCore.Tests/obj/Debug/net8.0/WorkflowCore.Tests.AssemblyInfo.cs
+/Users/darren/dev/workflow/tests/WorkflowCore.Tests/obj/Debug/net8.0/Workflow.F6B5D132.Up2Date
+/Users/darren/dev/workflow/tests/WorkflowCore.Tests/obj/Debug/net8.0/WorkflowCore.Tests.genruntimeconfig.cache
 /Users/darren/dev/workflow/tests/WorkflowCore.Tests/bin/Debug/net8.0/WorkflowCore.Tests.dll
 /Users/darren/dev/workflow/tests/WorkflowCore.Tests/bin/Debug/net8.0/WorkflowCore.Tests.pdb
 /Users/darren/dev/workflow/tests/WorkflowCore.Tests/bin/Debug/net8.0/Castle.Core.dll
@@ -126,13 +131,8 @@
 /Users/darren/dev/workflow/tests/WorkflowCore.Tests/bin/Debug/net8.0/WorkflowCore.dll
 /Users/darren/dev/workflow/tests/WorkflowCore.Tests/bin/Debug/net8.0/WorkflowCore.pdb
 /Users/darren/dev/workflow/tests/WorkflowCore.Tests/obj/Debug/net8.0/WorkflowCore.Tests.csproj.AssemblyReference.cache
-/Users/darren/dev/workflow/tests/WorkflowCore.Tests/obj/Debug/net8.0/WorkflowCore.Tests.GeneratedMSBuildEditorConfig.editorconfig
-/Users/darren/dev/workflow/tests/WorkflowCore.Tests/obj/Debug/net8.0/WorkflowCore.Tests.AssemblyInfoInputs.cache
-/Users/darren/dev/workflow/tests/WorkflowCore.Tests/obj/Debug/net8.0/WorkflowCore.Tests.AssemblyInfo.cs
 /Users/darren/dev/workflow/tests/WorkflowCore.Tests/obj/Debug/net8.0/WorkflowCore.Tests.csproj.CoreCompileInputs.cache
-/Users/darren/dev/workflow/tests/WorkflowCore.Tests/obj/Debug/net8.0/Workflow.F6B5D132.Up2Date
 /Users/darren/dev/workflow/tests/WorkflowCore.Tests/obj/Debug/net8.0/WorkflowCore.Tests.dll
 /Users/darren/dev/workflow/tests/WorkflowCore.Tests/obj/Debug/net8.0/refint/WorkflowCore.Tests.dll
 /Users/darren/dev/workflow/tests/WorkflowCore.Tests/obj/Debug/net8.0/WorkflowCore.Tests.pdb
-/Users/darren/dev/workflow/tests/WorkflowCore.Tests/obj/Debug/net8.0/WorkflowCore.Tests.genruntimeconfig.cache
 /Users/darren/dev/workflow/tests/WorkflowCore.Tests/obj/Debug/net8.0/ref/WorkflowCore.Tests.dll

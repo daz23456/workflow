@@ -22,7 +22,7 @@ vi.mock('./workflow-graph-panel', () => ({
       <div>Nodes: {graph.nodes.length}</div>
       {graph.nodes.map((node: any) => (
         <button key={node.id} onClick={() => onNodeClick?.(node.id)}>
-          {node.label}
+          {node.data.label}
         </button>
       ))}
     </div>
@@ -100,11 +100,11 @@ describe('WorkflowDetailTabs', () => {
     ],
     graph: {
       nodes: [
-        { id: 'validate-email', label: 'Validate Email', type: 'task' },
-        { id: 'create-user', label: 'Create User', type: 'task' },
+        { id: 'validate-email', type: 'task', data: { label: 'Validate Email' }, position: { x: 0, y: 0 } },
+        { id: 'create-user', type: 'task', data: { label: 'Create User' }, position: { x: 0, y: 100 } },
       ],
       edges: [
-        { source: 'validate-email', target: 'create-user' },
+        { id: 'e1', source: 'validate-email', target: 'create-user', type: 'dependency' },
       ],
       parallelGroups: [],
     },

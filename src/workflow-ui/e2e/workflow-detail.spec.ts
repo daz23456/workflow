@@ -55,7 +55,12 @@ async function mockWorkflowAPIs(page: Page, workflowName: string, options: {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify(executionHistory),
+      body: JSON.stringify({
+        executions: executionHistory,
+        total: executionHistory.length,
+        limit: 10,
+        offset: 0,
+      }),
     });
   });
 }
@@ -334,6 +339,57 @@ test.describe('Workflow Detail Page', () => {
 
       // Execute tab should be active
       await expect(page.getByRole('tab', { name: /execute/i })).toHaveAttribute('aria-selected', 'true');
+    });
+  });
+
+  test.describe('Workflow Duration Trends', () => {
+    test('should display duration trends chart on workflow detail page', async ({ page }) => {
+      await page.goto('/workflows/user-signup');
+
+      // Wait for page to load
+      await expect(page.getByRole('heading', { name: 'user-signup' })).toBeVisible();
+
+      // Should show Duration Trends heading
+      await expect(page.getByText('Duration Trends')).toBeVisible();
+
+      // Should show metric toggle buttons
+      await expect(page.getByRole('button', { name: /Average/i })).toBeVisible();
+      await expect(page.getByRole('button', { name: /Median \(P50\)/i })).toBeVisible();
+      await expect(page.getByRole('button', { name: /P95/i })).toBeVisible();
+      await expect(page.getByRole('button', { name: /Min-Max Range/i })).toBeVisible();
+    });
+
+    test('should toggle duration metrics on workflow page', async ({ page }) => {
+      await page.goto('/workflows/user-signup');
+
+      // Wait for page to load
+      await expect(page.getByRole('heading', { name: 'user-signup' })).toBeVisible();
+
+      const avgButton = page.getByRole('button', { name: /Average/i });
+      const p95Button = page.getByRole('button', { name: /P95/i });
+
+      // Average should be enabled by default
+      await expect(avgButton).toHaveAttribute('aria-pressed', 'true');
+
+      // P95 should be disabled by default
+      await expect(p95Button).toHaveAttribute('aria-pressed', 'false');
+
+      // Click P95 to enable it
+      await p95Button.click();
+      await expect(p95Button).toHaveAttribute('aria-pressed', 'true');
+    });
+
+    test('should display summary statistics on workflow page', async ({ page }) => {
+      await page.goto('/workflows/user-signup');
+
+      // Wait for duration trends to load
+      await expect(page.getByText('Duration Trends')).toBeVisible();
+
+      // Should show summary stats
+      await expect(page.getByText('Total Executions')).toBeVisible();
+      await expect(page.getByText('Overall Success Rate')).toBeVisible();
+      await expect(page.getByText('Avg Duration (Period)')).toBeVisible();
+      await expect(page.getByText('P95 Duration (Period)')).toBeVisible();
     });
   });
 });

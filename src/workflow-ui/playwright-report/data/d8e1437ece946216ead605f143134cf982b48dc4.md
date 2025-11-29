@@ -1,0 +1,65 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e7] [cursor=pointer]:
+    - img [ref=e8]
+  - alert [ref=e11]
+  - navigation [ref=e12]:
+    - generic [ref=e15]:
+      - link "W Workflow" [ref=e16] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e18]: W
+        - generic [ref=e19]: Workflow
+      - link "Workflows" [ref=e20] [cursor=pointer]:
+        - /url: /workflows
+      - link "Tasks" [ref=e21] [cursor=pointer]:
+        - /url: /tasks
+  - generic [ref=e22]:
+    - banner [ref=e23]:
+      - generic [ref=e24]:
+        - generic [ref=e25]:
+          - heading "Create New Workflow" [level=1] [ref=e26]
+          - generic [ref=e27]:
+            - generic [ref=e28]: Workflow Name
+            - textbox "Workflow Name" [ref=e29]:
+              - /placeholder: user-onboarding
+        - generic [ref=e30]:
+          - button "Load workflow from file" [ref=e31]:
+            - img [ref=e32]
+            - text: Load
+          - button "Save workflow to file" [disabled] [ref=e35]:
+            - img [ref=e36]
+            - text: Save
+          - button "Cancel and go back" [ref=e40]:
+            - img [ref=e41]
+            - text: Cancel
+    - generic [ref=e44]:
+      - generic "Task palette" [ref=e45]:
+        - heading "Tasks" [level=2] [ref=e46]
+      - generic "Workflow canvas" [ref=e51]:
+        - application [ref=e52]:
+          - img
+          - generic "Control Panel" [ref=e55]:
+            - button "Zoom In" [ref=e56] [cursor=pointer]:
+              - img [ref=e57]
+            - button "Zoom Out" [ref=e59] [cursor=pointer]:
+              - img [ref=e60]
+            - button "Fit View" [ref=e62] [cursor=pointer]:
+              - img [ref=e63]
+            - button "Toggle Interactivity" [ref=e65] [cursor=pointer]:
+              - img [ref=e66]
+          - img "Mini Map" [ref=e69]
+          - generic [ref=e71]:
+            - heading "Get Started" [level=3] [ref=e72]
+            - paragraph [ref=e73]: Drag and drop tasks from the palette on the left to create your workflow
+          - link "React Flow attribution" [ref=e75] [cursor=pointer]:
+            - /url: https://reactflow.dev
+            - text: React Flow
+      - generic "Properties panel" [ref=e77]:
+        - heading "Properties" [level=2] [ref=e79]
+        - generic [ref=e81]:
+          - img [ref=e83]
+          - heading "No Task Selected" [level=3] [ref=e85]
+          - paragraph [ref=e86]: Select a task on the canvas to view and edit its properties
+```

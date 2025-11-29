@@ -18,7 +18,7 @@ export async function GET(
     const take = parseInt(searchParams.get('take') || '20');
 
     // Call backend API to get task usage
-    const backendResponse = await getTaskUsage(name, skip, take);
+    const backendResponse = await getTaskUsage(name, { skip, take });
 
     // Return response directly (no transformation needed)
     return NextResponse.json(backendResponse);

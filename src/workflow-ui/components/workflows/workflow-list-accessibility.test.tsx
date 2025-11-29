@@ -2,8 +2,11 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { WorkflowList } from './workflow-list';
+
+// @ts-ignore - jest-axe types not available
 import { axe, toHaveNoViolations } from 'jest-axe';
 
+// @ts-ignore - extend expect with toHaveNoViolations
 expect.extend(toHaveNoViolations);
 
 // Mock router
@@ -37,6 +40,7 @@ describe('WorkflowList Accessibility', () => {
     await new Promise(resolve => setTimeout(resolve, 500));
 
     const results = await axe(container);
+    // @ts-ignore - toHaveNoViolations is extended from jest-axe
     expect(results).toHaveNoViolations();
   });
 
@@ -48,6 +52,7 @@ describe('WorkflowList Accessibility', () => {
     await new Promise(resolve => setTimeout(resolve, 500));
 
     const results = await axe(container);
+    // @ts-ignore - toHaveNoViolations is extended from jest-axe
     expect(results).toHaveNoViolations();
   });
 });

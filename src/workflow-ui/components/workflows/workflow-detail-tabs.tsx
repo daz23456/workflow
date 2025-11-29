@@ -155,7 +155,10 @@ export function WorkflowDetailTabs({
           <div className="flex-1 overflow-auto p-6">
             {activeTab === 'overview' && (
               <div className="h-full">
-                <WorkflowGraphPanel graph={workflow.graph} onNodeClick={handleNodeClick} />
+                <WorkflowGraphPanel
+                  graph={workflow.graph || { nodes: [], edges: [], parallelGroups: [] }}
+                  onNodeClick={handleNodeClick}
+                />
               </div>
             )}
 

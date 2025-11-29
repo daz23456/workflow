@@ -670,17 +670,161 @@ Stage 8 features (pause/resume, state recovery, partial execution recovery) are 
 
 ---
 
-### Week 7-8 (UI):
-**Stage 9: UI Backend & Frontend (TDD)**
-1. UI Backend API
-   - Workflow builder endpoints
-   - Real-time validation API
-   - Execution monitoring
-2. React Frontend
-   - Visual workflow builder with drag-drop
-   - Real-time validation feedback
-   - Execution history viewer
-3. Component & E2E tests with Playwright
+### Week 7-13 (Developer Experience & UI):
+**Stage 9: Developer Experience - Make Workflow Creation Effortless**
+
+*Goal:* Transform this POC into a platform where **anyone can create workflows** - from developers to business analysts - without deep technical knowledge.
+
+*Philosophy:* The best orchestration platform is the one developers *want* to use. Focus on exceptional DX (Developer Experience).
+
+**Stage 9.1: Visual Workflow Builder (2 weeks) 🔴 P0 - CRITICAL**
+*Lower the barrier to entry - anyone can create workflows*
+
+1. **React Flow-Based Editor**
+   - Drag-and-drop workflow canvas
+   - Task node library (HTTP tasks, WebSocket tasks, custom tasks)
+   - Visual dependency management (drag to connect)
+   - Real-time YAML preview (bidirectional sync)
+   - Inline validation feedback (errors as you type)
+
+2. **User Flow**
+   - Create Workflow → Template selector → Canvas
+   - Drag tasks → Connect dependencies → Configure
+   - Test (dry-run) → Deploy (kubectl apply)
+
+3. **TDD Targets**
+   - 30+ React component tests
+   - E2E tests with Playwright (full workflow creation flow)
+   - Accessibility tests (keyboard navigation, screen readers)
+   - Maintain ≥90% coverage
+
+4. **Value:** **5-minute time to first workflow** for non-technical users!
+
+**Stage 9.2: Workflow Templates Library (1 week) 🔴 P0 - CRITICAL**
+*Accelerate workflow creation - don't start from scratch*
+
+1. **Template Categories**
+   - API Composition (parallel-api-fetch, sequential-pipeline, conditional-branching)
+   - Data Processing (etl-pipeline, batch-processing, aggregation)
+   - Real-Time (websocket-stream, event-driven, polling)
+   - Integrations (slack-notification, github-webhook, payment-processing)
+
+2. **Template Browser UI**
+   - Search & filter by category/difficulty
+   - Preview (YAML + visual graph)
+   - One-click deploy to visual builder
+   - Placeholder highlighting for customization
+
+3. **Template Validation**
+   - All templates pass schema validation
+   - E2E tests for each template
+   - Performance benchmarks included
+
+4. **TDD Targets**
+   - 20+ template validation tests
+   - E2E tests for each template
+   - Template browser UI tests
+   - Maintain ≥90% coverage
+
+5. **Value:** **Reduce time to first workflow from 30 minutes to 2 minutes!**
+
+**Stage 9.3: WebSocket API for Workflow Execution (2 weeks) 🟡 P1 - IMPORTANT**
+*Real-time bidirectional communication for workflow execution*
+
+1. **WebSocket Server Endpoint**
+   - `wss://` endpoint for workflow execution
+   - Protocol: execute, subscribe, task_started, task_completed, workflow_completed
+   - Connection management (pooling, heartbeat, reconnection)
+
+2. **Integration with WorkflowOrchestrator**
+   - Emit events to WebSocket clients as tasks complete
+   - Broadcast to all subscribed clients
+   - Per-execution subscriptions
+
+3. **Frontend WebSocket Client**
+   - WorkflowWebSocketClient class
+   - React hook: useWebSocketWorkflowExecution
+   - Real-time push notifications (no polling)
+
+4. **TDD Targets**
+   - 25+ tests for WebSocket handler
+   - Integration tests with WebSocket client
+   - E2E tests with frontend WebSocket client
+   - Connection management tests
+   - Maintain ≥90% coverage
+
+5. **Value:** **Real-time workflow execution with push notifications** - no polling needed!
+
+**Stage 9.4: Enhanced Debugging Tools (1.5 weeks) 🟡 P1 - IMPORTANT**
+*Make troubleshooting effortless*
+
+1. **Execution Time-Travel UI**
+   - Scrub through execution timeline
+   - Inspect task state at any point
+   - Watch variables change over time
+   - Set breakpoints for future runs
+
+2. **Step-Through Mode**
+   - Pause execution at each task
+   - Inspect inputs/outputs before proceeding
+   - Manual approval to continue
+   - Skip to specific task
+
+3. **Execution Replay**
+   - Load past execution from database
+   - See exact inputs/outputs at any moment
+   - Compare two executions side-by-side
+
+4. **Visual Debugging Aids**
+   - Highlight current task in graph
+   - Show data flow (variable values on edges)
+   - Error highlighting (red nodes for failed tasks)
+   - Execution path visualization
+
+5. **TDD Targets**
+   - 30+ React component tests
+   - E2E tests for debug scenarios
+   - Accessibility tests
+   - Maintain ≥90% coverage
+
+6. **Value:** **Reduce debugging time from hours to minutes!**
+
+**Stage 9.5: Interactive Documentation & Learning (1 week) 🟡 P1 - IMPORTANT**
+*Make learning self-service*
+
+1. **Inline Contextual Help**
+   - Hover over task → Show description, example, schema
+   - Help icon on every field → Explains what it does
+   - Link to detailed docs for advanced topics
+
+2. **Interactive Playground**
+   - Lesson 1: Hello World (first workflow)
+   - Lesson 2: Task dependencies
+   - Lesson 3: Parallel execution
+   - Lesson 4: Template syntax
+   - Lesson 5: WebSocket streams
+
+3. **Guided Tours**
+   - First-time user interactive tour
+   - Tooltips highlight features
+   - Progressive disclosure
+
+4. **TDD Targets**
+   - 15+ documentation tests (ensure examples work)
+   - Accessibility tests for help UI
+   - Maintain ≥90% coverage
+
+5. **Value:** **Self-service onboarding - no hand-holding needed!**
+
+**Total Timeline: 6.5 weeks**
+
+**Success Metrics:**
+- Time to First Workflow: <5 minutes (80% of users)
+- Template Usage: 70% of workflows start from templates
+- User Retention: 80% create 2nd workflow within 1 week
+- Visual Builder Performance: <200ms to render workflow graph
+- Debugging Efficiency: 5x faster troubleshooting vs log diving
+- Test Coverage: ≥90% (non-negotiable)
 
 ### Week 9-10 (Performance & Production):
 **Stage 10: Performance Testing & Optimization (TDD)**

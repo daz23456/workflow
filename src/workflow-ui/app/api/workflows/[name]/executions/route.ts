@@ -16,21 +16,25 @@ export async function GET(
     // Get query parameters
     const searchParams = request.nextUrl.searchParams;
     const namespace = searchParams.get('namespace') || undefined;
-    const status = searchParams.get('status') as ExecutionStatus | undefined;
-    const skip = searchParams.get('skip') ? parseInt(searchParams.get('skip')!) : undefined;
-    const take = searchParams.get('take') ? parseInt(searchParams.get('take')!) : undefined;
+    const status = (searchParams.get('status') as ExecutionStatus | null) || undefined;
+
+    // Support both skip/take and offset/limit parameter names
+    const skip = searchParams.get('skip') || searchParams.get('offset');
+    const take = searchParams.get('take') || searchParams.get('limit');
+
+    const skipNum = skip ? parseInt(skip) : undefined;
+    const takeNum = take ? parseInt(take) : undefined;
 
     // Call backend API
     const response = await listWorkflowExecutions(name, {
       namespace,
       status,
-      skip,
-      take,
+      skip: skipNum,
+      take: takeNum,
     });
 
-    // Return executions array for backward compatibility with frontend
-    // (frontend expects array, not the full response object)
-    return NextResponse.json(response.executions);
+    // Return full response object (executions array + total count)
+    return NextResponse.json(response);
   } catch (error) {
     console.error('Error fetching workflow executions:', error);
 

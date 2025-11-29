@@ -16,6 +16,9 @@ import {
   useTaskUsage,
   useTaskExecutions,
   useExecuteTask,
+  useWorkflowDurationTrends,
+  useTaskDurationTrends,
+  usePrefetchTaskDetail,
 } from './queries';
 
 /**
@@ -56,6 +59,32 @@ describe('TanStack Query Hooks', () => {
       expect(error).toBeDefined();
       expect(error.name).toBe('ApiError');
       expect(error.status).toBe(404);
+    });
+
+    it('uses fallback error message when data.error is missing', async () => {
+      const { result } = renderHook(() => useWorkflowDetail('error-no-message'), {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(result.current.isError).toBe(true);
+      });
+
+      const error = result.current.error as Error;
+      expect(error.message).toBe('An error occurred');
+    });
+
+    it('uses data.error message when provided', async () => {
+      const { result } = renderHook(() => useWorkflowDetail('non-existent'), {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(result.current.isError).toBe(true);
+      });
+
+      const error = result.current.error as Error;
+      expect(error.message).toBe('Workflow "non-existent" not found');
     });
   });
 
@@ -242,7 +271,7 @@ describe('TanStack Query Hooks', () => {
 
   describe('useWorkflowExecutions', () => {
     it('fetches execution history successfully', async () => {
-      const { result } = renderHook(() => useWorkflowExecutions('user-signup'), {
+      const { result} = renderHook(() => useWorkflowExecutions('user-signup'), {
         wrapper: createWrapper(),
       });
 
@@ -271,6 +300,40 @@ describe('TanStack Query Hooks', () => {
       expect(result.current.data?.offset).toBe(0);
     });
 
+    it('applies default pagination values when not provided', async () => {
+      const { result } = renderHook(
+        () => useWorkflowExecutions('user-signup', {}),
+        {
+          wrapper: createWrapper(),
+        }
+      );
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      // Default values: limit = 10, offset = 0
+      expect(result.current.data?.limit).toBe(10);
+      expect(result.current.data?.offset).toBe(0);
+    });
+
+    it('applies default pagination when filters is undefined', async () => {
+      const { result } = renderHook(
+        () => useWorkflowExecutions('user-signup', undefined),
+        {
+          wrapper: createWrapper(),
+        }
+      );
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      // Default values should be applied
+      expect(result.current.data?.limit).toBe(10);
+      expect(result.current.data?.offset).toBe(0);
+    });
+
     it('supports status filtering', async () => {
       const { result } = renderHook(
         () => useWorkflowExecutions('user-signup', { status: 'succeeded' }),
@@ -286,6 +349,23 @@ describe('TanStack Query Hooks', () => {
       result.current.data?.executions.forEach((exec) => {
         expect(exec.status).toBe('succeeded');
       });
+    });
+
+    it('does not add status parameter when status is undefined', async () => {
+      const { result } = renderHook(
+        () => useWorkflowExecutions('user-signup', { status: undefined }),
+        {
+          wrapper: createWrapper(),
+        }
+      );
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      // Should fetch successfully without status filter
+      expect(result.current.data).toBeDefined();
+      expect(result.current.data?.executions).toBeDefined();
     });
   });
 
@@ -766,6 +846,157 @@ describe('TanStack Query Hooks', () => {
       // Verify cache invalidation would trigger refetch
       // (This is hard to test directly, but we can verify the hook doesn't error)
       expect(executeResult.current.data).toBeDefined();
+    });
+  });
+
+  // ============================================================================
+  // DURATION TRENDS & PREFETCH FUNCTIONS
+  // ============================================================================
+
+  describe('useWorkflowDurationTrends', () => {
+    it('fetches duration trends successfully', async () => {
+      const { result } = renderHook(
+        () => useWorkflowDurationTrends('user-signup', 30),
+        {
+          wrapper: createWrapper(),
+        }
+      );
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      expect(result.current.data).toBeDefined();
+      expect(result.current.data?.dataPoints).toBeDefined();
+      expect(Array.isArray(result.current.data?.dataPoints)).toBe(true);
+    });
+
+    it('parses date strings to Date objects', async () => {
+      const { result } = renderHook(
+        () => useWorkflowDurationTrends('user-signup', 30),
+        {
+          wrapper: createWrapper(),
+        }
+      );
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      const dataPoint = result.current.data!.dataPoints[0];
+      expect(dataPoint.date).toBeInstanceOf(Date);
+    });
+
+    it('can be disabled with enabled option', () => {
+      const { result } = renderHook(
+        () => useWorkflowDurationTrends('user-signup', 30, { enabled: false }),
+        {
+          wrapper: createWrapper(),
+        }
+      );
+
+      expect(result.current.isPending).toBe(true);
+      expect(result.current.fetchStatus).toBe('idle');
+    });
+
+    it('is disabled when name is empty', () => {
+      const { result } = renderHook(
+        () => useWorkflowDurationTrends('', 30),
+        {
+          wrapper: createWrapper(),
+        }
+      );
+
+      expect(result.current.isPending).toBe(true);
+      expect(result.current.fetchStatus).toBe('idle');
+    });
+  });
+
+  describe('useTaskDurationTrends', () => {
+    it('fetches task duration trends successfully', async () => {
+      const { result } = renderHook(
+        () => useTaskDurationTrends('fetch-user', 30),
+        {
+          wrapper: createWrapper(),
+        }
+      );
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      expect(result.current.data).toBeDefined();
+      expect(result.current.data?.dataPoints).toBeDefined();
+      expect(Array.isArray(result.current.data?.dataPoints)).toBe(true);
+    });
+
+    it('parses date strings to Date objects', async () => {
+      const { result } = renderHook(
+        () => useTaskDurationTrends('fetch-user', 30),
+        {
+          wrapper: createWrapper(),
+        }
+      );
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      const dataPoint = result.current.data!.dataPoints[0];
+      expect(dataPoint.date).toBeInstanceOf(Date);
+    });
+
+    it('can be disabled with enabled option', () => {
+      const { result } = renderHook(
+        () => useTaskDurationTrends('fetch-user', 30, { enabled: false }),
+        {
+          wrapper: createWrapper(),
+        }
+      );
+
+      expect(result.current.isPending).toBe(true);
+      expect(result.current.fetchStatus).toBe('idle');
+    });
+
+    it('is disabled when name is empty', () => {
+      const { result } = renderHook(
+        () => useTaskDurationTrends('', 30),
+        {
+          wrapper: createWrapper(),
+        }
+      );
+
+      expect(result.current.isPending).toBe(true);
+      expect(result.current.fetchStatus).toBe('idle');
+    });
+  });
+
+  describe('usePrefetchTaskDetail', () => {
+    it('prefetches task data', async () => {
+      const wrapper = createWrapper();
+
+      const { result: prefetchResult } = renderHook(
+        () => usePrefetchTaskDetail(),
+        { wrapper }
+      );
+
+      // Prefetch the data
+      prefetchResult.current('fetch-user');
+
+      // Small delay to allow prefetch to start
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // Now hook into the query - it should already be fetched or fetching
+      const { result: queryResult } = renderHook(
+        () => useTaskDetail('fetch-user'),
+        { wrapper }
+      );
+
+      await waitFor(() => {
+        expect(queryResult.current.isSuccess).toBe(true);
+      });
+
+      expect(queryResult.current.data?.name).toBe('fetch-user');
     });
   });
 });

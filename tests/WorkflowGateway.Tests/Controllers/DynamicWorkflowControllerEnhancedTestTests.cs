@@ -200,8 +200,8 @@ public class DynamicWorkflowControllerEnhancedTestTests
         var enhancedPlan = response.ExecutionPlan.Should().BeOfType<EnhancedExecutionPlan>().Subject;
 
         enhancedPlan.Edges.Should().HaveCount(2);
-        enhancedPlan.Edges.Should().Contain(e => e.From == "task2" && e.To == "task1");
-        enhancedPlan.Edges.Should().Contain(e => e.From == "task3" && e.To == "task2");
+        enhancedPlan.Edges.Should().Contain(e => e.Source == "task2" && e.Target == "task1");
+        enhancedPlan.Edges.Should().Contain(e => e.Source == "task3" && e.Target == "task2");
     }
 
     [Fact]

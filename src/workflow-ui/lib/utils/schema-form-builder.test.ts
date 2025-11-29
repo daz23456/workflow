@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { buildFormFields, type FormField, type FormFieldType } from './schema-form-builder';
-import type { SchemaDefinition } from '@/types/workflow';
+import type { JSONSchema } from '@/types/workflow';
 
 describe('buildFormFields', () => {
   describe('String Fields', () => {
     it('builds basic string field', () => {
-      const schema: SchemaDefinition = {
+      const schema: JSONSchema = {
         type: 'object',
         properties: {
           name: {
@@ -29,7 +29,7 @@ describe('buildFormFields', () => {
     });
 
     it('marks required string fields', () => {
-      const schema: SchemaDefinition = {
+      const schema: JSONSchema = {
         type: 'object',
         properties: {
           email: {
@@ -45,7 +45,7 @@ describe('buildFormFields', () => {
     });
 
     it('includes pattern validation', () => {
-      const schema: SchemaDefinition = {
+      const schema: JSONSchema = {
         type: 'object',
         properties: {
           email: {
@@ -64,7 +64,7 @@ describe('buildFormFields', () => {
     });
 
     it('includes minLength and maxLength validation', () => {
-      const schema: SchemaDefinition = {
+      const schema: JSONSchema = {
         type: 'object',
         properties: {
           password: {
@@ -87,7 +87,7 @@ describe('buildFormFields', () => {
 
   describe('Number Fields', () => {
     it('builds integer field', () => {
-      const schema: SchemaDefinition = {
+      const schema: JSONSchema = {
         type: 'object',
         properties: {
           age: {
@@ -110,7 +110,7 @@ describe('buildFormFields', () => {
     });
 
     it('builds number field', () => {
-      const schema: SchemaDefinition = {
+      const schema: JSONSchema = {
         type: 'object',
         properties: {
           price: {
@@ -126,7 +126,7 @@ describe('buildFormFields', () => {
     });
 
     it('includes min and max validation', () => {
-      const schema: SchemaDefinition = {
+      const schema: JSONSchema = {
         type: 'object',
         properties: {
           quantity: {
@@ -149,7 +149,7 @@ describe('buildFormFields', () => {
 
   describe('Boolean Fields', () => {
     it('builds boolean field', () => {
-      const schema: SchemaDefinition = {
+      const schema: JSONSchema = {
         type: 'object',
         properties: {
           active: {
@@ -172,7 +172,7 @@ describe('buildFormFields', () => {
     });
 
     it('provides default value for boolean fields', () => {
-      const schema: SchemaDefinition = {
+      const schema: JSONSchema = {
         type: 'object',
         properties: {
           enabled: {
@@ -190,7 +190,7 @@ describe('buildFormFields', () => {
 
   describe('Enum Fields', () => {
     it('builds enum field as select', () => {
-      const schema: SchemaDefinition = {
+      const schema: JSONSchema = {
         type: 'object',
         properties: {
           status: {
@@ -215,7 +215,7 @@ describe('buildFormFields', () => {
     });
 
     it('handles number enum values', () => {
-      const schema: SchemaDefinition = {
+      const schema: JSONSchema = {
         type: 'object',
         properties: {
           priority: {
@@ -237,7 +237,7 @@ describe('buildFormFields', () => {
 
   describe('Label Generation', () => {
     it('generates human-readable labels from camelCase', () => {
-      const schema: SchemaDefinition = {
+      const schema: JSONSchema = {
         type: 'object',
         properties: {
           firstName: { type: 'string' },
@@ -255,7 +255,7 @@ describe('buildFormFields', () => {
     });
 
     it('generates human-readable labels from snake_case', () => {
-      const schema: SchemaDefinition = {
+      const schema: JSONSchema = {
         type: 'object',
         properties: {
           first_name: { type: 'string' },
@@ -271,7 +271,7 @@ describe('buildFormFields', () => {
     });
 
     it('generates human-readable labels from kebab-case', () => {
-      const schema: SchemaDefinition = {
+      const schema: JSONSchema = {
         type: 'object',
         properties: {
           'first-name': { type: 'string' },
@@ -289,7 +289,7 @@ describe('buildFormFields', () => {
 
   describe('Multiple Fields', () => {
     it('builds multiple fields in order', () => {
-      const schema: SchemaDefinition = {
+      const schema: JSONSchema = {
         type: 'object',
         properties: {
           name: { type: 'string' },
@@ -310,7 +310,7 @@ describe('buildFormFields', () => {
 
   describe('Edge Cases', () => {
     it('handles empty schema', () => {
-      const schema: SchemaDefinition = {
+      const schema: JSONSchema = {
         type: 'object',
         properties: {},
         required: [],
@@ -322,7 +322,7 @@ describe('buildFormFields', () => {
     });
 
     it('handles schema without properties', () => {
-      const schema: SchemaDefinition = {
+      const schema: JSONSchema = {
         type: 'object',
         required: [],
       };
@@ -333,7 +333,7 @@ describe('buildFormFields', () => {
     });
 
     it('handles schema without required array', () => {
-      const schema: SchemaDefinition = {
+      const schema: JSONSchema = {
         type: 'object',
         properties: {
           name: { type: 'string' },
@@ -346,7 +346,7 @@ describe('buildFormFields', () => {
     });
 
     it('ignores unsupported property types', () => {
-      const schema: SchemaDefinition = {
+      const schema: JSONSchema = {
         type: 'object',
         properties: {
           name: { type: 'string' },
@@ -366,7 +366,7 @@ describe('buildFormFields', () => {
 
   describe('Default Values', () => {
     it('uses default value from schema', () => {
-      const schema: SchemaDefinition = {
+      const schema: JSONSchema = {
         type: 'object',
         properties: {
           name: {
@@ -390,7 +390,7 @@ describe('buildFormFields', () => {
 
   describe('Placeholder Text', () => {
     it('generates placeholder from description', () => {
-      const schema: SchemaDefinition = {
+      const schema: JSONSchema = {
         type: 'object',
         properties: {
           email: {
@@ -407,7 +407,7 @@ describe('buildFormFields', () => {
     });
 
     it('generates placeholder for enum fields', () => {
-      const schema: SchemaDefinition = {
+      const schema: JSONSchema = {
         type: 'object',
         properties: {
           status: {

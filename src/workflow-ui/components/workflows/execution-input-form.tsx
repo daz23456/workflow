@@ -33,43 +33,56 @@ function jsonSchemaToZod(schema: ExecutionInputFormProps['schema']): z.ZodObject
     // Create base Zod type based on JSON Schema type
     switch (prop.type) {
       case 'string':
-        zodType = z.string();
         if (isRequired) {
-          zodType = zodType.min(1, { message: `${key} is required` });
+          zodType = z.string().min(1, { message: `${key} is required` });
+        } else {
+          zodType = z.string();
         }
         break;
       case 'number':
       case 'integer':
         // Build number type with constraints
-        let numberType = z.number({
-          required_error: `${key} is required`,
-          invalid_type_error: `${key} must be a number`,
-        });
-
-        // Add min/max constraints
-        if (prop.minimum !== undefined) {
-          numberType = numberType.min(prop.minimum, {
-            message: `${key} must be at least ${prop.minimum}`,
-          });
-        }
-        if (prop.maximum !== undefined) {
-          numberType = numberType.max(prop.maximum, {
-            message: `${key} must be at most ${prop.maximum}`,
-          });
-        }
-
-        // For optional fields, preprocess to convert NaN to undefined
         if (!isRequired) {
-          zodType = z.preprocess(
-            (val) => (typeof val === 'number' && isNaN(val) ? undefined : val),
-            numberType.optional()
-          );
+          // For optional fields, use preprocessing to handle empty values and manual coercion
+          let baseNumber = z.number();
+          if (prop.minimum !== undefined) {
+            baseNumber = baseNumber.min(prop.minimum, {
+              message: `${key} must be at least ${prop.minimum}`,
+            });
+          }
+          if (prop.maximum !== undefined) {
+            baseNumber = baseNumber.max(prop.maximum, {
+              message: `${key} must be at most ${prop.maximum}`,
+            });
+          }
+
+          zodType = z.preprocess((val) => {
+            // Convert empty values to undefined to skip validation
+            // React Hook Form's valueAsNumber converts empty inputs to NaN
+            if (val === '' || val === null || val === undefined || (typeof val === 'number' && isNaN(val))) {
+              return undefined;
+            }
+            // Manual coercion to number (z.coerce causes NaN issues with optional fields)
+            return Number(val);
+          }, baseNumber.optional());
         } else {
+          // Required fields
+          let numberType: any = z.coerce.number();
+          if (prop.minimum !== undefined) {
+            numberType = numberType.min(prop.minimum, {
+              message: `${key} must be at least ${prop.minimum}`,
+            });
+          }
+          if (prop.maximum !== undefined) {
+            numberType = numberType.max(prop.maximum, {
+              message: `${key} must be at most ${prop.maximum}`,
+            });
+          }
           zodType = numberType;
         }
         break;
       case 'boolean':
-        zodType = z.boolean().optional();
+        zodType = z.coerce.boolean().optional();
         break;
       default:
         zodType = z.string();
@@ -181,8 +194,8 @@ export function ExecutionInputForm({ schema, onSubmit, onTest }: ExecutionInputF
                 >
                   <option value="">Select {field.label}</option>
                   {field.options.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
+                    <option key={String(option)} value={String(option)}>
+                      {String(option)}
                     </option>
                   ))}
                 </select>

@@ -1,4 +1,4 @@
-import type { SchemaDefinition, PropertyDefinition } from '@/types/workflow';
+import type { JSONSchema, PropertyDefinition } from '@/types/workflow';
 
 export type FormFieldType = 'string' | 'number' | 'boolean' | 'select';
 
@@ -64,7 +64,7 @@ export interface FormField {
  * // ]
  * ```
  */
-export function buildFormFields(schema: SchemaDefinition): FormField[] {
+export function buildFormFields(schema: JSONSchema): FormField[] {
   if (!schema.properties) {
     return [];
   }

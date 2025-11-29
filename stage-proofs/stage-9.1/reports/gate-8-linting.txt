@@ -1,0 +1,404 @@
+
+> workflow-ui@0.1.0 lint
+> eslint
+
+
+/Users/darren/dev/workflow/src/workflow-ui/app/api/tasks/route.test.ts
+  90:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/darren/dev/workflow/src/workflow-ui/app/api/workflows/[name]/execute/route.ts
+  20:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/darren/dev/workflow/src/workflow-ui/app/api/workflows/[name]/test/route.ts
+  20:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/darren/dev/workflow/src/workflow-ui/app/workflows/[name]/page.tsx
+  10:3   warning  'useExecutionDetail' is defined but never used  @typescript-eslint/no-unused-vars
+  33:54  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  39:51  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+
+/Users/darren/dev/workflow/src/workflow-ui/app/workflows/new/page.test.tsx
+  56:16  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  57:16  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  63:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/darren/dev/workflow/src/workflow-ui/app/workflows/new/page.tsx
+  117:41  error    Unexpected any. Specify a different type                                                                                       @typescript-eslint/no-explicit-any
+  136:21  error    Unexpected any. Specify a different type                                                                                       @typescript-eslint/no-explicit-any
+  154:43  error    Unexpected any. Specify a different type                                                                                       @typescript-eslint/no-explicit-any
+  178:21  error    Unexpected any. Specify a different type                                                                                       @typescript-eslint/no-explicit-any
+  218:6   warning  React Hook useEffect has missing dependencies: 'canSave' and 'handleSave'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/darren/dev/workflow/src/workflow-ui/components/analytics/duration-trends-chart.test.tsx
+    1:32  warning  'vi' is defined but never used                           @typescript-eslint/no-unused-vars
+    1:36  warning  'beforeEach' is defined but never used                   @typescript-eslint/no-unused-vars
+  859:13  warning  'expectedExecutions' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/darren/dev/workflow/src/workflow-ui/components/analytics/duration-trends-chart.tsx
+    5:3   warning  'LineChart' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               @typescript-eslint/no-unused-vars
+   46:3   warning  'entityName' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              @typescript-eslint/no-unused-vars
+  109:47  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            @typescript-eslint/no-explicit-any
+  241:30  error    Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+/Users/darren/dev/workflow/src/workflow-ui/components/analytics/duration-trends-chart.tsx:241:30
+  239 |           />
+  240 |
+> 241 |           <Tooltip content={<CustomTooltip />} />
+      |                              ^^^^^^^^^^^^^ This component is created during render
+  242 |
+  243 |           <Legend
+  244 |             wrapperStyle={{ fontSize: '14px' }}
+
+/Users/darren/dev/workflow/src/workflow-ui/components/analytics/duration-trends-chart.tsx:109:25
+  107 |
+  108 |   // Custom tooltip component
+> 109 |   const CustomTooltip = ({ active, payload }: any) => {
+      |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 110 |     if (!active || !payload || !payload[0]) return null;
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 111 |
+      …
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 147 |     );
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 148 |   };
+      | ^^^^ The component is created during render here
+  149 |
+  150 |   const toggleMetric = (metric: keyof typeof selectedMetrics) => {
+  151 |     setSelectedMetrics(prev => ({ ...prev, [metric]: !prev[metric] }));  react-hooks/static-components
+
+/Users/darren/dev/workflow/src/workflow-ui/components/builder/properties-panel.test.tsx
+   33:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  329:56  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  469:56  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/darren/dev/workflow/src/workflow-ui/components/builder/properties-panel.tsx
+   16:10  warning  'cn' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        @typescript-eslint/no-unused-vars
+   38:7   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/darren/dev/workflow/src/workflow-ui/components/builder/properties-panel.tsx:38:7
+  36 |   useEffect(() => {
+  37 |     if (selectedNode) {
+> 38 |       setLabel(selectedNode.data.label || '');
+     |       ^^^^^^^^ Avoid calling setState() directly within an effect
+  39 |       setDescription(selectedNode.data.description || '');
+  40 |     } else {
+  41 |       setLabel('');  react-hooks/set-state-in-effect
+  187:14  error    Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+/Users/darren/dev/workflow/src/workflow-ui/components/builder/properties-panel.tsx:187:14
+  185 |
+  186 |             {/* Validation status */}
+> 187 |             <ValidationIcon />
+      |              ^^^^^^^^^^^^^^ This component is created during render
+  188 |
+  189 |             {/* Label field */}
+  190 |             <div>
+
+/Users/darren/dev/workflow/src/workflow-ui/components/builder/properties-panel.tsx:107:26
+  105 |
+  106 |   // Validation icon
+> 107 |   const ValidationIcon = () => {
+      |                          ^^^^^^^
+> 108 |     switch (validationState) {
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 109 |       case 'error':
+      …
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 136 |     }
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 137 |   };
+      | ^^^^ The component is created during render here
+  138 |
+  139 |   return (
+  140 |     <div                                              react-hooks/static-components
+
+/Users/darren/dev/workflow/src/workflow-ui/components/builder/task-node.test.tsx
+   12:15  warning  'NodeProps' is defined but never used                @typescript-eslint/no-unused-vars
+   13:15  warning  'WorkflowBuilderNodeData' is defined but never used  @typescript-eslint/no-unused-vars
+   21:39  error    Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+   35:63  error    Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+   67:8   error    Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+  297:13  warning  'user' is assigned a value but never used            @typescript-eslint/no-unused-vars
+
+/Users/darren/dev/workflow/src/workflow-ui/components/builder/task-node.tsx
+  188:8  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+/Users/darren/dev/workflow/src/workflow-ui/components/builder/task-node.tsx:188:8
+  186 |
+  187 |       {/* Validation indicator */}
+> 188 |       <ValidationIcon />
+      |        ^^^^^^^^^^^^^^ This component is created during render
+  189 |
+  190 |       {/* Delete button (visible on hover when selected) */}
+  191 |       {selected && isHovered && (
+
+/Users/darren/dev/workflow/src/workflow-ui/components/builder/task-node.tsx:116:26
+  114 |
+  115 |   // Validation icon
+> 116 |   const ValidationIcon = () => {
+      |                          ^^^^^^^
+> 117 |     switch (validationState) {
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 118 |       case 'error':
+      …
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 149 |     }
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 150 |   };
+      | ^^^^ The component is created during render here
+  151 |
+  152 |   return (
+  153 |     <div  react-hooks/static-components
+
+/Users/darren/dev/workflow/src/workflow-ui/components/builder/task-palette.test.tsx
+    9:37  warning  'within' is defined but never used        @typescript-eslint/no-unused-vars
+   17:39  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  281:28  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  294:28  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  310:28  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/darren/dev/workflow/src/workflow-ui/components/builder/task-palette.tsx
+  65:37  error  Compilation Skipped: Existing memoization could not be preserved
+
+React Compiler has skipped optimizing this component because the existing manual memoization could not be preserved. The inferred dependencies did not match the manually specified dependencies, which could cause the value to change more or less frequently than expected. The inferred dependency was `data.tasks`, but the source dependencies were [data?.tasks]. Inferred different dependency than source.
+
+/Users/darren/dev/workflow/src/workflow-ui/components/builder/task-palette.tsx:65:37
+  63 |
+  64 |   // Transform API tasks to include displayName and category
+> 65 |   const tasks: TaskItem[] = useMemo(() => {
+     |                                     ^^^^^^^
+> 66 |     if (!data?.tasks) return [];
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 67 |     return data.tasks.map(task => ({
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 68 |       ...task,
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 69 |       displayName: toDisplayName(task.name),
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 70 |       category: toCategory(task.name),
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 71 |     }));
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 72 |   }, [data?.tasks]);
+     | ^^^^ Could not preserve existing manual memoization
+  73 |
+  74 |   // Get unique categories
+  75 |   const categories = useMemo(() => {  react-hooks/preserve-manual-memoization
+
+/Users/darren/dev/workflow/src/workflow-ui/components/builder/workflow-canvas.test.tsx
+   10:8   warning  'userEvent' is defined but never used                      @typescript-eslint/no-unused-vars
+   27:5   error    'mockStoreState' is never reassigned. Use 'const' instead  prefer-const
+   51:39  error    Unexpected any. Specify a different type                   @typescript-eslint/no-explicit-any
+   64:33  warning  'onNodesChange' is defined but never used                  @typescript-eslint/no-unused-vars
+   64:48  warning  'onEdgesChange' is defined but never used                  @typescript-eslint/no-unused-vars
+   64:63  warning  'onConnect' is defined but never used                      @typescript-eslint/no-unused-vars
+   64:86  error    Unexpected any. Specify a different type                   @typescript-eslint/no-explicit-any
+   67:29  error    Unexpected any. Specify a different type                   @typescript-eslint/no-explicit-any
+   74:29  error    Unexpected any. Specify a different type                   @typescript-eslint/no-explicit-any
+   84:37  error    Unexpected any. Specify a different type                   @typescript-eslint/no-explicit-any
+  175:15  warning  'rerender' is assigned a value but never used              @typescript-eslint/no-unused-vars
+
+/Users/darren/dev/workflow/src/workflow-ui/components/tasks/task-list.tsx
+  34:64  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/darren/dev/workflow/src/workflow-ui/components/workflows/execution-history-panel.test.tsx
+    2:26  warning  'within' is defined but never used              @typescript-eslint/no-unused-vars
+    6:15  warning  'ExecutionSummary' is defined but never used    @typescript-eslint/no-unused-vars
+  133:15  warning  'container' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/darren/dev/workflow/src/workflow-ui/components/workflows/execution-history-panel.tsx
+  109:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/darren/dev/workflow/src/workflow-ui/components/workflows/execution-history-panel.tsx:109:5
+  107 |   // Reset to page 1 when filters or page size change
+  108 |   useEffect(() => {
+> 109 |     setCurrentPage(1);
+      |     ^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  110 |   }, [statusFilter, sortOrder, pageSize]);
+  111 |
+  112 |   const handleExecutionClick = (executionId: string) => {  react-hooks/set-state-in-effect
+
+/Users/darren/dev/workflow/src/workflow-ui/components/workflows/execution-input-form.test.tsx
+  45:15  warning  'container' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  54:15  warning  'container' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/darren/dev/workflow/src/workflow-ui/components/workflows/execution-input-form.tsx
+   12:33   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   15:35   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   16:34   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   22:82   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   70:27   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  105:45   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  105:110  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  106:33   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  142:55   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  152:53   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/darren/dev/workflow/src/workflow-ui/components/workflows/workflow-detail-tabs.test.tsx
+  10:59  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  20:48  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  23:31  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  33:26  warning  'schema' is defined but never used        @typescript-eslint/no-unused-vars
+  33:54  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  42:61  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  45:30  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  55:40  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  64:50  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/darren/dev/workflow/src/workflow-ui/components/workflows/workflow-detail-tabs.tsx
+  22:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  23:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  23:52  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  67:54  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  75:51  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/darren/dev/workflow/src/workflow-ui/components/workflows/workflow-filters.test.tsx
+  2:39  warning  'waitFor' is defined but never used    @typescript-eslint/no-unused-vars
+  3:10  warning  'userEvent' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/darren/dev/workflow/src/workflow-ui/components/workflows/workflow-filters.tsx
+  31:3  warning  'filters' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/darren/dev/workflow/src/workflow-ui/components/workflows/workflow-graph-panel.test.tsx
+   5:30  warning  'GraphNode' is defined but never used      @typescript-eslint/no-unused-vars
+   5:41  warning  'GraphEdge' is defined but never used      @typescript-eslint/no-unused-vars
+   5:52  warning  'ParallelGroup' is defined but never used  @typescript-eslint/no-unused-vars
+   9:56  error    Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+  12:27  error    Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+  24:27  error    Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+  32:29  error    Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+
+/Users/darren/dev/workflow/src/workflow-ui/components/workflows/workflow-list-accessibility.test.tsx
+   6:1  error  Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free  @typescript-eslint/ban-ts-comment
+   9:1  error  Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free  @typescript-eslint/ban-ts-comment
+  43:5  error  Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free  @typescript-eslint/ban-ts-comment
+  55:5  error  Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free  @typescript-eslint/ban-ts-comment
+
+/Users/darren/dev/workflow/src/workflow-ui/coverage/block-navigation.js
+  1:1  warning  Unused eslint-disable directive (no problems were reported)
+
+/Users/darren/dev/workflow/src/workflow-ui/coverage/lcov-report/block-navigation.js
+  1:1  warning  Unused eslint-disable directive (no problems were reported)
+
+/Users/darren/dev/workflow/src/workflow-ui/e2e/workflow-builder.spec.ts
+  174:66  warning  'page' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/darren/dev/workflow/src/workflow-ui/e2e/workflow-detail.spec.ts
+  5:18  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  6:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/darren/dev/workflow/src/workflow-ui/eslint.config.mjs
+  2:8  warning  'storybook' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/darren/dev/workflow/src/workflow-ui/file-system-api.d.ts
+  54:11  warning  'Window' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/darren/dev/workflow/src/workflow-ui/jest-axe.d.ts
+  13:15  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  16:42  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/darren/dev/workflow/src/workflow-ui/lib/adapters/yaml-adapter.test.ts
+  138:46  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  145:46  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  146:46  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/darren/dev/workflow/src/workflow-ui/lib/api/client.ts
+  276:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/darren/dev/workflow/src/workflow-ui/lib/api/queries.test.tsx
+   1:32  warning  'beforeEach' is defined but never used        @typescript-eslint/no-unused-vars
+  42:10  error    Component definition is missing display name  react/display-name
+
+/Users/darren/dev/workflow/src/workflow-ui/lib/api/transformers.ts
+  199:89  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/darren/dev/workflow/src/workflow-ui/lib/api/types.ts
+   97:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  107:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  149:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  159:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  166:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  178:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  190:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  262:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  277:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  278:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  367:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/darren/dev/workflow/src/workflow-ui/lib/mocks/executions.ts
+  5:3  warning  'TaskExecutionDetail' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/darren/dev/workflow/src/workflow-ui/lib/mocks/handlers.test.ts
+  2:10  warning  'http' is defined but never used          @typescript-eslint/no-unused-vars
+  2:16  warning  'HttpResponse' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/darren/dev/workflow/src/workflow-ui/lib/stores/workflow-builder-store.ts
+  11:10  warning  'produce' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/darren/dev/workflow/src/workflow-ui/lib/types/workflow-builder.test.ts
+    9:8   warning  'WorkflowBuilderState' is defined but never used  @typescript-eslint/no-unused-vars
+   12:8   warning  'WorkflowMetadata' is defined but never used      @typescript-eslint/no-unused-vars
+   15:8   warning  'SelectionState' is defined but never used        @typescript-eslint/no-unused-vars
+  130:12  error    Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+  140:12  error    Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+  152:33  error    Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+  177:12  error    Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+  187:12  error    Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+
+/Users/darren/dev/workflow/src/workflow-ui/lib/types/workflow-builder.ts
+    9:15  warning  'JSONSchema' is defined but never used    @typescript-eslint/no-unused-vars
+   27:13  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  218:35  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  233:35  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/darren/dev/workflow/src/workflow-ui/lib/utils/graph-layout.ts
+  148:17  warning  'level' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/darren/dev/workflow/src/workflow-ui/lib/utils/schema-form-builder.test.ts
+  2:32  warning  'FormField' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/darren/dev/workflow/src/workflow-ui/public/mockServiceWorker.js
+  1:1  warning  Unused eslint-disable directive (no problems were reported)
+
+/Users/darren/dev/workflow/src/workflow-ui/stories/Page.tsx
+  39:13  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  39:18  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+
+/Users/darren/dev/workflow/src/workflow-ui/types/execution.ts
+   5:26  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  20:12  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  26:11  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  37:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  38:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/darren/dev/workflow/src/workflow-ui/types/task.ts
+  93:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/darren/dev/workflow/src/workflow-ui/types/workflow.ts
+  67:13  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/darren/dev/workflow/src/workflow-ui/vitest.setup.ts
+  3:42  warning  'vi' is defined but never used  @typescript-eslint/no-unused-vars
+
+✖ 152 problems (103 errors, 49 warnings)
+  1 error and 3 warnings potentially fixable with the `--fix` option.
+

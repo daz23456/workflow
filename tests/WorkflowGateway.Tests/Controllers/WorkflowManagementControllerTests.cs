@@ -1192,4 +1192,565 @@ public class WorkflowManagementControllerTests
     }
 
     #endregion
+
+    #region Duration Trends Tests
+
+    // ========== WORKFLOW DURATION TRENDS TESTS ==========
+
+    [Fact]
+    public async Task GetWorkflowDurationTrends_WithValidWorkflow_ShouldReturnDataPoints()
+    {
+        // Arrange
+        var workflowName = "test-workflow";
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = workflowName, Namespace = "default" },
+            Spec = new WorkflowSpec()
+        };
+
+        var dataPoints = new List<DurationDataPoint>
+        {
+            new DurationDataPoint
+            {
+                Date = DateTime.UtcNow.Date.AddDays(-2),
+                AverageDurationMs = 150.0,
+                MinDurationMs = 100.0,
+                MaxDurationMs = 200.0,
+                P50DurationMs = 150.0,
+                P95DurationMs = 190.0,
+                ExecutionCount = 10,
+                SuccessCount = 9,
+                FailureCount = 1
+            },
+            new DurationDataPoint
+            {
+                Date = DateTime.UtcNow.Date.AddDays(-1),
+                AverageDurationMs = 175.0,
+                MinDurationMs = 120.0,
+                MaxDurationMs = 250.0,
+                P50DurationMs = 170.0,
+                P95DurationMs = 240.0,
+                ExecutionCount = 15,
+                SuccessCount = 14,
+                FailureCount = 1
+            }
+        };
+
+        _discoveryServiceMock
+            .Setup(x => x.GetWorkflowByNameAsync(workflowName, null))
+            .ReturnsAsync(workflow);
+
+        _executionRepositoryMock
+            .Setup(x => x.GetWorkflowDurationTrendsAsync(workflowName, 30))
+            .ReturnsAsync(dataPoints);
+
+        // Act
+        var result = await _controller.GetWorkflowDurationTrends(workflowName);
+
+        // Assert
+        result.Should().BeOfType<OkObjectResult>();
+        var okResult = result as OkObjectResult;
+        var response = okResult!.Value as DurationTrendsResponse;
+
+        response.Should().NotBeNull();
+        response!.EntityType.Should().Be("Workflow");
+        response.EntityName.Should().Be(workflowName);
+        response.DaysBack.Should().Be(30);
+        response.DataPoints.Should().HaveCount(2);
+        response.DataPoints[0].AverageDurationMs.Should().Be(150.0);
+        response.DataPoints[1].AverageDurationMs.Should().Be(175.0);
+
+        _executionRepositoryMock.Verify(x => x.GetWorkflowDurationTrendsAsync(workflowName, 30), Times.Once);
+    }
+
+    [Fact]
+    public async Task GetWorkflowDurationTrends_WithNonExistentWorkflow_ShouldReturn404()
+    {
+        // Arrange
+        var workflowName = "non-existent-workflow";
+
+        _discoveryServiceMock
+            .Setup(x => x.GetWorkflowByNameAsync(workflowName, null))
+            .ReturnsAsync((WorkflowResource?)null);
+
+        // Act
+        var result = await _controller.GetWorkflowDurationTrends(workflowName);
+
+        // Assert
+        result.Should().BeOfType<NotFoundObjectResult>();
+        var notFoundResult = result as NotFoundObjectResult;
+        notFoundResult!.Value.Should().NotBeNull();
+
+        _executionRepositoryMock.Verify(x => x.GetWorkflowDurationTrendsAsync(It.IsAny<string>(), It.IsAny<int>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task GetWorkflowDurationTrends_WithInvalidDaysBackTooLow_ShouldReturn400()
+    {
+        // Arrange
+        var workflowName = "test-workflow";
+
+        // Act
+        var result = await _controller.GetWorkflowDurationTrends(workflowName, daysBack: 0);
+
+        // Assert
+        result.Should().BeOfType<BadRequestObjectResult>();
+        var badRequestResult = result as BadRequestObjectResult;
+        badRequestResult!.Value.Should().NotBeNull();
+
+        _discoveryServiceMock.Verify(x => x.GetWorkflowByNameAsync(It.IsAny<string>(), It.IsAny<string?>()), Times.Never);
+        _executionRepositoryMock.Verify(x => x.GetWorkflowDurationTrendsAsync(It.IsAny<string>(), It.IsAny<int>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task GetWorkflowDurationTrends_WithInvalidDaysBackTooHigh_ShouldReturn400()
+    {
+        // Arrange
+        var workflowName = "test-workflow";
+
+        // Act
+        var result = await _controller.GetWorkflowDurationTrends(workflowName, daysBack: 91);
+
+        // Assert
+        result.Should().BeOfType<BadRequestObjectResult>();
+        var badRequestResult = result as BadRequestObjectResult;
+        badRequestResult!.Value.Should().NotBeNull();
+
+        _discoveryServiceMock.Verify(x => x.GetWorkflowByNameAsync(It.IsAny<string>(), It.IsAny<string?>()), Times.Never);
+        _executionRepositoryMock.Verify(x => x.GetWorkflowDurationTrendsAsync(It.IsAny<string>(), It.IsAny<int>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task GetWorkflowDurationTrends_WithEmptyDataPoints_ShouldReturnEmptyList()
+    {
+        // Arrange
+        var workflowName = "test-workflow";
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = workflowName, Namespace = "default" },
+            Spec = new WorkflowSpec()
+        };
+
+        _discoveryServiceMock
+            .Setup(x => x.GetWorkflowByNameAsync(workflowName, null))
+            .ReturnsAsync(workflow);
+
+        _executionRepositoryMock
+            .Setup(x => x.GetWorkflowDurationTrendsAsync(workflowName, 30))
+            .ReturnsAsync(new List<DurationDataPoint>());
+
+        // Act
+        var result = await _controller.GetWorkflowDurationTrends(workflowName);
+
+        // Assert
+        result.Should().BeOfType<OkObjectResult>();
+        var okResult = result as OkObjectResult;
+        var response = okResult!.Value as DurationTrendsResponse;
+
+        response.Should().NotBeNull();
+        response!.EntityType.Should().Be("Workflow");
+        response.EntityName.Should().Be(workflowName);
+        response.DataPoints.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GetWorkflowDurationTrends_WithCustomDaysBack_ShouldUseProvidedValue()
+    {
+        // Arrange
+        var workflowName = "test-workflow";
+        var customDaysBack = 7;
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = workflowName, Namespace = "default" },
+            Spec = new WorkflowSpec()
+        };
+
+        var dataPoints = new List<DurationDataPoint>
+        {
+            new DurationDataPoint
+            {
+                Date = DateTime.UtcNow.Date.AddDays(-1),
+                AverageDurationMs = 150.0,
+                ExecutionCount = 5,
+                SuccessCount = 5,
+                FailureCount = 0
+            }
+        };
+
+        _discoveryServiceMock
+            .Setup(x => x.GetWorkflowByNameAsync(workflowName, null))
+            .ReturnsAsync(workflow);
+
+        _executionRepositoryMock
+            .Setup(x => x.GetWorkflowDurationTrendsAsync(workflowName, customDaysBack))
+            .ReturnsAsync(dataPoints);
+
+        // Act
+        var result = await _controller.GetWorkflowDurationTrends(workflowName, daysBack: customDaysBack);
+
+        // Assert
+        result.Should().BeOfType<OkObjectResult>();
+        var okResult = result as OkObjectResult;
+        var response = okResult!.Value as DurationTrendsResponse;
+
+        response.Should().NotBeNull();
+        response!.DaysBack.Should().Be(customDaysBack);
+
+        _executionRepositoryMock.Verify(x => x.GetWorkflowDurationTrendsAsync(workflowName, customDaysBack), Times.Once);
+    }
+
+    [Fact]
+    public async Task GetWorkflowDurationTrends_ShouldIncludeAllDataPointFields()
+    {
+        // Arrange
+        var workflowName = "test-workflow";
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = workflowName, Namespace = "default" },
+            Spec = new WorkflowSpec()
+        };
+
+        var dataPoints = new List<DurationDataPoint>
+        {
+            new DurationDataPoint
+            {
+                Date = DateTime.UtcNow.Date,
+                AverageDurationMs = 150.0,
+                MinDurationMs = 100.0,
+                MaxDurationMs = 200.0,
+                P50DurationMs = 150.0,
+                P95DurationMs = 190.0,
+                ExecutionCount = 10,
+                SuccessCount = 9,
+                FailureCount = 1
+            }
+        };
+
+        _discoveryServiceMock
+            .Setup(x => x.GetWorkflowByNameAsync(workflowName, null))
+            .ReturnsAsync(workflow);
+
+        _executionRepositoryMock
+            .Setup(x => x.GetWorkflowDurationTrendsAsync(workflowName, 30))
+            .ReturnsAsync(dataPoints);
+
+        // Act
+        var result = await _controller.GetWorkflowDurationTrends(workflowName);
+
+        // Assert
+        result.Should().BeOfType<OkObjectResult>();
+        var okResult = result as OkObjectResult;
+        var response = okResult!.Value as DurationTrendsResponse;
+
+        response.Should().NotBeNull();
+        response!.DataPoints.Should().HaveCount(1);
+
+        var dataPoint = response.DataPoints[0];
+        dataPoint.Date.Should().Be(DateTime.UtcNow.Date);
+        dataPoint.AverageDurationMs.Should().Be(150.0);
+        dataPoint.MinDurationMs.Should().Be(100.0);
+        dataPoint.MaxDurationMs.Should().Be(200.0);
+        dataPoint.P50DurationMs.Should().Be(150.0);
+        dataPoint.P95DurationMs.Should().Be(190.0);
+        dataPoint.ExecutionCount.Should().Be(10);
+        dataPoint.SuccessCount.Should().Be(9);
+        dataPoint.FailureCount.Should().Be(1);
+    }
+
+    // ========== TASK DURATION TRENDS TESTS ==========
+
+    [Fact]
+    public async Task GetTaskDurationTrends_WithValidTask_ShouldReturnDataPoints()
+    {
+        // Arrange
+        var taskName = "fetch-user";
+        var task = new WorkflowTaskResource
+        {
+            Metadata = new ResourceMetadata { Name = taskName, Namespace = "default" },
+            Spec = new WorkflowTaskSpec { Type = "http" }
+        };
+
+        var dataPoints = new List<DurationDataPoint>
+        {
+            new DurationDataPoint
+            {
+                Date = DateTime.UtcNow.Date.AddDays(-2),
+                AverageDurationMs = 120.0,
+                MinDurationMs = 90.0,
+                MaxDurationMs = 150.0,
+                P50DurationMs = 115.0,
+                P95DurationMs = 145.0,
+                ExecutionCount = 20,
+                SuccessCount = 19,
+                FailureCount = 1
+            },
+            new DurationDataPoint
+            {
+                Date = DateTime.UtcNow.Date.AddDays(-1),
+                AverageDurationMs = 135.0,
+                MinDurationMs = 100.0,
+                MaxDurationMs = 180.0,
+                P50DurationMs = 130.0,
+                P95DurationMs = 170.0,
+                ExecutionCount = 25,
+                SuccessCount = 24,
+                FailureCount = 1
+            }
+        };
+
+        _discoveryServiceMock
+            .Setup(x => x.GetTaskByNameAsync(taskName, null))
+            .ReturnsAsync(task);
+
+        _executionRepositoryMock
+            .Setup(x => x.GetTaskDurationTrendsAsync(taskName, 30))
+            .ReturnsAsync(dataPoints);
+
+        // Act
+        var result = await _controller.GetTaskDurationTrends(taskName);
+
+        // Assert
+        result.Should().BeOfType<OkObjectResult>();
+        var okResult = result as OkObjectResult;
+        var response = okResult!.Value as DurationTrendsResponse;
+
+        response.Should().NotBeNull();
+        response!.EntityType.Should().Be("Task");
+        response.EntityName.Should().Be(taskName);
+        response.DaysBack.Should().Be(30);
+        response.DataPoints.Should().HaveCount(2);
+        response.DataPoints[0].AverageDurationMs.Should().Be(120.0);
+        response.DataPoints[1].AverageDurationMs.Should().Be(135.0);
+
+        _executionRepositoryMock.Verify(x => x.GetTaskDurationTrendsAsync(taskName, 30), Times.Once);
+    }
+
+    [Fact]
+    public async Task GetTaskDurationTrends_WithNonExistentTask_ShouldReturn404()
+    {
+        // Arrange
+        var taskName = "non-existent-task";
+
+        _discoveryServiceMock
+            .Setup(x => x.GetTaskByNameAsync(taskName, null))
+            .ReturnsAsync((WorkflowTaskResource?)null);
+
+        // Act
+        var result = await _controller.GetTaskDurationTrends(taskName);
+
+        // Assert
+        result.Should().BeOfType<NotFoundObjectResult>();
+        var notFoundResult = result as NotFoundObjectResult;
+        notFoundResult!.Value.Should().NotBeNull();
+
+        _executionRepositoryMock.Verify(x => x.GetTaskDurationTrendsAsync(It.IsAny<string>(), It.IsAny<int>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task GetTaskDurationTrends_WithInvalidDaysBackTooLow_ShouldReturn400()
+    {
+        // Arrange
+        var taskName = "fetch-user";
+
+        // Act
+        var result = await _controller.GetTaskDurationTrends(taskName, daysBack: 0);
+
+        // Assert
+        result.Should().BeOfType<BadRequestObjectResult>();
+        var badRequestResult = result as BadRequestObjectResult;
+        badRequestResult!.Value.Should().NotBeNull();
+
+        _discoveryServiceMock.Verify(x => x.GetTaskByNameAsync(It.IsAny<string>(), It.IsAny<string?>()), Times.Never);
+        _executionRepositoryMock.Verify(x => x.GetTaskDurationTrendsAsync(It.IsAny<string>(), It.IsAny<int>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task GetTaskDurationTrends_WithInvalidDaysBackTooHigh_ShouldReturn400()
+    {
+        // Arrange
+        var taskName = "fetch-user";
+
+        // Act
+        var result = await _controller.GetTaskDurationTrends(taskName, daysBack: 100);
+
+        // Assert
+        result.Should().BeOfType<BadRequestObjectResult>();
+        var badRequestResult = result as BadRequestObjectResult;
+        badRequestResult!.Value.Should().NotBeNull();
+
+        _discoveryServiceMock.Verify(x => x.GetTaskByNameAsync(It.IsAny<string>(), It.IsAny<string?>()), Times.Never);
+        _executionRepositoryMock.Verify(x => x.GetTaskDurationTrendsAsync(It.IsAny<string>(), It.IsAny<int>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task GetTaskDurationTrends_WithEmptyDataPoints_ShouldReturnEmptyList()
+    {
+        // Arrange
+        var taskName = "fetch-user";
+        var task = new WorkflowTaskResource
+        {
+            Metadata = new ResourceMetadata { Name = taskName, Namespace = "default" },
+            Spec = new WorkflowTaskSpec { Type = "http" }
+        };
+
+        _discoveryServiceMock
+            .Setup(x => x.GetTaskByNameAsync(taskName, null))
+            .ReturnsAsync(task);
+
+        _executionRepositoryMock
+            .Setup(x => x.GetTaskDurationTrendsAsync(taskName, 30))
+            .ReturnsAsync(new List<DurationDataPoint>());
+
+        // Act
+        var result = await _controller.GetTaskDurationTrends(taskName);
+
+        // Assert
+        result.Should().BeOfType<OkObjectResult>();
+        var okResult = result as OkObjectResult;
+        var response = okResult!.Value as DurationTrendsResponse;
+
+        response.Should().NotBeNull();
+        response!.EntityType.Should().Be("Task");
+        response.EntityName.Should().Be(taskName);
+        response.DataPoints.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GetTaskDurationTrends_WithCustomDaysBack_ShouldUseProvidedValue()
+    {
+        // Arrange
+        var taskName = "fetch-user";
+        var customDaysBack = 14;
+        var task = new WorkflowTaskResource
+        {
+            Metadata = new ResourceMetadata { Name = taskName, Namespace = "default" },
+            Spec = new WorkflowTaskSpec { Type = "http" }
+        };
+
+        var dataPoints = new List<DurationDataPoint>
+        {
+            new DurationDataPoint
+            {
+                Date = DateTime.UtcNow.Date.AddDays(-1),
+                AverageDurationMs = 125.0,
+                ExecutionCount = 8,
+                SuccessCount = 8,
+                FailureCount = 0
+            }
+        };
+
+        _discoveryServiceMock
+            .Setup(x => x.GetTaskByNameAsync(taskName, null))
+            .ReturnsAsync(task);
+
+        _executionRepositoryMock
+            .Setup(x => x.GetTaskDurationTrendsAsync(taskName, customDaysBack))
+            .ReturnsAsync(dataPoints);
+
+        // Act
+        var result = await _controller.GetTaskDurationTrends(taskName, daysBack: customDaysBack);
+
+        // Assert
+        result.Should().BeOfType<OkObjectResult>();
+        var okResult = result as OkObjectResult;
+        var response = okResult!.Value as DurationTrendsResponse;
+
+        response.Should().NotBeNull();
+        response!.DaysBack.Should().Be(customDaysBack);
+
+        _executionRepositoryMock.Verify(x => x.GetTaskDurationTrendsAsync(taskName, customDaysBack), Times.Once);
+    }
+
+    [Fact]
+    public async Task GetTaskDurationTrends_ShouldIncludeAllDataPointFields()
+    {
+        // Arrange
+        var taskName = "fetch-user";
+        var task = new WorkflowTaskResource
+        {
+            Metadata = new ResourceMetadata { Name = taskName, Namespace = "default" },
+            Spec = new WorkflowTaskSpec { Type = "http" }
+        };
+
+        var dataPoints = new List<DurationDataPoint>
+        {
+            new DurationDataPoint
+            {
+                Date = DateTime.UtcNow.Date,
+                AverageDurationMs = 125.0,
+                MinDurationMs = 95.0,
+                MaxDurationMs = 155.0,
+                P50DurationMs = 120.0,
+                P95DurationMs = 150.0,
+                ExecutionCount = 15,
+                SuccessCount = 14,
+                FailureCount = 1
+            }
+        };
+
+        _discoveryServiceMock
+            .Setup(x => x.GetTaskByNameAsync(taskName, null))
+            .ReturnsAsync(task);
+
+        _executionRepositoryMock
+            .Setup(x => x.GetTaskDurationTrendsAsync(taskName, 30))
+            .ReturnsAsync(dataPoints);
+
+        // Act
+        var result = await _controller.GetTaskDurationTrends(taskName);
+
+        // Assert
+        result.Should().BeOfType<OkObjectResult>();
+        var okResult = result as OkObjectResult;
+        var response = okResult!.Value as DurationTrendsResponse;
+
+        response.Should().NotBeNull();
+        response!.DataPoints.Should().HaveCount(1);
+
+        var dataPoint = response.DataPoints[0];
+        dataPoint.Date.Should().Be(DateTime.UtcNow.Date);
+        dataPoint.AverageDurationMs.Should().Be(125.0);
+        dataPoint.MinDurationMs.Should().Be(95.0);
+        dataPoint.MaxDurationMs.Should().Be(155.0);
+        dataPoint.P50DurationMs.Should().Be(120.0);
+        dataPoint.P95DurationMs.Should().Be(150.0);
+        dataPoint.ExecutionCount.Should().Be(15);
+        dataPoint.SuccessCount.Should().Be(14);
+        dataPoint.FailureCount.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task GetTaskDurationTrends_WithMaxDaysBack_ShouldAccept90Days()
+    {
+        // Arrange
+        var taskName = "fetch-user";
+        var task = new WorkflowTaskResource
+        {
+            Metadata = new ResourceMetadata { Name = taskName, Namespace = "default" },
+            Spec = new WorkflowTaskSpec { Type = "http" }
+        };
+
+        _discoveryServiceMock
+            .Setup(x => x.GetTaskByNameAsync(taskName, null))
+            .ReturnsAsync(task);
+
+        _executionRepositoryMock
+            .Setup(x => x.GetTaskDurationTrendsAsync(taskName, 90))
+            .ReturnsAsync(new List<DurationDataPoint>());
+
+        // Act
+        var result = await _controller.GetTaskDurationTrends(taskName, daysBack: 90);
+
+        // Assert
+        result.Should().BeOfType<OkObjectResult>();
+        var okResult = result as OkObjectResult;
+        var response = okResult!.Value as DurationTrendsResponse;
+
+        response.Should().NotBeNull();
+        response!.DaysBack.Should().Be(90);
+
+        _executionRepositoryMock.Verify(x => x.GetTaskDurationTrendsAsync(taskName, 90), Times.Once);
+    }
+
+    #endregion
 }

@@ -51,9 +51,9 @@ export const handlers = [
     if (sort === 'name') {
       filtered.sort((a, b) => a.name.localeCompare(b.name));
     } else if (sort === 'success-rate') {
-      filtered.sort((a, b) => b.stats.successRate - a.stats.successRate);
+      filtered.sort((a, b) => (b.stats?.successRate || 0) - (a.stats?.successRate || 0));
     } else if (sort === 'executions') {
-      filtered.sort((a, b) => b.stats.totalExecutions - a.stats.totalExecutions);
+      filtered.sort((a, b) => (b.stats?.totalExecutions || 0) - (a.stats?.totalExecutions || 0));
     } else {
       // Default sort: alphabetically by name
       filtered.sort((a, b) => a.name.localeCompare(b.name));
@@ -69,6 +69,15 @@ export const handlers = [
   http.get('/api/workflows/:name', async ({ params }) => {
     await delay(200);
     const { name } = params;
+
+    // Special case for error testing: error without message
+    if (name === 'error-no-message') {
+      return HttpResponse.json(
+        {}, // No error property - should use fallback message
+        { status: 500 }
+      );
+    }
+
     const workflow = mockWorkflowDetails[name as string];
 
     if (!workflow) {
@@ -494,6 +503,86 @@ export const handlers = [
         name: 'John Doe',
         email: 'john@example.com',
       },
+    });
+  }),
+
+  // ============================================================================
+  // DURATION TRENDS ENDPOINTS
+  // ============================================================================
+
+  // GET /api/workflows/:name/duration-trends - Get workflow duration trends
+  http.get('/api/workflows/:name/duration-trends', async ({ params, request }) => {
+    await delay(200);
+    const { name } = params;
+    const url = new URL(request.url);
+    const daysBack = parseInt(url.searchParams.get('daysBack') || '30');
+
+    if (!mockWorkflowDetails[name as string]) {
+      return HttpResponse.json(
+        { error: `Workflow "${name}" not found` },
+        { status: 404 }
+      );
+    }
+
+    // Generate mock trend data
+    const dataPoints = [];
+    for (let i = daysBack - 1; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      dataPoints.push({
+        date: date.toISOString(),
+        averageDurationMs: 150 + Math.random() * 50,
+        minDurationMs: 100 + Math.random() * 20,
+        maxDurationMs: 200 + Math.random() * 50,
+        p50DurationMs: 140 + Math.random() * 30,
+        p95DurationMs: 180 + Math.random() * 40,
+        executionCount: Math.floor(10 + Math.random() * 20),
+        successCount: Math.floor(8 + Math.random() * 15),
+        failureCount: Math.floor(0 + Math.random() * 3),
+      });
+    }
+
+    return HttpResponse.json({
+      workflowName: name,
+      dataPoints,
+    });
+  }),
+
+  // GET /api/tasks/:name/duration-trends - Get task duration trends
+  http.get('/api/tasks/:name/duration-trends', async ({ params, request }) => {
+    await delay(200);
+    const { name } = params;
+    const url = new URL(request.url);
+    const daysBack = parseInt(url.searchParams.get('daysBack') || '30');
+
+    if (!mockTaskDetails[name as string]) {
+      return HttpResponse.json(
+        { error: `Task "${name}" not found` },
+        { status: 404 }
+      );
+    }
+
+    // Generate mock trend data
+    const dataPoints = [];
+    for (let i = daysBack - 1; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      dataPoints.push({
+        date: date.toISOString(),
+        averageDurationMs: 100 + Math.random() * 30,
+        minDurationMs: 80 + Math.random() * 15,
+        maxDurationMs: 150 + Math.random() * 30,
+        p50DurationMs: 95 + Math.random() * 20,
+        p95DurationMs: 130 + Math.random() * 25,
+        executionCount: Math.floor(15 + Math.random() * 25),
+        successCount: Math.floor(12 + Math.random() * 20),
+        failureCount: Math.floor(0 + Math.random() * 2),
+      });
+    }
+
+    return HttpResponse.json({
+      taskName: name,
+      dataPoints,
     });
   }),
 

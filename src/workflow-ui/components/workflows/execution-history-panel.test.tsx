@@ -3,6 +3,7 @@ import { render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { ExecutionHistoryPanel } from './execution-history-panel';
 import type { ExecutionHistoryItem } from '@/types/execution';
+import type { ExecutionSummary } from '@/lib/api/types';
 
 describe('ExecutionHistoryPanel', () => {
   const mockExecutions: ExecutionHistoryItem[] = [
@@ -249,7 +250,7 @@ describe('ExecutionHistoryPanel', () => {
     });
 
     it('does not show error for successful execution', () => {
-      const successOnly: ExecutionSummary[] = [mockExecutions[0]];
+      const successOnly: ExecutionHistoryItem[] = [mockExecutions[0]];
       render(<ExecutionHistoryPanel executions={successOnly} />);
       expect(screen.queryByText(/validation failed/i)).not.toBeInTheDocument();
     });

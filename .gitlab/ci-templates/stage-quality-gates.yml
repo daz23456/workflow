@@ -1,0 +1,307 @@
+# GitLab CI Template: Stage Quality Gates
+#
+# Purpose: Reusable CI/CD template for running quality gates
+#
+# Usage in .gitlab-ci.yml:
+#   include:
+#     - local: '.gitlab/ci-templates/stage-quality-gates.yml'
+#
+#   quality-gates-dotnet:
+#     extends: .quality-gates-dotnet
+#     variables:
+#       GATES: "1 2 3 4 5 6 7 8"  # Override to run specific gates
+#
+#   quality-gates-typescript:
+#     extends: .quality-gates-typescript
+#     variables:
+#       GATES: "1 2 3 4 5 6 7 8 9"
+#
+# Features:
+#   - Runs quality gates automatically in CI/CD
+#   - Caches dependencies for speed
+#   - Uploads coverage reports and artifacts
+#   - Fails pipeline if mandatory gates fail
+#   - Supports both .NET and TypeScript projects
+#
+# Requirements:
+#   - GitLab CI/CD enabled
+#   - scripts/run-quality-gates.sh in repository
+#   - STAGE_PROOF_TEMPLATE.md in repository
+
+###############################################################################
+# Base Template
+###############################################################################
+
+.quality-gates-base:
+  stage: test
+  interruptible: true
+  retry:
+    max: 1
+    when:
+      - runner_system_failure
+      - stuck_or_timeout_failure
+
+  variables:
+    # Default gates (mandatory 1-6)
+    GATES: "1 2 3 4 5 6"
+    # Coverage threshold
+    COVERAGE_THRESHOLD: "90"
+
+  before_script:
+    - echo "🚀 Quality Gates Starting..."
+    - echo "Gates to run: $GATES"
+
+  script:
+    - chmod +x scripts/run-quality-gates.sh
+    - ./scripts/run-quality-gates.sh $GATES
+
+  after_script:
+    - echo "📊 Quality Gates Complete"
+    - |
+      if [ -d ".gate-outputs" ]; then
+        echo "Gate output files generated:"
+        ls -lh .gate-outputs/
+      fi
+
+  artifacts:
+    when: always
+    expire_in: 30 days
+    paths:
+      - .gate-outputs/
+      - coverage/
+      - STAGE_*_PROOF.md
+    reports:
+      junit:
+        - "**/test-results.xml"
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage/report/Cobertura.xml
+
+###############################################################################
+# .NET Template
+###############################################################################
+
+.quality-gates-dotnet:
+  extends: .quality-gates-base
+  image: mcr.microsoft.com/dotnet/sdk:8.0
+
+  variables:
+    # .NET specific configuration
+    DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+    DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "1"
+    NUGET_PACKAGES_DIRECTORY: ".nuget"
+
+  cache:
+    key:
+      files:
+        - "**/*.csproj"
+    paths:
+      - .nuget/
+      - "*/obj/project.assets.json"
+      - "*/obj/*.csproj.nuget.*"
+
+  before_script:
+    - echo "🔧 Setting up .NET environment..."
+    - dotnet --version
+    - dotnet restore --locked-mode
+    # Install required tools
+    - dotnet tool install --global dotnet-reportgenerator-globaltool || true
+    - dotnet tool install --global dotnet-stryker || true
+    - export PATH="$PATH:$HOME/.dotnet/tools"
+    - echo "Gates to run: $GATES"
+
+  coverage: '/Line coverage: \d+\.\d+%/'
+
+###############################################################################
+# TypeScript/Node.js Template
+###############################################################################
+
+.quality-gates-typescript:
+  extends: .quality-gates-base
+  image: node:18-alpine
+
+  variables:
+    # Node.js specific configuration
+    NODE_ENV: "test"
+    NPM_CONFIG_CACHE: "$CI_PROJECT_DIR/.npm"
+    CYPRESS_CACHE_FOLDER: "$CI_PROJECT_DIR/.cypress"
+
+  cache:
+    key:
+      files:
+        - package-lock.json
+    paths:
+      - .npm/
+      - .cypress/
+      - node_modules/
+
+  before_script:
+    - echo "🔧 Setting up Node.js environment..."
+    - node --version
+    - npm --version
+    - npm ci --prefer-offline --no-audit
+    - echo "Gates to run: $GATES"
+
+  coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'
+
+###############################################################################
+# Parallel Gate Execution (Advanced)
+###############################################################################
+
+# Run gates in parallel for faster execution
+# Only use this if you have multiple runners available
+
+.parallel-gates-dotnet:
+  extends: .quality-gates-dotnet
+
+  parallel:
+    matrix:
+      - GATE_GROUP: ["build", "test", "coverage", "security"]
+
+  script:
+    - |
+      case "$GATE_GROUP" in
+        build)
+          echo "Running Gate 1: Build"
+          ./scripts/run-quality-gates.sh --dotnet 1
+          ;;
+        test)
+          echo "Running Gate 2: Tests"
+          ./scripts/run-quality-gates.sh --dotnet 2
+          ;;
+        coverage)
+          echo "Running Gate 3: Coverage"
+          ./scripts/run-quality-gates.sh --dotnet 3
+          ;;
+        security)
+          echo "Running Gate 4: Security"
+          ./scripts/run-quality-gates.sh --dotnet 4
+          ;;
+      esac
+
+###############################################################################
+# Stage-Specific Examples
+###############################################################################
+
+# Example: Run mandatory gates only (fast, for every MR)
+.quality-gates-mandatory:
+  extends: .quality-gates-dotnet
+  variables:
+    GATES: "1 2 3 4 5 6"
+
+# Example: Run full backend gates (.NET API)
+.quality-gates-backend-full:
+  extends: .quality-gates-dotnet
+  variables:
+    GATES: "1 2 3 4 5 6 7 8 10 12"  # Add integration tests + API contract
+  only:
+    - main
+    - merge_requests
+
+# Example: Run TypeScript UI gates
+.quality-gates-ui-full:
+  extends: .quality-gates-typescript
+  variables:
+    GATES: "1 2 3 4 5 6 8 9 13 14"  # Add type-check + docs + a11y
+  only:
+    - main
+    - merge_requests
+
+# Example: Nightly mutation testing
+.quality-gates-mutation:
+  extends: .quality-gates-dotnet
+  variables:
+    GATES: "7"  # Only mutation testing
+  only:
+    - schedules
+  allow_failure: true  # Don't block pipeline on mutation score
+
+###############################################################################
+# Proof File Generation
+###############################################################################
+
+.generate-proof:
+  stage: deploy
+  image: python:3.11-alpine
+  dependencies:
+    - quality-gates  # Must run after quality gates job
+
+  variables:
+    STAGE_NUMBER: "1"  # Override this in your job
+
+  script:
+    - echo "📝 Generating proof file for Stage $STAGE_NUMBER..."
+    - chmod +x scripts/generate-proof.py
+    - python3 scripts/generate-proof.py $STAGE_NUMBER
+
+  artifacts:
+    when: always
+    expire_in: 90 days
+    paths:
+      - STAGE_*_PROOF.md
+
+  only:
+    - main  # Only generate proof files on main branch
+
+###############################################################################
+# Complete Example Pipeline
+###############################################################################
+
+# Example .gitlab-ci.yml that uses these templates:
+#
+# include:
+#   - local: '.gitlab/ci-templates/stage-quality-gates.yml'
+#
+# stages:
+#   - test
+#   - deploy
+#
+# # Run quality gates on every MR
+# quality-gates:
+#   extends: .quality-gates-dotnet
+#   variables:
+#     GATES: "1 2 3 4 5 6 7 8"
+#   only:
+#     - merge_requests
+#
+# # Generate proof file when merging to main
+# proof-file:
+#   extends: .generate-proof
+#   variables:
+#     STAGE_NUMBER: "7"
+#   needs:
+#     - quality-gates
+#   only:
+#     - main
+#
+# # Nightly mutation testing
+# mutation-testing:
+#   extends: .quality-gates-mutation
+#   only:
+#     - schedules
+
+###############################################################################
+# Troubleshooting
+###############################################################################
+
+# If gates fail in CI but pass locally:
+#   - Check cache: Try clearing GitLab CI cache
+#   - Check environment: Ensure CI image has same .NET/Node version
+#   - Check dependencies: Run `dotnet restore` or `npm ci` locally
+#   - Check file permissions: Ensure scripts are executable (chmod +x)
+#
+# If coverage is different in CI:
+#   - Ensure same test runner settings in CI
+#   - Check for skipped tests in CI logs
+#   - Verify coverage tool version matches local
+#
+# If gates are too slow:
+#   - Use .parallel-gates-dotnet template for parallel execution
+#   - Cache dependencies (already configured in templates)
+#   - Skip non-critical gates in MRs (run full gates on main only)
+#
+# Performance tips:
+#   - Use `--locked-mode` for dotnet restore (already in template)
+#   - Use `npm ci` instead of `npm install` (already in template)
+#   - Enable GitLab Runner cache
+#   - Use smaller Docker images (alpine variants)

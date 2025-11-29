@@ -18,13 +18,18 @@ obj/
 *.userprefs
 .DS_Store
 
-# Test Coverage Reports
-coverage/
-coverage-*/
+# Test Coverage Reports (temporary - in root/working directory)
+/coverage/
+/coverage-*/
 *.coverage
 *.coveragexml
-TestResults/
+/TestResults/
 *.trx
+/test-results/
+/.gate-outputs/
+/mutation-reports/
+/playwright-report/
+/benchmarks/results/
 
 # NuGet
 *.nupkg
@@ -104,4 +109,8 @@ yarn-error.log*
 !CLAUDE.md
 !STAGE_EXECUTION_FRAMEWORK.md
 !STAGE_PROOF_TEMPLATE.md
-!STAGE_*_PROOF.md
+
+# Stage completion artifacts - ALWAYS commit these for verification
+!stage-proofs/
+!stage-proofs/**/
+!stage-proofs/**/*

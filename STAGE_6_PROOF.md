@@ -42,7 +42,7 @@ Stage 6 delivers **fail-fast validation** for Kubernetes workflows. Invalid work
 
 ## Quality Gate Results
 
-### Gate 1: All Tests Passing ✅
+### Gate 3: All Tests Passing ✅
 ```
 Total Tests: 142/142 passing (0 failures, 0 skipped)
 - WorkflowCore.Tests: 123 tests
@@ -64,7 +64,7 @@ Passed!  - Failed:     0, Passed:   123, Skipped:     0, Total:   123
 Passed!  - Failed:     0, Passed:    19, Skipped:     0, Total:    19
 ```
 
-### Gate 2: Code Coverage ≥90% ✅
+### Gate 5: Code Coverage ≥90% ✅
 ```
 Line coverage: 91.2% - EXCEEDS TARGET
 Covered lines: 855
@@ -85,7 +85,7 @@ Per-Project Coverage:
 
 **All production code has 100% coverage!** The 69.6% for WorkflowOperator includes boilerplate (Program.cs, WeatherForecast template).
 
-### Gate 3: Clean Release Build ✅
+### Gate 6: Clean Release Build ✅
 ```
 Build succeeded.
     0 Warning(s)
@@ -98,7 +98,7 @@ Projects Built:
 - WorkflowOperator.Tests
 ```
 
-### Gate 4: Security - Zero Vulnerabilities ✅
+### Gate 7: Security - Zero Vulnerabilities ✅
 ```
 Initial scan: 2 vulnerabilities found (transitive dependencies)
 - System.Net.Http 4.3.0 (High)
@@ -111,13 +111,13 @@ Resolution: Updated packages to latest versions
 Final scan: 0 vulnerabilities ✅
 ```
 
-### Gate 5: No Template Files ✅
+### Gate 1: No Template Files ✅
 ```
 Removed: WeatherForecast.cs from WorkflowOperator (kept for web API structure)
 Status: Clean codebase, no unnecessary template files
 ```
 
-### Gate 6: TDD Methodology Followed ✅
+### Gate 8: TDD Methodology Followed ✅
 ```
 Every component built with strict RED-GREEN-REFACTOR:
 1. Write failing test (RED)
@@ -131,7 +131,7 @@ Example cycle count:
 - WorkflowValidationWebhook: 2 iterations (1 mock fix)
 ```
 
-### Gate 7: Mutation Testing (Recommended) ⚠️
+### Gate 9: Mutation Testing (Recommended) ⚠️
 ```
 Status: NOT RUN for Stage 6
 Reason: Stage 6 focused on operator infrastructure
@@ -303,13 +303,13 @@ kubectl apply -f invalid-workflow.yaml
 - [x] TDD methodology followed throughout
 
 ### Quality Gates ✅
-- [x] Gate 1: All tests passing
-- [x] Gate 2: Coverage ≥90%
-- [x] Gate 3: Clean Release build (0 warnings, 0 errors)
-- [x] Gate 4: Security (0 vulnerabilities)
-- [x] Gate 5: No template files
-- [x] Gate 6: TDD followed
-- [~] Gate 7: Mutation testing (deferred to later stages)
+- [x] Gate 3: All tests passing
+- [x] Gate 5: Coverage ≥90%
+- [x] Gate 6: Clean Release build (0 warnings, 0 errors)
+- [x] Gate 7: Security (0 vulnerabilities)
+- [x] Gate 1: No template files
+- [x] Gate 8: TDD followed
+- [~] Gate 9: Mutation testing (deferred to later stages)
 
 ### Documentation ✅
 - [x] This proof file (STAGE_6_PROOF.md)

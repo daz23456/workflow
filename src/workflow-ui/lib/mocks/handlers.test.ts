@@ -15,9 +15,9 @@ afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
 describe('MSW Handlers', () => {
-  describe('GET /api/v1/workflows', () => {
+  describe('GET /api/workflows', () => {
     it('returns list of workflows', async () => {
-      const response = await fetch('/api/v1/workflows');
+      const response = await fetch('/api/workflows');
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -28,7 +28,7 @@ describe('MSW Handlers', () => {
     });
 
     it('includes workflow stats', async () => {
-      const response = await fetch('/api/v1/workflows');
+      const response = await fetch('/api/workflows');
       const data = await response.json();
 
       const workflow = data.workflows[0];
@@ -41,7 +41,7 @@ describe('MSW Handlers', () => {
     });
 
     it('filters workflows by search query (name)', async () => {
-      const response = await fetch('/api/v1/workflows?search=user');
+      const response = await fetch('/api/workflows?search=user');
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -51,7 +51,7 @@ describe('MSW Handlers', () => {
     });
 
     it('filters workflows by search query (description)', async () => {
-      const response = await fetch('/api/v1/workflows?search=payment');
+      const response = await fetch('/api/workflows?search=payment');
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -64,7 +64,7 @@ describe('MSW Handlers', () => {
     });
 
     it('filters workflows by namespace', async () => {
-      const response = await fetch('/api/v1/workflows?namespace=production');
+      const response = await fetch('/api/workflows?namespace=production');
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -72,7 +72,7 @@ describe('MSW Handlers', () => {
     });
 
     it('sorts workflows by name (ascending)', async () => {
-      const response = await fetch('/api/v1/workflows?sort=name');
+      const response = await fetch('/api/workflows?sort=name');
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -82,7 +82,7 @@ describe('MSW Handlers', () => {
     });
 
     it('sorts workflows by success rate (descending)', async () => {
-      const response = await fetch('/api/v1/workflows?sort=success-rate');
+      const response = await fetch('/api/workflows?sort=success-rate');
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -93,7 +93,7 @@ describe('MSW Handlers', () => {
     });
 
     it('sorts workflows by total executions (descending)', async () => {
-      const response = await fetch('/api/v1/workflows?sort=executions');
+      const response = await fetch('/api/workflows?sort=executions');
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -104,7 +104,7 @@ describe('MSW Handlers', () => {
     });
 
     it('combines search and namespace filters', async () => {
-      const response = await fetch('/api/v1/workflows?search=order&namespace=production');
+      const response = await fetch('/api/workflows?search=order&namespace=production');
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -116,7 +116,7 @@ describe('MSW Handlers', () => {
     });
 
     it('returns empty array when no workflows match filters', async () => {
-      const response = await fetch('/api/v1/workflows?search=nonexistent');
+      const response = await fetch('/api/workflows?search=nonexistent');
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -125,9 +125,9 @@ describe('MSW Handlers', () => {
     });
   });
 
-  describe('GET /api/v1/workflows/:name', () => {
+  describe('GET /api/workflows/:name', () => {
     it('returns workflow details for valid name', async () => {
-      const response = await fetch('/api/v1/workflows/user-signup');
+      const response = await fetch('/api/workflows/user-signup');
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -139,7 +139,7 @@ describe('MSW Handlers', () => {
     });
 
     it('returns 404 for non-existent workflow', async () => {
-      const response = await fetch('/api/v1/workflows/non-existent');
+      const response = await fetch('/api/workflows/non-existent');
       const data = await response.json();
 
       expect(response.status).toBe(404);
@@ -148,7 +148,7 @@ describe('MSW Handlers', () => {
     });
 
     it('includes graph data with nodes and edges', async () => {
-      const response = await fetch('/api/v1/workflows/order-processing');
+      const response = await fetch('/api/workflows/order-processing');
       const data = await response.json();
 
       expect(data.graph).toHaveProperty('nodes');
@@ -159,9 +159,9 @@ describe('MSW Handlers', () => {
     });
   });
 
-  describe('POST /api/v1/workflows/:name/execute', () => {
+  describe('POST /api/workflows/:name/execute', () => {
     it('executes workflow successfully with valid input', async () => {
-      const response = await fetch('/api/v1/workflows/user-signup/execute', {
+      const response = await fetch('/api/workflows/user-signup/execute', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -181,7 +181,7 @@ describe('MSW Handlers', () => {
     });
 
     it('simulates payment failure for high amounts', async () => {
-      const response = await fetch('/api/v1/workflows/payment-flow/execute', {
+      const response = await fetch('/api/workflows/payment-flow/execute', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -199,7 +199,7 @@ describe('MSW Handlers', () => {
     });
 
     it('returns fallback execution for workflows without mock data', async () => {
-      const response = await fetch('/api/v1/workflows/data-pipeline/execute', {
+      const response = await fetch('/api/workflows/data-pipeline/execute', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -215,7 +215,7 @@ describe('MSW Handlers', () => {
     });
 
     it('returns 404 for non-existent workflow', async () => {
-      const response = await fetch('/api/v1/workflows/non-existent/execute', {
+      const response = await fetch('/api/workflows/non-existent/execute', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({}),
@@ -225,7 +225,7 @@ describe('MSW Handlers', () => {
     });
 
     it('returns validation error for invalid input', async () => {
-      const response = await fetch('/api/v1/workflows/user-signup/execute', {
+      const response = await fetch('/api/workflows/user-signup/execute', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ simulateError: true }),
@@ -238,7 +238,7 @@ describe('MSW Handlers', () => {
     });
 
     it('returns failed execution for schema mismatch workflow', async () => {
-      const response = await fetch('/api/v1/workflows/user-onboarding/execute', {
+      const response = await fetch('/api/workflows/user-onboarding/execute', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: 'user-123', plan: 'pro' }),
@@ -252,7 +252,7 @@ describe('MSW Handlers', () => {
     });
 
     it('includes task execution details', async () => {
-      const response = await fetch('/api/v1/workflows/order-processing/execute', {
+      const response = await fetch('/api/workflows/order-processing/execute', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -273,9 +273,9 @@ describe('MSW Handlers', () => {
     });
   });
 
-  describe('POST /api/v1/workflows/:name/test', () => {
+  describe('POST /api/workflows/:name/test', () => {
     it('returns dry-run response for valid workflow', async () => {
-      const response = await fetch('/api/v1/workflows/user-signup/test', {
+      const response = await fetch('/api/workflows/user-signup/test', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -293,7 +293,7 @@ describe('MSW Handlers', () => {
     });
 
     it('includes execution plan with parallel groups', async () => {
-      const response = await fetch('/api/v1/workflows/order-processing/test', {
+      const response = await fetch('/api/workflows/order-processing/test', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -311,7 +311,7 @@ describe('MSW Handlers', () => {
     });
 
     it('returns validation errors for schema mismatch workflow', async () => {
-      const response = await fetch('/api/v1/workflows/user-onboarding/test', {
+      const response = await fetch('/api/workflows/user-onboarding/test', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: 'user-123', plan: 'pro' }),
@@ -325,7 +325,7 @@ describe('MSW Handlers', () => {
     });
 
     it('includes template resolution preview', async () => {
-      const response = await fetch('/api/v1/workflows/user-signup/test', {
+      const response = await fetch('/api/workflows/user-signup/test', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -343,7 +343,7 @@ describe('MSW Handlers', () => {
     });
 
     it('returns fallback dry-run for workflows without mock data', async () => {
-      const response = await fetch('/api/v1/workflows/data-pipeline/test', {
+      const response = await fetch('/api/workflows/data-pipeline/test', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -360,9 +360,9 @@ describe('MSW Handlers', () => {
     });
   });
 
-  describe('GET /api/v1/workflows/:name/executions', () => {
+  describe('GET /api/workflows/:name/executions', () => {
     it('returns execution history for workflow', async () => {
-      const response = await fetch('/api/v1/workflows/user-signup/executions');
+      const response = await fetch('/api/workflows/user-signup/executions');
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -373,7 +373,7 @@ describe('MSW Handlers', () => {
 
     it('supports pagination', async () => {
       const response = await fetch(
-        '/api/v1/workflows/user-signup/executions?limit=2&offset=0'
+        '/api/workflows/user-signup/executions?limit=2&offset=0'
       );
       const data = await response.json();
 
@@ -384,7 +384,7 @@ describe('MSW Handlers', () => {
 
     it('supports status filtering', async () => {
       const response = await fetch(
-        '/api/v1/workflows/user-signup/executions?status=succeeded'
+        '/api/workflows/user-signup/executions?status=succeeded'
       );
       const data = await response.json();
 
@@ -394,14 +394,14 @@ describe('MSW Handlers', () => {
     });
 
     it('returns 404 for non-existent workflow', async () => {
-      const response = await fetch('/api/v1/workflows/non-existent/executions');
+      const response = await fetch('/api/workflows/non-existent/executions');
       expect(response.status).toBe(404);
     });
   });
 
-  describe('GET /api/v1/executions/:id', () => {
+  describe('GET /api/executions/:id', () => {
     it('returns execution details for valid ID', async () => {
-      const response = await fetch('/api/v1/executions/exec-signup-001');
+      const response = await fetch('/api/executions/exec-signup-001');
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -411,14 +411,14 @@ describe('MSW Handlers', () => {
     });
 
     it('returns 404 for non-existent execution', async () => {
-      const response = await fetch('/api/v1/executions/non-existent');
+      const response = await fetch('/api/executions/non-existent');
       expect(response.status).toBe(404);
     });
   });
 
-  describe('GET /api/v1/tasks', () => {
+  describe('GET /api/tasks', () => {
     it('returns list of available tasks', async () => {
-      const response = await fetch('/api/v1/tasks');
+      const response = await fetch('/api/tasks');
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -427,7 +427,7 @@ describe('MSW Handlers', () => {
     });
 
     it('includes task schemas', async () => {
-      const response = await fetch('/api/v1/tasks');
+      const response = await fetch('/api/tasks');
       const data = await response.json();
 
       const task = data.tasks[0];

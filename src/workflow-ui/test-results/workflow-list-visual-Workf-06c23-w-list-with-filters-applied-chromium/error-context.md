@@ -1,0 +1,107 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e7] [cursor=pointer]:
+    - img [ref=e8]
+  - alert [ref=e11]
+  - navigation [ref=e12]:
+    - generic [ref=e15]:
+      - link "W Workflow" [ref=e16] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e18]: W
+        - generic [ref=e19]: Workflow
+      - link "Workflows" [ref=e20] [cursor=pointer]:
+        - /url: /workflows
+      - link "Tasks" [ref=e21] [cursor=pointer]:
+        - /url: /tasks
+  - generic [ref=e22]:
+    - generic [ref=e23]:
+      - heading "Workflow Orchestration Made Simple" [level=1] [ref=e24]:
+        - text: Workflow Orchestration
+        - text: Made Simple
+      - paragraph [ref=e25]: Production-grade, Kubernetes-native workflow orchestration engine for synchronous, user-facing API calls. Build complex workflows with simple YAML definitions.
+      - generic [ref=e26]:
+        - link "View Workflows" [ref=e27] [cursor=pointer]:
+          - /url: /workflows
+        - link "Browse Tasks" [ref=e28] [cursor=pointer]:
+          - /url: /tasks
+    - generic [ref=e29]:
+      - heading "Key Features" [level=2] [ref=e30]
+      - generic [ref=e31]:
+        - generic [ref=e32]:
+          - img [ref=e34]
+          - heading "Parallel Execution" [level=3] [ref=e36]
+          - paragraph [ref=e37]: Automatically identifies and executes independent tasks in parallel with configurable concurrency limits.
+        - generic [ref=e38]:
+          - img [ref=e40]
+          - heading "Schema Validation" [level=3] [ref=e42]
+          - paragraph [ref=e43]: JSON Schema-based validation ensures type safety and fail-fast behavior at design time.
+        - generic [ref=e44]:
+          - img [ref=e46]
+          - heading "Execution History" [level=3] [ref=e48]
+          - paragraph [ref=e49]: Full audit trail with task-level details, timing breakdowns, and dependency resolution tracking.
+        - generic [ref=e50]:
+          - img [ref=e52]
+          - heading "Timeout Control" [level=3] [ref=e54]
+          - paragraph [ref=e55]: Per-task timeout support with graceful failure handling and clear error messages.
+        - generic [ref=e56]:
+          - img [ref=e58]
+          - heading "Smart Retries" [level=3] [ref=e60]
+          - paragraph [ref=e61]: Exponential backoff retry policies with configurable attempts and delay strategies.
+        - generic [ref=e62]:
+          - img [ref=e64]
+          - heading "Template Expressions" [level=3] [ref=e66]
+          - paragraph [ref=e67]: Dynamic data flow with template expressions for passing data between tasks seamlessly.
+    - generic [ref=e69]:
+      - heading "Get Started" [level=2] [ref=e70]
+      - generic [ref=e72]:
+        - heading "1. Define Your Tasks" [level=3] [ref=e73]
+        - generic [ref=e74]: "apiVersion: workflow.io/v1 kind: WorkflowTask metadata: name: fetch-user spec: description: Fetch user data from API inputSchema: type: object properties: userId: { type: string } outputSchema: type: object properties: email: { type: string } name: { type: string } http: method: GET url: \"https://api.example.com/users/{{input.userId}}\" timeout: 5s"
+        - heading "2. Create a Workflow" [level=3] [ref=e75]
+        - generic [ref=e76]: "apiVersion: workflow.io/v1 kind: Workflow metadata: name: user-onboarding spec: description: Onboard new users inputSchema: type: object properties: userId: { type: string } tasks: - id: fetch-user taskRef: fetch-user input: userId: \"{{input.userId}}\" - id: send-welcome taskRef: send-email dependsOn: [fetch-user] input: to: \"{{tasks.fetch-user.output.email}}\" subject: \"Welcome!\" output: userEmail: \"{{tasks.fetch-user.output.email}}\""
+        - heading "3. Execute via API" [level=3] [ref=e77]
+        - generic [ref=e78]: "curl -X POST http://localhost:5000/api/v1/workflows/user-onboarding/execute \\ -H \"Content-Type: application/json\" \\ -d '{\"userId\": \"123\"}'"
+    - generic [ref=e80]:
+      - img [ref=e83]
+      - heading "VSCode Extension" [level=2] [ref=e85]
+      - paragraph [ref=e86]: Design, validate, and test workflows directly in your favorite editor
+      - generic [ref=e87]:
+        - link "Install Extension" [ref=e88] [cursor=pointer]:
+          - /url: https://marketplace.visualstudio.com/items?itemName=workflow.workflow-designer
+          - img [ref=e89]
+          - text: Install Extension
+        - link "View on GitHub" [ref=e91] [cursor=pointer]:
+          - /url: https://github.com/workflow-engine/vscode-extension
+    - generic [ref=e92]:
+      - heading "Coming Soon" [level=2] [ref=e93]
+      - generic [ref=e94]:
+        - generic [ref=e96]:
+          - img [ref=e98]
+          - generic [ref=e100]:
+            - heading "Visual Workflow Designer" [level=3] [ref=e101]
+            - paragraph [ref=e102]: Drag-and-drop workflow builder with real-time validation and execution preview
+        - generic [ref=e104]:
+          - img [ref=e106]
+          - generic [ref=e108]:
+            - heading "Real-Time Monitoring" [level=3] [ref=e109]
+            - paragraph [ref=e110]: Live execution tracking with performance metrics and bottleneck identification
+        - generic [ref=e112]:
+          - img [ref=e114]
+          - generic [ref=e116]:
+            - heading "Team Collaboration" [level=3] [ref=e117]
+            - paragraph [ref=e118]: Shared workspace with role-based access control and workflow versioning
+        - generic [ref=e120]:
+          - img [ref=e122]
+          - generic [ref=e124]:
+            - heading "Neural Network Visualization" [level=3] [ref=e125]
+            - paragraph [ref=e126]: Stunning 3D real-time visualization of workflow execution as neural network
+    - generic [ref=e128]:
+      - heading "Ready to Get Started?" [level=2] [ref=e129]
+      - paragraph [ref=e130]: Explore existing workflows or dive into task definitions
+      - generic [ref=e131]:
+        - link "Browse Workflows" [ref=e132] [cursor=pointer]:
+          - /url: /workflows
+        - link "View Tasks" [ref=e133] [cursor=pointer]:
+          - /url: /tasks
+```

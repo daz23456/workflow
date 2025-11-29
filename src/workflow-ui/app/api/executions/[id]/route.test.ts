@@ -24,7 +24,7 @@ describe('GET /api/executions/[id]', () => {
     const mockBackendResponse = {
       executionId: '123e4567-e89b-12d3-a456-426614174000',
       workflowName: 'user-profile',
-      status: 'Succeeded',
+      status: 'Succeeded' as const,
       startedAt: '2025-11-25T10:00:00Z',
       completedAt: '2025-11-25T10:00:05.250Z',
       durationMs: 5250,
@@ -115,7 +115,7 @@ describe('GET /api/executions/[id]', () => {
     const mockBackendResponse = {
       executionId: 'exec-456',
       workflowName: 'data-processor',
-      status: 'Succeeded',
+      status: 'Succeeded' as const,
       startedAt: '2025-11-25T10:00:00Z',
       completedAt: '2025-11-25T10:00:02Z',
       durationMs: 2000,
@@ -150,7 +150,7 @@ describe('GET /api/executions/[id]', () => {
     const mockBackendResponse = {
       executionId: 'exec-789',
       workflowName: 'flaky-workflow',
-      status: 'Failed',
+      status: 'Failed' as const,
       startedAt: '2025-11-25T10:00:00Z',
       completedAt: '2025-11-25T10:00:10Z',
       durationMs: 10000,
@@ -210,7 +210,7 @@ describe('GET /api/executions/[id]', () => {
     const mockBackendResponse = {
       executionId: 'exec-running',
       workflowName: 'long-workflow',
-      status: 'Running',
+      status: 'Running' as const,
       startedAt: '2025-11-25T10:00:00Z',
       completedAt: undefined,
       durationMs: undefined,

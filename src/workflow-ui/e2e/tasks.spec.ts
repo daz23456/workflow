@@ -114,4 +114,70 @@ test.describe('Tasks Pages', () => {
       }
     });
   });
+
+  test.describe('Task Duration Trends', () => {
+    test('should display duration trends chart on task detail page', async ({ page }) => {
+      await page.goto('/tasks/fetch-todos');
+
+      // Wait for page to load
+      await expect(page.getByRole('heading', { name: 'fetch-todos' })).toBeVisible();
+
+      // Should show Duration Trends heading
+      await expect(page.getByText('Duration Trends')).toBeVisible();
+
+      // Should show metric toggle buttons
+      await expect(page.getByRole('button', { name: /Average/i })).toBeVisible();
+      await expect(page.getByRole('button', { name: /Median \(P50\)/i })).toBeVisible();
+      await expect(page.getByRole('button', { name: /P95/i })).toBeVisible();
+      await expect(page.getByRole('button', { name: /Min-Max Range/i })).toBeVisible();
+    });
+
+    test('should toggle duration metrics', async ({ page }) => {
+      await page.goto('/tasks/fetch-todos');
+
+      // Wait for page to load
+      await expect(page.getByRole('heading', { name: 'fetch-todos' })).toBeVisible();
+
+      const avgButton = page.getByRole('button', { name: /Average/i });
+      const p50Button = page.getByRole('button', { name: /Median \(P50\)/i });
+
+      // Average should be enabled by default
+      await expect(avgButton).toHaveAttribute('aria-pressed', 'true');
+
+      // P50 should be disabled by default
+      await expect(p50Button).toHaveAttribute('aria-pressed', 'false');
+
+      // Click P50 to enable it
+      await p50Button.click();
+      await expect(p50Button).toHaveAttribute('aria-pressed', 'true');
+
+      // Click Average to disable it
+      await avgButton.click();
+      await expect(avgButton).toHaveAttribute('aria-pressed', 'false');
+    });
+
+    test('should display summary statistics', async ({ page }) => {
+      await page.goto('/tasks/fetch-todos');
+
+      // Wait for duration trends to load
+      await expect(page.getByText('Duration Trends')).toBeVisible();
+
+      // Should show summary stats
+      await expect(page.getByText('Total Executions')).toBeVisible();
+      await expect(page.getByText('Overall Success Rate')).toBeVisible();
+      await expect(page.getByText('Avg Duration (Period)')).toBeVisible();
+      await expect(page.getByText('P95 Duration (Period)')).toBeVisible();
+    });
+
+    test('should handle task with no execution data', async ({ page }) => {
+      // Navigate to a task that likely has no executions
+      await page.goto('/tasks/complex-aggregation');
+
+      // Wait for page to load
+      await expect(page.getByRole('heading', { name: 'complex-aggregation' })).toBeVisible();
+
+      // Should show empty state message
+      await expect(page.getByText(/No execution data available|Execute the task to see trends/i)).toBeVisible();
+    });
+  });
 });

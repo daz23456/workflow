@@ -5,7 +5,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { NextRequest } from 'next/server';
-import { GET, POST } from './route';
+import { POST } from './route';
 
 // Mock the API client
 vi.mock('@/lib/api/client', () => ({

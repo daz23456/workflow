@@ -87,7 +87,7 @@ describe('GET /api/tasks', () => {
     expect(response.status).toBe(200);
     expect(listTasks).toHaveBeenCalledWith('analytics');
     expect(data.tasks).toHaveLength(2);
-    expect(data.tasks.every(task => task.namespace === 'analytics')).toBe(true);
+    expect(data.tasks.every((task: any) => task.namespace === 'analytics')).toBe(true);
   });
 
   it('should return empty array when no tasks found', async () => {

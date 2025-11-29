@@ -1,0 +1,100 @@
+       [33m[2m✓[22m[39m sorts workflows by success rate when selected [33m 510[2mms[22m[39m
+       [33m[2m✓[22m[39m extracts unique namespaces from workflows [33m 614[2mms[22m[39m
+       [33m[2m✓[22m[39m has proper ARIA roles and labels [33m 523[2mms[22m[39m
+       [33m[2m✓[22m[39m displays last updated timestamp after data loads [33m 502[2mms[22m[39m
+       [33m[2m✓[22m[39m focuses search input when "/" key is pressed [33m 393[2mms[22m[39m
+       [33m[2m✓[22m[39m clears all filters when "Escape" key is pressed [33m 428[2mms[22m[39m
+       [33m[2m✓[22m[39m does not trigger "/" shortcut when typing in an input field [33m 360[2mms[22m[39m
+       [33m[2m✓[22m[39m displays workflow count after loading [33m 381[2mms[22m[39m
+       [33m[2m✓[22m[39m displays correct count with filters applied [33m 360[2mms[22m[39m
+       [33m[2m✓[22m[39m handles rapid filter changes gracefully [33m 456[2mms[22m[39m
+       [33m[2m✓[22m[39m handles empty workflow list gracefully [33m 337[2mms[22m[39m
+       [33m[2m✓[22m[39m does not display clear filters button when no filters are active [33m 384[2mms[22m[39m
+       [33m[2m✓[22m[39m counts only non-default filters (excludes default sort) [33m 377[2mms[22m[39m
+ [32m✓[39m lib/api/queries.test.tsx [2m([22m[2m55 tests[22m[2m)[22m[33m 14817[2mms[22m[39m
+       [33m[2m✓[22m[39m creates ApiError with status and details [33m 311[2mms[22m[39m
+       [33m[2m✓[22m[39m fetches workflow list successfully [33m 386[2mms[22m[39m
+       [33m[2m✓[22m[39m includes workflow metadata [33m 314[2mms[22m[39m
+       [33m[2m✓[22m[39m filters workflows by search query [33m 361[2mms[22m[39m
+       [33m[2m✓[22m[39m filters workflows by namespace [33m 311[2mms[22m[39m
+       [33m[2m✓[22m[39m sorts workflows by name [33m 312[2mms[22m[39m
+       [33m[2m✓[22m[39m combines multiple filters [33m 315[2mms[22m[39m
+       [33m[2m✓[22m[39m uses different cache keys for different filters [33m 680[2mms[22m[39m
+       [33m[2m✓[22m[39m executes workflow successfully [33m 519[2mms[22m[39m
+       [33m[2m✓[22m[39m handles execution errors [33m 523[2mms[22m[39m
+       [33m[2m✓[22m[39m handles schema mismatch errors [33m 515[2mms[22m[39m
+       [33m[2m✓[22m[39m performs dry-run successfully [33m 359[2mms[22m[39m
+       [33m[2m✓[22m[39m returns validation errors for invalid workflow [33m 356[2mms[22m[39m
+       [33m[2m✓[22m[39m includes execution plan with parallel groups [33m 358[2mms[22m[39m
+       [33m[2m✓[22m[39m executes task successfully [33m 361[2mms[22m[39m
+       [33m[2m✓[22m[39m handles execution errors [33m 359[2mms[22m[39m
+       [33m[2m✓[22m[39m includes output data on success [33m 358[2mms[22m[39m
+       [33m[2m✓[22m[39m invalidates task execution history on success [33m 358[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m34 passed[39m[22m[90m (34)[39m
+[2m      Tests [22m [1m[32m749 passed[39m[22m[90m (749)[39m
+[2m   Start at [22m 12:15:31
+[2m   Duration [22m 18.66s[2m (transform 4.83s, setup 31.18s, collect 13.35s, tests 85.05s, environment 39.35s, prepare 3.06s)[22m
+
+[34m % [39m[2mCoverage report from [22m[33mv8[39m
+-------------------|---------|----------|---------|---------|-------------------
+File               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+-------------------|---------|----------|---------|---------|-------------------
+All files          |   91.06 |    84.79 |   92.36 |   91.53 |                   
+ ...xecutions/[id] |    90.9 |       75 |     100 |    90.9 |                   
+  route.ts         |    90.9 |       75 |     100 |    90.9 | 43                
+ app/api/tasks     |   88.88 |       75 |     100 |   88.88 |                   
+  route.ts         |   88.88 |       75 |     100 |   88.88 | 31                
+ ...[name]/execute |   94.73 |    91.66 |     100 |   94.73 |                   
+  route.ts         |   94.73 |    91.66 |     100 |   94.73 | 75                
+ ...me]/executions |     100 |      100 |     100 |     100 |                   
+  route.ts         |     100 |      100 |     100 |     100 |                   
+ ...ws/[name]/test |   92.85 |       75 |     100 |   92.85 |                   
+  route.ts         |   92.85 |       75 |     100 |   92.85 | 57                
+ app/workflows     |     100 |      100 |     100 |     100 |                   
+  page.tsx         |     100 |      100 |     100 |     100 |                   
+ app/workflows/new |   77.58 |    57.81 |   80.64 |      77 |                   
+  page.tsx         |   77.58 |    57.81 |   80.64 |      77 | ...97,201,315-322 
+ ...ents/analytics |   85.18 |    83.87 |   92.85 |    87.5 |                   
+  ...nds-chart.tsx |   85.18 |    83.87 |   92.85 |    87.5 | 110-114           
+ ...onents/builder |    90.1 |    83.09 |   87.36 |   89.27 |                   
+  ...ies-panel.tsx |   96.92 |    86.53 |     100 |     100 | 28,38,76,80,95-96 
+  task-node.tsx    |   96.66 |    98.07 |   93.75 |   96.55 | 89,169            
+  task-palette.tsx |   95.23 |    94.44 |      92 |   94.73 | 209,270-271       
+  ...ow-canvas.tsx |   76.47 |    51.02 |      75 |   70.14 | ...05,115-122,138 
+ components/ui     |     100 |      100 |     100 |     100 |                   
+  tooltip.tsx      |     100 |      100 |     100 |     100 |                   
+ ...ents/workflows |   83.97 |    86.24 |    86.4 |   84.41 |                   
+  empty-state.tsx  |     100 |      100 |     100 |     100 |                   
+  ...ory-panel.tsx |   70.42 |    73.58 |   70.83 |   72.05 | ...-56,85,305-360 
+  ...nput-form.tsx |   80.88 |    81.81 |      90 |   82.08 | ...,88,93,112,270 
+  ...ult-panel.tsx |   74.28 |    83.33 |     100 |   74.28 | ...77,290-296,310 
+  ...ail-panel.tsx |   93.33 |    95.12 |     100 |   93.33 | 227               
+  ...-skeleton.tsx |     100 |      100 |     100 |     100 |                   
+  ...flow-card.tsx |     100 |    85.71 |     100 |     100 | 16-19,37          
+  ...il-header.tsx |     100 |    96.77 |     100 |     100 | 70                
+  ...tail-tabs.tsx |   81.81 |     87.5 |   69.23 |   81.81 | ...,88-89,101-102 
+  ...w-filters.tsx |   86.36 |    86.95 |     100 |   86.36 | 48,51,54          
+  ...aph-panel.tsx |    93.1 |    91.66 |     100 |   92.59 | 54,57             
+  ...flow-list.tsx |    92.1 |    91.07 |   81.81 |   91.89 | 49,97,190         
+ lib               |     100 |      100 |     100 |     100 |                   
+  utils.ts         |     100 |      100 |     100 |     100 |                   
+ lib/adapters      |   97.22 |    83.33 |     100 |   97.22 |                   
+  yaml-adapter.ts  |   97.22 |    83.33 |     100 |   97.22 | 82                
+ lib/api           |     100 |    98.91 |     100 |     100 |                   
+  client.ts        |     100 |       98 |     100 |     100 | 53                
+  queries.ts       |     100 |      100 |     100 |     100 |                   
+ lib/mocks         |   95.48 |     78.5 |     100 |    95.2 |                   
+  executions.ts    |     100 |      100 |     100 |     100 |                   
+  handlers.ts      |    94.9 |     78.5 |     100 |   94.55 | ...39,477,521,559 
+  server.ts        |     100 |      100 |     100 |     100 |                   
+  tasks.ts         |     100 |      100 |     100 |     100 |                   
+  workflows.ts     |     100 |      100 |     100 |     100 |                   
+ lib/stores        |   97.29 |    67.64 |     100 |   98.57 |                   
+  ...lder-store.ts |   97.29 |    67.64 |     100 |   98.57 | 288,298           
+ lib/types         |   78.78 |    86.79 |     100 |     100 |                   
+  ...ow-builder.ts |   78.78 |    86.79 |     100 |     100 | ...24,234-235,238 
+ lib/utils         |    99.1 |    97.18 |     100 |   99.08 |                   
+  graph-layout.ts  |     100 |    95.83 |     100 |     100 | 155               
+  ...rm-builder.ts |   98.18 |    97.87 |     100 |   98.18 | 163               
+-------------------|---------|----------|---------|---------|-------------------

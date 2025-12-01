@@ -5,8 +5,6 @@
 
 import { describe, it, expect } from 'vitest';
 import {
-  VisualizationTheme,
-  SignalFlowStyle,
   getThemePreset,
   getSignalFlowPreset,
   DEFAULT_THEME,

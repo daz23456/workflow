@@ -29,16 +29,24 @@ const isTemplateExpression = (value: string): boolean => {
 export function PropertiesPanel() {
   const nodes = useWorkflowBuilderStore((state) => state.graph.nodes);
   const edges = useWorkflowBuilderStore((state) => state.graph.edges);
+  const selectedTaskId = useWorkflowBuilderStore((state) => state.panel.selectedTaskId);
   const selectedNodeIds = useWorkflowBuilderStore((state) => state.selection.nodeIds);
   const updateNode = useWorkflowBuilderStore((state) => state.updateNode);
   const clearSelection = useWorkflowBuilderStore((state) => state.clearSelection);
   const inputSchema = useWorkflowBuilderStore((state) => state.inputSchema);
 
-  // Get the selected node (first one if multiple selected)
+  // Get the selected node - primary: panel.selectedTaskId (set by canvas click), fallback: selection.nodeIds
   const selectedNode = useMemo(() => {
-    if (selectedNodeIds.length === 0) return null;
-    return nodes.find((node) => node.id === selectedNodeIds[0]) || null;
-  }, [nodes, selectedNodeIds]);
+    // Primary: use panel.selectedTaskId (set by canvas click via openPanel)
+    if (selectedTaskId) {
+      return nodes.find((node) => node.id === selectedTaskId) || null;
+    }
+    // Fallback: use selection.nodeIds (for multi-select compatibility)
+    if (selectedNodeIds.length > 0) {
+      return nodes.find((node) => node.id === selectedNodeIds[0]) || null;
+    }
+    return null;
+  }, [nodes, selectedTaskId, selectedNodeIds]);
 
   // Local state for editing
   const [label, setLabel] = useState('');

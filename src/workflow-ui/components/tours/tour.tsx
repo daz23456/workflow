@@ -14,7 +14,7 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
-import type { Tour as TourType, TourStep, TooltipPosition } from '@/types/tour';
+import type { Tour as TourType, TooltipPosition } from '@/types/tour';
 
 interface TourProps {
   tour: TourType;

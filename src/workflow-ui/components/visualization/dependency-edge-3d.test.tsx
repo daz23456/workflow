@@ -123,7 +123,7 @@ describe('DependencyEdge3D', () => {
 
   describe('rendering', () => {
     it('should render a line element', () => {
-      const { getByTestId } = render(<DependencyEdge3D {...defaultProps} />);
+      render(<DependencyEdge3D {...defaultProps} />);
       // Should render either a regular line or bezier line
       const line = document.querySelector('[data-testid="edge-line"], [data-testid="bezier-line"]');
       expect(line).toBeInTheDocument();

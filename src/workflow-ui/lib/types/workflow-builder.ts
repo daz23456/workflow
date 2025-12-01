@@ -7,7 +7,6 @@
 
 import type React from 'react';
 import type { Node, Edge } from '@xyflow/react';
-import type { JSONSchema } from '@/types/workflow';
 
 /**
  * Workflow metadata (name, namespace, description)

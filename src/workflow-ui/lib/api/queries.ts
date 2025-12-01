@@ -262,6 +262,11 @@ export function useExecutionDetail(id: string, options?: { enabled?: boolean }) 
         error?: string;
       }>(`${API_BASE_URL}/executions/${id}`);
 
+      // DEBUG LOG - REMOVE AFTER DEBUGGING
+      console.log('[DEBUG useExecutionDetail] Raw API response for', id, ':', data);
+      console.log('[DEBUG useExecutionDetail] data.tasks:', data.tasks);
+      console.log('[DEBUG useExecutionDetail] data.taskExecutions:', data.taskExecutions);
+
       // Determine success from status or success field
       const isSuccess =
         data.success !== undefined

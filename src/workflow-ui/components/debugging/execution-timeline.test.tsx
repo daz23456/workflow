@@ -115,8 +115,9 @@ describe('ExecutionTimeline', () => {
 
     // Task event labels include task name
     expect(screen.getByText(/Task Started.*fetch-user/i)).toBeInTheDocument();
-    // Task IDs are shown below event labels
-    expect(screen.getByText(/ID: task1/i)).toBeInTheDocument();
+    // Task IDs are shown below event labels (multiple events may have same task ID)
+    const taskIdElements = screen.getAllByText(/ID: task1/i);
+    expect(taskIdElements.length).toBeGreaterThan(0);
   });
 
   it('should support keyboard navigation', async () => {

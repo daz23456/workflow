@@ -318,22 +318,55 @@ export function DebugLayout({
 
   // Handle node click in graph
   const handleNodeClick = (nodeId: string) => {
+    console.log('[DEBUG handleNodeClick] nodeId:', nodeId);
     // Filter out special visualization nodes (e.g., __input__, __output__)
-    if (nodeId.startsWith('__')) return;
+    if (nodeId.startsWith('__')) {
+      console.log('[DEBUG handleNodeClick] Filtering out special node');
+      return;
+    }
+    console.log('[DEBUG handleNodeClick] Setting selectedNodeId to:', nodeId);
     setSelectedNodeId(nodeId);
   };
 
   // Get selected node details
   const selectedNodeData = useMemo(() => {
-    if (!selectedNodeId) return null;
+    console.log('[DEBUG selectedNodeData] START');
+    console.log('[DEBUG selectedNodeData] selectedNodeId:', selectedNodeId);
+    console.log('[DEBUG selectedNodeData] workflowGraph:', workflowGraph);
+    console.log('[DEBUG selectedNodeData] executionDetail.tasks:', executionDetail.tasks);
 
-    // Match on either taskId (GUID) or taskRef (name)
-    // When workflowGraph is provided from workflow detail, node IDs are taskRefs
-    // When graph is reconstructed from execution, node IDs are taskIds
-    const task = executionDetail.tasks.find(
+    if (!selectedNodeId) {
+      console.log('[DEBUG selectedNodeData] No selectedNodeId, returning null');
+      return null;
+    }
+
+    // When workflowGraph is provided from workflow detail, node IDs are WorkflowTaskStep.id
+    // which may differ from taskId (GUID) and taskRef (CRD name).
+    // First try direct match on taskId or taskRef
+    let task = executionDetail.tasks.find(
       (t) => t.taskId === selectedNodeId || t.taskRef === selectedNodeId
     );
-    if (!task) return null;
+    console.log('[DEBUG selectedNodeData] Direct match task:', task);
+
+    // If no match, look up the graph node's taskRef and match against that
+    if (!task && workflowGraph) {
+      console.log('[DEBUG selectedNodeData] No direct match, trying workflowGraph lookup');
+      console.log('[DEBUG selectedNodeData] workflowGraph.nodes:', workflowGraph.nodes);
+      const graphNode = workflowGraph.nodes.find((n) => n.id === selectedNodeId);
+      console.log('[DEBUG selectedNodeData] Found graphNode:', graphNode);
+      if (graphNode?.data?.taskRef) {
+        console.log('[DEBUG selectedNodeData] graphNode.data.taskRef:', graphNode.data.taskRef);
+        task = executionDetail.tasks.find(
+          (t) => t.taskRef === graphNode.data.taskRef || t.taskId === graphNode.data.taskRef
+        );
+        console.log('[DEBUG selectedNodeData] Task from graphNode.data.taskRef lookup:', task);
+      }
+    }
+
+    if (!task) {
+      console.log('[DEBUG selectedNodeData] No task found, returning null');
+      return null;
+    }
 
     // Use task.taskId for lookups since executionState/trace use taskIds, not taskRefs
     const taskId = task.taskId;
@@ -351,7 +384,7 @@ export function DebugLayout({
       status = 'failed';
     }
 
-    return {
+    const result = {
       id: selectedNodeId,
       label: task.taskRef || task.taskId,
       status,
@@ -365,7 +398,9 @@ export function DebugLayout({
           }
         : undefined,
     };
-  }, [selectedNodeId, executionDetail, executionTrace, executionState]);
+    console.log('[DEBUG selectedNodeData] RETURNING result:', result);
+    return result;
+  }, [selectedNodeId, executionDetail, executionTrace, executionState, workflowGraph]);
 
   const tabs = [
     { id: 'timeline' as const, label: 'Timeline' },

@@ -12,7 +12,7 @@
 
 import React, { useMemo } from 'react';
 import { Line, QuadraticBezierLine } from '@react-three/drei';
-import { useVisualizationStore, type Vector3 } from '../../lib/visualization/visualization-store';
+import { useVisualizationStore } from '../../lib/visualization/visualization-store';
 import { getThemePreset } from '../../lib/visualization/theme';
 
 interface DependencyEdge3DProps {
@@ -24,7 +24,7 @@ interface DependencyEdge3DProps {
 }
 
 export function DependencyEdge3D({
-  id,
+  id: _id,
   sourceId,
   targetId,
   curved = true,

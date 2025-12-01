@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { TaskFilters } from './task-filters';
-import { useRef } from 'react';
 
 /**
  * TaskFilters provides search, namespace filter, and sorting controls for tasks.

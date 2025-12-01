@@ -38,7 +38,7 @@ interface LessonViewerProps {
  * />
  * ```
  */
-export function LessonViewer({ lesson, onComplete, onExit, initialProgress = 0, className = '' }: LessonViewerProps) {
+export function LessonViewer({ lesson, onComplete, onExit, initialProgress: _initialProgress = 0, className = '' }: LessonViewerProps) {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [yamlCode, setYamlCode] = useState(lesson.yaml);
   const [showHints, setShowHints] = useState(false);

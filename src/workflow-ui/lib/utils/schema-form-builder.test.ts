@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildFormFields, type FormField, type FormFieldType } from './schema-form-builder';
+import { buildFormFields, type FormFieldType } from './schema-form-builder';
 import type { JSONSchema } from '@/types/workflow';
 
 describe('buildFormFields', () => {

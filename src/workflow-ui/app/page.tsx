@@ -74,7 +74,7 @@ export default function Home() {
             </div>
             <div className="mt-8 p-6 bg-blue-50 rounded-lg border border-blue-200">
               <p className="text-center text-gray-700">
-                <strong>One task, three workflows, zero duplication.</strong> That's the power of
+                <strong>One task, three workflows, zero duplication.</strong> That&apos;s the power of
                 composability.
               </p>
             </div>
@@ -409,7 +409,7 @@ export default function Home() {
             </Link>
 
             <p className="text-sm opacity-70 mt-6">
-              From "Hello World" to advanced features in under 2 hours
+              From &quot;Hello World&quot; to advanced features in under 2 hours
             </p>
           </div>
         </div>

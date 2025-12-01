@@ -31,6 +31,10 @@ let mockStoreState = {
     nodeIds: [] as string[],
     edgeIds: [],
   },
+  panel: {
+    activePanel: 'task' as string,
+    selectedTaskId: null as string | null,
+  },
   updateNode: mockUpdateNode,
   clearSelection: mockClearSelection,
 };
@@ -65,6 +69,10 @@ describe('PropertiesPanel', () => {
       selection: {
         nodeIds: [],
         edgeIds: [],
+      },
+      panel: {
+        activePanel: 'task',
+        selectedTaskId: null,
       },
       updateNode: mockUpdateNode,
       clearSelection: mockClearSelection,
@@ -868,6 +876,45 @@ describe('PropertiesPanel', () => {
       await waitFor(() => {
         expect(screen.queryByTestId('template-suggestions')).not.toBeInTheDocument();
       });
+    });
+  });
+
+  describe('Panel Selection (Real Canvas Behavior)', () => {
+    it('should display task details when panel.selectedTaskId is set (canvas click)', () => {
+      mockStoreState.graph.nodes = [
+        {
+          id: 'node-1',
+          type: 'task',
+          position: { x: 100, y: 100 },
+          data: { label: 'Fetch User', taskRef: 'fetch-user', description: 'Fetches user data' },
+        },
+      ] as WorkflowBuilderNode[];
+      // This is what the canvas actually does - sets panel.selectedTaskId, NOT selection.nodeIds
+      mockStoreState.panel.selectedTaskId = 'node-1';
+      mockStoreState.selection.nodeIds = []; // Empty, as it is in real app
+
+      render(<PropertiesPanel />);
+
+      // Should show task details, NOT "No Task Selected"
+      expect(screen.getByDisplayValue('Fetch User')).toBeInTheDocument();
+      expect(screen.queryByText(/no task selected/i)).not.toBeInTheDocument();
+    });
+
+    it('should show empty state when panel.selectedTaskId is null', () => {
+      mockStoreState.graph.nodes = [
+        {
+          id: 'node-1',
+          type: 'task',
+          position: { x: 100, y: 100 },
+          data: { label: 'Fetch User', taskRef: 'fetch-user', description: 'Fetches user data' },
+        },
+      ] as WorkflowBuilderNode[];
+      mockStoreState.panel.selectedTaskId = null;
+      mockStoreState.selection.nodeIds = [];
+
+      render(<PropertiesPanel />);
+
+      expect(screen.getByText(/no task selected/i)).toBeInTheDocument();
     });
   });
 });

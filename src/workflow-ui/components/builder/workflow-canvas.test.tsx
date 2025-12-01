@@ -7,7 +7,6 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { WorkflowCanvas } from './workflow-canvas';
 import type { WorkflowBuilderNode, WorkflowBuilderEdge } from '@/lib/types/workflow-builder';
 
@@ -63,7 +62,7 @@ vi.mock('@xyflow/react', async () => {
   const actual = await vi.importActual('@xyflow/react');
   return {
     ...actual,
-    ReactFlow: ({ nodes, edges, onNodesChange, onEdgesChange, onConnect, children }: any) => (
+    ReactFlow: ({ nodes, edges, children }: any) => (
       <div data-testid="react-flow-canvas">
         <div data-testid="nodes-container">
           {nodes.map((node: any) => (

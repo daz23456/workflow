@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { DebugLayout } from './debug-layout';
 import type { ExecutionTraceResponse } from '@/lib/api/types';
@@ -14,7 +14,7 @@ vi.mock('next/link', () => ({
 
 // Mock @xyflow/react with node click support
 vi.mock('@xyflow/react', () => ({
-  ReactFlow: ({ nodes, edges, onNodeClick }: any) => (
+  ReactFlow: ({ nodes, onNodeClick }: any) => (
     <div data-testid="rf__wrapper">
       {nodes?.map((node: any) => (
         <div
@@ -263,6 +263,49 @@ describe('DebugLayout', () => {
     // The task name should appear in the details panel (look for "Name:" label nearby)
     expect(screen.getByText('Name:')).toBeInTheDocument();
     // Check that status is displayed (confirming the task was found)
+    expect(screen.getByText('completed')).toBeInTheDocument();
+  });
+
+  it('should display task details when node ID differs from both taskId and taskRef', async () => {
+    // This simulates when workflowGraph from workflow detail uses WorkflowTaskStep.id
+    // which may be a step name different from both taskId (GUID) and taskRef (CRD name)
+    const workflowGraph = {
+      nodes: [
+        {
+          id: 'step-1', // Node ID is WorkflowTaskStep.id, NOT taskId or taskRef!
+          type: 'task' as const,
+          data: { label: 'Fetch User', taskRef: 'fetch-user' }, // But data.taskRef matches
+          position: { x: 0, y: 0 },
+        },
+        {
+          id: 'step-2',
+          type: 'task' as const,
+          data: { label: 'Send Email', taskRef: 'send-email' },
+          position: { x: 0, y: 100 },
+        },
+      ],
+      edges: [{ id: 'edge-1', source: 'step-1', target: 'step-2' }],
+      parallelGroups: [],
+    };
+
+    render(
+      <DebugLayout
+        executionId="exec-123-456-789"
+        workflowName="test-workflow"
+        executionDetail={mockExecutionDetail}
+        executionTrace={mockExecutionTrace}
+        workflowGraph={workflowGraph}
+      />
+    );
+
+    // Find and click on the "step-1" node
+    // The node has id='step-1' but data.taskRef='fetch-user'
+    const fetchUserNode = screen.getByText('Fetch User');
+    await userEvent.click(fetchUserNode);
+
+    // Should still display task details because we look up graph node's data.taskRef
+    expect(screen.getByText('Task Details')).toBeInTheDocument();
+    expect(screen.getByText('Name:')).toBeInTheDocument();
     expect(screen.getByText('completed')).toBeInTheDocument();
   });
 });

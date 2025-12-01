@@ -6,13 +6,10 @@
 
 import { describe, it, expect } from 'vitest';
 import {
-  type WorkflowBuilderState,
   type WorkflowBuilderNode,
   type WorkflowBuilderEdge,
-  type WorkflowMetadata,
   type ValidationState,
   type HistoryState,
-  type SelectionState,
   createEmptyState,
   createWorkflowMetadata,
   isValidNode,

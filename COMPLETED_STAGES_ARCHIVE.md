@@ -3,10 +3,11 @@
 **Created:** 2025-11-22
 **Updated:** 2025-12-01
 **Purpose:** Archive of detailed implementation instructions for completed stages
-**Status:** Stages 1-7.9 complete (53% project completion)
+**Status:** 17 stages/substages complete (60% project completion)
 
 This file contains the detailed TDD implementation instructions that were used to build completed stages of the Workflow Orchestration Engine. These stages are now complete and documented in their respective proof files:
 
+### Backend Core (Stages 1-7.9)
 - **Stage 1: Foundation** - See `STAGE_1_PROOF.md`
 - **Stage 2: Schema Validation** - See `STAGE_2_PROOF.md`
 - **Stage 3: Template Validation** - See `STAGE_3_PROOF.md`
@@ -15,9 +16,21 @@ This file contains the detailed TDD implementation instructions that were used t
 - **Stage 6: Kubernetes Operator** - See `STAGE_6_PROOF.md`
 - **Stage 7: API Gateway** - See `STAGE_7_PROOF.md`
 - **Stage 7.5: Output Mapping & Parallel Execution** - See `STAGE_7.5_PROOF.md`
+- **Stage 7.75: Execution Plan & Enhanced Tracing** - See `STAGE_7.75_PROOF.md`
+- **Stage 7.8: Execution History & Task Details** - See `STAGE_7.8_PROOF.md`
+- **Stage 7.85: Parallel Groups & Enhanced Execution Plan** - See `STAGE_7.85_PROOF.md`
 - **Stage 7.9: Execution Trace & Workflow Versioning** - See `STAGE_7.9_PROOF.md`
 
-**Note:** Stages 1-4 contain full TDD code examples. Stages 5-7.9 contain task specifications only.
+### Developer Experience (Stage 9.x)
+- **Stage 9.1: Visual Workflow Builder** - See `stage-proofs/stage-9.1/STAGE_9.1_PROOF.md`
+- **Stage 9.3: WebSocket API** - See `stage-proofs/stage-9.3/STAGE_9.3_PROOF.md`
+- **Stage 9.4: Enhanced Debugging Tools** - See `stage-proofs/stage-9.4/STAGE_9.4_PROOF.md`
+- **Stage 9.6.1: Transform DSL Backend** - See `stage-proofs/stage-9.6.1/STAGE_9.6.1_PROOF.md`
+
+### Performance (Stage 10)
+- **Stage 10 Phase 1: Performance Benchmarks** - See `STAGE_10_PROOF.md`
+
+**Note:** Stages 1-4 contain full TDD code examples. Stages 5+ contain task specifications only.
 
 ---
 

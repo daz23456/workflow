@@ -115,14 +115,14 @@ workflow-operator/
 
 ---
 
-## Completed Stages (1-7.9)
+## Completed Stages
 
-**Status:** 8/15 stages complete (53%)** - Stage 8 SKIPPED (architectural decision)
-*Note:* Stage breakdown refined - original 11 stages expanded to 16 focused stages
+**Status:** 17 stages/substages complete (60%) - Stage 8 SKIPPED (architectural decision)
+*Note:* Stage breakdown refined - original 11 stages expanded to focused substages
 *Note:* Stage 8 skipped as it's designed for async workflows, not synchronous execution model
 
 Detailed TDD implementation instructions for Stages 1-4 have been archived to `COMPLETED_STAGES_ARCHIVE.md`.
-For proof of completion and actual results, see the respective `STAGE_X_PROOF.md` files.
+For proof of completion and actual results, see the respective `STAGE_X_PROOF.md` files or `stage-proofs/` directory.
 
 ### Stage 1: Foundation ✅
 **Status:** Complete  
@@ -242,6 +242,104 @@ For proof of completion and actual results, see the respective `STAGE_X_PROOF.md
 
 **Value Delivered:** Deep debugging capability with execution traces, workflow change tracking for audit/compliance, wait time visibility for bottleneck identification, and parallel execution verification.
 
+### Stage 7.75: Execution Plan & Enhanced Tracing ✅
+**Status:** Complete
+**Proof:** `STAGE_7.75_PROOF.md`
+**Metrics:** 557/557 tests, 96.8% coverage, 0 vulnerabilities
+
+**Deliverables:**
+- Enhanced execution plan with parallel group detection
+- Template resolution preview in dry-run mode
+- Time estimation based on historical data
+
+### Stage 7.8: Execution History & Task Details ✅
+**Status:** Complete
+**Proof:** `STAGE_7.8_PROOF.md`
+**Metrics:** 546/546 tests, 96.8% coverage, 0 vulnerabilities
+
+**Deliverables:**
+- Execution ID generation and database persistence
+- Task-level details in API responses
+- List executions endpoint (GET /api/v1/workflows/{name}/executions)
+- Get execution details endpoint (GET /api/v1/executions/{id})
+
+### Stage 7.85: Parallel Groups & Enhanced Execution Plan ✅
+**Status:** Complete
+**Proof:** `STAGE_7.85_PROOF.md`
+**Metrics:** 570/570 tests, 96.8% coverage, 0 vulnerabilities
+
+**Deliverables:**
+- Parallel group detection in execution graph
+- Enhanced execution plan model with group visualization
+- Template resolution preview and time estimation
+
+### Stage 9.1: Visual Workflow Builder ✅
+**Status:** Complete
+**Proof:** `stage-proofs/stage-9.1/STAGE_9.1_PROOF.md`
+**Metrics:** 749/749 tests, 91.53% coverage, 0 vulnerabilities
+
+**Deliverables:**
+- React Flow-based workflow canvas
+- Drag-and-drop task node library
+- Visual dependency management (connect nodes)
+- Real-time YAML preview (bidirectional sync)
+- Inline validation feedback
+- 20+ React component tests + E2E tests with Playwright
+
+**Value Delivered:** 5-minute time to first workflow for non-technical users!
+
+### Stage 9.3: WebSocket API for Workflow Execution ✅
+**Status:** Complete
+**Proof:** `stage-proofs/stage-9.3/STAGE_9.3_PROOF.md`
+**Metrics:** 28/28 tests
+
+**Deliverables:**
+- SignalR WebSocket hub for real-time execution events
+- Event types: WorkflowStarted, TaskStarted, TaskCompleted, WorkflowCompleted
+- Frontend WebSocket client with React hook (useWebSocketWorkflowExecution)
+- Connection management (pooling, heartbeat, reconnection)
+
+**Value Delivered:** Real-time workflow execution with push notifications - no polling!
+
+### Stage 9.4: Enhanced Debugging Tools ✅
+**Status:** Complete
+**Proof:** `stage-proofs/stage-9.4/STAGE_9.4_PROOF.md`
+**Metrics:** 135/135 tests (12 E2E), 90.54% coverage, 0 vulnerabilities
+
+**Deliverables:**
+- Execution time-travel UI (scrub through timeline)
+- Step-through mode with manual approval
+- Execution replay from database
+- Side-by-side execution comparison
+- Visual debugging aids (highlight current task, data flow on edges)
+- 8 debugging-specific React components
+
+**Value Delivered:** Reduce debugging time from hours to minutes!
+
+### Stage 9.6.1: Transform DSL Backend Foundation ✅
+**Status:** Complete
+**Proof:** `stage-proofs/stage-9.6.1/STAGE_9.6.1_PROOF.md`
+**Metrics:** 52/52 tests, 93.6% coverage, 0 vulnerabilities
+
+**Deliverables:**
+- Transform DSL parser and evaluator
+- Operations: map, filter, select, flatten, sort, limit, distinct
+- Pipeline composition with chaining
+- Schema inference for transform outputs
+- Integration with workflow execution
+
+### Stage 10 Phase 1: Performance Benchmarks ✅
+**Status:** Complete
+**Proof:** `STAGE_10_PROOF.md`
+**Metrics:** BenchmarkDotNet results committed
+
+**Deliverables:**
+- BenchmarkDotNet integration for critical paths
+- Orchestration overhead benchmarks
+- Schema validation performance tests
+- Template resolution benchmarks
+- Baseline metrics established for regression detection
+
 ---
 
 ## GitLab CI Pipeline
@@ -336,28 +434,8 @@ dotnet run -c Release --project tests/WorkflowCore.PerformanceTests
 
 *Philosophy:* The best orchestration platform is the one developers *want* to use. Focus on exceptional DX (Developer Experience).
 
-**Stage 9.1: Visual Workflow Builder (2 weeks) 🔴 P0 - CRITICAL**
-*Lower the barrier to entry - anyone can create workflows*
-
-1. **React Flow-Based Editor**
-   - Drag-and-drop workflow canvas
-   - Task node library (HTTP tasks, WebSocket tasks, custom tasks)
-   - Visual dependency management (drag to connect)
-   - Real-time YAML preview (bidirectional sync)
-   - Inline validation feedback (errors as you type)
-
-2. **User Flow**
-   - Create Workflow → Template selector → Canvas
-   - Drag tasks → Connect dependencies → Configure
-   - Test (dry-run) → Deploy (kubectl apply)
-
-3. **TDD Targets**
-   - 30+ React component tests
-   - E2E tests with Playwright (full workflow creation flow)
-   - Accessibility tests (keyboard navigation, screen readers)
-   - Maintain ≥90% coverage
-
-4. **Value:** **5-minute time to first workflow** for non-technical users!
+**Stage 9.1: Visual Workflow Builder ✅ COMPLETE**
+*See Completed Stages section above for details.*
 
 **Stage 9.2: Workflow Templates Library (1 week) 🔴 P0 - CRITICAL**
 *Accelerate workflow creation - don't start from scratch*
@@ -387,66 +465,11 @@ dotnet run -c Release --project tests/WorkflowCore.PerformanceTests
 
 5. **Value:** **Reduce time to first workflow from 30 minutes to 2 minutes!**
 
-**Stage 9.3: WebSocket API for Workflow Execution (2 weeks) 🟡 P1 - IMPORTANT**
-*Real-time bidirectional communication for workflow execution*
+**Stage 9.3: WebSocket API for Workflow Execution ✅ COMPLETE**
+*See Completed Stages section above for details.*
 
-1. **WebSocket Server Endpoint**
-   - `wss://` endpoint for workflow execution
-   - Protocol: execute, subscribe, task_started, task_completed, workflow_completed
-   - Connection management (pooling, heartbeat, reconnection)
-
-2. **Integration with WorkflowOrchestrator**
-   - Emit events to WebSocket clients as tasks complete
-   - Broadcast to all subscribed clients
-   - Per-execution subscriptions
-
-3. **Frontend WebSocket Client**
-   - WorkflowWebSocketClient class
-   - React hook: useWebSocketWorkflowExecution
-   - Real-time push notifications (no polling)
-
-4. **TDD Targets**
-   - 25+ tests for WebSocket handler
-   - Integration tests with WebSocket client
-   - E2E tests with frontend WebSocket client
-   - Connection management tests
-   - Maintain ≥90% coverage
-
-5. **Value:** **Real-time workflow execution with push notifications** - no polling needed!
-
-**Stage 9.4: Enhanced Debugging Tools (1.5 weeks) 🟡 P1 - IMPORTANT**
-*Make troubleshooting effortless*
-
-1. **Execution Time-Travel UI**
-   - Scrub through execution timeline
-   - Inspect task state at any point
-   - Watch variables change over time
-   - Set breakpoints for future runs
-
-2. **Step-Through Mode**
-   - Pause execution at each task
-   - Inspect inputs/outputs before proceeding
-   - Manual approval to continue
-   - Skip to specific task
-
-3. **Execution Replay**
-   - Load past execution from database
-   - See exact inputs/outputs at any moment
-   - Compare two executions side-by-side
-
-4. **Visual Debugging Aids**
-   - Highlight current task in graph
-   - Show data flow (variable values on edges)
-   - Error highlighting (red nodes for failed tasks)
-   - Execution path visualization
-
-5. **TDD Targets**
-   - 30+ React component tests
-   - E2E tests for debug scenarios
-   - Accessibility tests
-   - Maintain ≥90% coverage
-
-6. **Value:** **Reduce debugging time from hours to minutes!**
+**Stage 9.4: Enhanced Debugging Tools ✅ COMPLETE**
+*See Completed Stages section above for details.*
 
 **Stage 9.5: Interactive Documentation & Learning (1 week) 🟡 P1 - IMPORTANT**
 *Make learning self-service*
@@ -475,7 +498,21 @@ dotnet run -c Release --project tests/WorkflowCore.PerformanceTests
 
 5. **Value:** **Self-service onboarding - no hand-holding needed!**
 
-**Total Timeline: 6.5 weeks**
+**Stage 9.6: Transform DSL (Data Transformation Pipeline)**
+
+**Stage 9.6.1: Transform DSL Backend Foundation ✅ COMPLETE**
+*See Completed Stages section above for details.*
+
+**Stage 9.6.2: Transform DSL Frontend Builder 🟡 P1 - IMPORTANT**
+*Visual builder for transform pipelines*
+
+1. **Transform Pipeline Builder UI**
+   - Drag-and-drop transform operations
+   - Live preview of transformation results
+   - Schema-aware operation suggestions
+   - Pipeline validation and testing
+
+**Total Timeline: 6.5 weeks** (4 of 7 substages complete)
 
 **Success Metrics:**
 - Time to First Workflow: <5 minutes (80% of users)
@@ -487,15 +524,16 @@ dotnet run -c Release --project tests/WorkflowCore.PerformanceTests
 
 ### Week 9-10 (Performance & Production):
 **Stage 10: Performance Testing & Optimization (TDD)**
-1. Performance Testing
-   - BenchmarkDotNet for critical paths
-   - Optimize schema validation
-   - Optimize template resolution
-2. Load Testing with NBomber
+
+**Phase 1: Performance Benchmarks ✅ COMPLETE**
+*See Completed Stages section above for details.*
+
+**Phase 2: Load Testing & Observability (Remaining)**
+1. Load Testing with NBomber
    - Concurrent workflow executions
    - Stress test admission webhooks
    - Database performance under load
-3. Observability & Real-Time Monitoring Dashboard
+2. Observability & Real-Time Monitoring Dashboard
    - New Relic integration
    - Distributed tracing
    - Custom metrics and dashboards

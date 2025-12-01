@@ -1,38 +1,44 @@
 /**
- * GalaxyScene Tests - TDD RED Phase
+ * GalaxyScene Tests - TDD
  *
  * Tests for the 3D galaxy scene that displays workflows as a cosmic visualization
  * with namespaces as clusters, workflows as planets, and tasks as moons.
  */
 
-import React from 'react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import '@testing-library/jest-dom';
+import React from 'react';
 
 // Mock react-three/fiber and drei since they don't work in jsdom
-jest.mock('@react-three/fiber', () => ({
-  Canvas: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="r3f-canvas">{children}</div>
+vi.mock('@react-three/fiber', () => ({
+  Canvas: ({ children, ...props }: { children: React.ReactNode }) => (
+    <div data-testid="r3f-canvas" {...props}>
+      {children}
+    </div>
   ),
-  useFrame: jest.fn(),
-  useThree: () => ({
-    camera: { position: { set: jest.fn() } },
+  useFrame: vi.fn(),
+  useThree: vi.fn(() => ({
+    camera: { position: { x: 0, y: 0, z: 50 } },
     gl: { domElement: document.createElement('canvas') },
-  }),
+  })),
 }));
 
-jest.mock('@react-three/drei', () => ({
+vi.mock('@react-three/drei', () => ({
   OrbitControls: () => <div data-testid="orbit-controls" />,
   Stars: ({ count }: { count?: number }) => (
-    <div data-testid="stars" data-count={count} />
+    <div data-testid="stars" data-count={count || 10000} />
   ),
-  PerspectiveCamera: () => <div data-testid="perspective-camera" />,
+  PerspectiveCamera: ({ children, ...props }: { children?: React.ReactNode }) => (
+    <div data-testid="perspective-camera" {...props}>
+      {children}
+    </div>
+  ),
   Html: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   Billboard: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   Text: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
 
-jest.mock('@react-three/postprocessing', () => ({
+vi.mock('@react-three/postprocessing', () => ({
   EffectComposer: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="effect-composer">{children}</div>
   ),
@@ -43,6 +49,10 @@ jest.mock('@react-three/postprocessing', () => ({
 import { GalaxyScene } from './galaxy-scene';
 
 describe('GalaxyScene', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   describe('rendering', () => {
     it('renders the 3D canvas', () => {
       render(<GalaxyScene />);
@@ -89,10 +99,16 @@ describe('GalaxyScene', () => {
   });
 
   describe('accessibility', () => {
-    it('has accessible name for the visualization', () => {
+    it('has accessible role for the visualization', () => {
       render(<GalaxyScene />);
-      const canvas = screen.getByTestId('r3f-canvas');
-      expect(canvas.closest('[role="img"]') || canvas.closest('[aria-label]')).toBeTruthy();
+      expect(screen.getByRole('img')).toBeInTheDocument();
+    });
+
+    it('has aria-label describing the visualization', () => {
+      render(<GalaxyScene />);
+      const element = screen.getByRole('img');
+      expect(element).toHaveAttribute('aria-label');
+      expect(element.getAttribute('aria-label')).toContain('Galaxy');
     });
   });
 });

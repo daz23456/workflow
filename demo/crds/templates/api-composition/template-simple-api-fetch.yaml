@@ -1,0 +1,27 @@
+apiVersion: workflow.example.com/v1
+kind: Workflow
+metadata:
+  name: template-simple-api-fetch
+  namespace: default
+  annotations:
+    workflow.example.com/template: "true"
+    workflow.example.com/category: "api-composition"
+    workflow.example.com/difficulty: "beginner"
+    workflow.example.com/tags: "http,api,fetch,single-task"
+    workflow.example.com/estimatedTime: "5"
+spec:
+  description: "🎯 TEMPLATE: Simple single-task API fetch - Perfect for beginners learning workflow basics. Fetches user data from an API endpoint and extracts specific fields."
+  input:
+    userId:
+      type: string
+      required: true
+      description: The user ID to fetch from the API
+  tasks:
+    - id: get-user
+      taskRef: fetch-user
+      input:
+        userId: "{{input.userId}}"
+  output:
+    name: "{{tasks.get-user.output.name}}"
+    email: "{{tasks.get-user.output.email}}"
+    city: "{{tasks.get-user.output.address.city}}"

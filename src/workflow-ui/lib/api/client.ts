@@ -15,6 +15,8 @@ import type {
   WorkflowExecutionResponse,
   WorkflowTestRequest,
   WorkflowTestResponse,
+  TestExecuteRequest,
+  TestExecuteResponse,
   ExecutionListResponse,
   DetailedWorkflowExecutionResponse,
   ExecutionTraceResponse,
@@ -25,7 +27,7 @@ import type {
 } from './types';
 
 // Get API base URL from environment variable
-const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:5000/api/v1';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5001/api/v1';
 
 /**
  * Base fetch wrapper with error handling
@@ -71,8 +73,19 @@ async function apiFetch<T>(endpoint: string, options?: RequestInit): Promise<T> 
  * List all workflows
  * GET /api/v1/workflows
  */
-export async function listWorkflows(namespace?: string): Promise<WorkflowListResponse> {
-  const query = namespace ? `?namespace=${encodeURIComponent(namespace)}` : '';
+export async function listWorkflows(options?: {
+  namespace?: string;
+  search?: string;
+  skip?: number;
+  take?: number;
+}): Promise<WorkflowListResponse> {
+  const params = new URLSearchParams();
+  if (options?.namespace) params.append('namespace', options.namespace);
+  if (options?.search) params.append('search', options.search);
+  if (options?.skip !== undefined) params.append('skip', options.skip.toString());
+  if (options?.take !== undefined) params.append('take', options.take.toString());
+
+  const query = params.toString() ? `?${params.toString()}` : '';
   return apiFetch<WorkflowListResponse>(`/workflows${query}`);
 }
 
@@ -80,8 +93,19 @@ export async function listWorkflows(namespace?: string): Promise<WorkflowListRes
  * List all workflow tasks
  * GET /api/v1/tasks
  */
-export async function listTasks(namespace?: string): Promise<TaskListResponse> {
-  const query = namespace ? `?namespace=${encodeURIComponent(namespace)}` : '';
+export async function listTasks(options?: {
+  namespace?: string;
+  search?: string;
+  skip?: number;
+  take?: number;
+}): Promise<TaskListResponse> {
+  const params = new URLSearchParams();
+  if (options?.namespace) params.append('namespace', options.namespace);
+  if (options?.search) params.append('search', options.search);
+  if (options?.skip !== undefined) params.append('skip', options.skip.toString());
+  if (options?.take !== undefined) params.append('take', options.take.toString());
+
+  const query = params.toString() ? `?${params.toString()}` : '';
   return apiFetch<TaskListResponse>(`/tasks${query}`);
 }
 
@@ -128,6 +152,23 @@ export async function testWorkflow(
   request: WorkflowTestRequest
 ): Promise<WorkflowTestResponse> {
   return apiFetch<WorkflowTestResponse>(`/workflows/${encodeURIComponent(name)}/test`, {
+    method: 'POST',
+    body: JSON.stringify(request),
+  });
+}
+
+/**
+ * Test-execute a workflow definition without deploying it.
+ * Allows testing workflows directly from the builder before publishing.
+ * Note: Referenced tasks (taskRef) must exist in Kubernetes.
+ * POST /api/v1/workflows/test-execute
+ */
+export async function testExecuteWorkflow(
+  request: TestExecuteRequest,
+  namespace?: string
+): Promise<TestExecuteResponse> {
+  const query = namespace ? `?namespace=${encodeURIComponent(namespace)}` : '';
+  return apiFetch<TestExecuteResponse>(`/workflows/test-execute${query}`, {
     method: 'POST',
     body: JSON.stringify(request),
   });

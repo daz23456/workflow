@@ -27,6 +27,29 @@ public class WorkflowManagementControllerTests
         _versionRepositoryMock = new Mock<IWorkflowVersionRepository>();
         _executionRepositoryMock = new Mock<IExecutionRepository>();
         _taskExecutorMock = new Mock<IHttpTaskExecutor>();
+
+        // Setup default mock returns for statistics methods
+        _executionRepositoryMock
+            .Setup(r => r.GetAllWorkflowStatisticsAsync())
+            .ReturnsAsync(new Dictionary<string, WorkflowStatistics>());
+        _executionRepositoryMock
+            .Setup(r => r.GetAllTaskStatisticsAsync())
+            .ReturnsAsync(new Dictionary<string, TaskStatistics>());
+        _executionRepositoryMock
+            .Setup(r => r.GetWorkflowStatisticsAsync(It.IsAny<string>()))
+            .ReturnsAsync((WorkflowStatistics?)null);
+        _executionRepositoryMock
+            .Setup(r => r.GetTaskStatisticsAsync(It.IsAny<string>()))
+            .ReturnsAsync((TaskStatistics?)null);
+
+        // Setup default mock returns for discovery service
+        _discoveryServiceMock
+            .Setup(s => s.DiscoverWorkflowsAsync(It.IsAny<string?>()))
+            .ReturnsAsync(new List<WorkflowResource>());
+        _discoveryServiceMock
+            .Setup(s => s.DiscoverTasksAsync(It.IsAny<string?>()))
+            .ReturnsAsync(new List<WorkflowTaskResource>());
+
         _controller = new WorkflowManagementController(
             _discoveryServiceMock.Object,
             _endpointServiceMock.Object,

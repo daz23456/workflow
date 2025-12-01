@@ -17,6 +17,7 @@ import {
   type WorkflowMetadata,
   type WorkflowInputParameter,
   type HistoryCheckpoint,
+  type ActivePanelType,
 } from '../types/workflow-builder';
 import { graphToYaml, yamlToGraph } from '../adapters/yaml-adapter';
 
@@ -129,6 +130,10 @@ interface WorkflowBuilderStore extends WorkflowBuilderState {
   // Validation
   validate: () => void;
 
+  // Panel operations
+  openPanel: (panel: ActivePanelType, taskId?: string) => void;
+  closePanel: () => void;
+
   // History operations (undo/redo)
   undo: () => void;
   redo: () => void;
@@ -188,6 +193,30 @@ export const useWorkflowBuilderStore = create<WorkflowBuilderStore>()(
         // Remove connected edges
         state.graph.edges = state.graph.edges.filter((e) => e.source !== id && e.target !== id);
 
+        // Clean up output mappings that reference the deleted node
+        const nodeRefPattern = new RegExp(`\\{\\{tasks\\.${id}\\.output[^}]*\\}\\}`, 'g');
+        const updatedMapping: Record<string, string> = {};
+
+        for (const [key, value] of Object.entries(state.outputMapping)) {
+          // Remove references to the deleted node from the expression
+          const cleanedValue = value.replace(nodeRefPattern, '').trim();
+
+          // Clean up any resulting empty comma separations or JSON artifacts
+          const finalValue = cleanedValue
+            .replace(/,\s*,/g, ',')  // Remove double commas
+            .replace(/^\s*,\s*/, '') // Remove leading comma
+            .replace(/\s*,\s*$/, '') // Remove trailing comma
+            .replace(/\{\s*,/g, '{') // Remove comma after opening brace
+            .replace(/,\s*\}/g, '}') // Remove comma before closing brace
+            .trim();
+
+          // Only keep the mapping if there's still a value
+          if (finalValue && finalValue !== '{}' && finalValue !== '{ }') {
+            updatedMapping[key] = finalValue;
+          }
+        }
+
+        state.outputMapping = updatedMapping;
         state.autosave.isDirty = true;
       }),
 
@@ -295,6 +324,19 @@ export const useWorkflowBuilderStore = create<WorkflowBuilderStore>()(
         }
 
         state.validation.isValid = state.validation.errors.length === 0;
+      }),
+
+    // Panel operations
+    openPanel: (panel, taskId) =>
+      set((state) => {
+        state.panel.activePanel = panel;
+        state.panel.selectedTaskId = taskId || null;
+      }),
+
+    closePanel: () =>
+      set((state) => {
+        state.panel.activePanel = null;
+        state.panel.selectedTaskId = null;
       }),
 
     // History operations (undo/redo)

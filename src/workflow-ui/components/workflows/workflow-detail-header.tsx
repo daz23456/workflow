@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { Timer } from 'lucide-react';
 import type { WorkflowDetail } from '@/types/workflow';
 
 interface WorkflowStats {
@@ -8,14 +9,21 @@ interface WorkflowStats {
   lastExecuted?: string;
 }
 
+interface BenchmarkResult {
+  graphBuildDurationMicros: number;
+  timestamp: Date;
+}
+
 interface WorkflowDetailHeaderProps {
   workflow: WorkflowDetail;
   stats: WorkflowStats;
   onExecute?: () => void;
   onTest?: () => void;
+  onBenchmark?: () => void;
+  isBenchmarking?: boolean;
+  benchmarkResult?: BenchmarkResult | null;
   isExecuting?: boolean;
   isTesting?: boolean;
-  activeTab?: string;
 }
 
 export function WorkflowDetailHeader({
@@ -23,12 +31,21 @@ export function WorkflowDetailHeader({
   stats,
   onExecute,
   onTest,
+  onBenchmark,
+  isBenchmarking = false,
+  benchmarkResult,
   isExecuting = false,
   isTesting = false,
-  activeTab = 'overview',
 }: WorkflowDetailHeaderProps) {
   const taskCount = workflow.tasks.length;
   const hasExecutions = stats.totalExecutions > 0;
+
+  const formatMicroseconds = (micros: number): string => {
+    if (micros < 1000) {
+      return `${micros}μs`;
+    }
+    return `${(micros / 1000).toFixed(2)}ms`;
+  };
 
   return (
     <div className="bg-white border-b border-gray-200">
@@ -36,7 +53,7 @@ export function WorkflowDetailHeader({
         {/* Breadcrumb Navigation */}
         <nav className="mb-4">
           <Link
-            href="/"
+            href="/workflows"
             className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 transition-colors duration-150"
           >
             <span className="mr-2">←</span>
@@ -107,9 +124,8 @@ export function WorkflowDetailHeader({
             </div>
           </div>
 
-          {/* Right: Action Buttons - Hidden on Execute tab since form has its own button */}
-          {activeTab !== 'execute' && (
-            <div className="flex flex-col gap-2 sm:ml-6 sm:flex-shrink-0">
+          {/* Right: Action Buttons */}
+          <div className="flex flex-col gap-2 sm:ml-6 sm:flex-shrink-0">
               <button
                 onClick={onExecute}
                 disabled={isExecuting || isTesting}
@@ -127,8 +143,35 @@ export function WorkflowDetailHeader({
               >
                 {isTesting ? 'Testing...' : 'Test (Dry-run)'}
               </button>
-            </div>
-          )}
+
+              {/* Benchmark Graph Button */}
+              {onBenchmark && (
+                <button
+                  onClick={onBenchmark}
+                  disabled={isBenchmarking || isExecuting || isTesting}
+                  className="inline-flex items-center justify-center gap-2 rounded-md bg-purple-50 px-4 py-2 text-sm font-medium text-purple-700 shadow-sm border border-purple-200 transition-colors duration-150 hover:bg-purple-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed disabled:border-gray-200"
+                  aria-label="Benchmark graph build time"
+                >
+                  <Timer className="h-4 w-4" />
+                  {isBenchmarking ? 'Benchmarking...' : 'Benchmark Graph'}
+                </button>
+              )}
+
+              {/* Benchmark Result */}
+              {benchmarkResult && (
+                <div className="rounded-md bg-purple-50 border border-purple-200 px-3 py-2 text-sm">
+                  <div className="flex items-center gap-2 text-purple-800">
+                    <Timer className="h-4 w-4" />
+                    <span className="font-medium">
+                      {formatMicroseconds(benchmarkResult.graphBuildDurationMicros)}
+                    </span>
+                  </div>
+                  <div className="text-xs text-purple-600 mt-1">
+                    Graph build time
+                  </div>
+                </div>
+              )}
+          </div>
         </div>
       </div>
     </div>

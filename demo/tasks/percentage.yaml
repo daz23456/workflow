@@ -1,0 +1,34 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: transform-percentage
+  namespace: default
+  annotations:
+    workflow.example.com/category: transform
+    workflow.example.com/tags: math,percentage,ratio
+spec:
+  type: transform
+  description: Calculate percentage of a total
+  transform:
+    input: "$.items"
+    pipeline:
+      - operation: percentage
+        total: 100
+  inputSchema:
+    type: object
+    properties:
+      items:
+        type: array
+        description: Array of numbers to convert to percentages
+        items:
+          type: number
+    required:
+      - items
+  outputSchema:
+    type: object
+    properties:
+      result:
+        type: array
+        description: Array of percentage values
+        items:
+          type: number

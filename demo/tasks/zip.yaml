@@ -1,0 +1,33 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: transform-zip
+  namespace: default
+  annotations:
+    workflow.example.com/category: transform
+    workflow.example.com/tags: array,zip,combine,merge
+spec:
+  type: transform
+  description: Zip multiple arrays together into pairs
+  transform:
+    input: "$.arrays"
+    pipeline:
+      - operation: zip
+  inputSchema:
+    type: object
+    properties:
+      arrays:
+        type: array
+        description: Array of arrays to zip together
+        items:
+          type: array
+    required:
+      - arrays
+  outputSchema:
+    type: object
+    properties:
+      result:
+        type: array
+        description: Array of zipped tuples
+        items:
+          type: array

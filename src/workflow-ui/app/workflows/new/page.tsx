@@ -9,10 +9,13 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Save, Upload, X, AlertTriangle } from 'lucide-react';
+import { Save, Upload, X, AlertTriangle, Play, Code, Copy, Check } from 'lucide-react';
 import { TaskPalette } from '@/components/builder/task-palette';
 import { WorkflowCanvas } from '@/components/builder/workflow-canvas';
 import { PropertiesPanel } from '@/components/builder/properties-panel';
+import { InputSchemaPanel } from '@/components/builder/input-schema-panel';
+import { OutputMappingPanel } from '@/components/builder/output-mapping-panel';
+import { TestRunModal } from '@/components/builder/test-run-modal';
 import { useWorkflowBuilderStore } from '@/lib/stores/workflow-builder-store';
 import { graphToYaml, yamlToGraph } from '@/lib/adapters/yaml-adapter';
 import { useTemplateDetail } from '@/lib/api/queries';
@@ -34,6 +37,8 @@ export default function WorkflowBuilderPage() {
   const importFromYaml = useWorkflowBuilderStore((state) => state.importFromYaml);
   const reset = useWorkflowBuilderStore((state) => state.reset);
   const setMetadata = useWorkflowBuilderStore((state) => state.setMetadata);
+  const panel = useWorkflowBuilderStore((state) => state.panel);
+  const activePanel = panel.activePanel;
 
   // Load template from URL parameter
   const { data: templateData, isLoading: templateLoading } = useTemplateDetail(
@@ -46,9 +51,12 @@ export default function WorkflowBuilderPage() {
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
   const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
+  const [showTestRunModal, setShowTestRunModal] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [showTaskPalette, setShowTaskPalette] = useState(true);
   const [showPropertiesPanel, setShowPropertiesPanel] = useState(true);
+  const [showYamlPreview, setShowYamlPreview] = useState(false);
+  const [yamlCopied, setYamlCopied] = useState(false);
 
   // Detect mobile viewport
   useEffect(() => {
@@ -113,6 +121,49 @@ export default function WorkflowBuilderPage() {
     return workflowName !== '' && !nameError && graph.nodes.length > 0;
   };
 
+  // Generate YAML preview
+  const generateYamlPreview = (): string => {
+    try {
+      // Filter to only task nodes
+      const taskNodes = graph.nodes.filter((n) => n.type === 'task');
+
+      const builderState = {
+        graph: { ...graph, nodes: taskNodes },
+        metadata: { ...metadata, name: workflowName || 'unnamed-workflow' },
+        inputSchema,
+        outputMapping,
+        selection,
+        validation,
+        history,
+        autosave,
+        panel,
+      };
+      return graphToYaml(builderState, { format: 'string' }) as string;
+    } catch {
+      return '# Error generating YAML preview';
+    }
+  };
+
+  // Copy YAML to clipboard
+  const handleCopyYaml = async () => {
+    const yaml = generateYamlPreview();
+    try {
+      await navigator.clipboard.writeText(yaml);
+      setYamlCopied(true);
+      setTimeout(() => setYamlCopied(false), 2000);
+    } catch {
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = yaml;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      setYamlCopied(true);
+      setTimeout(() => setYamlCopied(false), 2000);
+    }
+  };
+
   // Save workflow to YAML file
   const handleSave = async () => {
     if (!canSave()) return;
@@ -134,6 +185,7 @@ export default function WorkflowBuilderPage() {
         validation,
         history,
         autosave,
+        panel,
       };
       const yaml = graphToYaml(builderState, { format: 'string' }) as string;
 
@@ -245,89 +297,115 @@ export default function WorkflowBuilderPage() {
   return (
     <div
       data-testid="workflow-builder-page"
-      className={cn('h-screen flex flex-col bg-gray-50', isMobile && 'flex-col')}
+      className={cn('h-[calc(100vh-57px)] flex flex-col bg-gray-50', isMobile && 'flex-col')}
     >
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex-1 max-w-md">
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Create New Workflow</h1>
-            <div>
-              <label
-                htmlFor="workflow-name"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Workflow Name
-              </label>
-              <input
-                id="workflow-name"
-                type="text"
-                value={workflowName}
-                onChange={handleNameChange}
-                onBlur={handleNameBlur}
-                placeholder="user-onboarding"
-                className={cn(
-                  'w-full px-3 py-2 border rounded focus:outline-none focus:ring-2',
-                  nameError
-                    ? 'border-red-300 focus:ring-red-500'
-                    : 'border-gray-300 focus:ring-blue-500'
-                )}
-                aria-label="Workflow Name"
-              />
-              {nameError && <p className="mt-1 text-sm text-red-600">{nameError}</p>}
-            </div>
-          </div>
-
-          {/* Toolbar */}
-          <div className="flex items-center gap-3">
-            <button
-              onClick={handleLoad}
-              className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              aria-label="Load workflow from file"
-            >
-              <Upload className="w-4 h-4 inline mr-2" />
-              Load
-            </button>
-            <button
-              onClick={handleSave}
-              disabled={!canSave()}
-              className={cn(
-                'px-4 py-2 text-white rounded focus:outline-none focus:ring-2 focus:ring-blue-500',
-                canSave() ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-300 cursor-not-allowed'
-              )}
-              aria-label="Save workflow to file"
-            >
-              <Save className="w-4 h-4 inline mr-2" />
-              Save
-            </button>
-            <button
-              onClick={handleCancel}
-              className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              aria-label="Cancel and go back"
-            >
-              <X className="w-4 h-4 inline mr-2" />
-              Cancel
-            </button>
-          </div>
+      {/* Header Bar - Spans all columns */}
+      <div className="h-14 bg-white border-b border-gray-200 grid grid-cols-[256px_1fr_320px] shrink-0">
+        {/* Left: Tasks header */}
+        <div className="flex items-center justify-between px-5 border-r border-gray-200">
+          <span className="font-semibold text-gray-900">Tasks</span>
         </div>
 
-        {/* Status Messages */}
-        {saveStatus === 'success' && (
-          <div role="status" className="mt-3 p-3 bg-green-50 border border-green-200 rounded">
-            <p className="text-sm text-green-700">Workflow saved successfully!</p>
-          </div>
-        )}
-        {saveStatus === 'error' && errorMessage && (
-          <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded">
-            <p className="text-sm text-red-700">{errorMessage}</p>
-          </div>
-        )}
-        {errorMessage && saveStatus === 'idle' && (
-          <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded">
-            <p className="text-sm text-red-700">{errorMessage}</p>
-          </div>
-        )}
-      </header>
+        {/* Center: Toolbar */}
+        <div className="flex items-center justify-center gap-3 px-6">
+          <label htmlFor="workflow-name" className="text-sm font-medium text-gray-600">
+            Workflow:
+          </label>
+          <input
+            id="workflow-name"
+            type="text"
+            value={workflowName}
+            onChange={handleNameChange}
+            onBlur={handleNameBlur}
+            placeholder="my-workflow-name"
+            className={cn(
+              'w-48 px-3 py-1.5 text-sm border rounded-md focus:outline-none focus:ring-2',
+              nameError
+                ? 'border-red-300 focus:ring-red-500 bg-red-50'
+                : 'border-gray-300 focus:ring-blue-500'
+            )}
+            title={nameError || 'Workflow name'}
+          />
+
+          <div className="w-px h-6 bg-gray-200" />
+
+          <button
+            onClick={handleLoad}
+            className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md"
+            aria-label="Load workflow from file"
+            title="Load"
+          >
+            <Upload className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setShowYamlPreview(!showYamlPreview)}
+            className={cn(
+              'p-2 rounded-md',
+              showYamlPreview
+                ? 'text-purple-600 bg-purple-100'
+                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+            )}
+            aria-label="Toggle YAML preview"
+            title="YAML Preview"
+          >
+            <Code className="w-4 h-4" />
+          </button>
+
+          <div className="w-px h-6 bg-gray-200" />
+
+          <button
+            onClick={() => setShowTestRunModal(true)}
+            disabled={graph.nodes.length === 0 || !workflowName.trim()}
+            className={cn(
+              'px-3 py-1.5 text-sm font-medium rounded-md flex items-center gap-1.5',
+              graph.nodes.length > 0 && workflowName.trim()
+                ? 'text-white bg-green-600 hover:bg-green-700'
+                : 'text-gray-400 bg-gray-100 cursor-not-allowed'
+            )}
+            aria-label="Test run workflow"
+            title={!workflowName.trim() ? 'Workflow name required' : graph.nodes.length === 0 ? 'Add a task first' : 'Test'}
+          >
+            <Play className="w-4 h-4" />
+            Test
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={!canSave()}
+            className={cn(
+              'px-3 py-1.5 text-sm font-medium rounded-md flex items-center gap-1.5',
+              canSave() ? 'text-white bg-blue-600 hover:bg-blue-700' : 'text-gray-400 bg-gray-100 cursor-not-allowed'
+            )}
+            aria-label="Save workflow to file"
+            title="Save"
+          >
+            <Save className="w-4 h-4" />
+            Save
+          </button>
+          <button
+            onClick={handleCancel}
+            className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md"
+            aria-label="Cancel and go back"
+            title="Cancel"
+          >
+            <X className="w-4 h-4" />
+          </button>
+
+          {/* Status indicator */}
+          {saveStatus === 'success' && (
+            <span className="text-sm text-green-600 font-medium">Saved!</span>
+          )}
+          {errorMessage && (
+            <span className="text-sm text-red-600">{errorMessage}</span>
+          )}
+        </div>
+
+        {/* Right: Panel header */}
+        <div className="flex items-center justify-between px-5 border-l border-gray-200">
+          <span className="font-semibold text-gray-900">
+            {activePanel === 'input' ? 'Input Schema' : activePanel === 'output' ? 'Output Mapping' : 'Properties'}
+          </span>
+        </div>
+      </div>
 
       {/* Mobile Panel Toggles */}
       {isMobile && (
@@ -352,18 +430,34 @@ export default function WorkflowBuilderPage() {
       {/* Main Content - Three Column Layout */}
       <div
         className={cn(
-          'flex-1 overflow-hidden',
-          isMobile ? 'flex flex-col' : 'grid grid-cols-[256px_1fr_320px]'
+          'flex-1 min-h-0',
+          isMobile ? 'flex flex-col overflow-auto' : 'grid grid-cols-[256px_1fr_320px] grid-rows-[1fr]'
         )}
       >
         {/* Left: Task Palette */}
-        {(!isMobile || showTaskPalette) && <TaskPalette />}
+        {(!isMobile || showTaskPalette) && (
+          <div className="h-full min-h-0 overflow-hidden">
+            <TaskPalette />
+          </div>
+        )}
 
         {/* Center: Canvas */}
-        <WorkflowCanvas />
+        <div className="h-full min-h-0 overflow-hidden">
+          <WorkflowCanvas />
+        </div>
 
-        {/* Right: Properties Panel */}
-        {(!isMobile || showPropertiesPanel) && <PropertiesPanel />}
+        {/* Right: Properties Panel / Input Schema Panel / Output Mapping Panel */}
+        {(!isMobile || showPropertiesPanel) && (
+          <div className="h-full min-h-0 overflow-hidden">
+            {activePanel === 'input' ? (
+              <InputSchemaPanel />
+            ) : activePanel === 'output' ? (
+              <OutputMappingPanel />
+            ) : (
+              <PropertiesPanel />
+            )}
+          </div>
+        )}
       </div>
 
       {/* Unsaved Changes Dialog */}
@@ -396,6 +490,68 @@ export default function WorkflowBuilderPage() {
                 Discard Changes
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Test Run Modal */}
+      <TestRunModal
+        open={showTestRunModal}
+        onOpenChange={setShowTestRunModal}
+        state={{
+          graph,
+          metadata: { ...metadata, name: workflowName },
+          inputSchema,
+          outputMapping,
+          selection,
+          validation,
+          history,
+          autosave,
+          panel,
+        }}
+      />
+
+      {/* YAML Preview Panel */}
+      {showYamlPreview && (
+        <div className="fixed bottom-0 left-0 right-0 bg-gray-900 text-gray-100 shadow-2xl z-40 animate-in slide-in-from-bottom duration-200">
+          <div className="flex items-center justify-between px-4 py-2 border-b border-gray-700">
+            <div className="flex items-center gap-3">
+              <Code className="w-4 h-4 text-purple-400" />
+              <span className="font-medium text-sm">YAML Preview</span>
+              <span className="text-xs text-gray-400">
+                {graph.nodes.filter((n) => n.type === 'task').length} tasks
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleCopyYaml}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-gray-800 hover:bg-gray-700 rounded transition-colors"
+              >
+                {yamlCopied ? (
+                  <>
+                    <Check className="w-3.5 h-3.5 text-green-400" />
+                    Copied!
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-3.5 h-3.5" />
+                    Copy
+                  </>
+                )}
+              </button>
+              <button
+                onClick={() => setShowYamlPreview(false)}
+                className="p-1.5 hover:bg-gray-700 rounded transition-colors"
+                aria-label="Close YAML preview"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+          <div className="max-h-[40vh] overflow-auto">
+            <pre className="p-4 text-sm font-mono whitespace-pre-wrap">
+              {generateYamlPreview()}
+            </pre>
           </div>
         </div>
       )}

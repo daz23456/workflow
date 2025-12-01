@@ -16,7 +16,7 @@
       "const": "Workflow"
     },
     "metadata": {
-      "$ref": "common-definitions.schema.json#/definitions/ResourceMetadata"
+      "$ref": "#/definitions/ResourceMetadata"
     },
     "spec": {
       "$ref": "#/definitions/WorkflowSpec"
@@ -32,6 +32,10 @@
       "type": "object",
       "description": "Workflow specification",
       "properties": {
+        "description": {
+          "type": "string",
+          "description": "Human-readable description of the workflow"
+        },
         "input": {
           "type": "object",
           "description": "Input parameters for the workflow",
@@ -55,8 +59,7 @@
           }
         }
       },
-      "required": ["input", "tasks"],
-      "additionalProperties": false
+      "required": ["input", "tasks"]
     },
     "WorkflowInputParameter": {
       "type": "object",
@@ -154,6 +157,38 @@
         }
       },
       "additionalProperties": false
+    },
+    "ResourceMetadata": {
+      "type": "object",
+      "description": "Kubernetes resource metadata",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Resource name",
+          "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$"
+        },
+        "namespace": {
+          "type": "string",
+          "description": "Resource namespace",
+          "default": "default",
+          "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$"
+        },
+        "annotations": {
+          "type": "object",
+          "description": "Resource annotations",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "labels": {
+          "type": "object",
+          "description": "Resource labels",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "required": ["name", "namespace"]
     }
   }
 }

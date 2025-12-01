@@ -28,6 +28,7 @@ vi.mock('@xyflow/react', () => ({
       {children}
     </div>
   ),
+  ReactFlowProvider: ({ children }: any) => <>{children}</>,
   Controls: () => <div data-testid="controls">Controls</div>,
   Background: ({ variant }: any) => <div data-testid="background">{variant}</div>,
   MarkerType: { ArrowClosed: 'arrowclosed' },
@@ -108,16 +109,18 @@ describe('WorkflowGraphPanel', () => {
       expect(node).toHaveAttribute('data-type', 'default');
     });
 
-    it('renders start node with correct type', () => {
-      render(<WorkflowGraphPanel graph={mockComplexGraph} />);
-      const node = screen.getByTestId('node-start');
+    it('renders automatic Input node', () => {
+      render(<WorkflowGraphPanel graph={mockSimpleGraph} />);
+      const node = screen.getByTestId('node-__input__');
       expect(node).toHaveAttribute('data-type', 'input');
+      expect(node).toHaveTextContent('Workflow Input');
     });
 
-    it('renders end node with correct type', () => {
-      render(<WorkflowGraphPanel graph={mockComplexGraph} />);
-      const node = screen.getByTestId('node-end');
+    it('renders automatic Output node', () => {
+      render(<WorkflowGraphPanel graph={mockSimpleGraph} />);
+      const node = screen.getByTestId('node-__output__');
       expect(node).toHaveAttribute('data-type', 'output');
+      expect(node).toHaveTextContent('Workflow Output');
     });
   });
 

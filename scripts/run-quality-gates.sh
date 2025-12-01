@@ -7,29 +7,30 @@
 #          tech stack auto-detection
 #
 # Usage:
-#   ./scripts/run-quality-gates.sh               # Run all mandatory gates (1-6)
-#   ./scripts/run-quality-gates.sh 1 2 3 4 5 6 7 # Run specific gates
-#   ./scripts/run-quality-gates.sh --dotnet 1-8  # Force .NET, run gates 1-8
-#   ./scripts/run-quality-gates.sh --typescript 1-9 # Force TypeScript, run gates 1-9
-#   ./scripts/run-quality-gates.sh --help        # Show help
+#   ./scripts/run-quality-gates.sh --stage <number>                    # All mandatory gates
+#   ./scripts/run-quality-gates.sh --stage 5 1 2 3 4 5 6 7             # Specific gates
+#   ./scripts/run-quality-gates.sh --stage 7 --tech dotnet 1-8         # Force .NET
+#   ./scripts/run-quality-gates.sh --stage 9.1 --tech typescript 1-9   # Force TypeScript
+#   ./scripts/run-quality-gates.sh --help                              # Show help
 #
-# Gate Numbers:
-#   1 - Clean Build
-#   2 - All Tests Passing
-#   3 - Code Coverage ≥90%
-#   4 - Zero Security Vulnerabilities
-#   5 - No Template Files
-#   6 - Proof File Completeness
-#   7 - Mutation Testing ≥80%
-#   8 - Linting & Code Style
-#   9 - Type Safety Validation (TypeScript only)
-#   10 - Integration Tests
-#   11 - Performance Regression Detection
-#   12 - API Contract Validation
-#   13 - Documentation Completeness
+# Gate Numbers (in execution order):
+#   1 - No Template Files
+#   2 - Linting & Code Style
+#   3 - Clean Build
+#   4 - Type Safety Validation (TypeScript only)
+#   5 - All Tests Passing
+#   6 - Code Coverage ≥90%
+#   7 - Zero Security Vulnerabilities
+#   8 - Proof File Completeness
+#   9 - Mutation Testing ≥80%
+#   10 - Documentation Completeness
+#   11 - Integration Tests
+#   12 - Performance Regression Detection
+#   13 - API Contract Validation
 #   14 - Accessibility Testing
 #   15 - E2E Testing
 #   16 - SAST (Static Application Security Testing)
+#   21 - Storybook Stories (TypeScript UI only)
 #
 # Exit Codes:
 #   0 - All gates passed
@@ -38,7 +39,7 @@
 #
 # Output:
 #   - Colorized terminal output with ✅/❌ indicators
-#   - Gate outputs saved to .gate-outputs/ directory
+#   - Gate outputs saved to stage-proofs/stage-N/reports/gates/
 #   - Summary report at end
 #
 ###############################################################################
@@ -54,9 +55,8 @@ CYAN='\033[0;36m'
 BOLD='\033[1m'
 NC='\033[0m' # No Color
 
-# Output directory for gate results
-OUTPUT_DIR=".gate-outputs"
-mkdir -p "$OUTPUT_DIR"
+# Output directory for gate results (set in main() after validation)
+OUTPUT_DIR=""
 
 # Track gate results
 GATES_PASSED=()
@@ -65,6 +65,9 @@ GATES_SKIPPED=()
 
 # Tech stack detection
 TECH_STACK=""
+
+# Stage number (required parameter)
+STAGE_NUM=""
 
 ###############################################################################
 # Helper Functions
@@ -100,6 +103,31 @@ print_info() {
     echo -e "${CYAN}ℹ️  $1${NC}"
 }
 
+# macOS-compatible function to extract values from text
+# Usage: extract_value "pattern" "file" "default"
+# Example: extract_value "Failed:" "$file" "0" -> extracts number after "Failed:"
+extract_value() {
+    local pattern="$1"
+    local file="$2"
+    local default="${3:-0}"
+
+    # Use awk for cross-platform compatibility (works on macOS and Linux)
+    local value
+    value=$(grep -E "$pattern" "$file" 2>/dev/null | head -1 | sed -E "s/.*${pattern}[[:space:]]*([0-9.]+).*/\1/" || echo "")
+
+    if [[ -z "$value" || ! "$value" =~ ^[0-9.]+$ ]]; then
+        echo "$default"
+    else
+        echo "$value"
+    fi
+}
+
+# Safe array iteration (handles empty arrays with set -u)
+safe_array_length() {
+    local -n arr=$1
+    echo "${#arr[@]}"
+}
+
 detect_tech_stack() {
     if [[ -n "$TECH_STACK" ]]; then
         # Already set via command line
@@ -124,45 +152,52 @@ show_help() {
 Quality Gate Runner Script
 
 USAGE:
-    ./scripts/run-quality-gates.sh [OPTIONS] [GATES...]
+    ./scripts/run-quality-gates.sh --stage <number> [OPTIONS] [GATES...]
 
 OPTIONS:
+    --stage <number>   Stage number (REQUIRED) - outputs to stage-proofs/stage-N/
+                       Examples: --stage 5, --stage 7.5, --stage 9.1
     --dotnet           Force .NET tech stack
     --typescript       Force TypeScript tech stack
     --help             Show this help message
 
 GATES:
-    1-6                Mandatory gates (default if no gates specified)
+    1-8                Mandatory gates (default if no gates specified)
     1-8                Typical for .NET backend
     1-9                Typical for TypeScript backend
-    1-6,8,9,13,14      Typical for TypeScript UI
+    1-8,9,10,13,14     Typical for TypeScript UI
 
     Individual gates:
-      1  - Clean Build
-      2  - All Tests Passing
-      3  - Code Coverage ≥90%
-      4  - Zero Security Vulnerabilities
-      5  - No Template Files
-      6  - Proof File Completeness
-      7  - Mutation Testing ≥80% (recommended, not blocking)
-      8  - Linting & Code Style
-      9  - Type Safety Validation (TypeScript only)
-      10 - Integration Tests
-      11 - Performance Regression Detection
-      12 - API Contract Validation
-      13 - Documentation Completeness
+      1  - No Template Files
+      2  - Linting & Code Style
+      3  - Clean Build
+      4  - Type Safety Validation (TypeScript only)
+      5  - All Tests Passing
+      6  - Code Coverage ≥90%
+      7  - Zero Security Vulnerabilities
+      8  - Proof File Completeness
+      9  - Mutation Testing ≥80% (recommended)
+      10 - Documentation Completeness
+      11 - Integration Tests
+      12 - Performance Regression Detection
+      13 - API Contract Validation
       14 - Accessibility Testing
       15 - E2E Testing
       16 - SAST (Static Application Security Testing)
+      21 - Storybook Stories (TypeScript UI only)
 
 EXAMPLES:
-    ./scripts/run-quality-gates.sh                    # Run gates 1-6
-    ./scripts/run-quality-gates.sh 1 2 3 4 5 6 7      # Run gates 1-7
-    ./scripts/run-quality-gates.sh --dotnet 1 2 3 8   # .NET with linting
-    ./scripts/run-quality-gates.sh --typescript 1-9   # TypeScript gates 1-9
+    ./scripts/run-quality-gates.sh --stage 5
+    ./scripts/run-quality-gates.sh --stage 7 --tech dotnet 1 2 3 4 5 6 7 8
+    ./scripts/run-quality-gates.sh --stage 9.1 --tech typescript 1-9
+    ./scripts/run-quality-gates.sh --stage 10.2 1 2 3 8
 
 OUTPUT:
-    Gate results saved to: .gate-outputs/gate-N-*.txt
+    Gate results:      stage-proofs/stage-N/reports/gates/gate-*.txt
+    Coverage reports:  stage-proofs/stage-N/reports/coverage/
+    Test results:      stage-proofs/stage-N/reports/test-results/
+    Mutation reports:  stage-proofs/stage-N/reports/mutation/
+    Benchmarks:        stage-proofs/stage-N/reports/benchmarks/
 
 EXIT CODES:
     0 - All gates passed
@@ -229,10 +264,10 @@ run_gate_2() {
         print_info "Running: dotnet test --configuration Release"
         if dotnet test --configuration Release &>"$output_file"; then
             # Extract counts from output: "Passed! - Failed: 0, Passed: 235, Skipped: 0, Total: 235"
-            local failed=$(grep -oP "Failed:\s+\K\d+" "$output_file" || echo "1")
-            local skipped=$(grep -oP "Skipped:\s+\K\d+" "$output_file" || echo "1")
-            local passed=$(grep -oP "Passed:\s+\K\d+" "$output_file" || echo "0")
-            local total=$(grep -oP "Total:\s+\K\d+" "$output_file" || echo "0")
+            local failed=$(extract_value "Failed:" "$output_file" "1")
+            local skipped=$(extract_value "Skipped:" "$output_file" "1")
+            local passed=$(extract_value "Passed:" "$output_file" "0")
+            local total=$(extract_value "Total:" "$output_file" "0")
 
             # Enforce BOTH zero failures AND zero skipped
             if [[ "$failed" -eq 0 ]] && [[ "$skipped" -eq 0 ]]; then
@@ -299,7 +334,7 @@ run_gate_3() {
                               -targetdir:./coverage/report \
                               -reporttypes:"Html;TextSummary" >> "$output_file" 2>&1; then
 
-                local coverage=$(grep -oP "Line coverage:\s+\K[\d.]+" ./coverage/report/Summary.txt || echo "0")
+                local coverage=$(extract_value "Line coverage:" "./coverage/report/Summary.txt" "0")
                 echo "Line coverage: $coverage%" >> "$output_file" 2>&1
 
                 if (( $(echo "$coverage >= 90" | bc -l) )); then
@@ -325,8 +360,14 @@ run_gate_3() {
     else
         print_info "Running: npm run test:coverage"
         if npm run test:coverage &>"$output_file"; then
-            # Extract coverage percentage (varies by tool)
-            local coverage=$(grep -oP "All files.*?\|\s+\K[\d.]+" "$output_file" | head -1 || echo "0")
+            # Extract coverage percentage from vitest/istanbul table format
+            # Format: "All files          |   89.42 |    82.97 |   88.94 |   90.54 |"
+            # We want the last percentage (Lines column)
+            local coverage=$(grep "All files" "$output_file" | head -1 | awk -F'|' '{gsub(/[[:space:]]/, "", $5); print $5}' || echo "0")
+            # Fallback if awk didn't work
+            if [[ -z "$coverage" || ! "$coverage" =~ ^[0-9.]+$ ]]; then
+                coverage="0"
+            fi
 
             if (( $(echo "$coverage >= 90" | bc -l) )); then
                 print_success "Coverage: $coverage% (≥90% ✅)"
@@ -437,7 +478,7 @@ run_gate_7() {
     if [[ "$TECH_STACK" == "dotnet" ]]; then
         print_info "Running: dotnet stryker --config-file stryker-config.json"
         if dotnet stryker --config-file stryker-config.json &>"$output_file"; then
-            local score=$(grep -oP "Mutation score:\s+\K[\d.]+" "$output_file" || echo "0")
+            local score=$(extract_value "Mutation score:" "$output_file" "0")
 
             if (( $(echo "$score >= 80" | bc -l) )); then
                 print_success "Mutation score: $score% (≥80% ✅)"
@@ -455,7 +496,7 @@ run_gate_7() {
     else
         print_info "Running: npx stryker run"
         if npx stryker run &>"$output_file"; then
-            local score=$(grep -oP "Mutation score:\s+\K[\d.]+" "$output_file" || echo "0")
+            local score=$(extract_value "Mutation score:" "$output_file" "0")
 
             if (( $(echo "$score >= 80" | bc -l) )); then
                 print_success "Mutation score: $score% (≥80% ✅)"
@@ -478,8 +519,11 @@ run_gate_8() {
     local output_file="$OUTPUT_DIR/gate-2-linting.txt"
 
     if [[ "$TECH_STACK" == "dotnet" ]]; then
-        print_info "Running: dotnet format --verify-no-changes"
-        if dotnet format --verify-no-changes &>"$output_file"; then
+        # Auto-format first, then verify
+        print_info "Running: dotnet format (auto-format)"
+        dotnet format &>"$output_file"
+        print_info "Running: dotnet format --verify-no-changes (verify)"
+        if dotnet format --verify-no-changes >> "$output_file" 2>&1; then
             print_success "Code style compliant"
             GATES_PASSED+=("8")
             return 0
@@ -490,8 +534,11 @@ run_gate_8() {
             return 1
         fi
     else
+        # Auto-format first, then lint
+        print_info "Running: npm run format (auto-format)"
+        npm run format &>"$output_file"
         print_info "Running: npx oxlint src/ && npm run lint"
-        if npx oxlint src/ &>"$output_file" && npm run lint >> "$output_file" 2>&1; then
+        if npx oxlint src/ >> "$output_file" 2>&1 && npm run lint >> "$output_file" 2>&1; then
             print_success "Linting passed"
             GATES_PASSED+=("8")
             return 0
@@ -527,6 +574,72 @@ run_gate_9() {
     fi
 }
 
+run_gate_21() {
+    print_gate_header 21 "Storybook Stories (TypeScript UI Only)"
+    local output_file="$OUTPUT_DIR/gate-21-storybook.txt"
+
+    if [[ "$TECH_STACK" != "typescript" ]]; then
+        print_info "Skipping (N/A for .NET)"
+        GATES_SKIPPED+=("21")
+        return 0
+    fi
+
+    echo "=== Gate 21: Storybook Stories ===" > "$output_file"
+
+    # 1. Count components vs stories (excluding /ui/* shadcn primitives)
+    print_info "Counting components and stories..."
+    local component_count=$(find src/components -name "*.tsx" ! -name "*.test.tsx" ! -name "*.stories.tsx" ! -path "*/ui/*" 2>/dev/null | wc -l | tr -d ' ')
+    local story_count=$(find src/components -name "*.stories.tsx" ! -path "*/ui/*" 2>/dev/null | wc -l | tr -d ' ')
+
+    echo "Total Components (excluding shadcn): $component_count" >> "$output_file"
+    echo "Total Stories: $story_count" >> "$output_file"
+
+    # 2. List components missing stories
+    echo "" >> "$output_file"
+    echo "Components missing stories:" >> "$output_file"
+    local missing=0
+    for comp in $(find src/components -name "*.tsx" ! -name "*.test.tsx" ! -name "*.stories.tsx" ! -path "*/ui/*" 2>/dev/null); do
+        local story="${comp%.tsx}.stories.tsx"
+        if [[ ! -f "$story" ]]; then
+            echo "  - $comp" >> "$output_file"
+            missing=$((missing + 1))
+        fi
+    done
+
+    if [[ $missing -eq 0 ]]; then
+        echo "  All components have stories!" >> "$output_file"
+        print_success "All components have stories ($story_count stories for $component_count components)"
+    else
+        print_warning "$missing components missing stories"
+    fi
+
+    # 3. Build Storybook to verify stories compile
+    echo "" >> "$output_file"
+    echo "Building Storybook..." >> "$output_file"
+    print_info "Running: npm run build-storybook"
+
+    if npm run build-storybook >> "$output_file" 2>&1; then
+        echo "Storybook build succeeded" >> "$output_file"
+        print_success "Storybook build succeeded"
+
+        if [[ $missing -eq 0 ]]; then
+            GATES_PASSED+=("21")
+            return 0
+        else
+            print_error "$missing components missing stories (BLOCKER)"
+            cat "$output_file"
+            GATES_FAILED+=("21")
+            return 1
+        fi
+    else
+        echo "Storybook build FAILED" >> "$output_file"
+        print_error "Storybook build failed"
+        cat "$output_file"
+        GATES_FAILED+=("21")
+        return 1
+    fi
+}
+
 ###############################################################################
 # Main Execution
 ###############################################################################
@@ -539,6 +652,10 @@ main() {
 
     while [[ $# -gt 0 ]]; do
         case $1 in
+            --stage)
+                STAGE_NUM="$2"
+                shift 2
+                ;;
             --dotnet)
                 TECH_STACK="dotnet"
                 shift
@@ -561,15 +678,39 @@ main() {
     # Detect tech stack
     detect_tech_stack
 
-    # Default to mandatory gates if none specified
-    if [[ ${#gates_to_run[@]} -eq 0 ]]; then
-        gates_to_run=(1 2 3 4 5 6)
-        print_info "No gates specified, running mandatory gates: 1-6"
+    # Validate STAGE_NUM provided
+    if [[ -z "$STAGE_NUM" ]]; then
+        echo -e "${RED}ERROR: --stage parameter is required${NC}"
+        echo ""
+        echo "Usage: ./scripts/run-quality-gates.sh --stage <number> [--tech <dotnet|typescript>] [gates...]"
+        echo ""
+        echo "Examples:"
+        echo "  ./scripts/run-quality-gates.sh --stage 5"
+        echo "  ./scripts/run-quality-gates.sh --stage 7 --tech dotnet 1 2 3 8"
+        echo "  ./scripts/run-quality-gates.sh --stage 9.1 --tech typescript 1-9"
+        echo ""
+        echo "Run './scripts/run-quality-gates.sh --help' for full documentation."
+        exit 2
     fi
 
+    # Set output directory based on stage number
+    STAGE_DIR="stage-proofs/stage-$STAGE_NUM"
+    OUTPUT_DIR="$STAGE_DIR/reports/gates"
+
+    # Create all required subdirectories
+    mkdir -p "$STAGE_DIR/reports"/{gates,coverage,test-results,mutation,benchmarks}
+
+    # Default to mandatory gates if none specified
+    if [[ ${#gates_to_run[@]} -eq 0 ]]; then
+        gates_to_run=(1 2 3 4 5 6 7 8)
+        print_info "No gates specified, running mandatory gates: 1-8"
+    fi
+
+    print_info "Stage: $STAGE_NUM"
     print_info "Tech stack: $TECH_STACK"
     print_info "Gates to run: ${gates_to_run[*]}"
     print_info "Output directory: $OUTPUT_DIR"
+    print_info "Reports directory: $STAGE_DIR/reports/"
 
     # Run gates
     local failed=0
@@ -588,20 +729,27 @@ main() {
     # Summary
     print_header "📊 Summary Report"
 
-    echo -e "${BOLD}Gates Passed (${#GATES_PASSED[@]}):${NC}"
-    for gate in "${GATES_PASSED[@]}"; do
-        print_success "Gate $gate"
-    done
+    # Use ${array[@]+"${array[@]}"} pattern for safe empty array expansion with set -u
+    local passed_count=${#GATES_PASSED[@]}
+    local failed_count=${#GATES_FAILED[@]}
+    local skipped_count=${#GATES_SKIPPED[@]}
 
-    if [[ ${#GATES_FAILED[@]} -gt 0 ]]; then
-        echo -e "\n${BOLD}Gates Failed (${#GATES_FAILED[@]}):${NC}"
+    echo -e "${BOLD}Gates Passed ($passed_count):${NC}"
+    if [[ $passed_count -gt 0 ]]; then
+        for gate in "${GATES_PASSED[@]}"; do
+            print_success "Gate $gate"
+        done
+    fi
+
+    if [[ $failed_count -gt 0 ]]; then
+        echo -e "\n${BOLD}Gates Failed ($failed_count):${NC}"
         for gate in "${GATES_FAILED[@]}"; do
             print_error "Gate $gate"
         done
     fi
 
-    if [[ ${#GATES_SKIPPED[@]} -gt 0 ]]; then
-        echo -e "\n${BOLD}Gates Skipped (${#GATES_SKIPPED[@]}):${NC}"
+    if [[ $skipped_count -gt 0 ]]; then
+        echo -e "\n${BOLD}Gates Skipped ($skipped_count):${NC}"
         for gate in "${GATES_SKIPPED[@]}"; do
             print_info "Gate $gate"
         done
@@ -613,9 +761,39 @@ main() {
     # Final result
     if [[ $failed -eq 0 ]]; then
         print_header "✅ ALL GATES PASSED"
+
+        # Post-gate reminders (critical steps often forgotten)
+        echo -e "\n${BOLD}${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+        echo -e "${BOLD}${YELLOW}  📋 NEXT STEPS (Do Not Skip!)${NC}"
+        echo -e "${BOLD}${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}\n"
+
+        echo -e "${CYAN}1. Complete proof file:${NC}"
+        echo -e "   stage-proofs/stage-$STAGE_NUM/STAGE_${STAGE_NUM}_PROOF.md"
+        echo -e "   - Fill ALL placeholders (no [TBD], [N/N], [XX%])"
+        echo -e "   - Principal Engineer Review must be SPECIFIC\n"
+
+        echo -e "${CYAN}2. Update CHANGELOG.md:${NC}"
+        echo -e "   - Add entry with actual metrics (tests, coverage, deliverables)\n"
+
+        echo -e "${CYAN}3. Commit:${NC}"
+        echo -e "   git add src/ tests/ stage-proofs/stage-$STAGE_NUM/ *.md"
+        echo -e "   git commit -m \"Stage $STAGE_NUM Complete: [Name]\"\n"
+
+        echo -e "${CYAN}4. Update proof with commit hash:${NC}"
+        echo -e "   HASH=\$(git log -1 --format=%h)"
+        echo -e "   sed -i '' \"s/\\[commit hash\\]/\$HASH/g\" stage-proofs/stage-$STAGE_NUM/STAGE_${STAGE_NUM}_PROOF.md"
+        echo -e "   git commit --amend --no-edit\n"
+
+        echo -e "${CYAN}5. Create tag:${NC}"
+        echo -e "   git tag -a stage-$STAGE_NUM-complete -m \"Stage $STAGE_NUM complete\"\n"
+
+        echo -e "${BOLD}${GREEN}See .claude/STAGE_CHECKLIST.md for full checklist${NC}\n"
+
         exit 0
     else
         print_header "❌ SOME GATES FAILED"
+        echo -e "\n${RED}Fix the failed gates and re-run:${NC}"
+        echo -e "  ./scripts/run-quality-gates.sh --stage $STAGE_NUM ${gates_to_run[*]}\n"
         exit 1
     fi
 }

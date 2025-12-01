@@ -51,7 +51,7 @@ describe('GET /api/tasks', () => {
 
     // Assert
     expect(response.status).toBe(200);
-    expect(listTasks).toHaveBeenCalledWith(undefined);
+    expect(listTasks).toHaveBeenCalledWith({ namespace: undefined, search: undefined, skip: undefined, take: undefined });
     expect(data.tasks).toHaveLength(3);
     expect(data.tasks[0].name).toBe('fetch-user');
     expect(data.tasks[1].name).toBe('send-email');
@@ -85,7 +85,7 @@ describe('GET /api/tasks', () => {
 
     // Assert
     expect(response.status).toBe(200);
-    expect(listTasks).toHaveBeenCalledWith('analytics');
+    expect(listTasks).toHaveBeenCalledWith({ namespace: 'analytics', search: undefined, skip: undefined, take: undefined });
     expect(data.tasks).toHaveLength(2);
     expect(data.tasks.every((task: any) => task.namespace === 'analytics')).toBe(true);
   });

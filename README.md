@@ -1,10 +1,102 @@
 # Workflow Operator
 
-A production-grade, enterprise-ready Kubernetes-native workflow orchestration engine for synchronous, user-facing API calls built with .NET 8.
+**Stop reinventing the wheel. Build reusable Lego bricks, not monoliths.**
+
+A Kubernetes-native workflow orchestration engine that enables **platform teams to build battle-tested task libraries** and **product teams to compose workflows in minutes** - without writing HTTP client code, retry logic, or auth handling ever again.
+
+Built with .NET 8 for synchronous, user-facing API calls with production-grade quality (>90% test coverage, comprehensive mutation testing).
+
+## Why This Matters
+
+**Before Workflow Operator:**
+- Every team writes their own HTTP client wrapper
+- Copy-paste retry logic across 50 microservices
+- Update payment provider → touch 30 different codebases
+- Product teams blocked on platform team for every integration
+- 3 weeks to ship a simple API composition feature
+
+**After Workflow Operator:**
+- Platform team builds **reusable task library** (payments, emails, webhooks, data transforms)
+- Product teams **compose workflows from existing tasks** in 5 minutes
+- Update payment task once → **50 workflows automatically use new version**
+- Zero copy-paste of plumbing code
+- Ship features in hours, not weeks
+
+## Core Concept: Composable Task Library
+
+**Platform Team Creates Lego Bricks (Tasks):**
+```yaml
+# Platform team owns this - used by 20+ workflows
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: charge-payment
+  namespace: platform
+  annotations:
+    owner: "payments-team@company.com"
+spec:
+  inputSchema:
+    type: object
+    required: [amount, currency, customerId]
+  http:
+    method: POST
+    url: "https://payments-api.company.com/v2/charges"
+    # Built-in: retries, auth, rate limiting, idempotency
+```
+
+**Product Teams Compose Lego Models (Workflows):**
+```yaml
+# E-commerce checkout - reuses charge-payment task
+tasks:
+  - taskRef: charge-payment
+    input:
+      amount: "{{tasks.calculate-total.output.total}}"
+      customerId: "{{input.userId}}"
+
+# Subscription renewal - same task, different use case
+tasks:
+  - taskRef: charge-payment
+    input:
+      amount: "{{input.plan.price}}"
+      customerId: "{{input.customerId}}"
+
+# Refund workflow - reuses same battle-tested payment logic
+tasks:
+  - taskRef: charge-payment
+    input:
+      amount: "-{{input.refundAmount}}"  # Negative = refund
+```
+
+**Result:** One task, three workflows, zero duplication. Update payment logic once, all workflows benefit.
+
+## Key Benefits
+
+### For Platform Teams
+- **Write once, use everywhere** - Build task library, not one-off integrations
+- **Centralized expertise** - Payments team owns payment tasks, everyone benefits
+- **Governance built-in** - Enforce security, compliance, rate limits at task level
+- **Hot-swap implementations** - Upgrade task version, workflows auto-update (30s cache TTL)
+
+### For Product Teams
+- **Ship 10x faster** - Compose workflows from existing tasks in minutes
+- **No plumbing code** - Never write HTTP client, retry, or auth code again
+- **Contract safety** - Schema validation prevents runtime errors
+- **Visual workflow builder** (Stage 9) - Non-technical users can create workflows
+
+### For Organizations
+- **Organizational scaling** - 100 teams reuse same 50 tasks
+- **Consistency** - All teams use same battle-tested implementations
+- **Velocity** - Features ship in hours, not weeks
+- **Quality** - >90% test coverage on all tasks
 
 ## Overview
 
-Workflow Operator is a Kubernetes operator that orchestrates multi-step workflows defined as Custom Resources (CRDs). It enables you to define reusable HTTP tasks and compose them into workflows with automatic dependency resolution, schema validation, and template-based parameter passing.
+Workflow Operator is a Kubernetes operator that enables composable workflow orchestration through:
+- **Reusable task library** - Platform teams build tasks, product teams compose workflows
+- **Loose coupling** - Workflows reference tasks by name, implementations can change independently
+- **Dynamic discovery** - Tasks discovered at runtime, hot-swapping enabled
+- **Contract enforcement** - JSON Schema validation for all inputs/outputs
+- **Fail-fast validation** - Invalid workflows rejected at `kubectl apply` time
 
 ## Key Features
 
@@ -41,6 +133,52 @@ API Gateway for workflow execution:
 - Integration with Kubernetes operator
 
 ## Getting Started
+
+### Quick Start: From Zero to Workflow in 5 Minutes
+
+**1. Deploy the platform's task library:**
+```bash
+# Platform team creates reusable tasks (one-time setup)
+kubectl apply -f tasks/fetch-user.yaml
+kubectl apply -f tasks/send-email.yaml
+kubectl apply -f tasks/charge-payment.yaml
+```
+
+**2. Product team composes a workflow:**
+```bash
+# Create workflow YAML (or use visual builder in Stage 9)
+cat > my-workflow.yaml <<EOF
+apiVersion: workflow.example.com/v1
+kind: Workflow
+metadata:
+  name: user-welcome
+spec:
+  tasks:
+    - id: get-user
+      taskRef: fetch-user     # Reuse existing task
+      input:
+        userId: "{{input.userId}}"
+
+    - id: welcome-email
+      taskRef: send-email     # Reuse existing task
+      input:
+        to: "{{tasks.get-user.output.email}}"
+        subject: "Welcome!"
+EOF
+
+kubectl apply -f my-workflow.yaml
+```
+
+**3. Execute the workflow:**
+```bash
+curl -X POST http://localhost:8080/api/v1/workflows/user-welcome/execute \
+  -H "Content-Type: application/json" \
+  -d '{"userId": "user-123"}'
+
+# Response: {"email_sent": true, "user_name": "John Doe"}
+```
+
+**Result:** You just composed a 2-task workflow in 30 seconds without writing any HTTP client code, retry logic, or error handling. That's the power of reusability.
 
 ### Prerequisites
 
@@ -123,59 +261,166 @@ workflow/
 └── README.md                      # This file
 ```
 
-## Example Workflow
+## Real-World Example: Task Reusability in Action
 
-Define a reusable HTTP task:
+### Step 1: Platform Team Creates Reusable Tasks
+
+**Task Library (Built Once, Used Everywhere):**
 
 ```yaml
+# tasks/fetch-user.yaml - User service integration
 apiVersion: workflow.example.com/v1
 kind: WorkflowTask
 metadata:
   name: fetch-user
+  annotations:
+    owner: "user-service-team@company.com"
 spec:
   type: http
   inputSchema:
     type: object
+    required: [userId]
     properties:
-      userId:
-        type: string
-    required:
-      - userId
+      userId: { type: string }
   outputSchema:
     type: object
     properties:
-      name:
-        type: string
-      email:
-        type: string
-  request:
+      name: { type: string }
+      email: { type: string }
+      tier: { type: string, enum: [free, premium, enterprise] }
+  http:
     method: GET
     url: "https://api.example.com/users/{{input.userId}}"
+    headers:
+      Authorization: "Bearer {{env.USER_SERVICE_TOKEN}}"
+
+---
+# tasks/send-email.yaml - Email service integration
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: send-email
+  annotations:
+    owner: "notifications-team@company.com"
+spec:
+  type: http
+  inputSchema:
+    type: object
+    required: [to, subject, body]
+  http:
+    method: POST
+    url: "https://api.example.com/emails"
+    headers:
+      Authorization: "Bearer {{env.EMAIL_SERVICE_TOKEN}}"
+
+---
+# tasks/charge-payment.yaml - Payment processing
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: charge-payment
+  annotations:
+    owner: "payments-team@company.com"
+spec:
+  type: http
+  inputSchema:
+    type: object
+    required: [amount, currency, customerId]
+  http:
+    method: POST
+    url: "https://payments-api.company.com/v2/charges"
 ```
 
-Compose tasks into a workflow:
+### Step 2: Product Teams Compose Workflows from Task Library
 
+**Workflow 1: Order Fulfillment (E-Commerce Team)**
 ```yaml
 apiVersion: workflow.example.com/v1
 kind: Workflow
 metadata:
-  name: user-enrichment
+  name: order-fulfillment
 spec:
-  input:
-    userId:
-      type: string
-      required: true
   tasks:
-    - id: fetch-user
-      taskRef: fetch-user
+    - id: get-customer
+      taskRef: fetch-user        # ← Reuse #1
+      input:
+        userId: "{{input.customerId}}"
+
+    - id: charge-customer
+      taskRef: charge-payment    # ← Reuse #2
+      input:
+        amount: "{{input.orderTotal}}"
+        customerId: "{{input.customerId}}"
+
+    - id: send-confirmation
+      taskRef: send-email        # ← Reuse #3
+      input:
+        to: "{{tasks.get-customer.output.email}}"
+        subject: "Order Confirmed"
+        body: "Your order has been confirmed!"
+```
+
+**Workflow 2: Subscription Renewal (Subscriptions Team)**
+```yaml
+apiVersion: workflow.example.com/v1
+kind: Workflow
+metadata:
+  name: subscription-renewal
+spec:
+  tasks:
+    - id: get-subscriber
+      taskRef: fetch-user        # ← Same task, different context
+      input:
+        userId: "{{input.subscriberId}}"
+
+    - id: renew-subscription
+      taskRef: charge-payment    # ← Same payment logic
+      input:
+        amount: "{{input.planPrice}}"
+        customerId: "{{input.subscriberId}}"
+
+    - id: send-renewal-notice
+      taskRef: send-email        # ← Same email service
+      input:
+        to: "{{tasks.get-subscriber.output.email}}"
+        subject: "Subscription Renewed"
+```
+
+**Workflow 3: User Onboarding (Growth Team)**
+```yaml
+apiVersion: workflow.example.com/v1
+kind: Workflow
+metadata:
+  name: user-onboarding
+spec:
+  tasks:
+    - id: get-new-user
+      taskRef: fetch-user        # ← Same task, third use case
       input:
         userId: "{{input.userId}}"
 
-    - id: fetch-orders
-      taskRef: fetch-orders
+    - id: send-welcome-email
+      taskRef: send-email        # ← Same email service
       input:
-        userId: "{{input.userId}}"
-        userEmail: "{{tasks.fetch-user.output.email}}"
+        to: "{{tasks.get-new-user.output.email}}"
+        subject: "Welcome to our platform!"
+```
+
+### The Power of Reusability
+
+**3 tasks × 3 workflows = 9 integrations, zero duplication**
+
+- `fetch-user` task used 3 times across different teams
+- `send-email` task used 3 times for different purposes
+- `charge-payment` task used 2 times for different billing scenarios
+
+**What happens when you upgrade the payment provider?**
+```bash
+# Update ONE file
+kubectl apply -f tasks/charge-payment.yaml
+
+# 30 seconds later: Both order-fulfillment AND subscription-renewal workflows
+# automatically use the new payment provider. Zero code changes.
 ```
 
 ## Development Workflow
@@ -224,8 +469,43 @@ This project maintains strict quality standards:
 
 [Add license information]
 
-## Status
+## Roadmap: Building the Composability Platform
 
-**Current Development Stage**: Stage 6 Complete - Kubernetes Operator with Validation Webhooks
+**Completed Stages (1-7.9):** ✅
+- ✅ Stage 1-4: Foundation (schemas, validation, templates, execution graph)
+- ✅ Stage 5: Workflow execution engine with retry policies
+- ✅ Stage 6: Kubernetes operator with validation webhooks
+- ✅ Stage 7: API Gateway with dynamic workflow discovery
+- ✅ Stage 7.5: Parallel execution & output mapping
+- ✅ Stage 7.9: Execution traces & workflow versioning
+- ✅ Stage 9.6: Binary response support (PDF, Excel, images)
+
+**What's Next:**
+- 🚧 **Stage 9: Developer Experience** - Make composability effortless
+  - Stage 9.1: Visual workflow builder (drag-and-drop task composition)
+  - Stage 9.2: **Task catalog UI** ← Critical for task reusability discovery
+  - Stage 9.3: WebSocket API for real-time execution
+  - Stage 9.4: Enhanced debugging tools
+  - Stage 9.5: Interactive documentation
+
+- 📋 **Stage 10**: Performance testing & optimization
+- 📋 **Stage 11**: Cloud deployment & production hardening
+
+**Current Focus:** Stage 9 - Making the task library browsable and composable through visual tools.
 
 See [CLAUDE.md](CLAUDE.md) for the complete roadmap and stage completion proof files.
+
+## Why Choose Workflow Operator?
+
+**You should use this if:**
+- ✅ You have multiple teams building similar integrations (payments, emails, webhooks)
+- ✅ You're tired of copy-pasting HTTP client code across microservices
+- ✅ You want platform teams to build reusable components, not one-off integrations
+- ✅ You need to swap providers (Stripe → Braintree) without touching 30 codebases
+- ✅ You want synchronous workflow execution (API calls return in <30s)
+
+**You should NOT use this if:**
+- ❌ You need long-running workflows (hours/days) - this is synchronous only
+- ❌ You have simple, one-off integrations (overkill for single use cases)
+- ❌ You don't have a platform team to build a task library
+- ❌ Your organization has <5 developers (overhead not justified)

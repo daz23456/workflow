@@ -13,6 +13,35 @@ The format is based on stage completion, and this project follows strict TDD and
 
 ### Recent Changes
 
+- **2025-11-29**: Stage 9.4 Complete: Enhanced Debugging Tools
+  - **Tests:** 135 passing (123 unit + 12 E2E), **Coverage:** 90.54%, **Vulnerabilities:** 0
+  - **Deliverables:** 4/4 complete
+    - Debug page at `/executions/[id]/debug` providing access to all 7 debugging components
+    - DebugLayout component orchestrating execution timeline, task inspector, variable watcher, etc.
+    - Trace API route (`/api/executions/[id]/trace`) for execution timing data
+    - "Debug" link added to execution history panel
+  - **Files Changed:**
+    - New: `app/executions/[id]/debug/page.tsx`, `components/debugging/debug-layout.tsx`
+    - New: `app/api/executions/[id]/trace/route.ts`
+    - New: `e2e/debug-page.spec.ts` (12 E2E tests)
+    - Modified: `components/workflows/execution-history-panel.tsx`, `lib/api/queries.ts`, `types/execution.ts`
+  - See `stage-proofs/stage-9.4/STAGE_9.4_PROOF.md` for details
+
+- **2025-11-29**: Framework Improvement - run-quality-gates.sh now outputs to stage-proofs directory 🔧
+  - **Change:** Added required `--stage` parameter to run-quality-gates.sh script
+  - **Impact:** Gate artifacts now auto-populate to `stage-proofs/stage-X/reports/gates/` instead of `.gate-outputs/`
+  - **Why:** Aligns script output with framework expectations, enables proof file links to work correctly
+  - **Migration:** Future stages must use `./scripts/run-quality-gates.sh --stage X` (parameter is required)
+  - **Features:**
+    - Auto-creates all required subdirectories (gates, coverage, test-results, mutation, benchmarks)
+    - Supports decimal stage numbers (e.g., `--stage 9.6.1`)
+    - Clear error messages if --stage parameter missing
+    - Updated help text with new usage examples
+  - **Files Changed:**
+    - `scripts/run-quality-gates.sh`: 7 sections modified (~60 lines)
+  - **Testing:** All 5 test scenarios passed (basic invocation, missing param, help text, decimals, auto-create)
+  - **Value:** Proof files can now link to artifacts correctly, Stage 9.6.1 and future stages have complete artifact structure
+
 - **2025-11-29**: Stage 9.1 Complete - Visual Workflow Builder Quality Gates ✅
   - Fixed all failing tests (11 → 0): NaN validation bug in execution-input-form
   - Removed all skipped tests (4 → 0) per strict TDD policy

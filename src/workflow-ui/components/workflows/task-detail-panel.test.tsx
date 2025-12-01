@@ -32,7 +32,7 @@ describe('TaskDetailPanel', () => {
       },
       bodyTemplate: '{"email": "{{input.email}}", "password": "{{input.password}}"}',
     },
-    dependencies: ['validate-email'],
+    dependsOn: ['validate-email'],
   };
 
   describe('Basic Rendering', () => {
@@ -161,13 +161,13 @@ describe('TaskDetailPanel', () => {
     });
 
     it('handles task with no dependencies', () => {
-      const taskWithoutDeps = { ...mockTask, dependencies: [] };
+      const taskWithoutDeps = { ...mockTask, dependsOn: [] };
       render(<TaskDetailPanel task={taskWithoutDeps} />);
       expect(screen.getByText(/no dependencies/i)).toBeInTheDocument();
     });
 
     it('handles task with missing dependencies array', () => {
-      const taskWithoutDeps = { ...mockTask, dependencies: undefined };
+      const taskWithoutDeps = { ...mockTask, dependsOn: undefined };
       render(<TaskDetailPanel task={taskWithoutDeps} />);
       expect(screen.getByText(/no dependencies/i)).toBeInTheDocument();
     });
@@ -175,7 +175,7 @@ describe('TaskDetailPanel', () => {
     it('renders multiple dependencies', () => {
       const taskWithMultipleDeps = {
         ...mockTask,
-        dependencies: ['task1', 'task2', 'task3'],
+        dependsOn: ['task1', 'task2', 'task3'],
       };
       render(<TaskDetailPanel task={taskWithMultipleDeps} />);
       expect(screen.getByText('task1')).toBeInTheDocument();

@@ -1,0 +1,47 @@
+apiVersion: workflow.example.com/v1
+kind: Workflow
+metadata:
+  name: hacker-news-top
+  namespace: default
+spec:
+  description: Fetch top Hacker News stories with full details. Demonstrates parallel execution with dynamic array indexing.
+  input: {}
+
+  tasks:
+    # STAGE 1: Get top story IDs (returns array like [42547728, 42547283, ...])
+    - id: get-top-stories
+      taskRef: task-fetch-hn-top-stories
+      input: {}
+      timeout: 10s
+
+    # STAGE 2: Fetch individual story details IN PARALLEL
+    # Uses output[N] syntax to dynamically get story IDs from the array
+    - id: fetch-story-1
+      taskRef: task-fetch-hn-story
+      dependsOn:
+        - get-top-stories
+      input:
+        storyId: "{{tasks.get-top-stories.output.data[0]}}"
+      timeout: 10s
+
+    - id: fetch-story-2
+      taskRef: task-fetch-hn-story
+      dependsOn:
+        - get-top-stories
+      input:
+        storyId: "{{tasks.get-top-stories.output.data[1]}}"
+      timeout: 10s
+
+    - id: fetch-story-3
+      taskRef: task-fetch-hn-story
+      dependsOn:
+        - get-top-stories
+      input:
+        storyId: "{{tasks.get-top-stories.output.data[2]}}"
+      timeout: 10s
+
+  output:
+    topStoryIds: "{{tasks.get-top-stories.output}}"
+    story1: "{{tasks.fetch-story-1.output}}"
+    story2: "{{tasks.fetch-story-2.output}}"
+    story3: "{{tasks.fetch-story-3.output}}"

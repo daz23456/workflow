@@ -35,10 +35,8 @@ export function WorkflowDurationTrendsSection({
   return (
     <div>
       {/* Date range selector */}
-      <div className="mb-4 flex items-center gap-2">
-        <label htmlFor="workflow-date-range" className="text-sm font-medium text-gray-700">
-          Time period:
-        </label>
+      <div className="mb-3 flex items-center gap-2">
+        <span className="text-sm font-medium text-gray-700">Time period:</span>
         <div className="flex gap-2">
           {dateRangeOptions.map((option) => (
             <button

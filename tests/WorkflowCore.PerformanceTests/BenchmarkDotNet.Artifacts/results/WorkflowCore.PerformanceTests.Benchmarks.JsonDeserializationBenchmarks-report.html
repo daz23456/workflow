@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>WorkflowCore.PerformanceTests.Benchmarks.JsonDeserializationBenchmarks-20251130-194747</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet v0.13.11, macOS Sonoma 14.7.6 (23H626) [Darwin 23.6.0]
+Intel Core i9-9880H CPU 2.30GHz, 1 CPU, 16 logical and 8 physical cores
+.NET SDK 8.0.414
+  [Host]     : .NET 8.0.20 (8.0.2025.41914), X64 RyuJIT AVX2
+  Job-JHFEJK : .NET 8.0.20 (8.0.2025.41914), X64 RyuJIT AVX2
+</code></pre>
+<pre><code>IterationCount=10  WarmupCount=3  
+</code></pre>
+
+<table>
+<thead><tr><th>Method                                  </th><th>Mean  </th><th>Error </th><th>StdDev</th><th>Gen0</th><th>Gen1</th><th>Gen2</th><th>Allocated</th>
+</tr>
+</thead><tbody><tr><td>&#39;Small: Full Deserialize then Serialize&#39;</td><td>1,724.9 ns</td><td>48.66 ns</td><td>32.19 ns</td><td>0.1640</td><td>-</td><td>-</td><td>1384 B</td>
+</tr><tr><td>&#39;Small: Keep Raw String (no deserialize)&#39;</td><td>502.1 ns</td><td>47.96 ns</td><td>31.72 ns</td><td>0.0086</td><td>-</td><td>-</td><td>72 B</td>
+</tr><tr><td>&#39;Medium: Full Deserialize then Serialize&#39;</td><td>71,848.0 ns</td><td>1,625.87 ns</td><td>850.36 ns</td><td>5.8594</td><td>0.4883</td><td>0.1221</td><td>49242 B</td>
+</tr><tr><td>&#39;Medium: Keep Raw String (no deserialize)&#39;</td><td>27,212.5 ns</td><td>654.86 ns</td><td>433.15 ns</td><td>-</td><td>-</td><td>-</td><td>73 B</td>
+</tr><tr><td>&#39;Large: Full Deserialize then Serialize&#39;</td><td>502,087.3 ns</td><td>17,278.28 ns</td><td>11,428.51 ns</td><td>140.6250</td><td>140.6250</td><td>23.4375</td><td>209781 B</td>
+</tr><tr><td>&#39;Large: Keep Raw String (no deserialize)&#39;</td><td>193,731.1 ns</td><td>12,022.46 ns</td><td>7,952.11 ns</td><td>-</td><td>-</td><td>-</td><td>120 B</td>
+</tr><tr><td>&#39;Weather: Full Deserialize + Navigate to city&#39;</td><td>5,239.1 ns</td><td>160.04 ns</td><td>105.86 ns</td><td>0.2747</td><td>-</td><td>-</td><td>2320 B</td>
+</tr><tr><td>&#39;Weather: JsonDocument Navigate to city&#39;</td><td>2,966.8 ns</td><td>86.02 ns</td><td>56.90 ns</td><td>0.0114</td><td>-</td><td>-</td><td>112 B</td>
+</tr><tr><td>&#39;Weather: Full Deserialize + Navigate to temp&#39;</td><td>5,181.8 ns</td><td>116.91 ns</td><td>61.14 ns</td><td>0.2747</td><td>-</td><td>-</td><td>2312 B</td>
+</tr><tr><td>&#39;Weather: JsonDocument Navigate to temp&#39;</td><td>2,789.2 ns</td><td>68.57 ns</td><td>40.80 ns</td><td>0.0114</td><td>-</td><td>-</td><td>104 B</td>
+</tr></tbody></table>
+</body>
+</html>

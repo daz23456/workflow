@@ -1,0 +1,41 @@
+apiVersion: workflow.example.com/v1
+kind: Workflow
+metadata:
+  name: template-slack-notification
+  namespace: default
+  annotations:
+    workflow.example.com/template: "true"
+    workflow.example.com/category: "integrations"
+    workflow.example.com/difficulty: "beginner"
+    workflow.example.com/tags: "http,slack,notification,webhook,single-task"
+    workflow.example.com/estimatedTime: "5"
+spec:
+  description: "🎯 TEMPLATE: Simple Slack notification - Send formatted messages to Slack channels using webhooks. Perfect starter template for learning integrations and notifications."
+  input:
+    webhookUrl:
+      type: string
+      required: true
+      description: Slack webhook URL for your channel
+    message:
+      type: string
+      required: true
+      description: Message to send to Slack
+    username:
+      type: string
+      required: false
+      description: Bot username to display (optional)
+    channel:
+      type: string
+      required: false
+      description: Override default channel (optional, e.g. #general)
+  tasks:
+    - id: send-slack-message
+      taskRef: http-post-slack
+      input:
+        url: "{{input.webhookUrl}}"
+        body: '{"text": "{{input.message}}", "username": "{{input.username}}", "channel": "{{input.channel}}"}'
+      timeout: 10s
+  output:
+    success: "{{tasks.send-slack-message.output.ok}}"
+    timestamp: "{{tasks.send-slack-message.output.ts}}"
+    message: "{{input.message}}"

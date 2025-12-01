@@ -7,12 +7,15 @@ import { listTasks } from '@/lib/api/client';
  */
 export async function GET(request: NextRequest) {
   try {
-    // Get namespace filter from query params
+    // Get query parameters
     const searchParams = request.nextUrl.searchParams;
     const namespace = searchParams.get('namespace') || undefined;
+    const search = searchParams.get('search') || undefined;
+    const skip = searchParams.get('skip') ? parseInt(searchParams.get('skip')!, 10) : undefined;
+    const take = searchParams.get('take') ? parseInt(searchParams.get('take')!, 10) : undefined;
 
     // Call backend API to list tasks
-    const backendResponse = await listTasks(namespace);
+    const backendResponse = await listTasks({ namespace, search, skip, take });
 
     // Return response directly (no transformation needed)
     return NextResponse.json(backendResponse);

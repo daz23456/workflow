@@ -28,7 +28,7 @@ async function mockWorkflowAPIs(
           id: 'task-1',
           taskRef: 'test-task',
           description: 'Test task',
-          dependencies: [],
+          dependsOn: [],
         },
       ],
       graph: {

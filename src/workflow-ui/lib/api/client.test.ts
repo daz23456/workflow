@@ -31,7 +31,7 @@ describe('API Client', () => {
 
   beforeEach(() => {
     mockFetch.mockClear();
-    // Note: API_BASE_URL is set at module import time, so we use the default localhost:5000
+    // Note: API_BASE_URL is set at module import time, so we use the default localhost:5001
   });
 
   afterEach(() => {
@@ -48,7 +48,7 @@ describe('API Client', () => {
       await client.listWorkflows();
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'http://localhost:5000/api/v1/workflows',
+        'http://localhost:5001/api/v1/workflows',
         expect.any(Object)
       );
     });
@@ -69,12 +69,12 @@ describe('API Client', () => {
       await freshClient.listWorkflows();
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'http://localhost:5000/api/v1/workflows',
+        'http://localhost:5001/api/v1/workflows',
         expect.any(Object)
       );
 
       // Restore for other tests
-      process.env.API_BASE_URL = 'http://localhost:5000/api/v1';
+      process.env.API_BASE_URL = 'http://localhost:5001/api/v1';
     });
 
     it('should include Content-Type header', async () => {
@@ -186,7 +186,7 @@ describe('API Client', () => {
         await client.listWorkflows();
 
         expect(mockFetch).toHaveBeenCalledWith(
-          'http://localhost:5000/api/v1/workflows',
+          'http://localhost:5001/api/v1/workflows',
           expect.any(Object)
         );
       });
@@ -197,10 +197,10 @@ describe('API Client', () => {
           json: async () => ({ workflows: [] }),
         });
 
-        await client.listWorkflows('production');
+        await client.listWorkflows({ namespace: 'production' });
 
         expect(mockFetch).toHaveBeenCalledWith(
-          'http://localhost:5000/api/v1/workflows?namespace=production',
+          'http://localhost:5001/api/v1/workflows?namespace=production',
           expect.any(Object)
         );
       });
@@ -211,10 +211,10 @@ describe('API Client', () => {
           json: async () => ({ workflows: [] }),
         });
 
-        await client.listWorkflows('prod/staging');
+        await client.listWorkflows({ namespace: 'prod/staging' });
 
         expect(mockFetch).toHaveBeenCalledWith(
-          'http://localhost:5000/api/v1/workflows?namespace=prod%2Fstaging',
+          'http://localhost:5001/api/v1/workflows?namespace=prod%2Fstaging',
           expect.any(Object)
         );
       });
@@ -230,7 +230,7 @@ describe('API Client', () => {
         await client.listTasks();
 
         expect(mockFetch).toHaveBeenCalledWith(
-          'http://localhost:5000/api/v1/tasks',
+          'http://localhost:5001/api/v1/tasks',
           expect.any(Object)
         );
       });
@@ -241,10 +241,10 @@ describe('API Client', () => {
           json: async () => ({ tasks: [] }),
         });
 
-        await client.listTasks('staging');
+        await client.listTasks({ namespace: 'staging' });
 
         expect(mockFetch).toHaveBeenCalledWith(
-          'http://localhost:5000/api/v1/tasks?namespace=staging',
+          'http://localhost:5001/api/v1/tasks?namespace=staging',
           expect.any(Object)
         );
       });
@@ -260,7 +260,7 @@ describe('API Client', () => {
         await client.getWorkflowVersions('user-signup');
 
         expect(mockFetch).toHaveBeenCalledWith(
-          'http://localhost:5000/api/v1/workflows/user-signup/versions',
+          'http://localhost:5001/api/v1/workflows/user-signup/versions',
           expect.any(Object)
         );
       });
@@ -274,7 +274,7 @@ describe('API Client', () => {
         await client.getWorkflowVersions('user/signup');
 
         expect(mockFetch).toHaveBeenCalledWith(
-          'http://localhost:5000/api/v1/workflows/user%2Fsignup/versions',
+          'http://localhost:5001/api/v1/workflows/user%2Fsignup/versions',
           expect.any(Object)
         );
       });
@@ -292,7 +292,7 @@ describe('API Client', () => {
         await client.getWorkflowDetail('test-workflow');
 
         expect(mockFetch).toHaveBeenCalledWith(
-          'http://localhost:5000/api/v1/workflows/test-workflow',
+          'http://localhost:5001/api/v1/workflows/test-workflow',
           expect.any(Object)
         );
       });
@@ -309,7 +309,7 @@ describe('API Client', () => {
         await client.executeWorkflow('user-signup', request);
 
         expect(mockFetch).toHaveBeenCalledWith(
-          'http://localhost:5000/api/v1/workflows/user-signup/execute',
+          'http://localhost:5001/api/v1/workflows/user-signup/execute',
           expect.objectContaining({
             method: 'POST',
             body: JSON.stringify(request),
@@ -329,7 +329,7 @@ describe('API Client', () => {
         await client.testWorkflow('user-signup', request);
 
         expect(mockFetch).toHaveBeenCalledWith(
-          'http://localhost:5000/api/v1/workflows/user-signup/test',
+          'http://localhost:5001/api/v1/workflows/user-signup/test',
           expect.objectContaining({
             method: 'POST',
             body: JSON.stringify(request),
@@ -348,7 +348,7 @@ describe('API Client', () => {
         await client.listWorkflowExecutions('test-workflow');
 
         expect(mockFetch).toHaveBeenCalledWith(
-          'http://localhost:5000/api/v1/workflows/test-workflow/executions',
+          'http://localhost:5001/api/v1/workflows/test-workflow/executions',
           expect.any(Object)
         );
       });
@@ -362,7 +362,7 @@ describe('API Client', () => {
         await client.listWorkflowExecutions('test-workflow', { namespace: 'production' });
 
         expect(mockFetch).toHaveBeenCalledWith(
-          'http://localhost:5000/api/v1/workflows/test-workflow/executions?namespace=production',
+          'http://localhost:5001/api/v1/workflows/test-workflow/executions?namespace=production',
           expect.any(Object)
         );
       });
@@ -376,7 +376,7 @@ describe('API Client', () => {
         await client.listWorkflowExecutions('test-workflow', { status: 'Succeeded' });
 
         expect(mockFetch).toHaveBeenCalledWith(
-          'http://localhost:5000/api/v1/workflows/test-workflow/executions?status=Succeeded',
+          'http://localhost:5001/api/v1/workflows/test-workflow/executions?status=Succeeded',
           expect.any(Object)
         );
       });
@@ -390,7 +390,7 @@ describe('API Client', () => {
         await client.listWorkflowExecutions('test-workflow', { skip: 10, take: 20 });
 
         expect(mockFetch).toHaveBeenCalledWith(
-          'http://localhost:5000/api/v1/workflows/test-workflow/executions?skip=10&take=20',
+          'http://localhost:5001/api/v1/workflows/test-workflow/executions?skip=10&take=20',
           expect.any(Object)
         );
       });
@@ -404,7 +404,7 @@ describe('API Client', () => {
         await client.listWorkflowExecutions('test-workflow', { skip: 0 });
 
         expect(mockFetch).toHaveBeenCalledWith(
-          'http://localhost:5000/api/v1/workflows/test-workflow/executions?skip=0',
+          'http://localhost:5001/api/v1/workflows/test-workflow/executions?skip=0',
           expect.any(Object)
         );
       });
@@ -451,7 +451,7 @@ describe('API Client', () => {
         await client.getWorkflowDurationTrends('test-workflow');
 
         expect(mockFetch).toHaveBeenCalledWith(
-          'http://localhost:5000/api/v1/workflows/test-workflow/duration-trends?daysBack=30',
+          'http://localhost:5001/api/v1/workflows/test-workflow/duration-trends?daysBack=30',
           expect.any(Object)
         );
       });
@@ -465,7 +465,7 @@ describe('API Client', () => {
         await client.getWorkflowDurationTrends('test-workflow', 7);
 
         expect(mockFetch).toHaveBeenCalledWith(
-          'http://localhost:5000/api/v1/workflows/test-workflow/duration-trends?daysBack=7',
+          'http://localhost:5001/api/v1/workflows/test-workflow/duration-trends?daysBack=7',
           expect.any(Object)
         );
       });
@@ -483,7 +483,7 @@ describe('API Client', () => {
         await client.listExecutionsForWorkflow('test-workflow');
 
         expect(mockFetch).toHaveBeenCalledWith(
-          'http://localhost:5000/api/v1/executions/workflows/test-workflow/list',
+          'http://localhost:5001/api/v1/executions/workflows/test-workflow/list',
           expect.any(Object)
         );
       });
@@ -525,7 +525,7 @@ describe('API Client', () => {
         await client.getExecutionDetail('abc-123');
 
         expect(mockFetch).toHaveBeenCalledWith(
-          'http://localhost:5000/api/v1/executions/abc-123',
+          'http://localhost:5001/api/v1/executions/abc-123',
           expect.any(Object)
         );
       });
@@ -539,7 +539,7 @@ describe('API Client', () => {
         await client.getExecutionDetail('abc/123');
 
         expect(mockFetch).toHaveBeenCalledWith(
-          'http://localhost:5000/api/v1/executions/abc%2F123',
+          'http://localhost:5001/api/v1/executions/abc%2F123',
           expect.any(Object)
         );
       });
@@ -555,7 +555,7 @@ describe('API Client', () => {
         await client.getExecutionTrace('exec-456');
 
         expect(mockFetch).toHaveBeenCalledWith(
-          'http://localhost:5000/api/v1/executions/exec-456/trace',
+          'http://localhost:5001/api/v1/executions/exec-456/trace',
           expect.any(Object)
         );
       });
@@ -573,7 +573,7 @@ describe('API Client', () => {
         await client.getTaskDetail('send-email');
 
         expect(mockFetch).toHaveBeenCalledWith(
-          'http://localhost:5000/api/v1/tasks/send-email',
+          'http://localhost:5001/api/v1/tasks/send-email',
           expect.any(Object)
         );
       });
@@ -589,7 +589,7 @@ describe('API Client', () => {
         await client.getTaskUsage('send-email');
 
         expect(mockFetch).toHaveBeenCalledWith(
-          'http://localhost:5000/api/v1/tasks/send-email/usage',
+          'http://localhost:5001/api/v1/tasks/send-email/usage',
           expect.any(Object)
         );
       });
@@ -603,7 +603,7 @@ describe('API Client', () => {
         await client.getTaskUsage('send-email', { skip: 10, take: 5 });
 
         expect(mockFetch).toHaveBeenCalledWith(
-          'http://localhost:5000/api/v1/tasks/send-email/usage?skip=10&take=5',
+          'http://localhost:5001/api/v1/tasks/send-email/usage?skip=10&take=5',
           expect.any(Object)
         );
       });
@@ -619,7 +619,7 @@ describe('API Client', () => {
         await client.getTaskExecutions('send-email');
 
         expect(mockFetch).toHaveBeenCalledWith(
-          'http://localhost:5000/api/v1/tasks/send-email/executions',
+          'http://localhost:5001/api/v1/tasks/send-email/executions',
           expect.any(Object)
         );
       });
@@ -670,7 +670,7 @@ describe('API Client', () => {
         await client.executeTask('send-email', input);
 
         expect(mockFetch).toHaveBeenCalledWith(
-          'http://localhost:5000/api/v1/tasks/send-email/execute',
+          'http://localhost:5001/api/v1/tasks/send-email/execute',
           expect.objectContaining({
             method: 'POST',
             body: JSON.stringify({ input }),
@@ -689,7 +689,7 @@ describe('API Client', () => {
         await client.getTaskDurationTrends('send-email');
 
         expect(mockFetch).toHaveBeenCalledWith(
-          'http://localhost:5000/api/v1/tasks/send-email/duration-trends?daysBack=30',
+          'http://localhost:5001/api/v1/tasks/send-email/duration-trends?daysBack=30',
           expect.any(Object)
         );
       });
@@ -703,7 +703,7 @@ describe('API Client', () => {
         await client.getTaskDurationTrends('send-email', 14);
 
         expect(mockFetch).toHaveBeenCalledWith(
-          'http://localhost:5000/api/v1/tasks/send-email/duration-trends?daysBack=14',
+          'http://localhost:5001/api/v1/tasks/send-email/duration-trends?daysBack=14',
           expect.any(Object)
         );
       });
@@ -720,7 +720,7 @@ describe('API Client', () => {
 
         await client.checkHealth();
 
-        expect(mockFetch).toHaveBeenCalledWith('http://localhost:5000/health');
+        expect(mockFetch).toHaveBeenCalledWith('http://localhost:5001/health');
       });
 
       it('should return healthy status on success', async () => {

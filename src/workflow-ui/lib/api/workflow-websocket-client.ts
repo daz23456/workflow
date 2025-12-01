@@ -1,5 +1,11 @@
 import * as signalR from '@microsoft/signalr';
 
+export interface WorkflowStartedEvent {
+  executionId: string;
+  workflowName: string;
+  timestamp: string;
+}
+
 export interface TaskStartedEvent {
   executionId: string;
   taskId: string;
@@ -26,23 +32,34 @@ export interface WorkflowCompletedEvent {
   timestamp: string;
 }
 
+export interface SignalFlowEvent {
+  executionId: string;
+  fromTaskId: string;
+  toTaskId: string;
+  timestamp: string;
+}
+
 export interface ExecuteWorkflowRequest {
   workflowName: string;
   input: Record<string, unknown>;
 }
 
+export type WorkflowStartedHandler = (event: WorkflowStartedEvent) => void;
 export type TaskStartedHandler = (event: TaskStartedEvent) => void;
 export type TaskCompletedHandler = (event: TaskCompletedEvent) => void;
 export type WorkflowCompletedHandler = (event: WorkflowCompletedEvent) => void;
+export type SignalFlowHandler = (event: SignalFlowEvent) => void;
 
 export class WorkflowWebSocketClient {
   private connection: signalR.HubConnection | null = null;
   private hubUrl: string;
+  private workflowStartedHandlers: WorkflowStartedHandler[] = [];
   private taskStartedHandlers: TaskStartedHandler[] = [];
   private taskCompletedHandlers: TaskCompletedHandler[] = [];
   private workflowCompletedHandlers: WorkflowCompletedHandler[] = [];
+  private signalFlowHandlers: SignalFlowHandler[] = [];
 
-  constructor(hubUrl: string = '/hubs/workflow-execution') {
+  constructor(hubUrl: string = '/hubs/workflow') {
     this.hubUrl = hubUrl;
   }
 
@@ -61,6 +78,10 @@ export class WorkflowWebSocketClient {
       .build();
 
     // Register server-to-client event handlers
+    this.connection.on('WorkflowStarted', (event: WorkflowStartedEvent) => {
+      this.workflowStartedHandlers.forEach((handler) => handler(event));
+    });
+
     this.connection.on('TaskStarted', (event: TaskStartedEvent) => {
       this.taskStartedHandlers.forEach((handler) => handler(event));
     });
@@ -71,6 +92,10 @@ export class WorkflowWebSocketClient {
 
     this.connection.on('WorkflowCompleted', (event: WorkflowCompletedEvent) => {
       this.workflowCompletedHandlers.forEach((handler) => handler(event));
+    });
+
+    this.connection.on('SignalFlow', (event: SignalFlowEvent) => {
+      this.signalFlowHandlers.forEach((handler) => handler(event));
     });
 
     await this.connection.start();
@@ -129,6 +154,40 @@ export class WorkflowWebSocketClient {
   }
 
   /**
+   * Join the global visualization group to receive ALL execution events.
+   * Used by the neural network visualization to monitor all workflow activity.
+   */
+  async joinVisualizationGroup(): Promise<void> {
+    if (!this.connection || this.connection.state !== signalR.HubConnectionState.Connected) {
+      throw new Error('Not connected to WebSocket hub. Call connect() first.');
+    }
+
+    await this.connection.invoke('JoinVisualizationGroup');
+  }
+
+  /**
+   * Leave the global visualization group
+   */
+  async leaveVisualizationGroup(): Promise<void> {
+    if (!this.connection || this.connection.state !== signalR.HubConnectionState.Connected) {
+      throw new Error('Not connected to WebSocket hub. Call connect() first.');
+    }
+
+    await this.connection.invoke('LeaveVisualizationGroup');
+  }
+
+  /**
+   * Register a handler for workflow started events
+   */
+  onWorkflowStarted(handler: WorkflowStartedHandler): () => void {
+    this.workflowStartedHandlers.push(handler);
+    // Return unsubscribe function
+    return () => {
+      this.workflowStartedHandlers = this.workflowStartedHandlers.filter((h) => h !== handler);
+    };
+  }
+
+  /**
    * Register a handler for task started events
    */
   onTaskStarted(handler: TaskStartedHandler): () => void {
@@ -158,6 +217,17 @@ export class WorkflowWebSocketClient {
     // Return unsubscribe function
     return () => {
       this.workflowCompletedHandlers = this.workflowCompletedHandlers.filter((h) => h !== handler);
+    };
+  }
+
+  /**
+   * Register a handler for signal flow events (data flowing between tasks)
+   */
+  onSignalFlow(handler: SignalFlowHandler): () => void {
+    this.signalFlowHandlers.push(handler);
+    // Return unsubscribe function
+    return () => {
+      this.signalFlowHandlers = this.signalFlowHandlers.filter((h) => h !== handler);
     };
   }
 

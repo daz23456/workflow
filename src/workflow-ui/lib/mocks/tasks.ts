@@ -49,6 +49,88 @@ export const mockTaskDetails: Record<string, TaskDetail> = {
       execute: '/api/tasks/fetch-user/execute',
     },
   },
+  'task-fetch-hn-story': {
+    name: 'task-fetch-hn-story',
+    namespace: 'default',
+    description: 'Fetches a Hacker News story by ID',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        storyId: { type: 'integer', description: 'Hacker News story ID' },
+      },
+      required: ['storyId'],
+    },
+    outputSchema: {
+      type: 'object',
+      properties: {
+        by: { type: 'string' },
+        descendants: { type: 'integer' },
+        id: { type: 'integer' },
+        score: { type: 'integer' },
+        time: { type: 'integer' },
+        title: { type: 'string' },
+        type: { type: 'string' },
+        url: { type: 'string' },
+      },
+    },
+    httpRequest: {
+      method: 'GET',
+      url: 'https://hacker-news.firebaseio.com/v0/item/{{input.storyId}}.json',
+      headers: {},
+    },
+    timeout: '10s',
+    stats: {
+      usedByWorkflows: 1,
+      totalExecutions: 50,
+      avgDurationMs: 150,
+      successRate: 98.0,
+      lastExecuted: '2025-01-15T10:30:00Z',
+    },
+    endpoints: {
+      details: '/api/tasks/task-fetch-hn-story',
+      usage: '/api/tasks/task-fetch-hn-story/usage',
+      executions: '/api/tasks/task-fetch-hn-story/executions',
+      execute: '/api/tasks/task-fetch-hn-story/execute',
+    },
+  },
+  'task-fetch-hn-top-stories': {
+    name: 'task-fetch-hn-top-stories',
+    namespace: 'default',
+    description: 'Fetches top story IDs from Hacker News',
+    inputSchema: {
+      type: 'object',
+      properties: {},
+    },
+    outputSchema: {
+      type: 'object',
+      properties: {
+        data: {
+          type: 'array',
+          items: { type: 'integer' },
+          description: 'Array of story IDs',
+        },
+      },
+    },
+    httpRequest: {
+      method: 'GET',
+      url: 'https://hacker-news.firebaseio.com/v0/topstories.json?orderBy="$key"&limitToFirst=5',
+      headers: {},
+    },
+    timeout: '10s',
+    stats: {
+      usedByWorkflows: 1,
+      totalExecutions: 30,
+      avgDurationMs: 200,
+      successRate: 99.0,
+      lastExecuted: '2025-01-15T10:30:00Z',
+    },
+    endpoints: {
+      details: '/api/tasks/task-fetch-hn-top-stories',
+      usage: '/api/tasks/task-fetch-hn-top-stories/usage',
+      executions: '/api/tasks/task-fetch-hn-top-stories/executions',
+      execute: '/api/tasks/task-fetch-hn-top-stories/execute',
+    },
+  },
 };
 
 /**

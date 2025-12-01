@@ -40,12 +40,12 @@ export function buildGraphFromTasks(tasks: TaskDetail[]): WorkflowGraph {
     },
   }));
 
-  // Create edges if tasks have dependencies
+  // Create edges if tasks have dependsOn
   const edges: GraphEdge[] = [];
   tasks.forEach((task) => {
-    console.log(`Task ${task.id} dependencies:`, task.dependencies);
-    if (task.dependencies && task.dependencies.length > 0) {
-      task.dependencies.forEach((depId) => {
+    console.log(`Task ${task.id} dependsOn:`, task.dependsOn);
+    if (task.dependsOn && task.dependsOn.length > 0) {
+      task.dependsOn.forEach((depId) => {
         console.log(`Creating edge: ${depId} -> ${task.id}`);
         edges.push({
           id: `${depId}-to-${task.id}`,

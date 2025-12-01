@@ -331,4 +331,93 @@ describe('ExecutionResultPanel', () => {
       });
     });
   });
+
+  describe('Orchestration Cost Metrics', () => {
+    const mockExecutionWithOrchestrationCost: WorkflowExecutionResponse = {
+      ...mockSuccessExecution,
+      orchestrationCost: {
+        setupDurationMicros: 500,
+        teardownDurationMicros: 200,
+        schedulingOverheadMicros: 100,
+        totalOrchestrationCostMicros: 800,
+        orchestrationCostPercentage: 2.5,
+        executionIterations: 2,
+        iterations: [
+          {
+            iteration: 1,
+            taskIds: ['validate-email'],
+            durationMicros: 1000000,
+            schedulingDelayMicros: 0,
+          },
+          {
+            iteration: 2,
+            taskIds: ['create-user'],
+            durationMicros: 2000000,
+            schedulingDelayMicros: 100,
+          },
+        ],
+      },
+    };
+
+    it('renders orchestration metrics section when data present', () => {
+      render(<ExecutionResultPanel execution={mockExecutionWithOrchestrationCost} />);
+      expect(screen.getByText(/orchestration metrics/i)).toBeInTheDocument();
+    });
+
+    it('shows overhead percentage', () => {
+      render(<ExecutionResultPanel execution={mockExecutionWithOrchestrationCost} />);
+      expect(screen.getByText(/2.5% overhead/i)).toBeInTheDocument();
+    });
+
+    it('shows "Excellent" label for low overhead', () => {
+      render(<ExecutionResultPanel execution={mockExecutionWithOrchestrationCost} />);
+      expect(screen.getByText(/excellent/i)).toBeInTheDocument();
+    });
+
+    it('can expand orchestration metrics section', async () => {
+      const user = userEvent.setup();
+      render(<ExecutionResultPanel execution={mockExecutionWithOrchestrationCost} />);
+
+      const toggleButton = screen.getByRole('button', { name: /toggle orchestration metrics/i });
+      await user.click(toggleButton);
+
+      // Should now show detailed breakdown
+      expect(screen.getByText(/setup time/i)).toBeInTheDocument();
+      expect(screen.getByText(/teardown time/i)).toBeInTheDocument();
+      expect(screen.getByText(/scheduling overhead/i)).toBeInTheDocument();
+    });
+
+    it('shows iteration details when expanded', async () => {
+      const user = userEvent.setup();
+      render(<ExecutionResultPanel execution={mockExecutionWithOrchestrationCost} />);
+
+      const toggleButton = screen.getByRole('button', { name: /toggle orchestration metrics/i });
+      await user.click(toggleButton);
+
+      expect(screen.getByText(/#1/)).toBeInTheDocument();
+      expect(screen.getByText(/#2/)).toBeInTheDocument();
+      expect(screen.getByText(/execution iterations/i)).toBeInTheDocument();
+    });
+
+    it('does not render orchestration section when no data', () => {
+      render(<ExecutionResultPanel execution={mockSuccessExecution} />);
+      expect(screen.queryByText(/orchestration metrics/i)).not.toBeInTheDocument();
+    });
+
+    it('shows "High" label for high overhead', () => {
+      const highOverhead: WorkflowExecutionResponse = {
+        ...mockSuccessExecution,
+        orchestrationCost: {
+          setupDurationMicros: 50000,
+          teardownDurationMicros: 20000,
+          schedulingOverheadMicros: 10000,
+          totalOrchestrationCostMicros: 80000,
+          orchestrationCostPercentage: 25,
+          executionIterations: 1,
+        },
+      };
+      render(<ExecutionResultPanel execution={highOverhead} />);
+      expect(screen.getByText(/high/i)).toBeInTheDocument();
+    });
+  });
 });

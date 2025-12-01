@@ -27,6 +27,16 @@ public class WorkflowDbContext : DbContext
     /// </summary>
     public DbSet<WorkflowVersion> WorkflowVersions { get; set; } = null!;
 
+    /// <summary>
+    /// Pre-computed workflow statistics summaries for O(1) reads.
+    /// </summary>
+    public DbSet<WorkflowStatisticsSummary> WorkflowStatisticsSummaries { get; set; } = null!;
+
+    /// <summary>
+    /// Pre-computed task statistics summaries for O(1) reads.
+    /// </summary>
+    public DbSet<TaskStatisticsSummary> TaskStatisticsSummaries { get; set; } = null!;
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

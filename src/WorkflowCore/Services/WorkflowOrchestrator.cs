@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Text.Json;
+using WorkflowCore.Interfaces;
 using WorkflowCore.Models;
 
 namespace WorkflowCore.Services;
@@ -19,19 +20,25 @@ public class WorkflowOrchestrator : IWorkflowOrchestrator
     private readonly IHttpTaskExecutor _httpTaskExecutor;
     private readonly ITransformTaskExecutor? _transformTaskExecutor;
     private readonly ITemplateResolver _templateResolver;
+    private readonly IWorkflowEventNotifier? _eventNotifier;
+    private readonly IResponseStorage _responseStorage;
     private readonly SemaphoreSlim _semaphore;
 
     public WorkflowOrchestrator(
         IExecutionGraphBuilder graphBuilder,
         IHttpTaskExecutor httpTaskExecutor,
         ITemplateResolver templateResolver,
+        IResponseStorage responseStorage,
         int maxConcurrentTasks = int.MaxValue,
-        ITransformTaskExecutor? transformTaskExecutor = null)
+        ITransformTaskExecutor? transformTaskExecutor = null,
+        IWorkflowEventNotifier? eventNotifier = null)
     {
         _graphBuilder = graphBuilder ?? throw new ArgumentNullException(nameof(graphBuilder));
         _httpTaskExecutor = httpTaskExecutor ?? throw new ArgumentNullException(nameof(httpTaskExecutor));
         _templateResolver = templateResolver ?? throw new ArgumentNullException(nameof(templateResolver));
+        _responseStorage = responseStorage ?? throw new ArgumentNullException(nameof(responseStorage));
         _transformTaskExecutor = transformTaskExecutor;
+        _eventNotifier = eventNotifier;
 
         if (maxConcurrentTasks <= 0)
         {
@@ -48,20 +55,39 @@ public class WorkflowOrchestrator : IWorkflowOrchestrator
         CancellationToken cancellationToken = default)
     {
         var stopwatch = Stopwatch.StartNew();
+        var executionStartedAt = DateTime.UtcNow;
         var taskResults = new Dictionary<string, TaskExecutionResult>();
         var errors = new List<string>();
+        var executionId = Guid.NewGuid();
+        var workflowName = workflow.Metadata?.Name ?? "unknown";
+
+        // Orchestration cost tracking
+        var iterationTimings = new List<IterationTiming>();
+        var iterationCount = 0;
+        DateTime? previousIterationEndTime = null;
+
+        // Emit workflow started event
+        if (_eventNotifier != null)
+        {
+            await _eventNotifier.OnWorkflowStartedAsync(executionId, workflowName, executionStartedAt);
+        }
 
         try
         {
-            // Build execution graph
+            // Build execution graph and time it
+            var graphBuildStopwatch = Stopwatch.StartNew();
             var graphResult = _graphBuilder.Build(workflow);
+            graphBuildStopwatch.Stop();
+            var graphBuildDuration = graphBuildStopwatch.Elapsed;
+
             if (!graphResult.IsValid)
             {
                 return new WorkflowExecutionResult
                 {
                     Success = false,
                     Errors = graphResult.Errors.Select(e => e.Message).ToList(),
-                    TotalDuration = stopwatch.Elapsed
+                    TotalDuration = stopwatch.Elapsed,
+                    GraphBuildDuration = graphBuildDuration
                 };
             }
 
@@ -71,7 +97,8 @@ public class WorkflowOrchestrator : IWorkflowOrchestrator
                 {
                     Success = false,
                     Errors = new List<string> { "Execution graph is null" },
-                    TotalDuration = stopwatch.Elapsed
+                    TotalDuration = stopwatch.Elapsed,
+                    GraphBuildDuration = graphBuildDuration
                 };
             }
 
@@ -82,7 +109,8 @@ public class WorkflowOrchestrator : IWorkflowOrchestrator
                 {
                     Success = true,
                     Output = new Dictionary<string, object>(),
-                    TotalDuration = stopwatch.Elapsed
+                    TotalDuration = stopwatch.Elapsed,
+                    GraphBuildDuration = graphBuildDuration
                 };
             }
 
@@ -102,6 +130,13 @@ public class WorkflowOrchestrator : IWorkflowOrchestrator
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
+                // Track iteration start time
+                iterationCount++;
+                var iterationStartTime = DateTime.UtcNow;
+                var schedulingDelay = previousIterationEndTime.HasValue
+                    ? iterationStartTime - previousIterationEndTime.Value
+                    : TimeSpan.Zero;
+
                 // Find tasks ready to execute (all dependencies satisfied)
                 var readyTasks = remainingTasks
                     .Where(taskId =>
@@ -115,12 +150,16 @@ public class WorkflowOrchestrator : IWorkflowOrchestrator
                 {
                     // No tasks ready but tasks remaining = dependency failed or circular dependency
                     // Mark remaining tasks as skipped
+                    var skippedTime = DateTime.UtcNow;
                     foreach (var taskId in remainingTasks)
                     {
                         taskResults[taskId] = new TaskExecutionResult
                         {
                             Success = false,
-                            Errors = new List<string> { "Task skipped due to failed dependency" }
+                            Errors = new List<string> { "Task skipped due to failed dependency" },
+                            StartedAt = skippedTime,
+                            CompletedAt = skippedTime,
+                            Duration = TimeSpan.Zero
                         };
                         errors.Add($"Task '{taskId}' skipped due to failed dependency");
                     }
@@ -131,6 +170,13 @@ public class WorkflowOrchestrator : IWorkflowOrchestrator
                 var tasks = readyTasks.Select(async taskId =>
                 {
                     var taskStep = workflow.Spec.Tasks.First(t => t.Id == taskId);
+                    var taskStartTime = DateTime.UtcNow;
+
+                    // Emit task started event
+                    if (_eventNotifier != null)
+                    {
+                        await _eventNotifier.OnTaskStartedAsync(executionId, taskId, taskStep.TaskRef, taskStartTime);
+                    }
 
                     // Check if any dependencies failed
                     var dependencies = graphResult.Graph.GetDependencies(taskId);
@@ -138,21 +184,27 @@ public class WorkflowOrchestrator : IWorkflowOrchestrator
 
                     if (hasFailedDependency)
                     {
+                        var skippedTime = DateTime.UtcNow;
                         return (taskId, new TaskExecutionResult
                         {
                             Success = false,
-                            Errors = new List<string> { "Task skipped due to failed dependency" }
+                            Errors = new List<string> { "Task skipped due to failed dependency" },
+                            StartedAt = skippedTime,
+                            CompletedAt = skippedTime
                         });
                     }
 
                     // Get task spec
                     if (!availableTasks.ContainsKey(taskStep.TaskRef))
                     {
+                        var errorTime = DateTime.UtcNow;
                         var errorMessage = $"Task reference '{taskStep.TaskRef}' not found";
                         return (taskId, new TaskExecutionResult
                         {
                             Success = false,
-                            Errors = new List<string> { errorMessage }
+                            Errors = new List<string> { errorMessage },
+                            StartedAt = errorTime,
+                            CompletedAt = errorTime
                         });
                     }
 
@@ -162,6 +214,8 @@ public class WorkflowOrchestrator : IWorkflowOrchestrator
                     await _semaphore.WaitAsync(cancellationToken);
                     try
                     {
+                        // Capture actual start time AFTER semaphore acquired (when task actually starts)
+                        var actualStartTime = DateTime.UtcNow;
                         TaskExecutionResult taskResult;
 
                         // Route based on task type
@@ -169,10 +223,13 @@ public class WorkflowOrchestrator : IWorkflowOrchestrator
                         {
                             if (_transformTaskExecutor == null)
                             {
+                                var errorTime = DateTime.UtcNow;
                                 taskResult = new TaskExecutionResult
                                 {
                                     Success = false,
-                                    Errors = new List<string> { "Transform task executor not available" }
+                                    Errors = new List<string> { "Transform task executor not available" },
+                                    StartedAt = actualStartTime,
+                                    CompletedAt = errorTime
                                 };
                             }
                             else
@@ -209,10 +266,13 @@ public class WorkflowOrchestrator : IWorkflowOrchestrator
                                         }
                                         catch (Exception ex)
                                         {
+                                            var resolveErrorTime = DateTime.UtcNow;
                                             taskResult = new TaskExecutionResult
                                             {
                                                 Success = false,
-                                                Errors = new List<string> { $"Failed to resolve input '{key}': {ex.Message}" }
+                                                Errors = new List<string> { $"Failed to resolve input '{key}': {ex.Message}" },
+                                                StartedAt = actualStartTime,
+                                                CompletedAt = resolveErrorTime
                                             };
                                             return (taskId, taskResult);
                                         }
@@ -226,8 +286,67 @@ public class WorkflowOrchestrator : IWorkflowOrchestrator
                         else
                         {
                             // Default to HTTP task executor for other types
-                            taskResult = await _httpTaskExecutor.ExecuteAsync(taskSpec, context, cancellationToken);
+                            // First, resolve and merge task step inputs into the context
+                            var taskContext = context;
+                            if (taskStep.Input != null && taskStep.Input.Count > 0)
+                            {
+                                // Create a new input dictionary that merges workflow input with task step input
+                                var mergedInput = new Dictionary<string, object>(context.Input);
+                                foreach (var (key, value) in taskStep.Input)
+                                {
+                                    try
+                                    {
+                                        // Resolve templates in the input value (e.g., {{tasks.X.output.Y}})
+                                        var resolvedValue = await _templateResolver.ResolveAsync(value, context);
+
+                                        // If the resolved value is JSON, deserialize it
+                                        if (resolvedValue.StartsWith("{") || resolvedValue.StartsWith("["))
+                                        {
+                                            try
+                                            {
+                                                var deserialized = JsonSerializer.Deserialize<object>(resolvedValue);
+                                                mergedInput[key] = deserialized ?? resolvedValue;
+                                            }
+                                            catch
+                                            {
+                                                mergedInput[key] = resolvedValue;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            mergedInput[key] = resolvedValue;
+                                        }
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        var resolveErrorTime = DateTime.UtcNow;
+                                        taskResult = new TaskExecutionResult
+                                        {
+                                            Success = false,
+                                            Errors = new List<string> { $"Failed to resolve input '{key}': {ex.Message}" },
+                                            StartedAt = actualStartTime,
+                                            CompletedAt = resolveErrorTime
+                                        };
+                                        return (taskId, taskResult);
+                                    }
+                                }
+
+                                // Create a new context with merged inputs
+                                taskContext = new TemplateContext
+                                {
+                                    Input = mergedInput,
+                                    TaskOutputs = context.TaskOutputs
+                                };
+                            }
+
+                            taskResult = await _httpTaskExecutor.ExecuteAsync(taskSpec, taskContext, cancellationToken);
                         }
+
+                        // Capture actual completion time and set timestamps
+                        var actualCompletionTime = DateTime.UtcNow;
+                        taskResult.StartedAt = actualStartTime;
+                        taskResult.CompletedAt = actualCompletionTime;
+                        taskResult.Duration = actualCompletionTime - actualStartTime;
 
                         return (taskId, taskResult);
                     }
@@ -240,10 +359,40 @@ public class WorkflowOrchestrator : IWorkflowOrchestrator
                 // Wait for all parallel tasks to complete
                 var results = await Task.WhenAll(tasks);
 
+                // Track iteration end time and record timing
+                var iterationEndTime = DateTime.UtcNow;
+                iterationTimings.Add(new IterationTiming
+                {
+                    Iteration = iterationCount,
+                    StartedAt = iterationStartTime,
+                    CompletedAt = iterationEndTime,
+                    TaskIds = readyTasks,
+                    SchedulingDelay = schedulingDelay
+                });
+                previousIterationEndTime = iterationEndTime;
+
                 // Process results
                 foreach (var (taskId, taskResult) in results)
                 {
                     taskResults[taskId] = taskResult;
+
+                    // Emit task completed event
+                    if (_eventNotifier != null)
+                    {
+                        var taskStep = workflow.Spec.Tasks.First(t => t.Id == taskId);
+                        var taskStatus = taskResult.Success ? "Succeeded" : "Failed";
+                        var output = taskResult.Output ?? new Dictionary<string, object>();
+
+                        await _eventNotifier.OnTaskCompletedAsync(
+                            executionId,
+                            taskId,
+                            taskStep.TaskRef,
+                            taskStatus,
+                            output,
+                            taskResult.Duration,
+                            DateTime.UtcNow
+                        );
+                    }
 
                     if (!taskResult.Success)
                     {
@@ -257,6 +406,21 @@ public class WorkflowOrchestrator : IWorkflowOrchestrator
                         {
                             // Add task output to context for downstream tasks (thread-safe)
                             context.TaskOutputs[taskId] = taskResult.Output;
+                        }
+
+                        // Emit signal flow events to dependent tasks for neural visualization
+                        if (_eventNotifier != null && graphResult.Graph != null)
+                        {
+                            var dependentTasks = graphResult.Graph.GetDependentTasks(taskId);
+                            foreach (var dependentTaskId in dependentTasks)
+                            {
+                                await _eventNotifier.OnSignalFlowAsync(
+                                    executionId,
+                                    taskId,
+                                    dependentTaskId,
+                                    DateTime.UtcNow
+                                );
+                            }
                         }
                     }
 
@@ -284,19 +448,61 @@ public class WorkflowOrchestrator : IWorkflowOrchestrator
             }
 
             stopwatch.Stop();
+            var executionCompletedAt = DateTime.UtcNow;
+
+            var success = errors.Count == 0;
+            var status = success ? "Succeeded" : "Failed";
+
+            // Emit workflow completed event
+            if (_eventNotifier != null)
+            {
+                await _eventNotifier.OnWorkflowCompletedAsync(
+                    executionId,
+                    workflowName,
+                    status,
+                    workflowOutput,
+                    stopwatch.Elapsed,
+                    executionCompletedAt
+                );
+            }
+
+            // Calculate orchestration cost metrics
+            var orchestrationCost = CalculateOrchestrationCost(
+                executionStartedAt,
+                executionCompletedAt,
+                taskResults,
+                iterationTimings,
+                stopwatch.Elapsed);
 
             return new WorkflowExecutionResult
             {
-                Success = errors.Count == 0,
+                Success = success,
                 Output = workflowOutput,
                 TaskResults = taskResults,
                 Errors = errors,
-                TotalDuration = stopwatch.Elapsed
+                TotalDuration = stopwatch.Elapsed,
+                GraphBuildDuration = graphBuildDuration,
+                OrchestrationCost = orchestrationCost,
+                GraphDiagnostics = graphResult.Diagnostics
             };
         }
         catch (OperationCanceledException)
         {
             stopwatch.Stop();
+
+            // Emit workflow completed event for cancellation
+            if (_eventNotifier != null)
+            {
+                await _eventNotifier.OnWorkflowCompletedAsync(
+                    executionId,
+                    workflowName,
+                    "Cancelled",
+                    new Dictionary<string, object>(),
+                    stopwatch.Elapsed,
+                    DateTime.UtcNow
+                );
+            }
+
             return new WorkflowExecutionResult
             {
                 Success = false,
@@ -308,6 +514,20 @@ public class WorkflowOrchestrator : IWorkflowOrchestrator
         catch (Exception ex)
         {
             stopwatch.Stop();
+
+            // Emit workflow completed event for failure
+            if (_eventNotifier != null)
+            {
+                await _eventNotifier.OnWorkflowCompletedAsync(
+                    executionId,
+                    workflowName,
+                    "Failed",
+                    new Dictionary<string, object>(),
+                    stopwatch.Elapsed,
+                    DateTime.UtcNow
+                );
+            }
+
             return new WorkflowExecutionResult
             {
                 Success = false,
@@ -316,6 +536,86 @@ public class WorkflowOrchestrator : IWorkflowOrchestrator
                 TotalDuration = stopwatch.Elapsed
             };
         }
+        finally
+        {
+            // Cleanup temporary files created during workflow execution
+            foreach (var taskResult in taskResults.Values)
+            {
+                if (taskResult.Output != null && taskResult.Output.ContainsKey("file_path"))
+                {
+                    var filePath = taskResult.Output["file_path"]?.ToString();
+                    _responseStorage.CleanupTempFile(filePath);
+                }
+            }
+        }
     }
 
+    /// <summary>
+    /// Calculate orchestration cost metrics from task execution results
+    /// </summary>
+    private static OrchestrationCostMetrics CalculateOrchestrationCost(
+        DateTime executionStartedAt,
+        DateTime executionCompletedAt,
+        Dictionary<string, TaskExecutionResult> taskResults,
+        List<IterationTiming> iterationTimings,
+        TimeSpan totalDuration)
+    {
+        if (taskResults.Count == 0)
+        {
+            return new OrchestrationCostMetrics
+            {
+                ExecutionStartedAt = executionStartedAt,
+                ExecutionCompletedAt = executionCompletedAt,
+                FirstTaskStartedAt = executionStartedAt,
+                LastTaskCompletedAt = executionCompletedAt,
+                ExecutionIterations = 0,
+                IterationTimings = iterationTimings
+            };
+        }
+
+        // Find first task start and last task completion
+        var tasksWithTimestamps = taskResults.Values
+            .Where(t => t.StartedAt != default)
+            .ToList();
+
+        var firstTaskStartedAt = tasksWithTimestamps.Any()
+            ? tasksWithTimestamps.Min(t => t.StartedAt)
+            : executionStartedAt;
+
+        var lastTaskCompletedAt = tasksWithTimestamps.Any()
+            ? tasksWithTimestamps.Max(t => t.CompletedAt)
+            : executionCompletedAt;
+
+        // Calculate total task execution time (wall-clock time from first start to last completion)
+        var totalTaskExecutionTime = lastTaskCompletedAt - firstTaskStartedAt;
+
+        // Calculate scheduling overhead (sum of delays between iterations)
+        var schedulingOverhead = iterationTimings
+            .Skip(1) // First iteration has no previous iteration
+            .Aggregate(TimeSpan.Zero, (acc, iter) => acc + iter.SchedulingDelay);
+
+        // Calculate orchestration cost percentage
+        var totalMs = totalDuration.TotalMilliseconds;
+        var setupMs = (firstTaskStartedAt - executionStartedAt).TotalMilliseconds;
+        var teardownMs = (executionCompletedAt - lastTaskCompletedAt).TotalMilliseconds;
+        var schedulingMs = schedulingOverhead.TotalMilliseconds;
+        var orchestrationMs = setupMs + teardownMs + schedulingMs;
+
+        var orchestrationCostPercentage = totalMs > 0
+            ? (orchestrationMs / totalMs) * 100
+            : 0;
+
+        return new OrchestrationCostMetrics
+        {
+            ExecutionStartedAt = executionStartedAt,
+            FirstTaskStartedAt = firstTaskStartedAt,
+            LastTaskCompletedAt = lastTaskCompletedAt,
+            ExecutionCompletedAt = executionCompletedAt,
+            TotalTaskExecutionTime = totalTaskExecutionTime,
+            SchedulingOverhead = schedulingOverhead,
+            OrchestrationCostPercentage = Math.Round(orchestrationCostPercentage, 2),
+            ExecutionIterations = iterationTimings.Count,
+            IterationTimings = iterationTimings
+        };
+    }
 }

@@ -1,0 +1,34 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: transform-round
+  namespace: default
+  annotations:
+    workflow.example.com/category: transform
+    workflow.example.com/tags: math,round,decimal
+spec:
+  type: transform
+  description: Round numbers to specified decimal places
+  transform:
+    input: "$.items"
+    pipeline:
+      - operation: round
+        decimals: 2
+  inputSchema:
+    type: object
+    properties:
+      items:
+        type: array
+        description: Array of numbers to round
+        items:
+          type: number
+    required:
+      - items
+  outputSchema:
+    type: object
+    properties:
+      result:
+        type: array
+        description: Array of rounded numbers
+        items:
+          type: number

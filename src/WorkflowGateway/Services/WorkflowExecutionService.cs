@@ -13,6 +13,13 @@ public interface IWorkflowExecutionService
         WorkflowResource workflow,
         Dictionary<string, object> input,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Start a workflow execution asynchronously and return execution ID immediately
+    /// </summary>
+    Task<Guid> StartExecutionAsync(
+        string workflowName,
+        Dictionary<string, object> input);
 }
 
 public class WorkflowExecutionService : IWorkflowExecutionService
@@ -20,17 +27,20 @@ public class WorkflowExecutionService : IWorkflowExecutionService
     private readonly IWorkflowOrchestrator _orchestrator;
     private readonly IWorkflowDiscoveryService _discoveryService;
     private readonly IExecutionRepository? _executionRepository;
+    private readonly IStatisticsAggregationService? _statisticsService;
     private readonly int _timeoutSeconds;
 
     public WorkflowExecutionService(
         IWorkflowOrchestrator orchestrator,
         IWorkflowDiscoveryService discoveryService,
         IExecutionRepository? executionRepository,
+        IStatisticsAggregationService? statisticsService = null,
         int timeoutSeconds = 30)
     {
         _orchestrator = orchestrator ?? throw new ArgumentNullException(nameof(orchestrator));
         _discoveryService = discoveryService ?? throw new ArgumentNullException(nameof(discoveryService));
         _executionRepository = executionRepository;
+        _statisticsService = statisticsService;
         _timeoutSeconds = timeoutSeconds;
     }
 
@@ -77,6 +87,7 @@ public class WorkflowExecutionService : IWorkflowExecutionService
             executionRecord.Status = result.Success ? ExecutionStatus.Succeeded : ExecutionStatus.Failed;
             executionRecord.CompletedAt = DateTime.UtcNow;
             executionRecord.Duration = stopwatch.Elapsed;
+            executionRecord.GraphBuildDuration = result.GraphBuildDuration;
 
             // Map task execution results to TaskExecutionRecords
             executionRecord.TaskExecutionRecords = MapTaskExecutionRecords(executionId, workflow, result.TaskResults);
@@ -85,6 +96,12 @@ public class WorkflowExecutionService : IWorkflowExecutionService
             if (_executionRepository != null)
             {
                 await _executionRepository.SaveExecutionAsync(executionRecord);
+            }
+
+            // Record statistics incrementally (delta-based, O(1))
+            if (_statisticsService != null)
+            {
+                await RecordStatisticsAsync(workflowName, executionRecord.Status, stopwatch.ElapsedMilliseconds, workflow, result.TaskResults);
             }
 
             return new WorkflowExecutionResponse
@@ -96,6 +113,9 @@ public class WorkflowExecutionService : IWorkflowExecutionService
                 ExecutedTasks = result.TaskResults.Keys.ToList(),
                 TaskDetails = MapTaskExecutionDetails(workflow, result.TaskResults),
                 ExecutionTimeMs = stopwatch.ElapsedMilliseconds,
+                GraphBuildDurationMs = (long)result.GraphBuildDuration.TotalMilliseconds,
+                OrchestrationCost = MapOrchestrationCost(result.OrchestrationCost),
+                GraphDiagnostics = MapGraphDiagnostics(result.GraphDiagnostics),
                 Error = result.Errors.Any() ? string.Join("; ", result.Errors) : null
             };
         }
@@ -180,8 +200,6 @@ public class WorkflowExecutionService : IWorkflowExecutionService
         foreach (var (taskId, result) in taskResults)
         {
             var taskStep = taskStepsById.GetValueOrDefault(taskId);
-            var completedAt = DateTime.UtcNow;
-            var startedAt = completedAt - result.Duration;
 
             records.Add(new TaskExecutionRecord
             {
@@ -193,8 +211,9 @@ public class WorkflowExecutionService : IWorkflowExecutionService
                 Errors = result.Errors.Any() ? JsonSerializer.Serialize(result.Errors) : null,
                 Duration = result.Duration,
                 RetryCount = result.RetryCount,
-                StartedAt = startedAt,
-                CompletedAt = completedAt
+                // Use actual timestamps from TaskExecutionResult (set by orchestrator)
+                StartedAt = result.StartedAt,
+                CompletedAt = result.CompletedAt
             });
         }
 
@@ -211,8 +230,6 @@ public class WorkflowExecutionService : IWorkflowExecutionService
         foreach (var (taskId, result) in taskResults)
         {
             var taskStep = taskStepsById.GetValueOrDefault(taskId);
-            var completedAt = DateTime.UtcNow;
-            var startedAt = completedAt - result.Duration;
 
             details.Add(new TaskExecutionDetail
             {
@@ -221,13 +238,159 @@ public class WorkflowExecutionService : IWorkflowExecutionService
                 Success = result.Success,
                 Output = result.Output,
                 Errors = result.Errors,
+                ErrorInfo = MapTaskErrorInfo(result.ErrorInfo, taskId, taskStep?.TaskRef),
                 RetryCount = result.RetryCount,
                 DurationMs = (long)result.Duration.TotalMilliseconds,
-                StartedAt = startedAt,
-                CompletedAt = completedAt
+                // Use actual timestamps from TaskExecutionResult (set by orchestrator)
+                StartedAt = result.StartedAt,
+                CompletedAt = result.CompletedAt
             });
         }
 
         return details;
+    }
+
+    /// <summary>
+    /// Maps TaskErrorInfo from WorkflowCore to TaskErrorInfoResponse for API
+    /// </summary>
+    private static TaskErrorInfoResponse? MapTaskErrorInfo(TaskErrorInfo? errorInfo, string taskId, string? taskRef)
+    {
+        if (errorInfo == null) return null;
+
+        // Enrich with task ID if not set
+        if (string.IsNullOrEmpty(errorInfo.TaskId))
+        {
+            errorInfo.TaskId = taskId;
+        }
+
+        return new TaskErrorInfoResponse
+        {
+            TaskId = errorInfo.TaskId,
+            TaskName = errorInfo.TaskName ?? taskRef,
+            TaskDescription = errorInfo.TaskDescription,
+            ErrorType = errorInfo.ErrorType.ToString(),
+            ErrorMessage = errorInfo.ErrorMessage,
+            ErrorCode = errorInfo.ErrorCode,
+            ServiceName = errorInfo.ServiceName,
+            ServiceUrl = errorInfo.ServiceUrl,
+            HttpMethod = errorInfo.HttpMethod,
+            HttpStatusCode = errorInfo.HttpStatusCode,
+            ResponseBodyPreview = errorInfo.ResponseBodyPreview,
+            RetryAttempts = errorInfo.RetryAttempts,
+            IsRetryable = errorInfo.IsRetryable,
+            OccurredAt = errorInfo.OccurredAt,
+            DurationUntilErrorMs = errorInfo.DurationUntilErrorMs,
+            Suggestion = errorInfo.Suggestion,
+            SupportAction = errorInfo.SupportAction,
+            Summary = errorInfo.GetSummary()
+        };
+    }
+
+    /// <summary>
+    /// Start a workflow execution asynchronously (fire-and-forget) and return execution ID
+    /// </summary>
+    public async Task<Guid> StartExecutionAsync(
+        string workflowName,
+        Dictionary<string, object> input)
+    {
+        // Generate execution ID
+        var executionId = Guid.NewGuid();
+
+        // Get workflow definition
+        var workflow = await _discoveryService.GetWorkflowByNameAsync(workflowName);
+        if (workflow == null)
+        {
+            throw new InvalidOperationException($"Workflow '{workflowName}' not found");
+        }
+
+        // Start execution in background (fire-and-forget)
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await ExecuteAsync(workflow, input);
+            }
+            catch (Exception)
+            {
+                // Log error but don't throw - this is fire-and-forget
+                // Errors will be sent via WebSocket events
+            }
+        });
+
+        return executionId;
+    }
+
+    private static OrchestrationCostResponse? MapOrchestrationCost(OrchestrationCostMetrics? cost)
+    {
+        if (cost == null) return null;
+
+        return new OrchestrationCostResponse
+        {
+            SetupDurationMicros = (long)cost.SetupDuration.TotalMicroseconds,
+            TeardownDurationMicros = (long)cost.TeardownDuration.TotalMicroseconds,
+            SchedulingOverheadMicros = (long)cost.SchedulingOverhead.TotalMicroseconds,
+            TotalOrchestrationCostMicros = (long)cost.TotalOrchestrationCost.TotalMicroseconds,
+            OrchestrationCostPercentage = cost.OrchestrationCostPercentage,
+            ExecutionIterations = cost.ExecutionIterations,
+            Iterations = cost.IterationTimings?.Select(iter => new IterationTimingResponse
+            {
+                Iteration = iter.Iteration,
+                TaskIds = iter.TaskIds,
+                DurationMicros = (long)(iter.CompletedAt - iter.StartedAt).TotalMicroseconds,
+                SchedulingDelayMicros = (long)iter.SchedulingDelay.TotalMicroseconds
+            }).ToList()
+        };
+    }
+
+    private static GraphDiagnosticsResponse? MapGraphDiagnostics(GraphBuildDiagnostics? diagnostics)
+    {
+        if (diagnostics == null) return null;
+
+        return new GraphDiagnosticsResponse
+        {
+            Tasks = diagnostics.TaskDiagnostics.Select(task => new TaskDependencyDiagnosticResponse
+            {
+                TaskId = task.TaskId,
+                ExplicitDependencies = task.ExplicitDependencies,
+                ImplicitDependencies = task.ImplicitDependencies
+            }).ToList()
+        };
+    }
+
+    /// <summary>
+    /// Records workflow and task statistics incrementally (delta-based).
+    /// This is fire-and-forget style - errors are logged but don't fail the workflow.
+    /// </summary>
+    private async Task RecordStatisticsAsync(
+        string workflowName,
+        ExecutionStatus status,
+        long durationMs,
+        WorkflowResource workflow,
+        Dictionary<string, TaskExecutionResult> taskResults)
+    {
+        try
+        {
+            // Record workflow statistics
+            await _statisticsService!.RecordWorkflowExecutionAsync(workflowName, status, durationMs, DateTime.UtcNow);
+
+            // Record task statistics
+            var taskStepsById = workflow.Spec?.Tasks?.ToDictionary(t => t.Id, t => t) ?? new Dictionary<string, WorkflowTaskStep>();
+
+            foreach (var (taskId, result) in taskResults)
+            {
+                var taskStep = taskStepsById.GetValueOrDefault(taskId);
+                if (taskStep?.TaskRef == null) continue;
+
+                var taskStatus = result.Success ? "Succeeded" : "Failed";
+                var taskDurationMs = (long)result.Duration.TotalMilliseconds;
+
+                await _statisticsService.RecordTaskExecutionAsync(taskStep.TaskRef, taskStatus, taskDurationMs, DateTime.UtcNow);
+            }
+        }
+        catch
+        {
+            // Statistics recording is non-critical - don't fail the workflow
+            // In production, this would be logged
+        }
     }
 }

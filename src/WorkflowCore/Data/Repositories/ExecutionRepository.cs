@@ -123,41 +123,33 @@ public class ExecutionRepository : IExecutionRepository
     /// <inheritdoc />
     public async Task<TaskStatistics?> GetTaskStatisticsAsync(string taskName)
     {
-        // Get all task executions for this task
-        var taskExecutions = await _context.TaskExecutionRecords
+        // Use SQL aggregation instead of loading all records into memory
+        var stats = await _context.TaskExecutionRecords
             .Where(t => t.TaskRef == taskName)
-            .ToListAsync();
+            .GroupBy(t => t.TaskRef)
+            .Select(g => new
+            {
+                TotalExecutions = g.Count(),
+                SuccessCount = g.Count(t => t.Status == "Succeeded"),
+                AvgDurationMs = g.Where(t => t.Status == "Succeeded" && t.Duration.HasValue)
+                                 .Select(t => (double?)t.Duration!.Value.TotalMilliseconds)
+                                 .Average() ?? 0,
+                LastExecuted = g.Max(t => (DateTime?)t.StartedAt)
+            })
+            .FirstOrDefaultAsync();
 
         // If no executions, return null
-        if (!taskExecutions.Any())
+        if (stats == null)
         {
             return null;
         }
 
-        // Calculate statistics
-        var totalExecutions = taskExecutions.Count;
-        var successfulExecutions = taskExecutions.Where(t => t.Status == "Succeeded").ToList();
-        var successCount = successfulExecutions.Count;
-        var successRate = totalExecutions > 0 ? (double)successCount / totalExecutions * 100.0 : 0.0;
-
-        // Calculate average duration (only from successful executions with duration data)
-        var executionsWithDuration = successfulExecutions.Where(t => t.Duration.HasValue).ToList();
-        var avgDurationMs = executionsWithDuration.Any()
-            ? (long)executionsWithDuration.Average(t => t.Duration!.Value.TotalMilliseconds)
-            : 0L;
-
-        // Get last execution timestamp
-        var lastExecuted = taskExecutions
-            .OrderByDescending(t => t.StartedAt)
-            .Select(t => (DateTime?)t.StartedAt)
-            .FirstOrDefault();
-
         return new TaskStatistics
         {
-            TotalExecutions = totalExecutions,
-            AverageDurationMs = avgDurationMs,
-            SuccessRate = successRate,
-            LastExecuted = lastExecuted
+            TotalExecutions = stats.TotalExecutions,
+            AverageDurationMs = (long)stats.AvgDurationMs,
+            SuccessRate = stats.TotalExecutions > 0 ? (double)stats.SuccessCount / stats.TotalExecutions * 100.0 : 0.0,
+            LastExecuted = stats.LastExecuted
         };
     }
 
@@ -262,5 +254,96 @@ public class ExecutionRepository : IExecutionRepository
         int index = (int)Math.Ceiling(sortedValues.Count * percentile) - 1;
         index = Math.Max(0, Math.Min(index, sortedValues.Count - 1));
         return sortedValues[index];
+    }
+
+    /// <inheritdoc />
+    public async Task<WorkflowStatistics?> GetWorkflowStatisticsAsync(string workflowName)
+    {
+        // Use SQL aggregation instead of loading all records into memory
+        var stats = await _context.ExecutionRecords
+            .Where(e => e.WorkflowName == workflowName)
+            .GroupBy(e => e.WorkflowName)
+            .Select(g => new
+            {
+                TotalExecutions = g.Count(),
+                SuccessCount = g.Count(e => e.Status == ExecutionStatus.Succeeded),
+                AvgDurationMs = g.Where(e => e.Status == ExecutionStatus.Succeeded && e.Duration.HasValue)
+                                 .Select(e => (double?)e.Duration!.Value.TotalMilliseconds)
+                                 .Average() ?? 0,
+                LastExecuted = g.Max(e => (DateTime?)e.StartedAt)
+            })
+            .FirstOrDefaultAsync();
+
+        // If no executions, return null
+        if (stats == null)
+        {
+            return null;
+        }
+
+        return new WorkflowStatistics
+        {
+            TotalExecutions = stats.TotalExecutions,
+            AverageDurationMs = (long)stats.AvgDurationMs,
+            SuccessRate = stats.TotalExecutions > 0 ? (double)stats.SuccessCount / stats.TotalExecutions * 100.0 : 0.0,
+            LastExecuted = stats.LastExecuted
+        };
+    }
+
+    /// <inheritdoc />
+    public async Task<Dictionary<string, WorkflowStatistics>> GetAllWorkflowStatisticsAsync()
+    {
+        // Get all executions grouped by workflow name
+        var grouped = await _context.ExecutionRecords
+            .GroupBy(e => e.WorkflowName)
+            .Select(g => new
+            {
+                WorkflowName = g.Key,
+                TotalExecutions = g.Count(),
+                SuccessCount = g.Count(e => e.Status == ExecutionStatus.Succeeded),
+                AvgDurationMs = g.Where(e => e.Status == ExecutionStatus.Succeeded && e.Duration.HasValue)
+                                 .Select(e => (double?)e.Duration!.Value.TotalMilliseconds)
+                                 .Average() ?? 0,
+                LastExecuted = g.Max(e => (DateTime?)e.StartedAt)
+            })
+            .ToListAsync();
+
+        return grouped.ToDictionary(
+            g => g.WorkflowName ?? "",
+            g => new WorkflowStatistics
+            {
+                TotalExecutions = g.TotalExecutions,
+                AverageDurationMs = (long)g.AvgDurationMs,
+                SuccessRate = g.TotalExecutions > 0 ? (double)g.SuccessCount / g.TotalExecutions * 100.0 : 0.0,
+                LastExecuted = g.LastExecuted
+            });
+    }
+
+    /// <inheritdoc />
+    public async Task<Dictionary<string, TaskStatistics>> GetAllTaskStatisticsAsync()
+    {
+        // Get all task executions grouped by task name
+        var grouped = await _context.TaskExecutionRecords
+            .GroupBy(t => t.TaskRef)
+            .Select(g => new
+            {
+                TaskRef = g.Key,
+                TotalExecutions = g.Count(),
+                SuccessCount = g.Count(t => t.Status == "Succeeded"),
+                AvgDurationMs = g.Where(t => t.Status == "Succeeded" && t.Duration.HasValue)
+                                 .Select(t => (double?)t.Duration!.Value.TotalMilliseconds)
+                                 .Average() ?? 0,
+                LastExecuted = g.Max(t => (DateTime?)t.StartedAt)
+            })
+            .ToListAsync();
+
+        return grouped.ToDictionary(
+            g => g.TaskRef ?? "",
+            g => new TaskStatistics
+            {
+                TotalExecutions = g.TotalExecutions,
+                AverageDurationMs = (long)g.AvgDurationMs,
+                SuccessRate = g.TotalExecutions > 0 ? (double)g.SuccessCount / g.TotalExecutions * 100.0 : 0.0,
+                LastExecuted = g.LastExecuted
+            });
     }
 }

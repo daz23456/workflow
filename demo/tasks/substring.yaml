@@ -1,0 +1,35 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: transform-substring
+  namespace: default
+  annotations:
+    workflow.example.com/category: transform
+    workflow.example.com/tags: string,substring,slice
+spec:
+  type: transform
+  description: Extract substring from all strings
+  transform:
+    input: "$.items"
+    pipeline:
+      - operation: substring
+        start: 0
+        length: 10
+  inputSchema:
+    type: object
+    properties:
+      items:
+        type: array
+        description: Array of strings to process
+        items:
+          type: string
+    required:
+      - items
+  outputSchema:
+    type: object
+    properties:
+      result:
+        type: array
+        description: Array of extracted substrings
+        items:
+          type: string

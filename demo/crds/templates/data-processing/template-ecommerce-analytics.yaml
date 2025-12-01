@@ -1,0 +1,74 @@
+apiVersion: workflow.example.com/v1
+kind: Workflow
+metadata:
+  name: template-ecommerce-analytics
+  namespace: default
+  annotations:
+    workflow.example.com/template: "true"
+    workflow.example.com/category: "data-processing"
+    workflow.example.com/difficulty: "intermediate"
+    workflow.example.com/tags: "transform,analytics,aggregation,parallel,ecommerce"
+    workflow.example.com/estimatedTime: "15"
+spec:
+  description: "🎯 TEMPLATE: E-commerce analytics pipeline - Process raw order and customer data to extract business insights. Demonstrates data transformation tasks, parallel filtering, and aggregation patterns."
+  input:
+    orders:
+      type: array
+      required: true
+      description: Raw order data from database
+    customers:
+      type: array
+      required: true
+      description: Raw customer data from CRM
+
+  tasks:
+    # STAGE 1: PARALLEL DATA FILTERING
+    # These tasks run in parallel as they have no dependencies
+    - id: filter-high-value-orders
+      taskRef: transform-filter-orders
+      input:
+        orders: "{{input.orders}}"
+      timeout: 30s
+
+    - id: extract-customer-profiles
+      taskRef: transform-extract-customers
+      input:
+        customers: "{{input.customers}}"
+      timeout: 30s
+
+    # STAGE 2A: AGGREGATE ORDER DATA
+    # Depends on filtered orders, runs after stage 1
+    - id: aggregate-customer-stats
+      taskRef: transform-aggregate-by-customer
+      dependsOn:
+        - filter-high-value-orders
+      input:
+        orders: "{{tasks.filter-high-value-orders.output}}"
+      timeout: 30s
+
+    # STAGE 2B: EXTRACT PRODUCT INSIGHTS
+    # Also depends on filtered orders, runs in parallel with aggregate-customer-stats
+    - id: extract-popular-products
+      taskRef: transform-extract-product-names
+      dependsOn:
+        - filter-high-value-orders
+      input:
+        orders: "{{tasks.filter-high-value-orders.output}}"
+      timeout: 30s
+
+    # STAGE 3: IDENTIFY VIP CUSTOMERS
+    # Depends on aggregated stats, runs after stage 2
+    - id: identify-vip-customers
+      taskRef: transform-identify-vip-customers
+      dependsOn:
+        - aggregate-customer-stats
+      input:
+        customerStats: "{{tasks.aggregate-customer-stats.output}}"
+      timeout: 30s
+
+  output:
+    # Map outputs from final stages
+    vipCustomers: "{{tasks.identify-vip-customers.output}}"
+    customerProfiles: "{{tasks.extract-customer-profiles.output}}"
+    popularProducts: "{{tasks.extract-popular-products.output}}"
+    allStats: "{{tasks.aggregate-customer-stats.output}}"

@@ -1,0 +1,33 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: transform-trim
+  namespace: default
+  annotations:
+    workflow.example.com/category: transform
+    workflow.example.com/tags: string,whitespace,trim
+spec:
+  type: transform
+  description: Remove leading and trailing whitespace from all strings
+  transform:
+    input: "$.items"
+    pipeline:
+      - operation: trim
+  inputSchema:
+    type: object
+    properties:
+      items:
+        type: array
+        description: Array of strings to trim
+        items:
+          type: string
+    required:
+      - items
+  outputSchema:
+    type: object
+    properties:
+      result:
+        type: array
+        description: Array of trimmed strings
+        items:
+          type: string

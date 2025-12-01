@@ -122,7 +122,7 @@ describe('WorkflowDetailHeader', () => {
       render(<WorkflowDetailHeader workflow={mockWorkflow} stats={mockStats} />);
       const link = screen.getByRole('link', { name: /back to workflows/i });
       expect(link).toBeInTheDocument();
-      expect(link).toHaveAttribute('href', '/');
+      expect(link).toHaveAttribute('href', '/workflows');
     });
 
     it('shows arrow icon in breadcrumb', () => {

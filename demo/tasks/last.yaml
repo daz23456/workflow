@@ -1,0 +1,31 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: transform-last
+  namespace: default
+  annotations:
+    workflow.example.com/category: transform
+    workflow.example.com/tags: array,last,tail
+spec:
+  type: transform
+  description: Get the last element from an array
+  transform:
+    input: "$.items"
+    pipeline:
+      - operation: last
+  inputSchema:
+    type: object
+    properties:
+      items:
+        type: array
+        description: Array to get last element from
+        items: {}
+    required:
+      - items
+  outputSchema:
+    type: object
+    properties:
+      result:
+        type: array
+        description: Array containing the last element
+        items: {}

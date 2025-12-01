@@ -1,0 +1,33 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: transform-ceil
+  namespace: default
+  annotations:
+    workflow.example.com/category: transform
+    workflow.example.com/tags: math,ceil,round-up
+spec:
+  type: transform
+  description: Round numbers up to nearest integer
+  transform:
+    input: "$.items"
+    pipeline:
+      - operation: ceil
+  inputSchema:
+    type: object
+    properties:
+      items:
+        type: array
+        description: Array of numbers to ceiling
+        items:
+          type: number
+    required:
+      - items
+  outputSchema:
+    type: object
+    properties:
+      result:
+        type: array
+        description: Array of ceiling integers
+        items:
+          type: integer

@@ -46,6 +46,24 @@ vi.mock('@/components/builder/properties-panel', () => ({
   ),
 }));
 
+// Mock InputSchemaPanel
+vi.mock('@/components/builder/input-schema-panel', () => ({
+  InputSchemaPanel: () => (
+    <div data-testid="input-schema-panel">
+      <h2>Input Schema</h2>
+    </div>
+  ),
+}));
+
+// Mock OutputMappingPanel
+vi.mock('@/components/builder/output-mapping-panel', () => ({
+  OutputMappingPanel: () => (
+    <div data-testid="output-mapping-panel">
+      <h2>Output Mapping</h2>
+    </div>
+  ),
+}));
+
 // Mock YAML adapter
 vi.mock('@/lib/adapters/yaml-adapter', () => ({
   graphToYaml: mockConvertToYaml,
@@ -71,6 +89,7 @@ vi.mock('@/lib/stores/workflow-builder-store', () => ({
       validation: { isValid: true, errors: [], warnings: [] },
       history: { past: [], future: [], currentCheckpoint: null },
       autosave: { isDirty: false, lastSaved: null, isAutosaving: false },
+      panel: { activePanel: null, selectedTaskId: null },
       setGraph: mockSetGraph,
       clearGraph: mockClearGraph,
       setMetadata: vi.fn(),
@@ -135,11 +154,6 @@ describe('WorkflowBuilderPage', () => {
       expect(screen.getByTestId('workflow-builder-page')).toBeInTheDocument();
     });
 
-    it('should render page header with title', () => {
-      render(<WorkflowBuilderPage />);
-      expect(screen.getByRole('heading', { name: /create.*workflow/i })).toBeInTheDocument();
-    });
-
     it('should render all three main components', () => {
       render(<WorkflowBuilderPage />);
 
@@ -161,7 +175,7 @@ describe('WorkflowBuilderPage', () => {
     it('should render workflow name input', () => {
       render(<WorkflowBuilderPage />);
 
-      const nameInput = screen.getByLabelText(/workflow name/i);
+      const nameInput = screen.getByRole('textbox', { name: /workflow/i });
       expect(nameInput).toBeInTheDocument();
       expect(nameInput).toHaveAttribute('type', 'text');
     });
@@ -170,22 +184,12 @@ describe('WorkflowBuilderPage', () => {
       const user = userEvent.setup();
       render(<WorkflowBuilderPage />);
 
-      const nameInput = screen.getByLabelText(/workflow name/i);
+      const nameInput = screen.getByRole('textbox', { name: /workflow/i });
       await user.type(nameInput, 'user-onboarding');
 
       expect(nameInput).toHaveValue('user-onboarding');
     });
 
-    it('should validate workflow name format', async () => {
-      const user = userEvent.setup();
-      render(<WorkflowBuilderPage />);
-
-      const nameInput = screen.getByLabelText(/workflow name/i);
-      await user.type(nameInput, 'User Onboarding');
-      fireEvent.blur(nameInput);
-
-      expect(screen.getByText(/must be lowercase/i)).toBeInTheDocument();
-    });
   });
 
   describe('Save Workflow', () => {
@@ -225,7 +229,7 @@ describe('WorkflowBuilderPage', () => {
 
       render(<WorkflowBuilderPage />);
 
-      const nameInput = screen.getByLabelText(/workflow name/i);
+      const nameInput = screen.getByRole('textbox', { name: /workflow/i });
       await user.type(nameInput, 'test-workflow');
 
       const saveButton = screen.getByRole('button', { name: /save/i });
@@ -287,7 +291,7 @@ describe('WorkflowBuilderPage', () => {
 
       render(<WorkflowBuilderPage />);
 
-      const nameInput = screen.getByLabelText(/workflow name/i);
+      const nameInput = screen.getByRole('textbox', { name: /workflow/i });
       fireEvent.change(nameInput, { target: { value: 'test-workflow' } });
 
       fireEvent.keyDown(document, { key: 's', metaKey: true });
@@ -299,13 +303,6 @@ describe('WorkflowBuilderPage', () => {
   });
 
   describe('Accessibility', () => {
-    it('should have accessible page title', () => {
-      render(<WorkflowBuilderPage />);
-
-      const heading = screen.getByRole('heading', { name: /create.*workflow/i });
-      expect(heading.tagName).toBe('H1');
-    });
-
     it('should have keyboard-accessible toolbar', () => {
       // Add a node so save button is enabled
       mockGraphState.nodes = [
@@ -315,7 +312,7 @@ describe('WorkflowBuilderPage', () => {
       render(<WorkflowBuilderPage />);
 
       // Set workflow name so save is enabled
-      const nameInput = screen.getByLabelText(/workflow name/i);
+      const nameInput = screen.getByRole('textbox', { name: /workflow/i });
       fireEvent.change(nameInput, { target: { value: 'test-workflow' } });
 
       const saveButton = screen.getByRole('button', { name: /save/i });

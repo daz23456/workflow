@@ -7,34 +7,18 @@ turbo 2.6.1
 • Packages in scope: @workflow/api-client, @workflow/graph, @workflow/types, @workflow/ui-components, @workflow/validation, workflow-ui, workflow-vscode-client, workflow-vscode-server
 • Running clean in 8 packages
 • Remote caching disabled
+@workflow/graph:clean: cache bypass, force executing ae53fc14b0cf02ea
+@workflow/validation:clean: cache bypass, force executing 9f5db409279e56cd
+workflow-vscode-server:clean: cache bypass, force executing c82159146e5ceffc
+@workflow/api-client:clean: cache bypass, force executing e35fdcfe61ac876e
+workflow-ui:clean: cache bypass, force executing 627a8929d7eff9a4
 @workflow/types:clean: cache bypass, force executing e11c711ecea3d3ea
 workflow-vscode-client:clean: cache bypass, force executing 20eadf9e696108b2
-workflow-vscode-server:clean: cache bypass, force executing c82159146e5ceffc
-@workflow/graph:clean: cache bypass, force executing ae53fc14b0cf02ea
 @workflow/ui-components:clean: cache bypass, force executing e4bb00587e59a50c
-@workflow/api-client:clean: cache bypass, force executing e35fdcfe61ac876e
-workflow-ui:clean: cache bypass, force executing bba17b6fcf5a71d0
-@workflow/validation:clean: cache bypass, force executing 9f5db409279e56cd
-workflow-ui:clean: 
-workflow-ui:clean: > workflow-ui@0.1.0 clean /Users/darren/dev/workflow/src/workflow-ui
-workflow-ui:clean: > rm -rf .next out node_modules/.cache
-workflow-ui:clean: 
 @workflow/validation:clean: 
 @workflow/validation:clean: > @workflow/validation@0.1.0 clean /Users/darren/dev/workflow/packages/workflow-validation
 @workflow/validation:clean: > rm -rf dist
 @workflow/validation:clean: 
-@workflow/types:clean: 
-@workflow/types:clean: > @workflow/types@0.1.0 clean /Users/darren/dev/workflow/packages/workflow-types
-@workflow/types:clean: > rm -rf dist
-@workflow/types:clean: 
-@workflow/api-client:clean: 
-@workflow/api-client:clean: > @workflow/api-client@0.1.0 clean /Users/darren/dev/workflow/packages/workflow-api-client
-@workflow/api-client:clean: > rm -rf dist
-@workflow/api-client:clean: 
-workflow-vscode-server:clean: 
-workflow-vscode-server:clean: > workflow-vscode-server@0.1.0 clean /Users/darren/dev/workflow/src/vscode-extension/server
-workflow-vscode-server:clean: > rm -rf dist
-workflow-vscode-server:clean: 
 @workflow/graph:clean: 
 @workflow/graph:clean: > @workflow/graph@0.1.0 clean /Users/darren/dev/workflow/packages/workflow-graph
 @workflow/graph:clean: > rm -rf dist
@@ -43,6 +27,22 @@ workflow-vscode-server:clean:
 @workflow/ui-components:clean: > @workflow/ui-components@0.1.0 clean /Users/darren/dev/workflow/packages/workflow-ui-components
 @workflow/ui-components:clean: > rm -rf dist
 @workflow/ui-components:clean: 
+workflow-ui:clean: 
+workflow-vscode-server:clean: 
+workflow-vscode-server:clean: > workflow-vscode-server@0.1.0 clean /Users/darren/dev/workflow/src/vscode-extension/server
+workflow-vscode-server:clean: > rm -rf dist
+@workflow/types:clean: 
+@workflow/types:clean: > @workflow/types@0.1.0 clean /Users/darren/dev/workflow/packages/workflow-types
+@workflow/types:clean: > rm -rf dist
+@workflow/types:clean: 
+workflow-ui:clean: > workflow-ui@0.1.0 clean /Users/darren/dev/workflow/src/workflow-ui
+workflow-ui:clean: > rm -rf .next out node_modules/.cache
+workflow-ui:clean: 
+workflow-vscode-server:clean: 
+@workflow/api-client:clean: 
+@workflow/api-client:clean: > @workflow/api-client@0.1.0 clean /Users/darren/dev/workflow/packages/workflow-api-client
+@workflow/api-client:clean: > rm -rf dist
+@workflow/api-client:clean: 
 workflow-vscode-client:clean: 
 workflow-vscode-client:clean: > workflow-vscode-client@0.1.0 clean /Users/darren/dev/workflow/src/vscode-extension/client
 workflow-vscode-client:clean: > rm -rf dist
@@ -50,5 +50,5 @@ workflow-vscode-client:clean:
 
  Tasks:    8 successful, 8 total
 Cached:    0 cached, 8 total
-  Time:    1.267s 
+  Time:    1.278s 
 

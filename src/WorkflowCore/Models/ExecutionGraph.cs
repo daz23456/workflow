@@ -1,3 +1,5 @@
+using WorkflowCore.Services;
+
 namespace WorkflowCore.Models;
 
 public class ExecutionGraph
@@ -201,6 +203,25 @@ public class ExecutionGraph
     }
 
     /// <summary>
+    /// Gets all tasks that depend on the specified task (reverse dependencies).
+    /// Used for SignalFlow events to notify dependent tasks when a task completes.
+    /// </summary>
+    /// <param name="taskId">The task to find dependents for.</param>
+    /// <returns>List of task IDs that depend on the specified task.</returns>
+    public List<string> GetDependentTasks(string taskId)
+    {
+        var dependents = new List<string>();
+        foreach (var node in Nodes)
+        {
+            if (GetDependencies(node).Contains(taskId))
+            {
+                dependents.Add(node);
+            }
+        }
+        return dependents;
+    }
+
+    /// <summary>
     /// Builds a map of which tasks depend on each task (reverse dependencies).
     /// </summary>
     private Dictionary<string, HashSet<string>> BuildDependentsMap()
@@ -228,4 +249,9 @@ public class ExecutionGraphResult
     public bool IsValid { get; set; }
     public ExecutionGraph? Graph { get; set; }
     public List<ValidationError> Errors { get; set; } = new();
+
+    /// <summary>
+    /// Diagnostic information about how dependencies were detected
+    /// </summary>
+    public GraphBuildDiagnostics? Diagnostics { get; set; }
 }

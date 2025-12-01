@@ -1,0 +1,155 @@
+apiVersion: workflow.example.com/v1
+kind: Workflow
+metadata:
+  name: template-order-fulfillment
+  namespace: default
+  annotations:
+    workflow.example.com/template: "true"
+    workflow.example.com/category: "data-processing"
+    workflow.example.com/difficulty: "advanced"
+    workflow.example.com/tags: "http,transform,pipeline,parallel,notifications,ecommerce"
+    workflow.example.com/estimatedTime: "30"
+spec:
+  description: "🎯 TEMPLATE: Advanced order fulfillment pipeline - Real-world e-commerce workflow demonstrating complex orchestration with parallel HTTP calls, data transformations, and conditional logic. Perfect for learning multi-stage pipelines."
+  input:
+    orderId:
+      type: string
+      required: true
+      description: Order ID to process
+    customerId:
+      type: string
+      required: true
+      description: Customer ID for the order
+
+  tasks:
+    # STAGE 1: PARALLEL DATA FETCHING (HTTP)
+    # Fetch customer and inventory data simultaneously
+    - id: fetch-customer-data
+      taskRef: http-get-customer
+      input:
+        customerId: "{{input.customerId}}"
+      timeout: 10s
+
+    - id: fetch-inventory-status
+      taskRef: http-get-inventory
+      input:
+        orderId: "{{input.orderId}}"
+      timeout: 10s
+
+    - id: fetch-order-details
+      taskRef: http-get-order
+      input:
+        orderId: "{{input.orderId}}"
+      timeout: 10s
+
+    # STAGE 2A: EXTRACT SHIPPING INFO (TRANSFORM)
+    # Transform customer data to extract shipping address
+    - id: extract-shipping-address
+      taskRef: transform-extract-customers
+      dependsOn:
+        - fetch-customer-data
+      input:
+        customers: "{{tasks.fetch-customer-data.output.customers}}"
+      timeout: 5s
+
+    # STAGE 2B: CHECK INVENTORY AVAILABILITY (TRANSFORM)
+    # Filter items that are in stock
+    - id: filter-available-items
+      taskRef: transform-filter-orders
+      dependsOn:
+        - fetch-inventory-status
+        - fetch-order-details
+      input:
+        orders: "{{tasks.fetch-order-details.output.items}}"
+      timeout: 5s
+
+    # STAGE 3: CALCULATE SHIPPING (HTTP)
+    # Call shipping API with address and items
+    - id: calculate-shipping-cost
+      taskRef: http-post-shipping-calc
+      dependsOn:
+        - extract-shipping-address
+        - filter-available-items
+      input:
+        address: "{{tasks.extract-shipping-address.output[0]}}"
+        items: "{{tasks.filter-available-items.output}}"
+        orderId: "{{input.orderId}}"
+      timeout: 15s
+
+    # STAGE 4: EXTRACT FASTEST OPTION (TRANSFORM)
+    # Transform shipping options to find best choice
+    - id: select-shipping-option
+      taskRef: transform-extract-product-names
+      dependsOn:
+        - calculate-shipping-cost
+      input:
+        orders: "{{tasks.calculate-shipping-cost.output.options}}"
+      timeout: 5s
+
+    # STAGE 5A: CREATE SHIPMENT (HTTP)
+    # Create shipment with selected option
+    - id: create-shipment
+      taskRef: http-post-shipment
+      dependsOn:
+        - select-shipping-option
+      input:
+        orderId: "{{input.orderId}}"
+        shippingOption: "{{tasks.select-shipping-option.output[0]}}"
+        items: "{{tasks.filter-available-items.output}}"
+      timeout: 15s
+
+    # STAGE 5B: CALCULATE ORDER TOTAL (TRANSFORM)
+    # Aggregate final order costs
+    - id: calculate-order-total
+      taskRef: transform-aggregate-by-customer
+      dependsOn:
+        - filter-available-items
+        - calculate-shipping-cost
+      input:
+        orders: "{{tasks.filter-available-items.output}}"
+      timeout: 5s
+
+    # STAGE 6: UPDATE INVENTORY (HTTP)
+    # Reserve inventory for the order
+    - id: update-inventory
+      taskRef: http-post-inventory-update
+      dependsOn:
+        - create-shipment
+      input:
+        orderId: "{{input.orderId}}"
+        items: "{{tasks.filter-available-items.output}}"
+        shipmentId: "{{tasks.create-shipment.output.shipmentId}}"
+      timeout: 10s
+
+    # STAGE 7: PARALLEL NOTIFICATIONS
+    # Send confirmation email and SMS simultaneously
+    - id: send-confirmation-email
+      taskRef: http-post-email
+      dependsOn:
+        - create-shipment
+        - calculate-order-total
+      input:
+        to: "{{tasks.fetch-customer-data.output.customers[0].email}}"
+        subject: "Order Confirmation - {{input.orderId}}"
+        body: '{"orderId": "{{input.orderId}}", "shipmentId": "{{tasks.create-shipment.output.shipmentId}}", "total": "{{tasks.calculate-order-total.output.totalSpent}}", "trackingUrl": "{{tasks.create-shipment.output.trackingUrl}}"}'
+      timeout: 10s
+
+    - id: send-sms-notification
+      taskRef: http-post-sms
+      dependsOn:
+        - create-shipment
+      input:
+        to: "{{tasks.fetch-customer-data.output.customers[0].phone}}"
+        message: "Your order {{input.orderId}} has shipped! Track at: {{tasks.create-shipment.output.trackingUrl}}"
+      timeout: 10s
+
+  output:
+    orderId: "{{input.orderId}}"
+    customerId: "{{input.customerId}}"
+    shipmentId: "{{tasks.create-shipment.output.shipmentId}}"
+    trackingUrl: "{{tasks.create-shipment.output.trackingUrl}}"
+    shippingCost: "{{tasks.calculate-shipping-cost.output.selectedCost}}"
+    orderTotal: "{{tasks.calculate-order-total.output.totalSpent}}"
+    itemsShipped: "{{tasks.filter-available-items.output}}"
+    emailSent: "{{tasks.send-confirmation-email.output.success}}"
+    smsSent: "{{tasks.send-sms-notification.output.success}}"

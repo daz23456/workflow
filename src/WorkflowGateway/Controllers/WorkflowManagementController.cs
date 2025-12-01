@@ -35,24 +35,70 @@ public class WorkflowManagementController : ControllerBase
     /// Get list of all available workflows
     /// </summary>
     /// <param name="namespace">Optional namespace filter</param>
-    /// <returns>List of workflows with metadata and endpoints</returns>
+    /// <param name="search">Optional search term to filter by name or description</param>
+    /// <param name="skip">Number of records to skip (for pagination)</param>
+    /// <param name="take">Number of records to take (for pagination, defaults to 50)</param>
+    /// <returns>List of workflows with metadata, stats, and endpoints</returns>
     [HttpGet("workflows")]
     [ProducesResponseType(typeof(WorkflowListResponse), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetWorkflows([FromQuery] string? @namespace = null)
+    public async Task<IActionResult> GetWorkflows(
+        [FromQuery] string? @namespace = null,
+        [FromQuery] string? search = null,
+        [FromQuery] int skip = 0,
+        [FromQuery] int take = 50)
     {
         var workflows = await _discoveryService.DiscoverWorkflowsAsync(@namespace);
+        var allWorkflowStats = await _executionRepository.GetAllWorkflowStatisticsAsync();
 
-        var workflowSummaries = workflows.Select(w => new WorkflowSummary
+        // Apply search filter if provided
+        if (!string.IsNullOrWhiteSpace(search))
         {
-            Name = w.Metadata?.Name ?? "",
-            Namespace = w.Metadata?.Namespace ?? "default",
-            TaskCount = w.Spec.Tasks?.Count ?? 0,
-            Endpoint = $"/api/v1/workflows/{w.Metadata?.Name}/execute"
-        }).ToList();
+            var searchLower = search.ToLowerInvariant();
+            workflows = workflows.Where(w =>
+                (w.Metadata?.Name?.ToLowerInvariant().Contains(searchLower) ?? false) ||
+                (w.Spec.Description?.ToLowerInvariant().Contains(searchLower) ?? false)
+            ).ToList();
+        }
+
+        var totalCount = workflows.Count;
+
+        var workflowSummaries = workflows
+            .Skip(skip)
+            .Take(take)
+            .Select(w =>
+            {
+                var name = w.Metadata?.Name ?? "";
+                allWorkflowStats.TryGetValue(name, out var stats);
+
+                // Build input schema preview (list of input parameter names with types)
+                var inputPreview = w.Spec.Input?.Any() == true
+                    ? string.Join(", ", w.Spec.Input.Select(kv => $"{kv.Key}: {kv.Value.Type}"))
+                    : "No input required";
+
+                return new WorkflowSummary
+                {
+                    Name = name,
+                    Namespace = w.Metadata?.Namespace ?? "default",
+                    Description = w.Spec.Description ?? "",
+                    TaskCount = w.Spec.Tasks?.Count ?? 0,
+                    InputSchemaPreview = inputPreview,
+                    Endpoint = $"/api/v1/workflows/{name}/execute",
+                    Stats = stats != null ? new WorkflowSummaryStats
+                    {
+                        TotalExecutions = stats.TotalExecutions,
+                        SuccessRate = stats.SuccessRate,
+                        AvgDurationMs = stats.AverageDurationMs,
+                        LastExecuted = stats.LastExecuted
+                    } : null
+                };
+            }).ToList();
 
         var response = new WorkflowListResponse
         {
-            Workflows = workflowSummaries
+            Workflows = workflowSummaries,
+            Total = totalCount,
+            Skip = skip,
+            Take = take
         };
 
         return Ok(response);
@@ -62,23 +108,69 @@ public class WorkflowManagementController : ControllerBase
     /// Get list of all available workflow tasks
     /// </summary>
     /// <param name="namespace">Optional namespace filter</param>
-    /// <returns>List of tasks with metadata</returns>
+    /// <param name="search">Optional search term to filter by name</param>
+    /// <param name="skip">Number of records to skip (for pagination)</param>
+    /// <param name="take">Number of records to take (for pagination, defaults to 50)</param>
+    /// <returns>List of tasks with metadata and stats</returns>
     [HttpGet("tasks")]
     [ProducesResponseType(typeof(TaskListResponse), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetTasks([FromQuery] string? @namespace = null)
+    public async Task<IActionResult> GetTasks(
+        [FromQuery] string? @namespace = null,
+        [FromQuery] string? search = null,
+        [FromQuery] int skip = 0,
+        [FromQuery] int take = 50)
     {
         var tasks = await _discoveryService.DiscoverTasksAsync(@namespace);
+        var allTaskStats = await _executionRepository.GetAllTaskStatisticsAsync();
+        var allWorkflows = await _discoveryService.DiscoverWorkflowsAsync(@namespace);
 
-        var taskSummaries = tasks.Select(t => new TaskSummary
+        // Apply search filter if provided
+        if (!string.IsNullOrWhiteSpace(search))
         {
-            Name = t.Metadata?.Name ?? "",
-            Namespace = t.Metadata?.Namespace ?? "default",
-            Type = t.Spec.Type
-        }).ToList();
+            var searchLower = search.ToLowerInvariant();
+            tasks = tasks.Where(t =>
+                (t.Metadata?.Name?.ToLowerInvariant().Contains(searchLower) ?? false) ||
+                (t.Spec.Type?.ToLowerInvariant().Contains(searchLower) ?? false)
+            ).ToList();
+        }
+
+        var totalCount = tasks.Count;
+
+        var taskSummaries = tasks
+            .Skip(skip)
+            .Take(take)
+            .Select(t =>
+            {
+                var name = t.Metadata?.Name ?? "";
+                allTaskStats.TryGetValue(name, out var stats);
+
+                // Count workflows using this task
+                var usedByWorkflows = allWorkflows
+                    .Count(w => w.Spec.Tasks?.Any(task => task.TaskRef == name) ?? false);
+
+                return new TaskSummary
+                {
+                    Name = name,
+                    Namespace = t.Metadata?.Namespace ?? "default",
+                    Type = t.Spec.Type,
+                    Description = null, // Not available in WorkflowTaskSpec yet
+                    Stats = new TaskSummaryStats
+                    {
+                        UsedByWorkflows = usedByWorkflows,
+                        TotalExecutions = stats?.TotalExecutions ?? 0,
+                        SuccessRate = stats?.SuccessRate ?? 0,
+                        AvgDurationMs = stats?.AverageDurationMs ?? 0,
+                        LastExecuted = stats?.LastExecuted
+                    }
+                };
+            }).ToList();
 
         var response = new TaskListResponse
         {
-            Tasks = taskSummaries
+            Tasks = taskSummaries,
+            Total = totalCount,
+            Skip = skip,
+            Take = take
         };
 
         return Ok(response);

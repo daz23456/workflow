@@ -127,7 +127,7 @@ public class TransformDslParser : ITransformDslParser
             case AggregateOperation aggregate:
                 ValidateAggregateOperation(aggregate, prefix, errors);
                 break;
-            // FlatMapOperation and EnrichOperation don't have required fields currently
+                // FlatMapOperation and EnrichOperation don't have required fields currently
         }
 
         return errors;

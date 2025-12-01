@@ -5,6 +5,7 @@
  * including graph structure, metadata, validation, and history for undo/redo.
  */
 
+import type React from 'react';
 import type { Node, Edge } from '@xyflow/react';
 import type { JSONSchema } from '@/types/workflow';
 
@@ -64,15 +65,20 @@ export interface WorkflowBuilderNodeData extends Record<string, unknown> {
   inputMapping?: Record<string, string>;
   condition?: string;
   retryCount?: number;
-  dependencies?: string[];
+  dependsOn?: string[];
 }
+
+/**
+ * Node types supported by the workflow builder
+ */
+export type WorkflowNodeType = 'task' | 'input' | 'output';
 
 /**
  * Workflow builder node (extends React Flow Node)
  */
 export interface WorkflowBuilderNode extends Node {
   id: string;
-  type: 'task';
+  type: WorkflowNodeType;
   position: { x: number; y: number };
   data: WorkflowBuilderNodeData;
 }
@@ -85,9 +91,11 @@ export interface WorkflowBuilderEdge extends Edge {
   source: string;
   target: string;
   type: 'dependency';
+  sourceHandle?: string;
+  targetHandle?: string;
   label?: string;
   animated?: boolean;
-  style?: Record<string, string>;
+  style?: React.CSSProperties;
   data?: {
     hasWarning?: boolean;
     hasError?: boolean;
@@ -147,6 +155,19 @@ export interface AutosaveState {
 }
 
 /**
+ * Active panel type for side panel state
+ */
+export type ActivePanelType = 'input' | 'output' | 'task' | null;
+
+/**
+ * Panel state for side panel
+ */
+export interface PanelState {
+  activePanel: ActivePanelType;
+  selectedTaskId: string | null;
+}
+
+/**
  * Complete workflow builder state
  */
 export interface WorkflowBuilderState {
@@ -158,6 +179,7 @@ export interface WorkflowBuilderState {
   validation: ValidationState;
   history: HistoryState;
   autosave: AutosaveState;
+  panel: PanelState;
 }
 
 /**
@@ -196,6 +218,10 @@ export function createEmptyState(): WorkflowBuilderState {
       lastSaved: null,
       isAutosaving: false,
     },
+    panel: {
+      activePanel: null,
+      selectedTaskId: null,
+    },
   };
 }
 
@@ -211,17 +237,23 @@ export function createWorkflowMetadata(partial?: Partial<WorkflowMetadata>): Wor
 }
 
 /**
+ * Valid node types
+ */
+const VALID_NODE_TYPES: WorkflowNodeType[] = ['task', 'input', 'output'];
+
+/**
  * Type guard: check if node is valid
  */
 export function isValidNode(node: any): node is WorkflowBuilderNode {
   if (!node || typeof node !== 'object') return false;
   if (typeof node.id !== 'string' || !node.id) return false;
-  if (node.type !== 'task') return false;
+  if (!VALID_NODE_TYPES.includes(node.type)) return false;
   if (!node.position || typeof node.position.x !== 'number' || typeof node.position.y !== 'number')
     return false;
   if (!node.data || typeof node.data !== 'object') return false;
   if (typeof node.data.label !== 'string') return false;
-  if (!node.data.taskRef || typeof node.data.taskRef !== 'string') return false;
+  // taskRef only required for task nodes
+  if (node.type === 'task' && (!node.data.taskRef || typeof node.data.taskRef !== 'string')) return false;
 
   return true;
 }

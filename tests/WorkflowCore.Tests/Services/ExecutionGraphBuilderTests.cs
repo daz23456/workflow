@@ -643,4 +643,185 @@ public class ExecutionGraphBuilderTests
         result.Graph.Should().NotBeNull();
         result.Graph!.GetDependencies("child").Should().ContainSingle().Which.Should().Be("parent");
     }
+
+    [Fact]
+    public void Build_WithExplicitDependsOn_ShouldRespectDependencyOrder()
+    {
+        // Arrange - Test explicit dependsOn declarations (no data flow, just control flow)
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "task-1", TaskRef = "ref-1" },
+                    new WorkflowTaskStep
+                    {
+                        Id = "task-2",
+                        TaskRef = "ref-2",
+                        DependsOn = new List<string> { "task-1" } // Explicit dependency
+                    }
+                }
+            }
+        };
+
+        // Act
+        var result = _builder.Build(workflow);
+
+        // Assert
+        result.IsValid.Should().BeTrue();
+        result.Graph.Should().NotBeNull();
+        result.Graph!.Nodes.Should().HaveCount(2);
+        result.Graph.GetDependencies("task-1").Should().BeEmpty();
+        result.Graph.GetDependencies("task-2").Should().ContainSingle()
+            .Which.Should().Be("task-1");
+    }
+
+    [Fact]
+    public void Build_WithMultipleDependsOn_ShouldRespectAllDependencies()
+    {
+        // Arrange - Test multiple explicit dependencies
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "task-a", TaskRef = "ref-a" },
+                    new WorkflowTaskStep { Id = "task-b", TaskRef = "ref-b" },
+                    new WorkflowTaskStep { Id = "task-c", TaskRef = "ref-c" },
+                    new WorkflowTaskStep
+                    {
+                        Id = "task-final",
+                        TaskRef = "ref-final",
+                        DependsOn = new List<string> { "task-a", "task-b", "task-c" }
+                    }
+                }
+            }
+        };
+
+        // Act
+        var result = _builder.Build(workflow);
+
+        // Assert
+        result.IsValid.Should().BeTrue();
+        result.Graph.Should().NotBeNull();
+        result.Graph!.GetDependencies("task-final").Should().HaveCount(3)
+            .And.Contain(new[] { "task-a", "task-b", "task-c" });
+    }
+
+    [Fact]
+    public void Build_WithMixedDependsOnAndTemplateDependencies_ShouldCombineBoth()
+    {
+        // Arrange - Test combining explicit and implicit dependencies
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "data-source", TaskRef = "ref-data" },
+                    new WorkflowTaskStep { Id = "setup-task", TaskRef = "ref-setup" },
+                    new WorkflowTaskStep
+                    {
+                        Id = "main-task",
+                        TaskRef = "ref-main",
+                        DependsOn = new List<string> { "setup-task" }, // Explicit: needs setup first
+                        Input = new Dictionary<string, string>
+                        {
+                            ["data"] = "{{tasks.data-source.output.result}}" // Implicit: needs data
+                        }
+                    }
+                }
+            }
+        };
+
+        // Act
+        var result = _builder.Build(workflow);
+
+        // Assert
+        result.IsValid.Should().BeTrue();
+        result.Graph.Should().NotBeNull();
+        result.Graph!.GetDependencies("main-task").Should().HaveCount(2)
+            .And.Contain(new[] { "data-source", "setup-task" });
+    }
+
+    [Fact]
+    public void Build_WithCircularDependsOn_ShouldDetectCycle()
+    {
+        // Arrange - Test circular dependency detection with explicit dependsOn
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = "circular-depends-on" },
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep
+                    {
+                        Id = "task-a",
+                        TaskRef = "ref-a",
+                        DependsOn = new List<string> { "task-b" }
+                    },
+                    new WorkflowTaskStep
+                    {
+                        Id = "task-b",
+                        TaskRef = "ref-b",
+                        DependsOn = new List<string> { "task-a" }
+                    }
+                }
+            }
+        };
+
+        // Act
+        var result = _builder.Build(workflow);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result.Graph.Should().BeNull();
+        result.Errors.Should().ContainSingle();
+        result.Errors[0].Message.Should().Contain("Circular dependency");
+    }
+
+    [Fact]
+    public void Build_WithDependsOnExecutionOrder_ShouldEnforceDependencyBeforeDependent()
+    {
+        // Arrange - Verify execution order respects dependsOn
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    // Declare dependent first (reverse order)
+                    new WorkflowTaskStep
+                    {
+                        Id = "step-3",
+                        TaskRef = "ref-3",
+                        DependsOn = new List<string> { "step-2" }
+                    },
+                    new WorkflowTaskStep
+                    {
+                        Id = "step-2",
+                        TaskRef = "ref-2",
+                        DependsOn = new List<string> { "step-1" }
+                    },
+                    new WorkflowTaskStep { Id = "step-1", TaskRef = "ref-1" }
+                }
+            }
+        };
+
+        // Act
+        var result = _builder.Build(workflow);
+        var executionOrder = result.Graph!.GetExecutionOrder();
+
+        // Assert
+        result.IsValid.Should().BeTrue();
+        var step1Index = executionOrder.IndexOf("step-1");
+        var step2Index = executionOrder.IndexOf("step-2");
+        var step3Index = executionOrder.IndexOf("step-3");
+
+        step1Index.Should().BeLessThan(step2Index, "step-1 must execute before step-2");
+        step2Index.Should().BeLessThan(step3Index, "step-2 must execute before step-3");
+    }
 }

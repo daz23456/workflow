@@ -454,4 +454,146 @@ public class TemplateResolverTests
         exception.TemplatePath.Should().Be("tasks.nonExistent.output.field");
         exception.Message.Should().Contain("nonExistent");
     }
+
+    #region Array Indexing Tests
+
+    [Fact]
+    public async Task ResolveAsync_WithArrayIndexInPath_ShouldReturnElement()
+    {
+        // Arrange - data[0] syntax within a path
+        var template = "{{tasks.get-stories.output.data[0]}}";
+        var context = new TemplateContext
+        {
+            TaskOutputs = new System.Collections.Concurrent.ConcurrentDictionary<string, Dictionary<string, object>>
+            {
+                ["get-stories"] = new Dictionary<string, object>
+                {
+                    ["data"] = new List<object> { 42547728L, 42547283L, 42546942L }
+                }
+            }
+        };
+
+        // Act
+        var result = await _resolver.ResolveAsync(template, context);
+
+        // Assert
+        result.Should().Be("42547728");
+    }
+
+    [Fact]
+    public async Task ResolveAsync_WithArrayIndexInPath_ShouldReturnSecondElement()
+    {
+        // Arrange
+        var template = "{{tasks.get-stories.output.data[1]}}";
+        var context = new TemplateContext
+        {
+            TaskOutputs = new System.Collections.Concurrent.ConcurrentDictionary<string, Dictionary<string, object>>
+            {
+                ["get-stories"] = new Dictionary<string, object>
+                {
+                    ["data"] = new List<object> { 42547728L, 42547283L, 42546942L }
+                }
+            }
+        };
+
+        // Act
+        var result = await _resolver.ResolveAsync(template, context);
+
+        // Assert
+        result.Should().Be("42547283");
+    }
+
+    [Fact]
+    public async Task ResolveAsync_WithArrayIndexAndNestedPath_ShouldReturnNestedValue()
+    {
+        // Arrange - Get nested property from array element
+        var template = "{{tasks.get-stories.output.items[1].title}}";
+        var context = new TemplateContext
+        {
+            TaskOutputs = new System.Collections.Concurrent.ConcurrentDictionary<string, Dictionary<string, object>>
+            {
+                ["get-stories"] = new Dictionary<string, object>
+                {
+                    ["items"] = new List<object>
+                    {
+                        new Dictionary<string, object> { ["id"] = 1, ["title"] = "First Story" },
+                        new Dictionary<string, object> { ["id"] = 2, ["title"] = "Second Story" }
+                    }
+                }
+            }
+        };
+
+        // Act
+        var result = await _resolver.ResolveAsync(template, context);
+
+        // Assert
+        result.Should().Be("Second Story");
+    }
+
+    [Fact]
+    public async Task ResolveAsync_WithMultipleArrayIndexes_ShouldResolveAll()
+    {
+        // Arrange - Multiple array accesses in one template
+        var template = "First: {{tasks.get-ids.output.data[0]}}, Second: {{tasks.get-ids.output.data[1]}}";
+        var context = new TemplateContext
+        {
+            TaskOutputs = new System.Collections.Concurrent.ConcurrentDictionary<string, Dictionary<string, object>>
+            {
+                ["get-ids"] = new Dictionary<string, object>
+                {
+                    ["data"] = new List<object> { 111L, 222L, 333L }
+                }
+            }
+        };
+
+        // Act
+        var result = await _resolver.ResolveAsync(template, context);
+
+        // Assert
+        result.Should().Be("First: 111, Second: 222");
+    }
+
+    [Fact]
+    public async Task ResolveAsync_WithArrayIndexOutOfBounds_ShouldThrowException()
+    {
+        // Arrange
+        var template = "{{tasks.get-data.output.items[10]}}";
+        var context = new TemplateContext
+        {
+            TaskOutputs = new System.Collections.Concurrent.ConcurrentDictionary<string, Dictionary<string, object>>
+            {
+                ["get-data"] = new Dictionary<string, object>
+                {
+                    ["items"] = new List<object> { 1, 2, 3 }
+                }
+            }
+        };
+
+        // Act & Assert
+        await Assert.ThrowsAsync<TemplateResolutionException>(
+            async () => await _resolver.ResolveAsync(template, context));
+    }
+
+    [Fact]
+    public async Task ResolveAsync_WithArrayIndexOnNonArray_ShouldThrowException()
+    {
+        // Arrange - Trying to index a string, not an array
+        var template = "{{tasks.get-data.output.name[0]}}";
+        var context = new TemplateContext
+        {
+            TaskOutputs = new System.Collections.Concurrent.ConcurrentDictionary<string, Dictionary<string, object>>
+            {
+                ["get-data"] = new Dictionary<string, object>
+                {
+                    ["name"] = "John"
+                }
+            }
+        };
+
+        // Act & Assert
+        await Assert.ThrowsAsync<TemplateResolutionException>(
+            async () => await _resolver.ResolveAsync(template, context));
+    }
+
+    #endregion
 }

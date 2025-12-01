@@ -74,6 +74,7 @@ public class ExecutionHistoryController : ControllerBase
             StartedAt = execution.StartedAt,
             CompletedAt = execution.CompletedAt,
             DurationMs = execution.Duration.HasValue ? (long?)execution.Duration.Value.TotalMilliseconds : null,
+            GraphBuildDurationMs = execution.GraphBuildDuration.HasValue ? (long?)execution.GraphBuildDuration.Value.TotalMilliseconds : null,
             Input = DeserializeInputSnapshot(execution.InputSnapshot),
             Tasks = MapTaskExecutionDetails(execution.TaskExecutionRecords)
         };

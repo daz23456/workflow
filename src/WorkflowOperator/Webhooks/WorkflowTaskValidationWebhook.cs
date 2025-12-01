@@ -6,7 +6,7 @@ namespace WorkflowOperator.Webhooks;
 public class WorkflowTaskValidationWebhook
 {
     private readonly ISchemaValidator _schemaValidator;
-    private static readonly HashSet<string> SupportedTypes = new() { "http" };
+    private static readonly HashSet<string> SupportedTypes = new() { "http", "transform" };
     private static readonly HashSet<string> AllowedHttpMethods = new() { "GET", "POST", "PUT", "DELETE", "PATCH" };
 
     public WorkflowTaskValidationWebhook(ISchemaValidator schemaValidator)
@@ -20,6 +20,15 @@ public class WorkflowTaskValidationWebhook
         if (string.IsNullOrWhiteSpace(task.Spec.Type))
         {
             return AdmissionResult.Deny("Task type is required");
+        }
+
+        // Check for deprecated 'fetch' type with helpful migration message
+        if (task.Spec.Type == "fetch")
+        {
+            return AdmissionResult.Deny(
+                "Task type 'fetch' has been deprecated and removed. Please use 'http' instead. " +
+                "The 'fetch' and 'http' types were functionally identical - both make HTTP requests. " +
+                "To migrate: change 'type: fetch' to 'type: http' in your task definition.");
         }
 
         if (!SupportedTypes.Contains(task.Spec.Type))

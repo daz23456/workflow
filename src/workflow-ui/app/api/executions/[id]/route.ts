@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getExecutionDetail } from '@/lib/api/client';
+import type { WorkflowExecutionResponse, TaskExecutionDetail } from '@/types/execution';
 
 /**
  * GET /api/executions/{id}
  * Get detailed execution information (proxied to backend)
+ * Transforms DetailedWorkflowExecutionResponse to WorkflowExecutionResponse format
  */
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -12,8 +14,33 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     // Call backend API to get execution details
     const backendResponse = await getExecutionDetail(id);
 
-    // Return response directly (no transformation needed)
-    return NextResponse.json(backendResponse);
+    // Transform DetailedWorkflowExecutionResponse to WorkflowExecutionResponse format
+    // that the ExecutionResultPanel expects
+    const transformedResponse: WorkflowExecutionResponse = {
+      executionId: backendResponse.executionId,
+      workflowName: backendResponse.workflowName,
+      success: backendResponse.status === 'Succeeded',
+      input: backendResponse.inputSnapshot,
+      output: backendResponse.outputSnapshot || {},
+      tasks: (backendResponse.taskExecutions || []).map((task): TaskExecutionDetail => ({
+        taskId: task.taskId,
+        taskRef: task.taskRef,
+        status: task.status === 'Succeeded' ? 'success' : task.status === 'Failed' ? 'failed' : 'pending',
+        startedAt: task.startedAt,
+        completedAt: task.completedAt,
+        durationMs: task.durationMs || 0,
+        output: task.output,
+        error: task.errors?.join('; '),
+        retryCount: task.retryCount,
+      })),
+      executionTimeMs: backendResponse.durationMs || 0,
+      graphBuildDurationMicros: backendResponse.graphBuildDurationMicros,
+      startedAt: backendResponse.startedAt,
+      completedAt: backendResponse.completedAt,
+      error: backendResponse.errors?.join('; '),
+    };
+
+    return NextResponse.json(transformedResponse);
   } catch (error) {
     console.error('Error fetching execution:', error);
 

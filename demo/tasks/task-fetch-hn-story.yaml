@@ -1,0 +1,39 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: task-fetch-hn-story
+  namespace: default
+spec:
+  type: http
+  http:
+    method: GET
+    url: "https://hacker-news.firebaseio.com/v0/item/{{input.storyId}}.json"
+    headers:
+      Accept: "application/json"
+  inputSchema:
+    type: object
+    properties:
+      storyId:
+        type: integer
+        description: Hacker News story ID
+    required:
+      - storyId
+  outputSchema:
+    type: object
+    properties:
+      id:
+        type: integer
+      type:
+        type: string
+      by:
+        type: string
+      time:
+        type: integer
+      title:
+        type: string
+      url:
+        type: string
+      score:
+        type: integer
+      descendants:
+        type: integer

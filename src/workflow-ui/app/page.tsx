@@ -2,9 +2,9 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Workflow Orchestration Engine',
+  title: 'Workflow Orchestration - Build Reusable Task Libraries',
   description:
-    'Production-grade, Kubernetes-native workflow orchestration for synchronous, user-facing API calls',
+    'Platform teams build battle-tested task libraries. Product teams compose workflows in minutes. Zero copy-paste, zero duplication. Ship 10x faster with composable workflows.',
 };
 
 export default function Home() {
@@ -12,28 +12,73 @@ export default function Home() {
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-16 text-center">
+        <div className="inline-block px-4 py-2 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold mb-6">
+          Stop Reinventing the Wheel
+        </div>
         <h1 className="text-5xl font-bold text-gray-900 mb-6">
-          Workflow Orchestration
+          Build Reusable Lego Bricks,
           <br />
-          <span className="text-blue-600">Made Simple</span>
+          <span className="text-blue-600">Not Distributed Monoliths</span>
         </h1>
-        <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-          Production-grade, Kubernetes-native workflow orchestration engine for synchronous,
-          user-facing API calls. Build complex workflows with simple YAML definitions.
+        <p className="text-xl text-gray-600 mb-4 max-w-3xl mx-auto">
+          <strong>Platform teams</strong> build battle-tested task libraries. <br />
+          <strong>Product teams</strong> compose workflows in minutes.
+        </p>
+        <p className="text-lg text-gray-500 mb-8 max-w-2xl mx-auto">
+          Zero copy-paste. Zero HTTP client code.
+          <br />
+          Update once, improve 50 workflows instantly.
         </p>
         <div className="flex gap-4 justify-center">
           <Link
-            href="/workflows"
+            href="/tasks"
             className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+          >
+            Browse Task Library
+          </Link>
+          <Link
+            href="/workflows"
+            className="px-6 py-3 bg-gray-100 text-gray-900 rounded-lg font-semibold hover:bg-gray-200 transition-colors"
           >
             View Workflows
           </Link>
-          <Link
-            href="/tasks"
-            className="px-6 py-3 bg-gray-100 text-gray-900 rounded-lg font-semibold hover:bg-gray-200 transition-colors"
-          >
-            Browse Tasks
-          </Link>
+        </div>
+      </section>
+
+      {/* Why This Matters Section */}
+      <section className="bg-white py-16 border-y border-gray-200">
+        <div className="container mx-auto px-4">
+          <div className="max-w-5xl mx-auto">
+            <h2 className="text-3xl font-bold text-center mb-12">Why This Matters</h2>
+            <div className="grid md:grid-cols-2 gap-8">
+              <div>
+                <h3 className="text-xl font-semibold mb-3 text-red-600">❌ Before</h3>
+                <ul className="space-y-2 text-gray-600">
+                  <li>• 3 weeks to ship a simple API composition</li>
+                  <li>• Update payment provider → touch 30 codebases</li>
+                  <li>• Copy-paste retry logic across 50 services</li>
+                  <li>• Every team writes their own HTTP wrapper</li>
+                  <li>• Custom code to merge and reshape data from 5 APIs</li>
+                </ul>
+              </div>
+              <div>
+                <h3 className="text-xl font-semibold mb-3 text-green-600">✅ After</h3>
+                <ul className="space-y-2 text-gray-600">
+                  <li>• Ship features in hours, not weeks</li>
+                  <li>• Update task once → 50 workflows auto-upgrade</li>
+                  <li>• Reusable task library (payments, emails, webhooks)</li>
+                  <li>• Compose workflows from existing tasks in 5 minutes</li>
+                  <li>• Chain transforms declaratively - map → filter → aggregate</li>
+                </ul>
+              </div>
+            </div>
+            <div className="mt-8 p-6 bg-blue-50 rounded-lg border border-blue-200">
+              <p className="text-center text-gray-700">
+                <strong>One task, three workflows, zero duplication.</strong> That's the power of
+                composability.
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -178,69 +223,194 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Quick Start Section */}
+      {/* How It Works Section */}
       <section className="bg-gray-50 py-16">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12">Get Started</h2>
-          <div className="max-w-4xl mx-auto">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
-              <h3 className="text-xl font-semibold mb-4">1. Define Your Tasks</h3>
-              <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto text-sm mb-6">
-                {`apiVersion: workflow.io/v1
-kind: WorkflowTask
-metadata:
-  name: fetch-user
-spec:
-  description: Fetch user data from API
-  inputSchema:
-    type: object
-    properties:
-      userId: { type: string }
-  outputSchema:
-    type: object
-    properties:
-      email: { type: string }
-      name: { type: string }
-  http:
-    method: GET
-    url: "https://api.example.com/users/{{input.userId}}"
-    timeout: 5s`}
-              </pre>
+          <h2 className="text-3xl font-bold text-center mb-4">How It Works</h2>
+          <p className="text-center text-gray-600 mb-12 max-w-2xl mx-auto">
+            See how the same tasks get reused across different workflows with zero duplication
+          </p>
+          <div className="max-w-5xl mx-auto">
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* Platform Team Side */}
+              <div className="bg-white rounded-lg shadow-sm border-2 border-blue-200 p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">
+                    P
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg">Platform Team</h3>
+                    <p className="text-sm text-gray-600">Builds task library once</p>
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  <div className="p-3 bg-blue-50 rounded border border-blue-200">
+                    <code className="text-sm font-mono text-blue-800">fetch-user</code>
+                    <p className="text-xs text-gray-600 mt-1">Get user from API</p>
+                  </div>
+                  <div className="p-3 bg-blue-50 rounded border border-blue-200">
+                    <code className="text-sm font-mono text-blue-800">send-email</code>
+                    <p className="text-xs text-gray-600 mt-1">Send email via service</p>
+                  </div>
+                  <div className="p-3 bg-blue-50 rounded border border-blue-200">
+                    <code className="text-sm font-mono text-blue-800">charge-payment</code>
+                    <p className="text-xs text-gray-600 mt-1">Process payments</p>
+                  </div>
+                </div>
+              </div>
 
-              <h3 className="text-xl font-semibold mb-4">2. Create a Workflow</h3>
-              <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto text-sm mb-6">
-                {`apiVersion: workflow.io/v1
-kind: Workflow
-metadata:
-  name: user-onboarding
-spec:
-  description: Onboard new users
-  inputSchema:
-    type: object
-    properties:
-      userId: { type: string }
-  tasks:
-    - id: fetch-user
-      taskRef: fetch-user
-      input:
-        userId: "{{input.userId}}"
-    - id: send-welcome
-      taskRef: send-email
-      dependsOn: [fetch-user]
-      input:
-        to: "{{tasks.fetch-user.output.email}}"
-        subject: "Welcome!"
-  output:
-    userEmail: "{{tasks.fetch-user.output.email}}"`}
-              </pre>
-
-              <h3 className="text-xl font-semibold mb-4">3. Execute via API</h3>
-              <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto text-sm">
-                {`curl -X POST http://localhost:5000/api/v1/workflows/user-onboarding/execute \\
-  -H "Content-Type: application/json" \\
-  -d '{"userId": "123"}'`}
-              </pre>
+              {/* Product Teams Side */}
+              <div className="bg-white rounded-lg shadow-sm border-2 border-green-200 p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center text-white font-bold">
+                    T
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg">Product Teams</h3>
+                    <p className="text-sm text-gray-600">Compose workflows from tasks</p>
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  <div className="p-3 bg-green-50 rounded border border-green-200">
+                    <p className="font-semibold text-sm mb-1">Order Fulfillment</p>
+                    <div className="flex gap-1 flex-wrap">
+                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                        fetch-user
+                      </span>
+                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                        charge-payment
+                      </span>
+                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                        send-email
+                      </span>
+                    </div>
+                  </div>
+                  <div className="p-3 bg-green-50 rounded border border-green-200">
+                    <p className="font-semibold text-sm mb-1">User Onboarding</p>
+                    <div className="flex gap-1 flex-wrap">
+                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                        fetch-user
+                      </span>
+                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                        send-email
+                      </span>
+                    </div>
+                  </div>
+                  <div className="p-3 bg-green-50 rounded border border-green-200">
+                    <p className="font-semibold text-sm mb-1">Subscription Renewal</p>
+                    <div className="flex gap-1 flex-wrap">
+                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                        fetch-user
+                      </span>
+                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                        charge-payment
+                      </span>
+                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                        send-email
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
+
+            <div className="mt-8 p-6 bg-gradient-to-r from-blue-50 to-green-50 rounded-lg border border-blue-200">
+              <p className="text-center text-gray-800">
+                <strong>3 tasks</strong> × <strong>3 workflows</strong> ={' '}
+                <strong className="text-blue-600">9 integrations</strong> with{' '}
+                <strong className="text-green-600">zero code duplication</strong>
+              </p>
+              <p className="text-center text-sm text-gray-600 mt-2">
+                Update <code className="text-xs bg-white px-2 py-1 rounded">charge-payment</code>{' '}
+                once → Both Order Fulfillment and Subscription Renewal get the upgrade
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Learning Playground CTA Section */}
+      <section className="container mx-auto px-4 py-16">
+        <div className="bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700 rounded-2xl p-12 text-white text-center overflow-hidden relative">
+          {/* Decorative elements */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full -mr-32 -mt-32"></div>
+          <div className="absolute bottom-0 left-0 w-48 h-48 bg-white opacity-5 rounded-full -ml-24 -mb-24"></div>
+
+          <div className="relative z-10">
+            <div className="flex justify-center mb-6">
+              <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center transform rotate-12 hover:rotate-0 transition-transform">
+                <svg
+                  className="w-12 h-12 text-purple-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                  />
+                </svg>
+              </div>
+            </div>
+
+            <div className="inline-block px-4 py-2 bg-white bg-opacity-20 rounded-full text-sm font-semibold mb-4">
+              New! Interactive Learning 🎓
+            </div>
+
+            <h2 className="text-4xl font-bold mb-4">Learn by Doing</h2>
+            <p className="text-xl mb-3 opacity-95 max-w-2xl mx-auto">
+              Master workflow orchestration through <strong>hands-on interactive lessons</strong>
+            </p>
+            <p className="text-lg mb-8 opacity-80 max-w-2xl mx-auto">
+              5 progressive lessons • Live code editing • Step-by-step guidance • Track your
+              progress
+            </p>
+
+            <div className="flex gap-6 justify-center items-center mb-8">
+              <div className="text-center">
+                <div className="text-3xl font-bold mb-1">5</div>
+                <div className="text-sm opacity-80">Lessons</div>
+              </div>
+              <div className="w-px h-12 bg-white opacity-30"></div>
+              <div className="text-center">
+                <div className="text-3xl font-bold mb-1">10-30</div>
+                <div className="text-sm opacity-80">Minutes Each</div>
+              </div>
+              <div className="w-px h-12 bg-white opacity-30"></div>
+              <div className="text-center">
+                <div className="text-3xl font-bold mb-1">100%</div>
+                <div className="text-sm opacity-80">Free</div>
+              </div>
+            </div>
+
+            <Link
+              href="/playground"
+              className="inline-flex items-center gap-3 px-10 py-5 bg-white text-purple-600 rounded-xl font-bold text-lg hover:bg-gray-100 transition-all transform hover:scale-105 shadow-2xl"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M13 10V3L4 14h7v7l9-11h-7z"
+                />
+              </svg>
+              Start Learning Now
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5l7 7-7 7"
+                />
+              </svg>
+            </Link>
+
+            <p className="text-sm opacity-70 mt-6">
+              From "Hello World" to advanced features in under 2 hours
+            </p>
           </div>
         </div>
       </section>
@@ -287,6 +457,7 @@ spec:
       <section className="container mx-auto px-4 py-16">
         <h2 className="text-3xl font-bold text-center mb-12">Coming Soon</h2>
         <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+          {/* Visual Workflow Designer - commented out
           <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-6 rounded-lg border border-purple-200">
             <div className="flex items-start gap-4">
               <div className="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -312,6 +483,7 @@ spec:
               </div>
             </div>
           </div>
+          */}
 
           <div className="bg-gradient-to-br from-green-50 to-teal-50 p-6 rounded-lg border border-green-200">
             <div className="flex items-start gap-4">
@@ -331,9 +503,9 @@ spec:
                 </svg>
               </div>
               <div>
-                <h3 className="font-semibold text-lg mb-2">Real-Time Monitoring</h3>
+                <h3 className="font-semibold text-lg mb-2">Platform Health Dashboard</h3>
                 <p className="text-gray-600 text-sm">
-                  Live execution tracking with performance metrics and bottleneck identification
+                  System-wide metrics, worst performers, alerting, and historical trends
                 </p>
               </div>
             </div>
@@ -365,6 +537,7 @@ spec:
             </div>
           </div>
 
+          {/* Neural Network Visualization - commented out
           <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-lg border border-blue-200">
             <div className="flex items-start gap-4">
               <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -390,30 +563,86 @@ spec:
               </div>
             </div>
           </div>
+          */}
+
+          <div className="bg-gradient-to-br from-amber-50 to-yellow-50 p-6 rounded-lg border border-amber-200">
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 bg-amber-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                <svg
+                  className="w-6 h-6 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+                  />
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-semibold text-lg mb-2">AI Workflow Generation</h3>
+                <p className="text-gray-600 text-sm">
+                  Describe what you want in plain English - AI builds the workflow for you
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-br from-emerald-50 to-teal-50 p-6 rounded-lg border border-emerald-200">
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 bg-emerald-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                <svg
+                  className="w-6 h-6 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                  />
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-semibold text-lg mb-2">Workflow Optimizer</h3>
+                <p className="text-gray-600 text-sm">
+                  Automatic performance tuning - proven safe by replaying past executions
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="bg-gray-900 text-white py-16">
+      <section className="bg-gradient-to-r from-gray-900 to-blue-900 text-white py-16">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-4">Ready to Get Started?</h2>
+          <h2 className="text-3xl font-bold mb-4">Ready to Build with Lego Bricks?</h2>
           <p className="text-xl text-gray-300 mb-8">
-            Explore existing workflows or dive into task definitions
+            Browse the task library and see how teams are composing workflows
           </p>
-          <div className="flex gap-4 justify-center">
-            <Link
-              href="/workflows"
-              className="px-8 py-4 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
-            >
-              Browse Workflows
-            </Link>
+          <div className="flex gap-4 justify-center flex-wrap">
             <Link
               href="/tasks"
-              className="px-8 py-4 bg-gray-700 text-white rounded-lg font-semibold hover:bg-gray-600 transition-colors"
+              className="px-8 py-4 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
             >
-              View Tasks
+              Explore Task Library
+            </Link>
+            <Link
+              href="/workflows"
+              className="px-8 py-4 bg-white text-gray-900 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
+            >
+              See Workflows in Action
             </Link>
           </div>
+          <p className="text-sm text-gray-400 mt-6">
+            Join teams shipping 10x faster with composable workflows
+          </p>
         </div>
       </section>
     </div>

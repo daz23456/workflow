@@ -1,0 +1,158 @@
+apiVersion: workflow.example.com/v1
+kind: Workflow
+metadata:
+  name: template-payment-processing
+  namespace: default
+  annotations:
+    workflow.example.com/template: "true"
+    workflow.example.com/category: "integrations"
+    workflow.example.com/difficulty: "advanced"
+    workflow.example.com/tags: "http,payment,validation,security,notifications,error-handling"
+    workflow.example.com/estimatedTime: "25"
+spec:
+  description: "🎯 TEMPLATE: Secure payment processing pipeline - Complete payment workflow with validation, fraud detection, authorization, capture, and notifications. Production-ready example showing error handling, security checks, and multi-stage payment flow."
+  input:
+    amount:
+      type: number
+      required: true
+      description: Payment amount in cents
+    currency:
+      type: string
+      required: true
+      description: Currency code (USD, EUR, etc.)
+    customerId:
+      type: string
+      required: true
+      description: Customer ID for payment
+    paymentMethod:
+      type: string
+      required: true
+      description: Payment method ID (card, bank, etc.)
+    orderId:
+      type: string
+      required: true
+      description: Order ID for this payment
+  tasks:
+    # STAGE 1: PARALLEL VALIDATION & RISK CHECKS
+    - id: validate-payment-method
+      taskRef: http-get-payment-method
+      input:
+        customerId: "{{input.customerId}}"
+        methodId: "{{input.paymentMethod}}"
+      timeout: 10s
+
+    - id: fetch-customer-profile
+      taskRef: http-get-customer
+      input:
+        customerId: "{{input.customerId}}"
+      timeout: 10s
+
+    - id: check-fraud-score
+      taskRef: http-post-fraud-check
+      input:
+        customerId: "{{input.customerId}}"
+        amount: "{{input.amount}}"
+        currency: "{{input.currency}}"
+      timeout: 15s
+
+    # STAGE 2: EVALUATE RISK & VALIDATE LIMITS
+    - id: evaluate-risk-score
+      taskRef: transform-evaluate-threshold
+      dependsOn:
+        - check-fraud-score
+      input:
+        value: "{{tasks.check-fraud-score.output.score}}"
+        threshold: 75
+        operator: "less_than"
+      timeout: 5s
+
+    - id: validate-spending-limit
+      taskRef: transform-validate-limit
+      dependsOn:
+        - fetch-customer-profile
+      input:
+        amount: "{{input.amount}}"
+        dailyLimit: "{{tasks.fetch-customer-profile.output.dailySpendingLimit}}"
+        monthlyLimit: "{{tasks.fetch-customer-profile.output.monthlySpendingLimit}}"
+      timeout: 5s
+
+    # STAGE 3: AUTHORIZE PAYMENT (conditional on risk check)
+    - id: authorize-payment
+      taskRef: http-post-payment-authorize
+      dependsOn:
+        - validate-payment-method
+        - evaluate-risk-score
+        - validate-spending-limit
+      input:
+        customerId: "{{input.customerId}}"
+        amount: "{{input.amount}}"
+        currency: "{{input.currency}}"
+        paymentMethod: "{{input.paymentMethod}}"
+        orderId: "{{input.orderId}}"
+        fraudScore: "{{tasks.check-fraud-score.output.score}}"
+      timeout: 20s
+
+    # STAGE 4: CAPTURE PAYMENT
+    - id: capture-payment
+      taskRef: http-post-payment-capture
+      dependsOn:
+        - authorize-payment
+      input:
+        authorizationId: "{{tasks.authorize-payment.output.authId}}"
+        amount: "{{input.amount}}"
+      timeout: 20s
+
+    # STAGE 5: PARALLEL POST-PROCESSING
+    - id: create-transaction-record
+      taskRef: http-post-transaction
+      dependsOn:
+        - capture-payment
+      input:
+        customerId: "{{input.customerId}}"
+        orderId: "{{input.orderId}}"
+        amount: "{{input.amount}}"
+        currency: "{{input.currency}}"
+        paymentId: "{{tasks.capture-payment.output.paymentId}}"
+        status: "captured"
+      timeout: 10s
+
+    - id: send-receipt-email
+      taskRef: http-post-email
+      dependsOn:
+        - capture-payment
+      input:
+        to: "{{tasks.fetch-customer-profile.output.email}}"
+        subject: "Payment Receipt - Order {{input.orderId}}"
+        body: '{"orderId": "{{input.orderId}}", "amount": "{{input.amount}}", "currency": "{{input.currency}}", "paymentId": "{{tasks.capture-payment.output.paymentId}}", "timestamp": "{{tasks.capture-payment.output.timestamp}}"}'
+      timeout: 10s
+
+    - id: update-customer-spending
+      taskRef: http-patch-customer-stats
+      dependsOn:
+        - capture-payment
+      input:
+        customerId: "{{input.customerId}}"
+        amount: "{{input.amount}}"
+        transactionId: "{{tasks.capture-payment.output.paymentId}}"
+      timeout: 10s
+
+    # STAGE 6: FINAL NOTIFICATION
+    - id: send-slack-alert
+      taskRef: http-post-slack
+      dependsOn:
+        - create-transaction-record
+      input:
+        message: "💰 Payment processed: ${{input.amount}} for order {{input.orderId}}"
+        channel: "#payments"
+      timeout: 10s
+
+  output:
+    paymentId: "{{tasks.capture-payment.output.paymentId}}"
+    authorizationId: "{{tasks.authorize-payment.output.authId}}"
+    status: "captured"
+    amount: "{{input.amount}}"
+    currency: "{{input.currency}}"
+    fraudScore: "{{tasks.check-fraud-score.output.score}}"
+    receiptSent: "{{tasks.send-receipt-email.output.success}}"
+    transactionId: "{{tasks.create-transaction-record.output.id}}"
+    timestamp: "{{tasks.capture-payment.output.timestamp}}"

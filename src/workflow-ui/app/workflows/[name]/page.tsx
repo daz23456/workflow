@@ -7,10 +7,8 @@ import {
   useWorkflowExecutions,
   useExecuteWorkflow,
   useDryRun,
-  useExecutionDetail,
 } from '@/lib/api/queries';
 import { WorkflowDetailTabs } from '@/components/workflows/workflow-detail-tabs';
-import { WorkflowDurationTrendsSection } from '@/components/analytics/workflow-duration-trends-section';
 import { buildGraphFromTasks } from '@/lib/utils/build-graph-from-tasks';
 import type { WorkflowExecutionResponse } from '@/types/execution';
 
@@ -19,7 +17,8 @@ export default function WorkflowDetailPage({ params }: { params: Promise<{ name:
 
   // Fetch workflow data using TanStack Query
   const { data: workflow, isLoading, error } = useWorkflowDetail(workflowName);
-  const { data: executionsData } = useWorkflowExecutions(workflowName, { limit: 10, offset: 0 });
+  // Fetch a larger batch of executions for the history panel (client-side pagination)
+  const { data: executionsData } = useWorkflowExecutions(workflowName, { limit: 500, offset: 0 });
 
   // Mutations for execute and dry-run
   const executeWorkflow = useExecuteWorkflow(workflowName);
@@ -99,30 +98,41 @@ export default function WorkflowDetailPage({ params }: { params: Promise<{ name:
     graph: workflow.graph || (workflow.tasks ? buildGraphFromTasks(workflow.tasks) : undefined),
   };
 
-  // Mock stats for now (will be replaced with real stats from backend)
+  // Calculate stats from execution history
+  const executions = executionsData?.executions || [];
+  const totalExecutions = executionsData?.total || executions.length;
+
+  // Calculate success rate from loaded executions
+  const successfulExecutions = executions.filter(
+    (e) => e.status === 'success'
+  ).length;
+  const successRate = executions.length > 0
+    ? (successfulExecutions / executions.length) * 100
+    : 0;
+
+  // Calculate average duration from loaded executions
+  const durationsMs = executions
+    .filter((e) => e.durationMs && e.durationMs > 0)
+    .map((e) => e.durationMs);
+  const avgDurationMs = durationsMs.length > 0
+    ? durationsMs.reduce((sum, d) => sum + d, 0) / durationsMs.length
+    : 0;
+
   const stats = {
-    totalExecutions: executionsData?.total || 0,
-    successRate: 0, // TODO: Calculate from execution history
-    avgDurationMs: 0, // TODO: Calculate from execution history
+    totalExecutions,
+    successRate,
+    avgDurationMs,
   };
 
   // Render workflow detail page
   return (
-    <div>
-      {/* Workflow Detail Tabs */}
-      <WorkflowDetailTabs
-        workflow={workflowWithGraph}
-        stats={stats}
-        executionHistory={executionsData?.executions || []}
-        onExecute={handleExecute}
-        onTest={handleTest}
-        onFetchExecution={handleFetchExecution}
-      />
-
-      {/* Duration Trends Section */}
-      <div className="container mx-auto px-6 pb-6">
-        <WorkflowDurationTrendsSection workflowName={workflowName} />
-      </div>
-    </div>
+    <WorkflowDetailTabs
+      workflow={workflowWithGraph}
+      stats={stats}
+      executionHistory={executionsData?.executions || []}
+      onExecute={handleExecute}
+      onTest={handleTest}
+      onFetchExecution={handleFetchExecution}
+    />
   );
 }

@@ -86,7 +86,59 @@ public class WorkflowTaskValidationWebhookTests
         // Assert
         result.Allowed.Should().BeFalse();
         result.Message.Should().Contain("Unsupported task type");
-        result.Message.Should().Contain("Supported types: http");
+        result.Message.Should().Contain("Supported types: http, transform");
+    }
+
+    [Fact]
+    public async Task ValidateAsync_WithDeprecatedFetchType_ShouldReturnDeniedWithMigrationMessage()
+    {
+        // Arrange
+        var task = new WorkflowTaskResource
+        {
+            Metadata = new ResourceMetadata { Name = "fetch-task" },
+            Spec = new WorkflowTaskSpec
+            {
+                Type = "fetch",
+                Request = new HttpRequestDefinition
+                {
+                    Method = "GET",
+                    Url = "https://api.example.com"
+                }
+            }
+        };
+
+        // Act
+        var result = await _webhook.ValidateAsync(task);
+
+        // Assert
+        result.Allowed.Should().BeFalse();
+        result.Message.Should().Contain("'fetch' has been deprecated");
+        result.Message.Should().Contain("use 'http' instead");
+        result.Message.Should().Contain("change 'type: fetch' to 'type: http'");
+    }
+
+    [Fact]
+    public async Task ValidateAsync_WithTransformType_ShouldReturnAllowed()
+    {
+        // Arrange
+        var task = new WorkflowTaskResource
+        {
+            Metadata = new ResourceMetadata { Name = "transform-task" },
+            Spec = new WorkflowTaskSpec
+            {
+                Type = "transform",
+                Transform = new TransformDefinition
+                {
+                    Query = "$.data[*]"
+                }
+            }
+        };
+
+        // Act
+        var result = await _webhook.ValidateAsync(task);
+
+        // Assert
+        result.Allowed.Should().BeTrue();
     }
 
     [Fact]

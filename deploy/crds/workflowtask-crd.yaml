@@ -33,8 +33,8 @@ spec:
               properties:
                 type:
                   type: string
-                  enum: [http, fetch, transform]
-                  description: "Task type: http for HTTP requests, fetch for API calls, transform for data transformations"
+                  enum: [http, transform]
+                  description: "Task type: http for HTTP/API requests, transform for data transformations"
                 description:
                   type: string
                 http:
@@ -55,14 +55,20 @@ spec:
                       x-kubernetes-preserve-unknown-fields: true
                 transform:
                   type: object
-                  description: "Data transformation configuration using JSONPath"
+                  description: "Data transformation configuration using JSONPath or pipeline operations"
                   properties:
                     input:
                       type: string
                       description: "JSONPath expression to select input data"
                     jsonPath:
                       type: string
-                      description: "JSONPath transformation query"
+                      description: "JSONPath transformation query (legacy)"
+                    pipeline:
+                      type: array
+                      description: "Pipeline of transform operations to apply sequentially"
+                      items:
+                        type: object
+                        x-kubernetes-preserve-unknown-fields: true
                 request:
                   type: object
                   required:

@@ -1,0 +1,33 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: transform-lowercase
+  namespace: default
+  annotations:
+    workflow.example.com/category: transform
+    workflow.example.com/tags: string,case,lowercase
+spec:
+  type: transform
+  description: Convert all strings in array to lowercase
+  transform:
+    input: "$.items"
+    pipeline:
+      - operation: lowercase
+  inputSchema:
+    type: object
+    properties:
+      items:
+        type: array
+        description: Array of strings to convert
+        items:
+          type: string
+    required:
+      - items
+  outputSchema:
+    type: object
+    properties:
+      result:
+        type: array
+        description: Array of lowercase strings
+        items:
+          type: string

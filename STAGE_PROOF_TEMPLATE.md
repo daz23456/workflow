@@ -52,31 +52,37 @@
 
 ## 🎯 Quality Gates
 
-### Mandatory (Always Required)
-- [ ] Gate 3: Clean Build → ✅ PASS
-- [ ] Gate 5: All Tests Passing → ✅ PASS
-- [ ] Gate 6: Code Coverage ≥90% → ✅ PASS ([XX%])
-- [ ] Gate 7: Zero Vulnerabilities → ✅ PASS
-- [ ] Gate 1: No Template Files → ✅ PASS
-- [ ] Gate 8: Proof Completeness → ✅ PASS
+**Gate Profile Used:** [BACKEND_DOTNET / FRONTEND_TS / MINIMAL]
 
-### Recommended
-- [ ] Gate 9: Mutation Testing → [✅ ≥80% / ⚠️ [XX%] / ⏭️ Skipped]
+### TIER 1: Mandatory (Gates 1-8)
+| Gate | Name | Result |
+|------|------|--------|
+| 1 | No Template Files | [✅ PASS / ❌ FAIL] |
+| 2 | Linting | [✅ PASS / ❌ FAIL] |
+| 3 | Clean Build | [✅ PASS / ❌ FAIL] |
+| 4 | Type Safety (TS only) | [✅ PASS / ⏭️ N/A] |
+| 5 | All Tests Passing | [✅ PASS / ❌ FAIL] |
+| 6 | Code Coverage ≥90% | [✅ XX% / ❌ XX%] |
+| 7 | Zero Vulnerabilities | [✅ PASS / ❌ FAIL] |
+| 8 | Proof Completeness | [✅ PASS / ❌ FAIL] |
 
-### Context-Dependent (Selected for This Stage)
-- [ ] Gate 2: Linting → [✅ PASS / ⏭️ N/A]
-- [ ] Gate 4: Type Safety (TS only) → [✅ PASS / ⏭️ N/A]
-- [ ] Gate 11: Integration Tests → [✅ PASS / ⏭️ N/A]
-- [ ] Gate 12: Performance Benchmarks → [✅ PASS / ⏭️ N/A]
-- [ ] Gate 13: API Contract → [✅ PASS / ⏭️ N/A]
-- [ ] Gate 10: Documentation → [✅ PASS / ⏭️ N/A]
-- [ ] Gate 14: Accessibility → [✅ PASS / ⏭️ N/A]
-- [ ] Gate 15: E2E Tests → [✅ PASS / ⏭️ N/A]
+### TIER 2: Recommended (Gates 9-10)
+| Gate | Name | Result |
+|------|------|--------|
+| 9 | Mutation Testing ≥80% | [✅ XX% / ⚠️ XX% / ⏭️ Skipped] |
+| 10 | Documentation | [✅ PASS / ⏭️ Skipped] |
+
+### TIER 3: Optional (Gates 11-15) - Only if selected
+| Gate | Name | Result |
+|------|------|--------|
+| 11 | Integration Tests | [✅ PASS / ⏭️ N/A] |
+| 12 | Performance Benchmarks | [✅ PASS / ⏭️ N/A] |
+| 13 | API Contract | [✅ PASS / ⏭️ N/A] |
+| 14 | Accessibility (UI only) | [✅ PASS / ⏭️ N/A] |
+| 15 | E2E Tests | [✅ PASS / ⏭️ N/A] |
 
 **Gate Selection Rationale:**
-> [Explain which optional gates were selected and why]
->
-> Example: "Gate 2 (Linting) and Gate 11 (Integration) selected because this stage adds API endpoints. Gate 13 (API Contract) ensures OpenAPI spec is up-to-date. Gates 9, 11, 13-15 not applicable."
+> [Which optional gates were run and why. Example: "BACKEND_DOTNET profile. Gates 11, 13 run for API validation. Gates 14-15 skipped (no UI)."]
 
 ---
 

@@ -2,6 +2,7 @@
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useState, useEffect } from 'react';
+import { TourProvider } from '@/components/tours/tour-provider';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -46,5 +47,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
     return <div>Loading...</div>;
   }
 
-  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TourProvider>
+        {children}
+      </TourProvider>
+    </QueryClientProvider>
+  );
 }

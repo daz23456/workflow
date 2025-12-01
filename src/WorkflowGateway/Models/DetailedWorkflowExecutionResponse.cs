@@ -36,6 +36,11 @@ public class DetailedWorkflowExecutionResponse
     public long? DurationMs { get; set; }
 
     /// <summary>
+    /// Time taken to build the execution graph in milliseconds.
+    /// </summary>
+    public long? GraphBuildDurationMs { get; set; }
+
+    /// <summary>
     /// Workflow input parameters, deserialized from JSON snapshot.
     /// </summary>
     public Dictionary<string, object>? Input { get; set; }

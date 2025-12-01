@@ -165,7 +165,7 @@ describe('layoutGraph', () => {
   });
 
   describe('Custom Spacing', () => {
-    it('respects custom node spacing', () => {
+    it('respects custom rank spacing (vertical)', () => {
       const nodes: Node[] = [
         { id: 'task1', position: { x: 0, y: 0 }, data: { label: 'Task 1' } },
         { id: 'task2', position: { x: 0, y: 0 }, data: { label: 'Task 2' } },
@@ -173,7 +173,7 @@ describe('layoutGraph', () => {
       const edges: Edge[] = [{ id: 'e1-2', source: 'task1', target: 'task2' }];
 
       const layoutedDefault = layoutGraph(nodes, edges);
-      const layoutedCustom = layoutGraph(nodes, edges, { nodeSpacing: 200 });
+      const layoutedCustom = layoutGraph(nodes, edges, { rankSpacing: 250 });
 
       const spacingDefault = Math.abs(
         layoutedDefault[1].position.y - layoutedDefault[0].position.y

@@ -59,7 +59,7 @@ const userSignupDetail: WorkflowDetail = {
           reason: { type: 'string' },
         },
       },
-      dependencies: [],
+      dependsOn: [],
     },
     {
       id: 'create-user',
@@ -79,7 +79,7 @@ const userSignupDetail: WorkflowDetail = {
           createdAt: { type: 'string' },
         },
       },
-      dependencies: ['validate-email'],
+      dependsOn: ['validate-email'],
     },
     {
       id: 'send-email',
@@ -99,7 +99,7 @@ const userSignupDetail: WorkflowDetail = {
           sentAt: { type: 'string' },
         },
       },
-      dependencies: ['create-user'],
+      dependsOn: ['create-user'],
     },
   ],
   graph: {
@@ -215,7 +215,7 @@ const orderProcessingDetail: WorkflowDetail = {
           valid: { type: 'boolean' },
         },
       },
-      dependencies: [],
+      dependsOn: [],
     },
     {
       id: 'check-inventory',
@@ -233,7 +233,7 @@ const orderProcessingDetail: WorkflowDetail = {
           reservationId: { type: 'string' },
         },
       },
-      dependencies: ['validate-order'],
+      dependsOn: ['validate-order'],
     },
     {
       id: 'process-payment',
@@ -252,7 +252,7 @@ const orderProcessingDetail: WorkflowDetail = {
           status: { type: 'string' },
         },
       },
-      dependencies: ['validate-order'],
+      dependsOn: ['validate-order'],
     },
     {
       id: 'confirm-order',
@@ -272,7 +272,7 @@ const orderProcessingDetail: WorkflowDetail = {
           confirmedAt: { type: 'string' },
         },
       },
-      dependencies: ['check-inventory', 'process-payment'],
+      dependsOn: ['check-inventory', 'process-payment'],
     },
     {
       id: 'send-confirmation',
@@ -290,7 +290,7 @@ const orderProcessingDetail: WorkflowDetail = {
           sent: { type: 'boolean' },
         },
       },
-      dependencies: ['confirm-order'],
+      dependsOn: ['confirm-order'],
     },
     {
       id: 'ship-order',
@@ -307,7 +307,7 @@ const orderProcessingDetail: WorkflowDetail = {
           trackingNumber: { type: 'string' },
         },
       },
-      dependencies: ['confirm-order'],
+      dependsOn: ['confirm-order'],
     },
   ],
   graph: {
@@ -460,7 +460,7 @@ const dataPipelineDetail: WorkflowDetail = {
           size: { type: 'integer' },
         },
       },
-      dependencies: [],
+      dependsOn: [],
     },
     {
       id: 'parse-data',
@@ -478,7 +478,7 @@ const dataPipelineDetail: WorkflowDetail = {
           records: { type: 'array' },
         },
       },
-      dependencies: ['fetch-data'],
+      dependsOn: ['fetch-data'],
     },
     {
       id: 'validate-schema',
@@ -497,7 +497,7 @@ const dataPipelineDetail: WorkflowDetail = {
           errors: { type: 'array' },
         },
       },
-      dependencies: ['parse-data'],
+      dependsOn: ['parse-data'],
     },
     {
       id: 'transform-data',
@@ -514,7 +514,7 @@ const dataPipelineDetail: WorkflowDetail = {
           transformed: { type: 'array' },
         },
       },
-      dependencies: ['validate-schema'],
+      dependsOn: ['validate-schema'],
     },
     {
       id: 'enrich-data',
@@ -531,7 +531,7 @@ const dataPipelineDetail: WorkflowDetail = {
           enriched: { type: 'array' },
         },
       },
-      dependencies: ['transform-data'],
+      dependsOn: ['transform-data'],
     },
     {
       id: 'deduplicate',
@@ -548,7 +548,7 @@ const dataPipelineDetail: WorkflowDetail = {
           unique: { type: 'array' },
         },
       },
-      dependencies: ['enrich-data'],
+      dependsOn: ['enrich-data'],
     },
     {
       id: 'generate-report',
@@ -566,7 +566,7 @@ const dataPipelineDetail: WorkflowDetail = {
           report: { type: 'object' },
         },
       },
-      dependencies: ['deduplicate'],
+      dependsOn: ['deduplicate'],
     },
     {
       id: 'upload-results',
@@ -584,7 +584,7 @@ const dataPipelineDetail: WorkflowDetail = {
           url: { type: 'string' },
         },
       },
-      dependencies: ['generate-report'],
+      dependsOn: ['generate-report'],
     },
   ],
   graph: {
@@ -761,7 +761,7 @@ const userOnboardingDetail: WorkflowDetail = {
           settings: { type: 'object' },
         },
       },
-      dependencies: [],
+      dependsOn: [],
     },
     {
       id: 'setup-billing',
@@ -782,7 +782,7 @@ const userOnboardingDetail: WorkflowDetail = {
           nextBillingDate: { type: 'string' },
         },
       },
-      dependencies: ['create-profile'],
+      dependsOn: ['create-profile'],
     },
     {
       id: 'assign-resources',
@@ -802,7 +802,7 @@ const userOnboardingDetail: WorkflowDetail = {
           limits: { type: 'object' },
         },
       },
-      dependencies: ['setup-billing'],
+      dependsOn: ['setup-billing'],
     },
     {
       id: 'send-welcome',
@@ -822,7 +822,7 @@ const userOnboardingDetail: WorkflowDetail = {
           sent: { type: 'boolean' },
         },
       },
-      dependencies: ['assign-resources'],
+      dependsOn: ['assign-resources'],
     },
   ],
   graph: {
@@ -946,7 +946,7 @@ const paymentFlowDetail: WorkflowDetail = {
           approved: { type: 'boolean' },
         },
       },
-      dependencies: [],
+      dependsOn: [],
     },
     {
       id: 'verify-3ds',
@@ -965,7 +965,7 @@ const paymentFlowDetail: WorkflowDetail = {
           authToken: { type: 'string' },
         },
       },
-      dependencies: ['fraud-check'],
+      dependsOn: ['fraud-check'],
     },
     {
       id: 'authorize-payment',
@@ -986,7 +986,7 @@ const paymentFlowDetail: WorkflowDetail = {
           status: { type: 'string' },
         },
       },
-      dependencies: ['verify-3ds'],
+      dependsOn: ['verify-3ds'],
     },
     {
       id: 'update-ledger',
@@ -1005,7 +1005,7 @@ const paymentFlowDetail: WorkflowDetail = {
           ledgerEntryId: { type: 'string' },
         },
       },
-      dependencies: ['authorize-payment'],
+      dependsOn: ['authorize-payment'],
     },
     {
       id: 'capture-payment',
@@ -1023,7 +1023,7 @@ const paymentFlowDetail: WorkflowDetail = {
           status: { type: 'string' },
         },
       },
-      dependencies: ['update-ledger'],
+      dependsOn: ['update-ledger'],
     },
   ],
   graph: {

@@ -4,7 +4,7 @@ metadata:
   name: task-fetch-user
   namespace: default
 spec:
-  type: fetch
+  type: http
   http:
     method: GET
     url: "https://jsonplaceholder.typicode.com/users/{{input.userId}}"

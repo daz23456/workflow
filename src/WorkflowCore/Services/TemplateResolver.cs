@@ -12,6 +12,7 @@ public interface ITemplateResolver
 public class TemplateResolver : ITemplateResolver
 {
     private static readonly Regex TemplateRegex = new(@"\{\{([^}]+)\}\}", RegexOptions.Compiled);
+    private static readonly Regex ArrayIndexRegex = new(@"^(\w+)\[(\d+)\]$", RegexOptions.Compiled);
 
     public Task<string> ResolveAsync(string template, TemplateContext context)
     {
@@ -82,7 +83,20 @@ public class TemplateResolver : ITemplateResolver
 
         foreach (var part in parts)
         {
-            if (current is Dictionary<string, object> dict)
+            // Check for array index syntax (e.g., "items[0]")
+            var arrayMatch = ArrayIndexRegex.Match(part);
+            if (arrayMatch.Success)
+            {
+                var propertyName = arrayMatch.Groups[1].Value;
+                var index = int.Parse(arrayMatch.Groups[2].Value);
+
+                // First get the property
+                current = GetProperty(current, propertyName, path, originalExpression);
+
+                // Then index into it
+                current = GetArrayElement(current, index, path, originalExpression);
+            }
+            else if (current is Dictionary<string, object> dict)
             {
                 if (!dict.ContainsKey(part))
                 {
@@ -153,5 +167,80 @@ public class TemplateResolver : ITemplateResolver
 
         // For complex objects, serialize to JSON
         return JsonSerializer.Serialize(current);
+    }
+
+    private static object? GetProperty(object? current, string propertyName, string path, string originalExpression)
+    {
+        if (current is Dictionary<string, object> dict)
+        {
+            if (!dict.ContainsKey(propertyName))
+            {
+                throw new TemplateResolutionException(
+                    $"Field '{propertyName}' not found in path '{path}'",
+                    originalExpression);
+            }
+            return dict[propertyName];
+        }
+        else if (current is JsonElement jsonElement && jsonElement.ValueKind == JsonValueKind.Object)
+        {
+            if (!jsonElement.TryGetProperty(propertyName, out var property))
+            {
+                throw new TemplateResolutionException(
+                    $"Property '{propertyName}' not found in path '{path}'",
+                    originalExpression);
+            }
+            return property;
+        }
+        else
+        {
+            var property = current?.GetType().GetProperty(propertyName);
+            if (property == null)
+            {
+                throw new TemplateResolutionException(
+                    $"Property '{propertyName}' not found in path '{path}'",
+                    originalExpression);
+            }
+            return property.GetValue(current);
+        }
+    }
+
+    private static object? GetArrayElement(object? current, int index, string path, string originalExpression)
+    {
+        if (current is IList<object> list)
+        {
+            if (index < 0 || index >= list.Count)
+            {
+                throw new TemplateResolutionException(
+                    $"Array index {index} is out of bounds (length: {list.Count}) in path '{path}'",
+                    originalExpression);
+            }
+            return list[index];
+        }
+        else if (current is JsonElement jsonElement && jsonElement.ValueKind == JsonValueKind.Array)
+        {
+            if (index < 0 || index >= jsonElement.GetArrayLength())
+            {
+                throw new TemplateResolutionException(
+                    $"Array index {index} is out of bounds (length: {jsonElement.GetArrayLength()}) in path '{path}'",
+                    originalExpression);
+            }
+            return jsonElement[index];
+        }
+        else if (current is System.Collections.IList nonGenericList)
+        {
+            if (index < 0 || index >= nonGenericList.Count)
+            {
+                throw new TemplateResolutionException(
+                    $"Array index {index} is out of bounds (length: {nonGenericList.Count}) in path '{path}'",
+                    originalExpression);
+            }
+            return nonGenericList[index];
+        }
+        else
+        {
+            throw new TemplateResolutionException(
+                $"Cannot index into non-array value at path '{path}'",
+                originalExpression);
+        }
     }
 }

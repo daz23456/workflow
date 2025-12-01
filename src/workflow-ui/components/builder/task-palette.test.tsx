@@ -79,9 +79,9 @@ describe('TaskPalette', () => {
       expect(screen.getByTestId('task-palette')).toBeInTheDocument();
     });
 
-    it('should render palette title', () => {
+    it('should render search input', () => {
       render(<TaskPalette />);
-      expect(screen.getByText('Tasks')).toBeInTheDocument();
+      expect(screen.getByPlaceholderText(/search tasks/i)).toBeInTheDocument();
     });
 
     it('should render all available tasks', () => {
@@ -350,55 +350,12 @@ describe('TaskPalette', () => {
       expect(taskItem).toHaveAttribute('aria-label', expect.stringMatching(/drag.*canvas/i));
     });
 
-    it('should have proper heading hierarchy', () => {
+    it('should have accessible label', () => {
       render(<TaskPalette />);
 
-      const heading = screen.getByRole('heading', { name: /tasks/i });
-      expect(heading.tagName).toBe('H2');
+      const palette = screen.getByTestId('task-palette');
+      expect(palette).toHaveAttribute('aria-label', 'Task palette');
     });
   });
 
-  describe('Collapsible Sections', () => {
-    it('should collapse palette when collapse button clicked', async () => {
-      const user = userEvent.setup();
-      render(<TaskPalette />);
-
-      const collapseButton = screen.getByRole('button', { name: /collapse/i });
-      await user.click(collapseButton);
-
-      // Task list should be hidden
-      expect(screen.queryByText('Fetch User')).not.toBeInTheDocument();
-    });
-
-    it('should expand palette when expand button clicked', async () => {
-      const user = userEvent.setup();
-      render(<TaskPalette />);
-
-      // Collapse first
-      const collapseButton = screen.getByRole('button', { name: /collapse/i });
-      await user.click(collapseButton);
-
-      // Then expand
-      const expandButton = screen.getByRole('button', { name: /expand/i });
-      await user.click(expandButton);
-
-      // Tasks should be visible again
-      expect(screen.getByText('Fetch User')).toBeInTheDocument();
-    });
-
-    it('should remember collapsed state', async () => {
-      const user = userEvent.setup();
-      const { rerender } = render(<TaskPalette />);
-
-      // Collapse
-      const collapseButton = screen.getByRole('button', { name: /collapse/i });
-      await user.click(collapseButton);
-
-      // Rerender (simulates re-mount)
-      rerender(<TaskPalette />);
-
-      // Should still be collapsed
-      expect(screen.queryByText('Fetch User')).not.toBeInTheDocument();
-    });
-  });
 });

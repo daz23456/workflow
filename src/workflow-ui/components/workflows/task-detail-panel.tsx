@@ -75,9 +75,9 @@ export function TaskDetailPanel({ task, onClose }: TaskDetailPanelProps) {
         {/* Dependencies */}
         <div className="mb-4">
           <div className="text-sm font-medium text-gray-500 mb-2">Dependencies</div>
-          {task.dependencies && task.dependencies.length > 0 ? (
+          {task.dependsOn && task.dependsOn.length > 0 ? (
             <ul className="space-y-1">
-              {task.dependencies.map((dep) => (
+              {task.dependsOn.map((dep: string) => (
                 <li
                   key={dep}
                   className="text-sm text-gray-700 rounded-md bg-gray-50 px-3 py-1.5 font-mono"

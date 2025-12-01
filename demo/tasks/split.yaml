@@ -1,0 +1,36 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: transform-split
+  namespace: default
+  annotations:
+    workflow.example.com/category: transform
+    workflow.example.com/tags: string,split,delimiter
+spec:
+  type: transform
+  description: Split strings into arrays by delimiter
+  transform:
+    input: "$.items"
+    pipeline:
+      - operation: split
+        delimiter: ","
+  inputSchema:
+    type: object
+    properties:
+      items:
+        type: array
+        description: Array of strings to split
+        items:
+          type: string
+    required:
+      - items
+  outputSchema:
+    type: object
+    properties:
+      result:
+        type: array
+        description: Array of split string arrays
+        items:
+          type: array
+          items:
+            type: string

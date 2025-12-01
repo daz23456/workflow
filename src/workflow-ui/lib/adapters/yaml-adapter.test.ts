@@ -5,7 +5,7 @@
  *
  * Critical Requirements:
  * - Lossless bidirectional conversion (Graph → YAML → Graph must preserve all data)
- * - Handle dependencies correctly (convert to/from dependencies array)
+ * - Handle dependsOn correctly (convert to/from dependsOn array - CRD field name)
  * - Handle input schemas (Workflow.input format)
  * - Handle output mappings (Workflow.output format)
  * - Handle task properties (taskRef, input, timeout, etc.)
@@ -130,18 +130,18 @@ describe('YAML Adapter', () => {
 
       const yaml = graphToYaml(state) as WorkflowYaml;
 
-      // Task 3 should have dependencies on task-1 and task-2 (inferred from edges)
+      // Task 3 should have dependsOn on task-1 and task-2 (inferred from edges)
       const task3 = yaml.spec.tasks.find((t: any) => t.id === 'task-3');
       expect(task3).toBeDefined();
-      expect(task3!.dependencies).toBeDefined();
-      expect(task3!.dependencies).toEqual(expect.arrayContaining(['task-1', 'task-2']));
-      expect(task3!.dependencies).toHaveLength(2);
+      expect(task3!.dependsOn).toBeDefined();
+      expect(task3!.dependsOn).toEqual(expect.arrayContaining(['task-1', 'task-2']));
+      expect(task3!.dependsOn).toHaveLength(2);
 
       // Tasks 1 and 2 should have no dependencies
       const task1 = yaml.spec.tasks.find((t: any) => t.id === 'task-1');
       const task2 = yaml.spec.tasks.find((t: any) => t.id === 'task-2');
-      expect(task1!.dependencies).toBeUndefined();
-      expect(task2!.dependencies).toBeUndefined();
+      expect(task1!.dependsOn).toBeUndefined();
+      expect(task2!.dependsOn).toBeUndefined();
     });
 
     it('should include task properties (timeout, condition, retryCount)', () => {
@@ -264,7 +264,7 @@ describe('YAML Adapter', () => {
       expect(state.outputMapping.name).toBe('{{tasks.get-user.output.name}}');
     });
 
-    it('should convert task dependencies to graph edges', () => {
+    it('should convert task dependsOn to graph edges', () => {
       const yaml: WorkflowYaml = {
         apiVersion: 'workflow.example.com/v1',
         kind: 'Workflow',
@@ -276,7 +276,7 @@ describe('YAML Adapter', () => {
           tasks: [
             { id: 'task-1', taskRef: 'task-a' },
             { id: 'task-2', taskRef: 'task-b' },
-            { id: 'task-3', taskRef: 'task-c', dependencies: ['task-1', 'task-2'] },
+            { id: 'task-3', taskRef: 'task-c', dependsOn: ['task-1', 'task-2'] },
           ],
         },
       };

@@ -1,0 +1,33 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: transform-template
+  namespace: default
+  annotations:
+    workflow.example.com/category: transform
+    workflow.example.com/tags: string,template,interpolation
+spec:
+  type: transform
+  description: Apply string template with placeholders to each item
+  transform:
+    input: "$.items"
+    pipeline:
+      - operation: template
+        template: "Hello, {value}!"
+  inputSchema:
+    type: object
+    properties:
+      items:
+        type: array
+        description: Array of values to interpolate
+        items: {}
+    required:
+      - items
+  outputSchema:
+    type: object
+    properties:
+      result:
+        type: array
+        description: Array of interpolated strings
+        items:
+          type: string

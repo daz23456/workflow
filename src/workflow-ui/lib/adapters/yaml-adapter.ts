@@ -40,7 +40,7 @@ export interface WorkflowYaml {
       timeout?: string;
       condition?: string;
       retryCount?: number;
-      dependencies?: string[];
+      dependsOn?: string[]; // CRD uses 'dependsOn', not 'dependencies'
     }>;
   };
 }
@@ -102,9 +102,9 @@ export function graphToYaml(
       task.retryCount = node.data.retryCount;
     }
 
-    // Only add dependencies array if there are dependencies
+    // Only add dependsOn array if there are dependencies (CRD uses 'dependsOn')
     if (dependencies.length > 0) {
-      task.dependencies = dependencies;
+      task.dependsOn = dependencies;
     }
 
     return task;
@@ -170,16 +170,17 @@ export function yamlToGraph(input: WorkflowYaml | string): WorkflowBuilderState 
         timeout: task.timeout,
         condition: task.condition,
         retryCount: task.retryCount,
-        dependencies: task.dependencies,
+        dependsOn: task.dependsOn || (task as any).dependencies, // Support both 'dependsOn' (CRD) and legacy 'dependencies'
       },
     };
   });
 
-  // Convert task dependencies to edges
+  // Convert task dependencies to edges (support both 'dependsOn' and legacy 'dependencies')
   const edges: WorkflowBuilderEdge[] = [];
   workflowYaml.spec.tasks.forEach((task) => {
-    if (task.dependencies && task.dependencies.length > 0) {
-      task.dependencies.forEach((depId) => {
+    const deps = task.dependsOn || (task as any).dependencies;
+    if (deps && deps.length > 0) {
+      deps.forEach((depId: string) => {
         edges.push({
           id: `${depId}-to-${task.id}`,
           source: depId,
@@ -225,6 +226,10 @@ export function yamlToGraph(input: WorkflowYaml | string): WorkflowBuilderState 
       isDirty: false,
       lastSaved: null,
       isAutosaving: false,
+    },
+    panel: {
+      activePanel: null,
+      selectedTaskId: null,
     },
   };
 }

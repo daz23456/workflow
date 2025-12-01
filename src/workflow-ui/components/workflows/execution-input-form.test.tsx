@@ -283,9 +283,10 @@ describe('ExecutionInputForm', () => {
       render(<ExecutionInputForm schema={mockSimpleSchema} onSubmit={onSubmit} />);
 
       await user.type(screen.getByLabelText(/email/i), 'test@example.com');
-      await user.click(screen.getByRole('button', { name: /execute/i }));
+      await user.click(screen.getByRole('button', { name: /^execute$/i }));
 
-      expect(screen.getByRole('button', { name: /executing/i })).toBeDisabled();
+      // Button shows "Execute..." during loading (submitLabel + "...")
+      expect(screen.getByRole('button', { name: /execute\.\.\./i })).toBeDisabled();
     });
 
     it('shows loading text during execution', async () => {
@@ -295,9 +296,10 @@ describe('ExecutionInputForm', () => {
       render(<ExecutionInputForm schema={mockSimpleSchema} onSubmit={onSubmit} />);
 
       await user.type(screen.getByLabelText(/email/i), 'test@example.com');
-      await user.click(screen.getByRole('button', { name: /execute/i }));
+      await user.click(screen.getByRole('button', { name: /^execute$/i }));
 
-      expect(screen.getByRole('button', { name: /executing/i })).toBeInTheDocument();
+      // Button shows "Execute..." during loading (submitLabel + "...")
+      expect(screen.getByRole('button', { name: /execute\.\.\./i })).toBeInTheDocument();
     });
 
     it('shows loading text during testing', async () => {

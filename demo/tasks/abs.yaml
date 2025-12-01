@@ -1,0 +1,33 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: transform-abs
+  namespace: default
+  annotations:
+    workflow.example.com/category: transform
+    workflow.example.com/tags: math,abs,absolute
+spec:
+  type: transform
+  description: Get absolute value of numbers
+  transform:
+    input: "$.items"
+    pipeline:
+      - operation: abs
+  inputSchema:
+    type: object
+    properties:
+      items:
+        type: array
+        description: Array of numbers (can be negative)
+        items:
+          type: number
+    required:
+      - items
+  outputSchema:
+    type: object
+    properties:
+      result:
+        type: array
+        description: Array of absolute values
+        items:
+          type: number

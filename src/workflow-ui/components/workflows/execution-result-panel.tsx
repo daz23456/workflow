@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { WorkflowExecutionResponse } from '@/types/execution';
+import type { WorkflowExecutionResponse, OrchestrationCostResponse } from '@/types/execution';
 
 interface ExecutionResultPanelProps {
   execution: WorkflowExecutionResponse;
@@ -10,6 +10,7 @@ interface ExecutionResultPanelProps {
 
 export function ExecutionResultPanel({ execution, onClose }: ExecutionResultPanelProps) {
   const [expandedTasks, setExpandedTasks] = useState<Set<string>>(new Set());
+  const [showOrchestrationMetrics, setShowOrchestrationMetrics] = useState(false);
 
   const toggleTask = (taskId: string) => {
     setExpandedTasks((prev) => {
@@ -153,6 +154,15 @@ export function ExecutionResultPanel({ execution, onClose }: ExecutionResultPane
                 </div>
               </div>
             </div>
+          )}
+
+          {/* Orchestration Cost Metrics */}
+          {execution.orchestrationCost && (
+            <OrchestrationCostSection
+              cost={execution.orchestrationCost}
+              expanded={showOrchestrationMetrics}
+              onToggle={() => setShowOrchestrationMetrics(!showOrchestrationMetrics)}
+            />
           )}
         </div>
 
@@ -369,4 +379,159 @@ function getHttpStatusColor(statusCode: number): string {
     return 'bg-red-100 text-red-800 border border-red-200';
   }
   return 'bg-gray-100 text-gray-800 border border-gray-200';
+}
+
+/**
+ * Returns color based on orchestration cost percentage
+ */
+function getOrchestrationCostColor(percentage: number): string {
+  if (percentage < 5) {
+    return 'text-green-600'; // Excellent
+  }
+  if (percentage < 15) {
+    return 'text-yellow-600'; // Acceptable
+  }
+  return 'text-red-600'; // High overhead
+}
+
+/**
+ * Returns label for orchestration cost percentage
+ */
+function getOrchestrationCostLabel(percentage: number): string {
+  if (percentage < 5) {
+    return 'Excellent';
+  }
+  if (percentage < 15) {
+    return 'Acceptable';
+  }
+  return 'High';
+}
+
+interface OrchestrationCostSectionProps {
+  cost: OrchestrationCostResponse;
+  expanded: boolean;
+  onToggle: () => void;
+}
+
+/**
+ * Collapsible section showing orchestration cost breakdown
+ */
+function OrchestrationCostSection({ cost, expanded, onToggle }: OrchestrationCostSectionProps) {
+  const percentageColor = getOrchestrationCostColor(cost.orchestrationCostPercentage);
+  const percentageLabel = getOrchestrationCostLabel(cost.orchestrationCostPercentage);
+
+  return (
+    <div className="mt-3 rounded-md border border-gray-200 overflow-hidden">
+      {/* Header - always visible */}
+      <button
+        type="button"
+        onClick={onToggle}
+        className="flex w-full items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors"
+        aria-expanded={expanded}
+        aria-label="Toggle orchestration metrics"
+      >
+        <div className="flex items-center gap-3">
+          <svg
+            className="h-5 w-5 text-gray-500"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth="1.5"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          <span className="text-sm font-medium text-gray-700">Orchestration Metrics</span>
+          <span className={`text-sm font-semibold ${percentageColor}`}>
+            {cost.orchestrationCostPercentage.toFixed(1)}% overhead
+          </span>
+          <span className={`text-xs ${percentageColor}`}>({percentageLabel})</span>
+        </div>
+        <svg
+          className={`h-5 w-5 text-gray-400 transition-transform ${expanded ? 'rotate-0' : '-rotate-90'}`}
+          fill="none"
+          viewBox="0 0 24 24"
+          strokeWidth="1.5"
+          stroke="currentColor"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+        </svg>
+      </button>
+
+      {/* Expanded content */}
+      {expanded && (
+        <div className="px-4 py-3 border-t border-gray-200 bg-white">
+          {/* Cost Breakdown */}
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <div>
+              <div className="text-xs text-gray-500">Setup Time</div>
+              <div className="text-sm font-medium text-gray-900">
+                {formatMicroseconds(cost.setupDurationMicros)}
+              </div>
+              <div className="text-xs text-gray-400">Graph build + initialization</div>
+            </div>
+            <div>
+              <div className="text-xs text-gray-500">Teardown Time</div>
+              <div className="text-sm font-medium text-gray-900">
+                {formatMicroseconds(cost.teardownDurationMicros)}
+              </div>
+              <div className="text-xs text-gray-400">Output mapping + cleanup</div>
+            </div>
+            <div>
+              <div className="text-xs text-gray-500">Scheduling Overhead</div>
+              <div className="text-sm font-medium text-gray-900">
+                {formatMicroseconds(cost.schedulingOverheadMicros)}
+              </div>
+              <div className="text-xs text-gray-400">Between task batches</div>
+            </div>
+            <div>
+              <div className="text-xs text-gray-500">Total Orchestration Cost</div>
+              <div className={`text-sm font-semibold ${percentageColor}`}>
+                {formatMicroseconds(cost.totalOrchestrationCostMicros)}
+              </div>
+              <div className="text-xs text-gray-400">
+                {cost.orchestrationCostPercentage.toFixed(1)}% of execution time
+              </div>
+            </div>
+          </div>
+
+          {/* Iterations */}
+          {cost.iterations && cost.iterations.length > 0 && (
+            <div>
+              <div className="text-xs font-medium text-gray-700 mb-2">
+                Execution Iterations ({cost.executionIterations})
+              </div>
+              <div className="space-y-2">
+                {cost.iterations.map((iter) => (
+                  <div
+                    key={iter.iteration}
+                    className="flex items-center gap-3 text-xs bg-gray-50 rounded px-3 py-2"
+                  >
+                    <span className="font-medium text-gray-700">#{iter.iteration}</span>
+                    <span className="text-gray-500">
+                      {iter.taskIds.length} task{iter.taskIds.length !== 1 ? 's' : ''}
+                    </span>
+                    <span className="text-gray-600">
+                      {formatMicroseconds(iter.durationMicros)}
+                    </span>
+                    {iter.schedulingDelayMicros > 0 && (
+                      <span className="text-amber-600">
+                        +{formatMicroseconds(iter.schedulingDelayMicros)} delay
+                      </span>
+                    )}
+                    <span className="text-gray-400 truncate flex-1 text-right">
+                      {iter.taskIds.join(', ')}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
 }

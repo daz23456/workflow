@@ -52,7 +52,7 @@ export interface TaskDetail {
   timeout?: string;
   condition?: string;
   retryCount?: number;
-  dependencies?: string[];
+  dependsOn?: string[];
 }
 
 export interface JSONSchema {

@@ -36,6 +36,11 @@ public class ExecutionRecord
     public TimeSpan? Duration { get; set; }
 
     /// <summary>
+    /// Time taken to build the execution graph. Used for performance monitoring.
+    /// </summary>
+    public TimeSpan? GraphBuildDuration { get; set; }
+
+    /// <summary>
     /// JSON snapshot of the input provided to the workflow.
     /// </summary>
     public string? InputSnapshot { get; set; }

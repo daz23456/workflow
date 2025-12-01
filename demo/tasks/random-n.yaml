@@ -1,0 +1,32 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: transform-random-n
+  namespace: default
+  annotations:
+    workflow.example.com/category: transform
+    workflow.example.com/tags: random,selection,array,sample
+spec:
+  type: transform
+  description: Select N random elements from an array (without duplicates)
+  transform:
+    input: "$.items"
+    pipeline:
+      - operation: randomN
+        count: 3
+  inputSchema:
+    type: object
+    properties:
+      items:
+        type: array
+        description: Array to sample from
+        items: {}
+    required:
+      - items
+  outputSchema:
+    type: object
+    properties:
+      result:
+        type: array
+        description: Array of N randomly selected items
+        items: {}

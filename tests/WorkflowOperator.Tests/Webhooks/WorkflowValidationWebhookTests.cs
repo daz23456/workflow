@@ -416,7 +416,201 @@ public class WorkflowValidationWebhookTests
         // Assert
         result.Allowed.Should().BeFalse();
         result.Message.Should().Contain("Task reference 'missing' not found");
-        result.Message.Should().Contain("Available tasks:");
+        result.Message.Should().Contain("No tasks are currently registered");
+    }
+
+    [Fact]
+    public async Task ValidateAsync_WithTypoInTaskRef_ShouldSuggestSimilarTasks()
+    {
+        // Arrange
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = "typo-workflow" },
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "t1", TaskRef = "fetch-usr" } // Typo: should be fetch-user
+                }
+            }
+        };
+
+        var availableTasks = new List<WorkflowTaskResource>
+        {
+            new WorkflowTaskResource { Metadata = new ResourceMetadata { Name = "fetch-user" }, Spec = new WorkflowTaskSpec { Type = "http" } },
+            new WorkflowTaskResource { Metadata = new ResourceMetadata { Name = "send-email" }, Spec = new WorkflowTaskSpec { Type = "http" } },
+            new WorkflowTaskResource { Metadata = new ResourceMetadata { Name = "validate-input" }, Spec = new WorkflowTaskSpec { Type = "http" } }
+        };
+
+        // Act
+        var result = await _webhook.ValidateAsync(workflow, availableTasks);
+
+        // Assert
+        result.Allowed.Should().BeFalse();
+        result.Message.Should().Contain("Did you mean");
+        result.Message.Should().Contain("fetch-user");
+    }
+
+    [Fact]
+    public async Task ValidateAsync_WithPrefixMatch_ShouldSuggestMatchingTasks()
+    {
+        // Arrange
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = "prefix-workflow" },
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "t1", TaskRef = "fetch" } // Partial: should be fetch-user-data
+                }
+            }
+        };
+
+        var availableTasks = new List<WorkflowTaskResource>
+        {
+            new WorkflowTaskResource { Metadata = new ResourceMetadata { Name = "fetch-user-data" }, Spec = new WorkflowTaskSpec { Type = "http" } },
+            new WorkflowTaskResource { Metadata = new ResourceMetadata { Name = "fetch-orders" }, Spec = new WorkflowTaskSpec { Type = "http" } },
+            new WorkflowTaskResource { Metadata = new ResourceMetadata { Name = "send-notification" }, Spec = new WorkflowTaskSpec { Type = "http" } }
+        };
+
+        // Act
+        var result = await _webhook.ValidateAsync(workflow, availableTasks);
+
+        // Assert
+        result.Allowed.Should().BeFalse();
+        result.Message.Should().Contain("Did you mean");
+        result.Message.Should().Contain("fetch-user-data");
+        result.Message.Should().Contain("fetch-orders");
+    }
+
+    [Fact]
+    public async Task ValidateAsync_WithWordOverlap_ShouldSuggestMatchingTasks()
+    {
+        // Arrange
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = "word-match-workflow" },
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "t1", TaskRef = "user-fetch" } // Words reversed
+                }
+            }
+        };
+
+        var availableTasks = new List<WorkflowTaskResource>
+        {
+            new WorkflowTaskResource { Metadata = new ResourceMetadata { Name = "fetch-user" }, Spec = new WorkflowTaskSpec { Type = "http" } },
+            new WorkflowTaskResource { Metadata = new ResourceMetadata { Name = "delete-user" }, Spec = new WorkflowTaskSpec { Type = "http" } },
+            new WorkflowTaskResource { Metadata = new ResourceMetadata { Name = "send-email" }, Spec = new WorkflowTaskSpec { Type = "http" } }
+        };
+
+        // Act
+        var result = await _webhook.ValidateAsync(workflow, availableTasks);
+
+        // Assert
+        result.Allowed.Should().BeFalse();
+        result.Message.Should().Contain("Did you mean");
+        result.Message.Should().Contain("fetch-user");
+    }
+
+    [Fact]
+    public async Task ValidateAsync_WithNoSimilarTasks_ShouldShowSampleOfAvailable()
+    {
+        // Arrange
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = "no-match-workflow" },
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "t1", TaskRef = "xyz-completely-different" }
+                }
+            }
+        };
+
+        var availableTasks = new List<WorkflowTaskResource>
+        {
+            new WorkflowTaskResource { Metadata = new ResourceMetadata { Name = "fetch-user" }, Spec = new WorkflowTaskSpec { Type = "http" } },
+            new WorkflowTaskResource { Metadata = new ResourceMetadata { Name = "send-email" }, Spec = new WorkflowTaskSpec { Type = "http" } },
+            new WorkflowTaskResource { Metadata = new ResourceMetadata { Name = "validate-input" }, Spec = new WorkflowTaskSpec { Type = "http" } }
+        };
+
+        // Act
+        var result = await _webhook.ValidateAsync(workflow, availableTasks);
+
+        // Assert
+        result.Allowed.Should().BeFalse();
+        result.Message.Should().Contain("Available tasks include");
+    }
+
+    [Fact]
+    public async Task ValidateAsync_WithManyAvailableTasks_ShouldLimitSuggestions()
+    {
+        // Arrange
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = "many-tasks-workflow" },
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "t1", TaskRef = "process" }
+                }
+            }
+        };
+
+        // Create 100 tasks, many matching "process"
+        var availableTasks = Enumerable.Range(1, 100)
+            .Select(i => new WorkflowTaskResource
+            {
+                Metadata = new ResourceMetadata { Name = $"process-task-{i}" },
+                Spec = new WorkflowTaskSpec { Type = "http" }
+            })
+            .ToList();
+
+        // Act
+        var result = await _webhook.ValidateAsync(workflow, availableTasks);
+
+        // Assert
+        result.Allowed.Should().BeFalse();
+        result.Message.Should().Contain("Did you mean");
+        // Should only show max 5 suggestions
+        var suggestionCount = result.Message!.Split(',').Length;
+        suggestionCount.Should().BeLessThanOrEqualTo(5);
+    }
+
+    [Fact]
+    public async Task ValidateAsync_WithCaseInsensitiveMatch_ShouldSuggest()
+    {
+        // Arrange
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = "case-workflow" },
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "t1", TaskRef = "FETCH-USER" } // Wrong case
+                }
+            }
+        };
+
+        var availableTasks = new List<WorkflowTaskResource>
+        {
+            new WorkflowTaskResource { Metadata = new ResourceMetadata { Name = "fetch-user" }, Spec = new WorkflowTaskSpec { Type = "http" } }
+        };
+
+        // Act
+        var result = await _webhook.ValidateAsync(workflow, availableTasks);
+
+        // Assert
+        result.Allowed.Should().BeFalse();
+        result.Message.Should().Contain("Did you mean");
+        result.Message.Should().Contain("fetch-user");
     }
 
     [Fact]

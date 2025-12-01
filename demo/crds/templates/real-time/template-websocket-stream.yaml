@@ -1,0 +1,93 @@
+apiVersion: workflow.example.com/v1
+kind: Workflow
+metadata:
+  name: template-websocket-stream
+  namespace: default
+  annotations:
+    workflow.example.com/template: "true"
+    workflow.example.com/category: "real-time"
+    workflow.example.com/difficulty: "intermediate"
+    workflow.example.com/tags: "websocket,streaming,real-time,aggregation"
+    workflow.example.com/estimatedTime: "20"
+spec:
+  description: "🎯 TEMPLATE: Real-time WebSocket data aggregation - Connect to WebSocket stream, collect data, and aggregate metrics in real-time. Demonstrates streaming data processing and time-windowed aggregation."
+  input:
+    streamUrl:
+      type: string
+      required: true
+      description: WebSocket stream URL to connect to
+    durationSeconds:
+      type: integer
+      required: true
+      description: How long to collect data (in seconds)
+    aggregationWindow:
+      type: integer
+      required: false
+      description: Time window for aggregation (in seconds)
+  tasks:
+    # STAGE 1: Initialize connection and fetch baseline
+    - id: fetch-stream-metadata
+      taskRef: http-get-stream-info
+      input:
+        url: "{{input.streamUrl}}"
+      timeout: 10s
+
+    # STAGE 2: Connect to WebSocket and collect data
+    - id: collect-stream-data
+      taskRef: websocket-subscribe
+      dependsOn:
+        - fetch-stream-metadata
+      input:
+        url: "{{input.streamUrl}}"
+        duration: "{{input.durationSeconds}}"
+        subscribeMessage: '{"type": "subscribe", "channel": "data-feed"}'
+      timeout: "{{input.durationSeconds + 10}}s"
+
+    # STAGE 3: Process and aggregate collected data (parallel)
+    - id: aggregate-time-series
+      taskRef: transform-aggregate-time-series
+      dependsOn:
+        - collect-stream-data
+      input:
+        data: "{{tasks.collect-stream-data.output.messages}}"
+        windowSeconds: "{{input.aggregationWindow}}"
+      timeout: 30s
+
+    - id: calculate-statistics
+      taskRef: transform-calculate-stats
+      dependsOn:
+        - collect-stream-data
+      input:
+        data: "{{tasks.collect-stream-data.output.messages}}"
+      timeout: 30s
+
+    # STAGE 4: Store results and send alert if needed
+    - id: store-aggregated-data
+      taskRef: http-post-timeseries-db
+      dependsOn:
+        - aggregate-time-series
+        - calculate-statistics
+      input:
+        series: "{{tasks.aggregate-time-series.output}}"
+        stats: "{{tasks.calculate-statistics.output}}"
+        metadata: '{"streamUrl": "{{input.streamUrl}}", "duration": "{{input.durationSeconds}}"}'
+      timeout: 15s
+
+    - id: check-alert-threshold
+      taskRef: transform-evaluate-threshold
+      dependsOn:
+        - calculate-statistics
+      input:
+        value: "{{tasks.calculate-statistics.output.average}}"
+        threshold: 100
+        operator: "greater_than"
+      timeout: 5s
+
+  output:
+    messageCount: "{{tasks.collect-stream-data.output.count}}"
+    avgValue: "{{tasks.calculate-statistics.output.average}}"
+    maxValue: "{{tasks.calculate-statistics.output.max}}"
+    minValue: "{{tasks.calculate-statistics.output.min}}"
+    aggregatedSeries: "{{tasks.aggregate-time-series.output}}"
+    alertTriggered: "{{tasks.check-alert-threshold.output.triggered}}"
+    storedSuccessfully: "{{tasks.store-aggregated-data.output.success}}"

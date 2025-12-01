@@ -82,6 +82,53 @@ public interface IExecutionRepository
     /// <param name="daysBack">Number of days to look back (default: 30, max: 90).</param>
     /// <returns>List of data points, one per day, ordered by date ascending.</returns>
     Task<List<DurationDataPoint>> GetTaskDurationTrendsAsync(string taskName, int daysBack = 30);
+
+    /// <summary>
+    /// Gets aggregate statistics for a specific workflow.
+    /// </summary>
+    /// <param name="workflowName">The workflow name to calculate statistics for.</param>
+    /// <returns>Workflow statistics including total executions, average duration, success rate, and last execution time.</returns>
+    Task<WorkflowStatistics?> GetWorkflowStatisticsAsync(string workflowName);
+
+    /// <summary>
+    /// Gets aggregate statistics for all workflows in a single query.
+    /// More efficient than calling GetWorkflowStatisticsAsync for each workflow.
+    /// </summary>
+    /// <returns>Dictionary mapping workflow name to its statistics.</returns>
+    Task<Dictionary<string, WorkflowStatistics>> GetAllWorkflowStatisticsAsync();
+
+    /// <summary>
+    /// Gets aggregate statistics for all tasks in a single query.
+    /// More efficient than calling GetTaskStatisticsAsync for each task.
+    /// </summary>
+    /// <returns>Dictionary mapping task name to its statistics.</returns>
+    Task<Dictionary<string, TaskStatistics>> GetAllTaskStatisticsAsync();
+}
+
+/// <summary>
+/// Statistics for a workflow.
+/// </summary>
+public class WorkflowStatistics
+{
+    /// <summary>
+    /// Total number of workflow executions.
+    /// </summary>
+    public int TotalExecutions { get; set; }
+
+    /// <summary>
+    /// Average duration in milliseconds (only successful executions).
+    /// </summary>
+    public long AverageDurationMs { get; set; }
+
+    /// <summary>
+    /// Success rate as a percentage (0-100).
+    /// </summary>
+    public double SuccessRate { get; set; }
+
+    /// <summary>
+    /// Timestamp of the most recent execution, or null if never executed.
+    /// </summary>
+    public DateTime? LastExecuted { get; set; }
 }
 
 /// <summary>

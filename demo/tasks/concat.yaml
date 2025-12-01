@@ -1,0 +1,33 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: transform-concat
+  namespace: default
+  annotations:
+    workflow.example.com/category: transform
+    workflow.example.com/tags: string,join,concat
+spec:
+  type: transform
+  description: Join array elements into a single string with delimiter
+  transform:
+    input: "$.items"
+    pipeline:
+      - operation: concat
+        delimiter: ", "
+  inputSchema:
+    type: object
+    properties:
+      items:
+        type: array
+        description: Array of items to concatenate
+        items: {}
+    required:
+      - items
+  outputSchema:
+    type: object
+    properties:
+      result:
+        type: array
+        description: Array containing the concatenated string
+        items:
+          type: string

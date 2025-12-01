@@ -153,14 +153,14 @@ export function DurationTrendsChart({
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg border">
-      <div className="mb-4">
-        <h2 className="text-xl font-semibold">Duration Trends</h2>
-        <p className="text-sm text-gray-500 mt-1">{entityType} execution performance over time</p>
+    <div className="bg-white p-4 rounded-lg border">
+      <div className="mb-3">
+        <h2 className="text-lg font-semibold">Duration Trends</h2>
+        <p className="text-sm text-gray-500">{entityType} execution performance over time</p>
       </div>
 
       {/* Metric toggles */}
-      <div className="flex flex-wrap gap-2 mb-4">
+      <div className="flex flex-wrap gap-2 mb-3">
         <button
           onClick={() => toggleMetric('average')}
           className={`px-3 py-1 text-sm rounded-full border transition-colors ${
@@ -208,7 +208,7 @@ export function DurationTrendsChart({
       </div>
 
       {/* Chart */}
-      <ResponsiveContainer width="100%" height={400}>
+      <ResponsiveContainer width="100%" height={280}>
         <ComposedChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
           <defs>
             {/* Gradient for min-max area */}
@@ -299,7 +299,7 @@ export function DurationTrendsChart({
       </ResponsiveContainer>
 
       {/* Summary statistics */}
-      <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t">
+      <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3 pt-3 border-t">
         <div>
           <div className="text-sm text-gray-500">Total Executions</div>
           <div className="text-lg font-semibold">

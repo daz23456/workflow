@@ -7,12 +7,15 @@ import { listWorkflows } from '@/lib/api/client';
  */
 export async function GET(request: NextRequest) {
   try {
-    // Get namespace query parameter if provided
+    // Get query parameters
     const searchParams = request.nextUrl.searchParams;
     const namespace = searchParams.get('namespace') || undefined;
+    const search = searchParams.get('search') || undefined;
+    const skip = searchParams.get('skip') ? parseInt(searchParams.get('skip')!, 10) : undefined;
+    const take = searchParams.get('take') ? parseInt(searchParams.get('take')!, 10) : undefined;
 
     // Call backend API
-    const response = await listWorkflows(namespace);
+    const response = await listWorkflows({ namespace, search, skip, take });
 
     return NextResponse.json(response);
   } catch (error) {

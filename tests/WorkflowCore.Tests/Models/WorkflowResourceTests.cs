@@ -1,3 +1,4 @@
+using System.Text.Json;
 using FluentAssertions;
 using WorkflowCore.Models;
 using Xunit;
@@ -175,5 +176,149 @@ spec:
         status.ExecutionCount.Should().Be(42);
         status.LastExecuted.Should().Be(now);
         status.ValidationErrors.Should().HaveCount(1);
+    }
+
+    // ========== DEPENDSON DESERIALIZATION TESTS ==========
+
+    [Fact]
+    public void WorkflowResource_ShouldDeserializeDependsOn_FromYaml()
+    {
+        // Arrange - YAML with explicit dependsOn
+        var yaml = @"
+apiVersion: workflows.example.com/v1
+kind: Workflow
+metadata:
+  name: dependency-workflow
+  namespace: default
+spec:
+  tasks:
+    - id: task-1
+      taskRef: fetch-user
+    - id: task-2
+      taskRef: process-user
+      dependsOn:
+        - task-1
+    - id: task-3
+      taskRef: final-task
+      dependsOn:
+        - task-1
+        - task-2
+";
+
+        // Act
+        var deserializer = new DeserializerBuilder()
+            .WithNamingConvention(CamelCaseNamingConvention.Instance)
+            .Build();
+        var resource = deserializer.Deserialize<WorkflowResource>(yaml);
+
+        // Assert
+        resource.Should().NotBeNull();
+        resource.Spec.Tasks.Should().HaveCount(3);
+
+        // task-1 has no dependencies
+        resource.Spec.Tasks[0].Id.Should().Be("task-1");
+        resource.Spec.Tasks[0].DependsOn.Should().BeNull();
+
+        // task-2 depends on task-1
+        resource.Spec.Tasks[1].Id.Should().Be("task-2");
+        resource.Spec.Tasks[1].DependsOn.Should().NotBeNull();
+        resource.Spec.Tasks[1].DependsOn.Should().ContainSingle().Which.Should().Be("task-1");
+
+        // task-3 depends on both task-1 and task-2
+        resource.Spec.Tasks[2].Id.Should().Be("task-3");
+        resource.Spec.Tasks[2].DependsOn.Should().NotBeNull();
+        resource.Spec.Tasks[2].DependsOn.Should().HaveCount(2);
+        resource.Spec.Tasks[2].DependsOn.Should().Contain("task-1");
+        resource.Spec.Tasks[2].DependsOn.Should().Contain("task-2");
+    }
+
+    [Fact]
+    public void WorkflowResource_ShouldDeserializeDependsOn_FromJson()
+    {
+        // Arrange - JSON like Kubernetes API returns
+        // This tests the same format that KubernetesWorkflowClient uses
+        var json = @"
+{
+    ""apiVersion"": ""workflows.example.com/v1"",
+    ""kind"": ""Workflow"",
+    ""metadata"": {
+        ""name"": ""dependency-workflow"",
+        ""namespace"": ""default""
+    },
+    ""spec"": {
+        ""tasks"": [
+            {
+                ""id"": ""task-1"",
+                ""taskRef"": ""fetch-user""
+            },
+            {
+                ""id"": ""task-2"",
+                ""taskRef"": ""process-user"",
+                ""dependsOn"": [""task-1""]
+            },
+            {
+                ""id"": ""task-3"",
+                ""taskRef"": ""final-task"",
+                ""dependsOn"": [""task-1"", ""task-2""]
+            }
+        ]
+    }
+}";
+
+        // Act - Use the same options as KubernetesWorkflowClient
+        var options = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
+        var resource = JsonSerializer.Deserialize<WorkflowResource>(json, options);
+
+        // Assert
+        resource.Should().NotBeNull();
+        resource!.Spec.Tasks.Should().HaveCount(3);
+
+        // task-1 has no dependencies
+        resource.Spec.Tasks[0].Id.Should().Be("task-1");
+        resource.Spec.Tasks[0].DependsOn.Should().BeNull();
+
+        // task-2 depends on task-1 - CRITICAL TEST
+        resource.Spec.Tasks[1].Id.Should().Be("task-2");
+        resource.Spec.Tasks[1].DependsOn.Should().NotBeNull("JSON dependsOn array should deserialize correctly");
+        resource.Spec.Tasks[1].DependsOn.Should().ContainSingle().Which.Should().Be("task-1");
+
+        // task-3 depends on both task-1 and task-2
+        resource.Spec.Tasks[2].Id.Should().Be("task-3");
+        resource.Spec.Tasks[2].DependsOn.Should().NotBeNull();
+        resource.Spec.Tasks[2].DependsOn.Should().HaveCount(2);
+        resource.Spec.Tasks[2].DependsOn.Should().Contain("task-1");
+        resource.Spec.Tasks[2].DependsOn.Should().Contain("task-2");
+    }
+
+    [Fact]
+    public void WorkflowTaskStep_DependsOn_ShouldWorkWithJsonPropertyNameCaseInsensitive()
+    {
+        // Arrange - Test various case formats
+        var testCases = new[]
+        {
+            @"{""id"": ""task"", ""taskRef"": ""ref"", ""dependsOn"": [""dep1""]}",  // camelCase
+            @"{""id"": ""task"", ""taskRef"": ""ref"", ""DependsOn"": [""dep1""]}",  // PascalCase
+            @"{""id"": ""task"", ""taskRef"": ""ref"", ""DEPENDSON"": [""dep1""]}",  // UPPERCASE
+        };
+
+        var options = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        };
+
+        foreach (var json in testCases)
+        {
+            // Act
+            var step = JsonSerializer.Deserialize<WorkflowTaskStep>(json, options);
+
+            // Assert
+            step.Should().NotBeNull();
+            step!.DependsOn.Should().NotBeNull($"Failed for JSON: {json}");
+            step.DependsOn.Should().ContainSingle().Which.Should().Be("dep1");
+        }
     }
 }

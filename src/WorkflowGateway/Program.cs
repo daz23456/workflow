@@ -4,12 +4,16 @@ using WorkflowCore.Data;
 using WorkflowCore.Data.Repositories;
 using WorkflowCore.Models;
 using WorkflowCore.Services;
+using WorkflowGateway.Hubs;
 using WorkflowGateway.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add controllers
 builder.Services.AddControllers();
+
+// Add SignalR for real-time workflow execution events
+builder.Services.AddSignalR();
 builder.Services.AddEndpointsApiExplorer();
 
 // Configure Swagger/OpenAPI
@@ -25,14 +29,32 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 // Configure CORS to allow frontend access
+// Note: SignalR WebSockets require AllowCredentials() which is incompatible with AllowAnyOrigin()
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins("http://localhost:3000", "http://localhost:3001")
-              .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials();
+        if (builder.Environment.IsDevelopment())
+        {
+            // In development, use specific origins for SignalR WebSocket support
+            // AllowCredentials() is required for SignalR but incompatible with AllowAnyOrigin()
+            policy.WithOrigins(
+                      "http://localhost:3000",
+                      "http://localhost:3001",
+                      "http://localhost:5173",  // Vite dev server
+                      "http://localhost:5001")  // API self-reference
+                  .AllowAnyHeader()
+                  .AllowAnyMethod()
+                  .AllowCredentials();
+        }
+        else
+        {
+            // In production, be specific about allowed origins
+            policy.WithOrigins("http://localhost:3000", "http://localhost:3001")
+                  .AllowAnyHeader()
+                  .AllowAnyMethod()
+                  .AllowCredentials();
+        }
     });
 });
 
@@ -55,6 +77,7 @@ if (!string.IsNullOrEmpty(connectionString))
     // Services that depend on database
     builder.Services.AddScoped<IWorkflowVersioningService, WorkflowVersioningService>();
     builder.Services.AddScoped<IExecutionTraceService, ExecutionTraceService>();
+    builder.Services.AddScoped<IStatisticsAggregationService, StatisticsAggregationService>();
 
     // Add health checks
     builder.Services.AddHealthChecks()
@@ -90,11 +113,41 @@ builder.Services.AddHttpClient();
 builder.Services.AddScoped<HttpClient>(sp =>
     sp.GetRequiredService<IHttpClientFactory>().CreateClient());
 builder.Services.AddScoped<IHttpClientWrapper, HttpClientWrapper>();
+
+// Register response storage and handlers
+builder.Services.AddScoped<WorkflowCore.Interfaces.IResponseStorage, HybridResponseStorage>();
+builder.Services.AddScoped<WorkflowCore.Interfaces.IResponseHandler, WorkflowCore.Services.ResponseHandlers.JsonResponseHandler>();
+builder.Services.AddScoped<WorkflowCore.Interfaces.IResponseHandler, WorkflowCore.Services.ResponseHandlers.BinaryResponseHandler>();
+builder.Services.AddScoped<WorkflowCore.Interfaces.IResponseHandler, WorkflowCore.Services.ResponseHandlers.TextResponseHandler>();
+builder.Services.AddScoped<WorkflowCore.Interfaces.IResponseHandlerFactory, ResponseHandlerFactory>();
+
 builder.Services.AddScoped<IHttpTaskExecutor, HttpTaskExecutor>();
 builder.Services.AddScoped<IDataTransformer, JsonPathTransformer>();
 builder.Services.AddScoped<ITransformTaskExecutor, TransformTaskExecutor>();
-builder.Services.AddScoped<IWorkflowOrchestrator, WorkflowOrchestrator>();
 builder.Services.AddScoped<ITemplatePreviewService, TemplatePreviewService>();
+
+// Register SignalR event notifier for real-time workflow events
+builder.Services.AddSingleton<IWorkflowEventNotifier, SignalRWorkflowEventNotifier>();
+
+// Register WorkflowOrchestrator with event notifier injected
+builder.Services.AddScoped<IWorkflowOrchestrator>(sp =>
+{
+    var graphBuilder = sp.GetRequiredService<IExecutionGraphBuilder>();
+    var httpExecutor = sp.GetRequiredService<IHttpTaskExecutor>();
+    var templateResolver = sp.GetRequiredService<ITemplateResolver>();
+    var responseStorage = sp.GetRequiredService<WorkflowCore.Interfaces.IResponseStorage>();
+    var transformExecutor = sp.GetService<ITransformTaskExecutor>();
+    var eventNotifier = sp.GetService<IWorkflowEventNotifier>();
+
+    return new WorkflowOrchestrator(
+        graphBuilder,
+        httpExecutor,
+        templateResolver,
+        responseStorage,
+        maxConcurrentTasks: 10,
+        transformExecutor,
+        eventNotifier);
+});
 
 // Register Kubernetes client and workflow discovery services
 builder.Services.AddSingleton<IKubernetes>(sp =>
@@ -104,14 +157,17 @@ builder.Services.AddSingleton<IKubernetes>(sp =>
 });
 builder.Services.AddSingleton<IKubernetesWorkflowClient, KubernetesWorkflowClient>();
 builder.Services.AddSingleton<IWorkflowDiscoveryService, WorkflowDiscoveryService>();
+builder.Services.AddSingleton<ITemplateDiscoveryService, TemplateDiscoveryService>();
 builder.Services.AddSingleton<IDynamicEndpointService, DynamicEndpointService>();
 builder.Services.AddScoped<IInputValidationService, InputValidationService>();
+builder.Services.AddSingleton<IWorkflowYamlParser, WorkflowYamlParser>();
 
 // Note: IWorkflowVersionRepository is already registered in database services section above (line 31)
 builder.Services.AddScoped<IWorkflowExecutionService>(sp => new WorkflowExecutionService(
     sp.GetRequiredService<IWorkflowOrchestrator>(),
     sp.GetRequiredService<IWorkflowDiscoveryService>(),
     sp.GetService<IExecutionRepository>(),  // Nullable - OK if DB not configured
+    sp.GetService<IStatisticsAggregationService>(),  // Nullable - OK if DB not configured
     executionTimeout));
 
 // Register background service
@@ -179,6 +235,9 @@ app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthC
 {
     Predicate = _ => false // No checks, just returns 200 if app is running
 });
+
+// Map SignalR hub for real-time workflow execution events
+app.MapHub<WorkflowExecutionHub>("/hubs/workflow");
 
 app.Run();
 

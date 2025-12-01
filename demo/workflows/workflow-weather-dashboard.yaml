@@ -1,0 +1,23 @@
+apiVersion: workflow.example.com/v1
+kind: Workflow
+metadata:
+  name: weather-dashboard
+  namespace: default
+spec:
+  description: Get current weather for a city. Demonstrates HTTP task with dynamic URL parameter.
+  input:
+    city:
+      type: string
+      required: true
+      description: City name for weather lookup (e.g., London, Paris, NewYork)
+
+  tasks:
+    - id: get-weather
+      taskRef: task-fetch-weather
+      input:
+        city: "{{input.city}}"
+      timeout: 15s
+
+  output:
+    city: "{{input.city}}"
+    weather: "{{tasks.get-weather.output}}"

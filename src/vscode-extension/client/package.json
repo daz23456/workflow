@@ -5,6 +5,7 @@
   "main": "./dist/extension.js",
   "scripts": {
     "build": "webpack --config webpack.extension.config.js --mode production && webpack --config webpack.config.js --mode production",
+    "type-check": "tsc --noEmit",
     "watch": "webpack --config webpack.extension.config.js --mode development --watch & webpack --config webpack.config.js --mode development --watch",
     "clean": "rm -rf dist",
     "compile": "npm run build"

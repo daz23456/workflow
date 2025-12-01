@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics;
 using System.Text.Json;
 using WorkflowCore.Data.Repositories;
 using WorkflowCore.Models;
@@ -18,6 +19,7 @@ public class DynamicWorkflowController : ControllerBase
     private readonly IExecutionGraphBuilder _graphBuilder;
     private readonly IExecutionRepository _executionRepository;
     private readonly ITemplatePreviewService _templatePreviewService;
+    private readonly IWorkflowYamlParser _yamlParser;
 
     public DynamicWorkflowController(
         IWorkflowDiscoveryService discoveryService,
@@ -25,7 +27,8 @@ public class DynamicWorkflowController : ControllerBase
         IWorkflowExecutionService executionService,
         IExecutionGraphBuilder graphBuilder,
         IExecutionRepository executionRepository,
-        ITemplatePreviewService templatePreviewService)
+        ITemplatePreviewService templatePreviewService,
+        IWorkflowYamlParser yamlParser)
     {
         _discoveryService = discoveryService ?? throw new ArgumentNullException(nameof(discoveryService));
         _validationService = validationService ?? throw new ArgumentNullException(nameof(validationService));
@@ -33,6 +36,7 @@ public class DynamicWorkflowController : ControllerBase
         _graphBuilder = graphBuilder ?? throw new ArgumentNullException(nameof(graphBuilder));
         _executionRepository = executionRepository ?? throw new ArgumentNullException(nameof(executionRepository));
         _templatePreviewService = templatePreviewService ?? throw new ArgumentNullException(nameof(templatePreviewService));
+        _yamlParser = yamlParser ?? throw new ArgumentNullException(nameof(yamlParser));
     }
 
     /// <summary>
@@ -116,19 +120,27 @@ public class DynamicWorkflowController : ControllerBase
         // Build enhanced execution plan (without executing)
         EnhancedExecutionPlan? executionPlan = null;
         var validationErrors = new List<string>();
+        long? graphBuildDurationMs = null;
 
         if (!validationResult.IsValid)
         {
             validationErrors.AddRange(validationResult.Errors.Select(e => e.Message));
         }
 
-        if (validationResult.IsValid && workflow.Spec.Tasks?.Any() == true)
+        // Always time graph build if workflow has tasks (regardless of input validation)
+        // This allows benchmarking graph build performance without needing valid input
+        if (workflow.Spec.Tasks?.Any() == true)
         {
             try
             {
+                // Time the graph build operation
+                var graphBuildStopwatch = Stopwatch.StartNew();
                 var graphResult = _graphBuilder.Build(workflow);
+                graphBuildStopwatch.Stop();
+                graphBuildDurationMs = graphBuildStopwatch.ElapsedMilliseconds;
 
-                if (graphResult.IsValid && graphResult.Graph != null)
+                // Only build full execution plan if input validation passed and graph is valid
+                if (validationResult.IsValid && graphResult.IsValid && graphResult.Graph != null)
                 {
                     var graph = graphResult.Graph;
                     var parallelGroups = graph.GetParallelGroups();
@@ -213,8 +225,9 @@ public class DynamicWorkflowController : ControllerBase
                         TemplatePreviews = templatePreviews
                     };
                 }
-                else
+                else if (!graphResult.IsValid)
                 {
+                    // Only add graph errors if graph build actually failed (not input validation)
                     validationErrors.AddRange(graphResult.Errors.Select(e => e.Message));
                 }
             }
@@ -228,8 +241,112 @@ public class DynamicWorkflowController : ControllerBase
         {
             Valid = validationErrors.Count == 0,
             ValidationErrors = validationErrors,
-            ExecutionPlan = executionPlan
+            ExecutionPlan = executionPlan,
+            GraphBuildDurationMs = graphBuildDurationMs
         });
+    }
+
+    /// <summary>
+    /// Test-execute a workflow definition without deploying it to Kubernetes.
+    /// This allows testing workflows directly from the builder before publishing.
+    /// Note: Referenced tasks (taskRef) must exist in Kubernetes.
+    /// </summary>
+    /// <param name="request">Request containing workflow YAML and input data</param>
+    /// <param name="namespace">Optional namespace for task discovery (defaults to 'default')</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Full execution results including task outputs</returns>
+    [HttpPost("test-execute")]
+    [ProducesResponseType(typeof(TestExecuteResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> TestExecute(
+        [FromBody] TestExecuteRequest request,
+        [FromQuery] string? @namespace = null,
+        CancellationToken cancellationToken = default)
+    {
+        var validationErrors = new List<string>();
+
+        // Parse YAML into WorkflowResource
+        WorkflowCore.Models.WorkflowResource workflow;
+        try
+        {
+            workflow = _yamlParser.Parse(request.WorkflowYaml);
+        }
+        catch (YamlParseException ex)
+        {
+            return BadRequest(new ProblemDetails
+            {
+                Title = "Invalid workflow YAML",
+                Detail = ex.Message,
+                Status = StatusCodes.Status400BadRequest
+            });
+        }
+
+        // Set namespace if not specified in YAML
+        if (workflow.Metadata != null && string.IsNullOrEmpty(workflow.Metadata.Namespace))
+        {
+            workflow.Metadata.Namespace = @namespace ?? "default";
+        }
+
+        // Validate input against workflow schema
+        var inputValidation = await _validationService.ValidateAsync(workflow, request.Input);
+        if (!inputValidation.IsValid)
+        {
+            validationErrors.AddRange(inputValidation.Errors.Select(e => e.Message));
+        }
+
+        // Validate execution graph
+        if (workflow.Spec?.Tasks?.Any() == true)
+        {
+            var graphResult = _graphBuilder.Build(workflow);
+            if (!graphResult.IsValid)
+            {
+                validationErrors.AddRange(graphResult.Errors.Select(e => e.Message));
+            }
+        }
+        else
+        {
+            validationErrors.Add("Workflow must have at least one task");
+        }
+
+        // Return early if validation fails
+        if (validationErrors.Any())
+        {
+            return Ok(new TestExecuteResponse
+            {
+                Success = false,
+                WorkflowName = workflow.Metadata?.Name ?? "",
+                ValidationErrors = validationErrors,
+                Error = "Validation failed: " + string.Join("; ", validationErrors)
+            });
+        }
+
+        // Execute the workflow
+        try
+        {
+            var result = await _executionService.ExecuteAsync(workflow, request.Input, cancellationToken);
+
+            return Ok(new TestExecuteResponse
+            {
+                Success = result.Success,
+                WorkflowName = result.WorkflowName,
+                Output = result.Output,
+                ExecutedTasks = result.ExecutedTasks,
+                TaskDetails = result.TaskDetails,
+                ExecutionTimeMs = result.ExecutionTimeMs,
+                Error = result.Error,
+                ValidationErrors = validationErrors
+            });
+        }
+        catch (Exception ex)
+        {
+            return Ok(new TestExecuteResponse
+            {
+                Success = false,
+                WorkflowName = workflow.Metadata?.Name ?? "",
+                ValidationErrors = validationErrors,
+                Error = $"Execution failed: {ex.Message}"
+            });
+        }
     }
 
     /// <summary>

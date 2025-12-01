@@ -1,0 +1,33 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: transform-floor
+  namespace: default
+  annotations:
+    workflow.example.com/category: transform
+    workflow.example.com/tags: math,floor,round-down
+spec:
+  type: transform
+  description: Round numbers down to nearest integer
+  transform:
+    input: "$.items"
+    pipeline:
+      - operation: floor
+  inputSchema:
+    type: object
+    properties:
+      items:
+        type: array
+        description: Array of numbers to floor
+        items:
+          type: number
+    required:
+      - items
+  outputSchema:
+    type: object
+    properties:
+      result:
+        type: array
+        description: Array of floored integers
+        items:
+          type: integer

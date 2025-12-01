@@ -1,0 +1,32 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: task-fetch-weather
+  namespace: default
+spec:
+  type: http
+  http:
+    method: GET
+    url: "https://wttr.in/{{input.city}}?format=j1"
+    headers:
+      Accept: "application/json"
+  inputSchema:
+    type: object
+    properties:
+      city:
+        type: string
+        description: City name for weather lookup
+    required:
+      - city
+  outputSchema:
+    type: object
+    properties:
+      current_condition:
+        type: array
+        description: Current weather conditions
+      nearest_area:
+        type: array
+        description: Nearest location information
+      weather:
+        type: array
+        description: Weather forecast data

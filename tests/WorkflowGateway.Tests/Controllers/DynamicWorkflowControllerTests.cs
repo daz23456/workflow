@@ -21,6 +21,7 @@ public class DynamicWorkflowControllerTests
     private readonly Mock<IExecutionGraphBuilder> _graphBuilderMock;
     private readonly Mock<IExecutionRepository> _executionRepositoryMock;
     private readonly Mock<ITemplatePreviewService> _templatePreviewServiceMock;
+    private readonly Mock<IWorkflowYamlParser> _yamlParserMock;
     private readonly DynamicWorkflowController _controller;
 
     public DynamicWorkflowControllerTests()
@@ -31,6 +32,7 @@ public class DynamicWorkflowControllerTests
         _graphBuilderMock = new Mock<IExecutionGraphBuilder>();
         _executionRepositoryMock = new Mock<IExecutionRepository>();
         _templatePreviewServiceMock = new Mock<ITemplatePreviewService>();
+        _yamlParserMock = new Mock<IWorkflowYamlParser>();
 
         // Setup default mocks for new functionality (can be overridden in tests)
         _executionRepositoryMock
@@ -47,7 +49,8 @@ public class DynamicWorkflowControllerTests
             _executionServiceMock.Object,
             _graphBuilderMock.Object,
             _executionRepositoryMock.Object,
-            _templatePreviewServiceMock.Object);
+            _templatePreviewServiceMock.Object,
+            _yamlParserMock.Object);
     }
 
     [Fact]
@@ -60,7 +63,8 @@ public class DynamicWorkflowControllerTests
             _executionServiceMock.Object,
             _graphBuilderMock.Object,
             _executionRepositoryMock.Object,
-            _templatePreviewServiceMock.Object));
+            _templatePreviewServiceMock.Object,
+            _yamlParserMock.Object));
     }
 
     [Fact]
@@ -73,7 +77,8 @@ public class DynamicWorkflowControllerTests
             _executionServiceMock.Object,
             _graphBuilderMock.Object,
             _executionRepositoryMock.Object,
-            _templatePreviewServiceMock.Object));
+            _templatePreviewServiceMock.Object,
+            _yamlParserMock.Object));
     }
 
     [Fact]
@@ -86,7 +91,8 @@ public class DynamicWorkflowControllerTests
             null!,
             _graphBuilderMock.Object,
             _executionRepositoryMock.Object,
-            _templatePreviewServiceMock.Object));
+            _templatePreviewServiceMock.Object,
+            _yamlParserMock.Object));
     }
 
     [Fact]
@@ -99,7 +105,8 @@ public class DynamicWorkflowControllerTests
             _executionServiceMock.Object,
             null!,
             _executionRepositoryMock.Object,
-            _templatePreviewServiceMock.Object));
+            _templatePreviewServiceMock.Object,
+            _yamlParserMock.Object));
     }
 
     [Fact]
@@ -112,7 +119,8 @@ public class DynamicWorkflowControllerTests
             _executionServiceMock.Object,
             _graphBuilderMock.Object,
             null!,
-            _templatePreviewServiceMock.Object));
+            _templatePreviewServiceMock.Object,
+            _yamlParserMock.Object));
     }
 
     [Fact]
@@ -125,6 +133,21 @@ public class DynamicWorkflowControllerTests
             _executionServiceMock.Object,
             _graphBuilderMock.Object,
             _executionRepositoryMock.Object,
+            null!,
+            _yamlParserMock.Object));
+    }
+
+    [Fact]
+    public void Constructor_WithNullYamlParser_ShouldThrowArgumentNullException()
+    {
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() => new DynamicWorkflowController(
+            _discoveryServiceMock.Object,
+            _validationServiceMock.Object,
+            _executionServiceMock.Object,
+            _graphBuilderMock.Object,
+            _executionRepositoryMock.Object,
+            _templatePreviewServiceMock.Object,
             null!));
     }
 

@@ -1,6 +1,7 @@
 /**
  * Tests for Execution Detail API Route
- * Following TDD: These tests are written FIRST and will fail initially
+ * Following TDD: These tests verify the response transformation
+ * from DetailedWorkflowExecutionResponse to WorkflowExecutionResponse format
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -19,8 +20,8 @@ describe('GET /api/executions/[id]', () => {
     vi.clearAllMocks();
   });
 
-  it('should return execution details for valid execution ID', async () => {
-    // Arrange
+  it('should return execution details transformed to WorkflowExecutionResponse format', async () => {
+    // Arrange - backend returns DetailedWorkflowExecutionResponse
     const mockBackendResponse = {
       executionId: '123e4567-e89b-12d3-a456-426614174000',
       workflowName: 'user-profile',
@@ -67,13 +68,21 @@ describe('GET /api/executions/[id]', () => {
     const response = await GET(request, { params });
     const data = await response.json();
 
-    // Assert
+    // Assert - response is transformed to WorkflowExecutionResponse format
     expect(response.status).toBe(200);
     expect(getExecutionDetail).toHaveBeenCalledWith('123e4567-e89b-12d3-a456-426614174000');
     expect(data.executionId).toBe('123e4567-e89b-12d3-a456-426614174000');
     expect(data.workflowName).toBe('user-profile');
-    expect(data.status).toBe('Succeeded');
-    expect(data.taskExecutions).toHaveLength(2);
+    // Transformed: status 'Succeeded' -> success: true
+    expect(data.success).toBe(true);
+    // Transformed: inputSnapshot -> input
+    expect(data.input).toEqual({ userId: '42' });
+    // Transformed: outputSnapshot -> output
+    expect(data.output).toEqual({ email: 'test@example.com', name: 'John Doe' });
+    // Transformed: taskExecutions -> tasks
+    expect(data.tasks).toHaveLength(2);
+    expect(data.tasks[0].status).toBe('success');
+    expect(data.executionTimeMs).toBe(5250);
   });
 
   it('should return 404 for non-existent execution ID', async () => {
@@ -112,7 +121,7 @@ describe('GET /api/executions/[id]', () => {
     expect(data.message).toBeTruthy();
   });
 
-  it('should include input and output snapshots', async () => {
+  it('should transform input and output snapshots', async () => {
     // Arrange
     const mockBackendResponse = {
       executionId: 'exec-456',
@@ -141,13 +150,13 @@ describe('GET /api/executions/[id]', () => {
     const response = await GET(request, { params });
     const data = await response.json();
 
-    // Assert
+    // Assert - transformed field names
     expect(response.status).toBe(200);
-    expect(data.inputSnapshot).toEqual({ data: [1, 2, 3, 4, 5], operation: 'sum' });
-    expect(data.outputSnapshot).toEqual({ result: 15, processedCount: 5 });
+    expect(data.input).toEqual({ data: [1, 2, 3, 4, 5], operation: 'sum' });
+    expect(data.output).toEqual({ result: 15, processedCount: 5 });
   });
 
-  it('should include task execution details with errors and retries', async () => {
+  it('should transform task execution details with errors', async () => {
     // Arrange
     const mockBackendResponse = {
       executionId: 'exec-789',
@@ -158,6 +167,7 @@ describe('GET /api/executions/[id]', () => {
       durationMs: 10000,
       inputSnapshot: { test: 'data' },
       outputSnapshot: undefined,
+      errors: ['Task task2 failed after retries'],
       taskExecutions: [
         {
           taskId: 'task1',
@@ -197,17 +207,19 @@ describe('GET /api/executions/[id]', () => {
     const response = await GET(request, { params });
     const data = await response.json();
 
-    // Assert
+    // Assert - transformed format
     expect(response.status).toBe(200);
-    expect(data.status).toBe('Failed');
-    expect(data.taskExecutions).toHaveLength(2);
-    expect(data.taskExecutions[1].status).toBe('Failed');
-    expect(data.taskExecutions[1].retryCount).toBe(2);
-    expect(data.taskExecutions[1].errors).toHaveLength(3);
-    expect(data.taskExecutions[1].errors[0]).toContain('timeout');
+    expect(data.success).toBe(false); // status 'Failed' -> success: false
+    expect(data.tasks).toHaveLength(2);
+    expect(data.tasks[0].status).toBe('success'); // 'Succeeded' -> 'success'
+    expect(data.tasks[1].status).toBe('failed'); // 'Failed' -> 'failed'
+    expect(data.tasks[1].retryCount).toBe(2);
+    // Errors are joined into single string
+    expect(data.tasks[1].error).toContain('Connection timeout');
+    expect(data.error).toBe('Task task2 failed after retries');
   });
 
-  it('should handle running executions without completion data', async () => {
+  it('should handle running executions', async () => {
     // Arrange
     const mockBackendResponse = {
       executionId: 'exec-running',
@@ -242,11 +254,11 @@ describe('GET /api/executions/[id]', () => {
     const response = await GET(request, { params });
     const data = await response.json();
 
-    // Assert
+    // Assert - transformed format
     expect(response.status).toBe(200);
-    expect(data.status).toBe('Running');
+    expect(data.success).toBe(false); // 'Running' is not 'Succeeded'
     expect(data.completedAt).toBeUndefined();
-    expect(data.durationMs).toBeUndefined();
-    expect(data.outputSnapshot).toBeUndefined();
+    expect(data.executionTimeMs).toBe(0); // undefined -> 0
+    expect(data.output).toEqual({}); // undefined -> empty object
   });
 });

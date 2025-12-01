@@ -1,0 +1,35 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: transform-clamp
+  namespace: default
+  annotations:
+    workflow.example.com/category: transform
+    workflow.example.com/tags: math,clamp,range,bound
+spec:
+  type: transform
+  description: Clamp numbers to a range [min, max]
+  transform:
+    input: "$.items"
+    pipeline:
+      - operation: clamp
+        min: 0
+        max: 100
+  inputSchema:
+    type: object
+    properties:
+      items:
+        type: array
+        description: Array of numbers to clamp
+        items:
+          type: number
+    required:
+      - items
+  outputSchema:
+    type: object
+    properties:
+      result:
+        type: array
+        description: Array of clamped numbers within [0, 100]
+        items:
+          type: number

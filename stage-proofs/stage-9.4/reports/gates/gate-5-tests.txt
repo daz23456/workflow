@@ -742,22 +742,22 @@ PASS tests/schema-validation.test.ts
   Schema Validation
     Workflow Schema
       ✓ should validate user-activity-analysis.yaml (15 ms)
-      ✓ should validate ecommerce-analytics.yaml (4 ms)
+      ✓ should validate ecommerce-analytics.yaml (3 ms)
       ✓ should reject workflow with missing required fields (1 ms)
       ✓ should reject workflow with invalid apiVersion
     WorkflowTask Schema
       ✓ should validate task-fetch-user.yaml (4 ms)
-      ✓ should validate transform task (2 ms)
+      ✓ should validate transform task (3 ms)
       ✓ should reject task with invalid type
     C# Model Compatibility
       ✓ should have matching field names between schema and C# WorkflowResource (1 ms)
-      ✓ should have matching field names for WorkflowSpec (1 ms)
+      ✓ should have matching field names for WorkflowSpec
       ✓ should have matching field names for WorkflowTaskStep (1 ms)
     TypeScript Type Compatibility
-      ✓ should compile TypeScript code using generated types
+      ✓ should compile TypeScript code using generated types (1 ms)
 
 Test Suites: 1 passed, 1 total
 Tests:       11 passed, 11 total
 Snapshots:   0 total
-Time:        1.589 s, estimated 3 s
+Time:        1.444 s, estimated 2 s
 Ran all test suites.

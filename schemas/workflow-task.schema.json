@@ -16,7 +16,7 @@
       "const": "WorkflowTask"
     },
     "metadata": {
-      "$ref": "common-definitions.schema.json#/definitions/ResourceMetadata"
+      "$ref": "#/definitions/ResourceMetadata"
     },
     "spec": {
       "$ref": "#/definitions/WorkflowTaskSpec"
@@ -33,14 +33,18 @@
       "properties": {
         "type": {
           "type": "string",
-          "description": "Task type (fetch, transform, etc.)",
-          "enum": ["fetch", "transform", "webhook"]
+          "description": "Task type (http, transform, etc.)",
+          "enum": ["http", "transform", "webhook"]
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable description of the task"
         },
         "inputSchema": {
-          "$ref": "common-definitions.schema.json#/definitions/SchemaDefinition"
+          "$ref": "#/definitions/SchemaDefinition"
         },
         "outputSchema": {
-          "$ref": "common-definitions.schema.json#/definitions/SchemaDefinition"
+          "$ref": "#/definitions/SchemaDefinition"
         },
         "request": {
           "$ref": "#/definitions/HttpRequestDefinition"
@@ -97,14 +101,37 @@
         },
         "jsonPath": {
           "type": "string",
-          "description": "JSONPath expression for transformation"
+          "description": "JSONPath expression for transformation (legacy)"
         },
         "query": {
           "type": "string",
           "description": "Legacy: JSONPath query (deprecated)"
+        },
+        "pipeline": {
+          "type": "array",
+          "description": "Pipeline of transform operations to apply sequentially",
+          "items": {
+            "$ref": "#/definitions/TransformOperation"
+          }
+        }
+      }
+    },
+    "TransformOperation": {
+      "type": "object",
+      "description": "A single transform operation in a pipeline",
+      "properties": {
+        "operation": {
+          "type": "string",
+          "description": "Operation type",
+          "enum": [
+            "uppercase", "lowercase", "trim", "split", "concat", "replace", "substring", "template",
+            "round", "floor", "ceil", "abs", "clamp", "scale", "percentage",
+            "first", "last", "nth", "reverse", "unique", "flatten", "chunk", "zip",
+            "randomOne", "randomN", "shuffle"
+          ]
         }
       },
-      "required": ["input", "jsonPath"]
+      "required": ["operation"]
     },
     "WorkflowTaskStatus": {
       "type": "object",
@@ -121,6 +148,65 @@
           "format": "date-time"
         }
       }
+    },
+    "ResourceMetadata": {
+      "type": "object",
+      "description": "Kubernetes resource metadata",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Resource name",
+          "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$"
+        },
+        "namespace": {
+          "type": "string",
+          "description": "Resource namespace",
+          "default": "default",
+          "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$"
+        },
+        "annotations": {
+          "type": "object",
+          "description": "Resource annotations",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "labels": {
+          "type": "object",
+          "description": "Resource labels",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "required": ["name", "namespace"]
+    },
+    "SchemaDefinition": {
+      "type": "object",
+      "description": "JSON Schema definition for validation",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["object", "array", "string", "number", "integer", "boolean", "null"]
+        },
+        "properties": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "required": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "description": {
+          "type": "string"
+        },
+        "items": {
+          "type": "object"
+        }
+      },
+      "required": ["type"]
     }
   }
 }

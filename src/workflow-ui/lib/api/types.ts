@@ -7,25 +7,51 @@
 // Workflow Management Types
 // ============================================================================
 
+export interface WorkflowSummaryStats {
+  totalExecutions: number;
+  successRate: number;
+  avgDurationMs: number;
+  lastExecuted?: string; // ISO 8601
+}
+
 export interface WorkflowSummary {
   name: string;
   namespace: string;
+  description: string;
   taskCount: number;
+  inputSchemaPreview: string;
   endpoint: string;
+  stats?: WorkflowSummaryStats;
 }
 
 export interface WorkflowListResponse {
   workflows: WorkflowSummary[];
+  total: number;
+  skip: number;
+  take: number;
+}
+
+export interface TaskSummaryStats {
+  usedByWorkflows: number;
+  totalExecutions: number;
+  successRate: number;
+  avgDurationMs: number;
+  lastExecuted?: string; // ISO 8601
 }
 
 export interface TaskSummary {
   name: string;
+  type: string;
   namespace: string;
-  endpoint: string;
+  description?: string;
+  stats?: TaskSummaryStats;
 }
 
 export interface TaskListResponse {
   tasks: TaskSummary[];
+  total: number;
+  skip: number;
+  take: number;
 }
 
 // ============================================================================
@@ -132,7 +158,7 @@ export interface WorkflowTaskStep {
   id: string;
   taskRef: string;
   description?: string;
-  dependencies: string[];
+  dependsOn: string[];
   timeout?: string;
 }
 
@@ -192,6 +218,26 @@ export interface WorkflowTestRequest {
   input: Record<string, any>;
 }
 
+// ============================================================================
+// Test Execute Types (for builder testing without deployment)
+// ============================================================================
+
+export interface TestExecuteRequest {
+  workflowYaml: string;
+  input: Record<string, any>;
+}
+
+export interface TestExecuteResponse {
+  success: boolean;
+  workflowName: string;
+  output?: Record<string, any>;
+  executedTasks: string[];
+  taskDetails: TaskExecutionDetail[];
+  executionTimeMs: number;
+  error?: string;
+  validationErrors: string[];
+}
+
 export interface ValidationError {
   message: string;
   path?: string;
@@ -232,6 +278,8 @@ export interface WorkflowTestResponse {
   valid: boolean;
   validationErrors: string[];
   executionPlan?: ExecutionPlan;
+  /** Time taken to build the execution graph in microseconds */
+  graphBuildDurationMicros?: number;
 }
 
 // ============================================================================
@@ -295,7 +343,9 @@ export interface TaskTimingDetail {
   completedAt?: string; // ISO 8601
   durationMs?: number;
   waitTimeMs: number; // Time spent waiting for dependencies
-  status: string;
+  waitedForTasks?: string[]; // Task IDs this task waited for
+  retryCount?: number;
+  success: boolean; // Whether the task completed successfully
 }
 
 export interface DependencyInfo {

@@ -1,0 +1,31 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: transform-shuffle
+  namespace: default
+  annotations:
+    workflow.example.com/category: transform
+    workflow.example.com/tags: random,shuffle,array,reorder
+spec:
+  type: transform
+  description: Randomly reorder all elements in an array (Fisher-Yates shuffle)
+  transform:
+    input: "$.items"
+    pipeline:
+      - operation: shuffle
+  inputSchema:
+    type: object
+    properties:
+      items:
+        type: array
+        description: Array to shuffle
+        items: {}
+    required:
+      - items
+  outputSchema:
+    type: object
+    properties:
+      result:
+        type: array
+        description: Array with elements in random order
+        items: {}

@@ -11,7 +11,19 @@
       "Bash(done)",
       "Bash(for script in extract-stage-metrics.sh verify-stage-artifacts.sh generate-proof.py)",
       "Bash(npm audit:*)",
-      "Bash(npm run lint:*)"
+      "Bash(npm run lint:*)",
+      "Bash(./scripts/init-stage.sh:*)",
+      "Bash(./scripts/stage-status.sh:*)",
+      "Bash(./scripts/run-quality-gates.sh:*)",
+      "Bash(npm run:*)",
+      "Bash(npx tsc:*)",
+      "Bash(pnpm add:*)",
+      "Bash(./scripts/complete-stage.sh:*)",
+      "Bash(brew install k6)",
+      "Bash(BASE_URL=http://localhost:5001 k6 run:*)",
+      "Bash(kubectl apply:*)",
+      "Bash(pnpm exec vitest run:*)",
+      "Bash(git log:*)"
     ],
     "deny": [],
     "ask": []

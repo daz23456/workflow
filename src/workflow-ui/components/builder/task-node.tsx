@@ -171,7 +171,7 @@ export const TaskNode = memo(({ id, data, selected, isConnectable, dragging }: N
       aria-label={`Task: ${nodeData.label}`}
       tabIndex={0}
     >
-      {/* Target Handle (incoming edges) */}
+      {/* Target Handle - Top (for vertical connections) */}
       <Handle
         type="target"
         position={Position.Top}
@@ -182,6 +182,15 @@ export const TaskNode = memo(({ id, data, selected, isConnectable, dragging }: N
           'w-3 h-3 !bg-blue-500 !border-2 !border-white',
           !isConnectable && 'opacity-50 cursor-not-allowed'
         )}
+      />
+
+      {/* Target Handle - Left (for Input node connection) */}
+      <Handle
+        type="target"
+        position={Position.Left}
+        id="target-left"
+        isConnectable={isConnectable}
+        className="w-3 h-3 !bg-green-500 !border-2 !border-white"
       />
 
       {/* Validation indicator */}
@@ -230,7 +239,7 @@ export const TaskNode = memo(({ id, data, selected, isConnectable, dragging }: N
         </div>
       )}
 
-      {/* Source Handle (outgoing edges) */}
+      {/* Source Handle - Bottom (for vertical connections) */}
       <Handle
         type="source"
         position={Position.Bottom}
@@ -241,6 +250,15 @@ export const TaskNode = memo(({ id, data, selected, isConnectable, dragging }: N
           'w-3 h-3 !bg-blue-500 !border-2 !border-white',
           !isConnectable && 'opacity-50 cursor-not-allowed'
         )}
+      />
+
+      {/* Source Handle - Right (for Output node connection) */}
+      <Handle
+        type="source"
+        position={Position.Right}
+        id="source-right"
+        isConnectable={isConnectable}
+        className="w-3 h-3 !bg-purple-500 !border-2 !border-white"
       />
 
       {/* Screen reader announcements for validation */}

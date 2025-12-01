@@ -11,6 +11,12 @@ import userEvent from '@testing-library/user-event';
 import { PropertiesPanel } from './properties-panel';
 import type { WorkflowBuilderNode } from '@/lib/types/workflow-builder';
 
+// Mock getTaskDetail API
+const mockGetTaskDetail = vi.fn();
+vi.mock('@/lib/api/client', () => ({
+  getTaskDetail: (...args: any[]) => mockGetTaskDetail(...args),
+}));
+
 // Mock Zustand store
 const mockUpdateNode = vi.fn();
 const mockClearSelection = vi.fn();
@@ -42,6 +48,13 @@ describe('PropertiesPanel', () => {
   beforeEach(() => {
     mockUpdateNode.mockClear();
     mockClearSelection.mockClear();
+    mockGetTaskDetail.mockClear();
+    // Default mock - resolve with empty details
+    mockGetTaskDetail.mockResolvedValue({
+      name: 'task-1',
+      inputSchema: { type: 'object', properties: {} },
+      outputSchema: { type: 'object', properties: {} },
+    });
     // Reset to default state
     mockStoreState = {
       graph: {
@@ -66,7 +79,8 @@ describe('PropertiesPanel', () => {
 
     it('should render panel title', () => {
       render(<PropertiesPanel />);
-      expect(screen.getByText('Properties')).toBeInTheDocument();
+      // Component uses aria-label instead of visible title
+      expect(screen.getByLabelText('Properties panel')).toBeInTheDocument();
     });
 
     it('should show empty state when no node is selected', () => {
@@ -166,7 +180,7 @@ describe('PropertiesPanel', () => {
 
     it('should render label input field', () => {
       render(<PropertiesPanel />);
-      const labelInput = screen.getByLabelText(/label/i);
+      const labelInput = screen.getByLabelText(/^label$/i);
       expect(labelInput).toBeInTheDocument();
       expect(labelInput).toHaveValue('Fetch User');
     });
@@ -175,7 +189,7 @@ describe('PropertiesPanel', () => {
       const user = userEvent.setup();
       render(<PropertiesPanel />);
 
-      const labelInput = screen.getByLabelText(/label/i);
+      const labelInput = screen.getByLabelText(/^label$/i);
       await user.clear(labelInput);
       await user.type(labelInput, 'Get User Data');
 
@@ -195,7 +209,7 @@ describe('PropertiesPanel', () => {
       const user = userEvent.setup();
       render(<PropertiesPanel />);
 
-      const labelInput = screen.getByLabelText(/label/i);
+      const labelInput = screen.getByLabelText(/^label$/i);
       await user.clear(labelInput);
       fireEvent.blur(labelInput);
 
@@ -207,7 +221,7 @@ describe('PropertiesPanel', () => {
       const user = userEvent.setup();
       render(<PropertiesPanel />);
 
-      const labelInput = screen.getByLabelText(/label/i);
+      const labelInput = screen.getByLabelText(/^label$/i);
       await user.clear(labelInput);
       await user.type(labelInput, '  Trimmed Label  ');
       fireEvent.blur(labelInput);
@@ -241,21 +255,6 @@ describe('PropertiesPanel', () => {
       expect(taskRefInput).toHaveAttribute('readonly');
     });
 
-    it('should show helper text for taskRef', () => {
-      mockStoreState.graph.nodes = [
-        {
-          id: 'node-1',
-          type: 'task',
-          position: { x: 100, y: 100 },
-          data: { label: 'Task', taskRef: 'fetch-user' },
-        },
-      ] as WorkflowBuilderNode[];
-      mockStoreState.selection.nodeIds = ['node-1'];
-
-      render(<PropertiesPanel />);
-
-      expect(screen.getByText(/task reference.*cannot be changed/i)).toBeInTheDocument();
-    });
   });
 
   describe('Description Editing', () => {
@@ -277,7 +276,7 @@ describe('PropertiesPanel', () => {
 
     it('should render description textarea', () => {
       render(<PropertiesPanel />);
-      const descriptionTextarea = screen.getByLabelText(/description/i);
+      const descriptionTextarea = screen.getByLabelText(/^description$/i);
       expect(descriptionTextarea).toBeInTheDocument();
       expect(descriptionTextarea.tagName).toBe('TEXTAREA');
       expect(descriptionTextarea).toHaveValue('Fetches user data');
@@ -287,7 +286,7 @@ describe('PropertiesPanel', () => {
       const user = userEvent.setup();
       render(<PropertiesPanel />);
 
-      const descriptionTextarea = screen.getByLabelText(/description/i);
+      const descriptionTextarea = screen.getByLabelText(/^description$/i);
       await user.clear(descriptionTextarea);
       await user.type(descriptionTextarea, 'New description');
       fireEvent.blur(descriptionTextarea);
@@ -305,7 +304,7 @@ describe('PropertiesPanel', () => {
       const user = userEvent.setup();
       render(<PropertiesPanel />);
 
-      const descriptionTextarea = screen.getByLabelText(/description/i);
+      const descriptionTextarea = screen.getByLabelText(/^description$/i);
       await user.clear(descriptionTextarea);
       fireEvent.blur(descriptionTextarea);
 
@@ -378,42 +377,6 @@ describe('PropertiesPanel', () => {
   });
 
   describe('Close Action', () => {
-    it('should render close button', () => {
-      mockStoreState.graph.nodes = [
-        {
-          id: 'node-1',
-          type: 'task',
-          position: { x: 100, y: 100 },
-          data: { label: 'Task', taskRef: 'task-1' },
-        },
-      ] as WorkflowBuilderNode[];
-      mockStoreState.selection.nodeIds = ['node-1'];
-
-      render(<PropertiesPanel />);
-
-      expect(screen.getByRole('button', { name: /close/i })).toBeInTheDocument();
-    });
-
-    it('should clear selection when close button clicked', async () => {
-      mockStoreState.graph.nodes = [
-        {
-          id: 'node-1',
-          type: 'task',
-          position: { x: 100, y: 100 },
-          data: { label: 'Task', taskRef: 'task-1' },
-        },
-      ] as WorkflowBuilderNode[];
-      mockStoreState.selection.nodeIds = ['node-1'];
-
-      const user = userEvent.setup();
-      render(<PropertiesPanel />);
-
-      const closeButton = screen.getByRole('button', { name: /close/i });
-      await user.click(closeButton);
-
-      expect(mockClearSelection).toHaveBeenCalled();
-    });
-
     it('should close panel on Escape key', async () => {
       mockStoreState.graph.nodes = [
         {
@@ -456,8 +419,8 @@ describe('PropertiesPanel', () => {
       render(<PropertiesPanel />);
 
       expect(screen.getByLabelText(/^label$/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/task reference/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/description/i)).toBeInTheDocument();
+      expect(screen.getByLabelText(/^task reference$/i)).toBeInTheDocument();
+      expect(screen.getByLabelText(/^description$/i)).toBeInTheDocument();
     });
 
     it('should announce validation errors to screen readers', () => {
@@ -491,7 +454,7 @@ describe('PropertiesPanel', () => {
       render(<PropertiesPanel />);
 
       const labelInput = screen.getByLabelText(/^label$/i);
-      const descriptionTextarea = screen.getByLabelText(/description/i);
+      const descriptionTextarea = screen.getByLabelText(/^description$/i);
 
       // Should be focusable
       labelInput.focus();
@@ -506,10 +469,10 @@ describe('PropertiesPanel', () => {
     it('should have proper width for desktop', () => {
       const { container } = render(<PropertiesPanel />);
       const panel = container.firstChild as HTMLElement;
-      expect(panel.className).toContain('w-80'); // Tailwind class for width
+      expect(panel.className).toContain('w-full'); // Full width within parent container
     });
 
-    it('should be scrollable when content overflows', () => {
+    it('should handle overflow properly', () => {
       mockStoreState.graph.nodes = [
         {
           id: 'node-1',
@@ -522,7 +485,389 @@ describe('PropertiesPanel', () => {
 
       const { container } = render(<PropertiesPanel />);
       const panel = container.firstChild as HTMLElement;
-      expect(panel.className).toContain('overflow-y-auto');
+      expect(panel.className).toContain('overflow-hidden'); // Overflow is managed by flex layout
+    });
+  });
+
+  describe('Input Configuration', () => {
+    beforeEach(() => {
+      // Mock API response for task-fetch-hn-story
+      mockGetTaskDetail.mockResolvedValue({
+        name: 'task-fetch-hn-story',
+        namespace: 'default',
+        description: 'Fetches a Hacker News story by ID',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            storyId: { type: 'integer', description: 'Hacker News story ID' },
+          },
+          required: ['storyId'],
+        },
+        outputSchema: {
+          type: 'object',
+          properties: {
+            by: { type: 'string' },
+            title: { type: 'string' },
+            url: { type: 'string' },
+          },
+        },
+      });
+
+      // Setup with task details loaded (mocking API response)
+      mockStoreState.graph.nodes = [
+        {
+          id: 'node-1',
+          type: 'task',
+          position: { x: 100, y: 100 },
+          data: {
+            label: 'Fetch Story',
+            taskRef: 'task-fetch-hn-story',
+            description: 'Fetches story details',
+            input: {},
+          },
+        },
+      ] as WorkflowBuilderNode[];
+      mockStoreState.selection.nodeIds = ['node-1'];
+    });
+
+    it('should render input configuration section when task has input schema', async () => {
+      render(<PropertiesPanel />);
+
+      // Wait for task details to load
+      await waitFor(() => {
+        expect(screen.getByTestId('input-configuration-section')).toBeInTheDocument();
+      });
+    });
+
+    it('should render input field for each schema property', async () => {
+      render(<PropertiesPanel />);
+
+      await waitFor(() => {
+        // Should show input field for storyId (from task schema)
+        expect(screen.getByTestId('input-field-storyId')).toBeInTheDocument();
+      });
+    });
+
+    it('should show required indicator for required inputs', async () => {
+      render(<PropertiesPanel />);
+
+      await waitFor(() => {
+        const inputField = screen.getByTestId('input-field-storyId');
+        expect(inputField).toHaveAttribute('data-required', 'true');
+      });
+    });
+
+    it('should allow entering literal value in input field', async () => {
+      const user = userEvent.setup();
+      render(<PropertiesPanel />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('input-field-storyId')).toBeInTheDocument();
+      });
+
+      const inputField = screen.getByPlaceholderText(/enter value or template/i);
+      await user.type(inputField, '12345');
+      fireEvent.blur(inputField);
+
+      await waitFor(() => {
+        expect(mockUpdateNode).toHaveBeenCalledWith('node-1', {
+          data: expect.objectContaining({
+            input: expect.objectContaining({
+              storyId: '12345',
+            }),
+          }),
+        });
+      });
+    });
+
+    it('should allow entering template expression in input field', async () => {
+      render(<PropertiesPanel />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('input-field-storyId')).toBeInTheDocument();
+      });
+
+      const inputField = screen.getByPlaceholderText(/enter value or template/i);
+      // Use fireEvent.change to avoid userEvent special character escaping
+      fireEvent.change(inputField, { target: { value: '{{tasks.get-stories.output.data[0]}}' } });
+      fireEvent.blur(inputField);
+
+      await waitFor(() => {
+        expect(mockUpdateNode).toHaveBeenCalledWith('node-1', {
+          data: expect.objectContaining({
+            input: expect.objectContaining({
+              storyId: '{{tasks.get-stories.output.data[0]}}',
+            }),
+          }),
+        });
+      });
+    });
+
+    it('should display existing input values', async () => {
+      mockStoreState.graph.nodes = [
+        {
+          id: 'node-1',
+          type: 'task',
+          position: { x: 100, y: 100 },
+          data: {
+            label: 'Fetch Story',
+            taskRef: 'task-fetch-hn-story',
+            description: 'Fetches story details',
+            input: {
+              storyId: '{{tasks.get-stories.output.data[0]}}',
+            },
+          },
+        },
+      ] as WorkflowBuilderNode[];
+
+      render(<PropertiesPanel />);
+
+      await waitFor(() => {
+        const inputField = screen.getByDisplayValue('{{tasks.get-stories.output.data[0]}}');
+        expect(inputField).toBeInTheDocument();
+      });
+    });
+
+    it('should highlight template expressions with visual indicator', async () => {
+      mockStoreState.graph.nodes = [
+        {
+          id: 'node-1',
+          type: 'task',
+          position: { x: 100, y: 100 },
+          data: {
+            label: 'Fetch Story',
+            taskRef: 'task-fetch-hn-story',
+            description: 'Fetches story details',
+            input: {
+              storyId: '{{tasks.get-stories.output.data[0]}}',
+            },
+          },
+        },
+      ] as WorkflowBuilderNode[];
+
+      render(<PropertiesPanel />);
+
+      await waitFor(() => {
+        const inputField = screen.getByTestId('input-field-storyId');
+        expect(inputField).toHaveAttribute('data-is-template', 'true');
+      });
+    });
+
+    it('should show validation error for empty required input', async () => {
+      mockStoreState.graph.nodes = [
+        {
+          id: 'node-1',
+          type: 'task',
+          position: { x: 100, y: 100 },
+          data: {
+            label: 'Fetch Story',
+            taskRef: 'task-fetch-hn-story',
+            description: 'Fetches story details',
+            input: {}, // Required storyId is missing
+          },
+        },
+      ] as WorkflowBuilderNode[];
+
+      render(<PropertiesPanel />);
+
+      await waitFor(() => {
+        expect(screen.getByText(/storyId is required/i)).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('Template Expression Suggestions', () => {
+    beforeEach(() => {
+      // Mock API response based on taskRef
+      mockGetTaskDetail.mockImplementation((taskRef: string) => {
+        if (taskRef === 'task-fetch-hn-story') {
+          return Promise.resolve({
+            name: 'task-fetch-hn-story',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                storyId: { type: 'integer', description: 'Hacker News story ID' },
+              },
+              required: ['storyId'],
+            },
+            outputSchema: {
+              type: 'object',
+              properties: {
+                by: { type: 'string' },
+                title: { type: 'string' },
+              },
+            },
+          });
+        }
+        if (taskRef === 'task-fetch-hn-top-stories') {
+          return Promise.resolve({
+            name: 'task-fetch-hn-top-stories',
+            inputSchema: {
+              type: 'object',
+              properties: {},
+            },
+            outputSchema: {
+              type: 'object',
+              properties: {
+                data: { type: 'array', items: { type: 'integer' } },
+              },
+            },
+          });
+        }
+        return Promise.resolve({
+          name: taskRef,
+          inputSchema: { type: 'object', properties: {} },
+          outputSchema: { type: 'object', properties: {} },
+        });
+      });
+
+      // Setup with multiple tasks to enable template suggestions
+      mockStoreState.graph.nodes = [
+        {
+          id: 'get-stories',
+          type: 'task',
+          position: { x: 100, y: 100 },
+          data: {
+            label: 'Get Stories',
+            taskRef: 'task-fetch-hn-top-stories',
+            description: 'Fetches top stories',
+          },
+        },
+        {
+          id: 'fetch-story',
+          type: 'task',
+          position: { x: 300, y: 100 },
+          data: {
+            label: 'Fetch Story',
+            taskRef: 'task-fetch-hn-story',
+            description: 'Fetches story details',
+            input: {},
+          },
+        },
+      ] as WorkflowBuilderNode[];
+      mockStoreState.graph.edges = [
+        {
+          id: 'edge-1',
+          source: 'get-stories',
+          target: 'fetch-story',
+          type: 'dependency',
+        },
+      ];
+      mockStoreState.selection.nodeIds = ['fetch-story'];
+    });
+
+    it('should show template suggestions when typing {{', async () => {
+      render(<PropertiesPanel />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('input-field-storyId')).toBeInTheDocument();
+      });
+
+      const inputField = screen.getByPlaceholderText(/enter value or template/i);
+      // Use fireEvent to avoid userEvent escape sequence issues with {{
+      fireEvent.change(inputField, { target: { value: '{{' } });
+
+      await waitFor(() => {
+        expect(screen.getByTestId('template-suggestions')).toBeInTheDocument();
+      });
+    });
+
+    it('should show available upstream task outputs in suggestions', async () => {
+      render(<PropertiesPanel />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('input-field-storyId')).toBeInTheDocument();
+      });
+
+      const inputField = screen.getByPlaceholderText(/enter value or template/i);
+      fireEvent.change(inputField, { target: { value: '{{' } });
+
+      await waitFor(() => {
+        // Should show get-stories task outputs (upstream dependency)
+        expect(screen.getByText(/tasks\.get-stories\.output/i)).toBeInTheDocument();
+      });
+    });
+
+    it('should not show current task in suggestions', async () => {
+      render(<PropertiesPanel />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('input-field-storyId')).toBeInTheDocument();
+      });
+
+      const inputField = screen.getByPlaceholderText(/enter value or template/i);
+      fireEvent.change(inputField, { target: { value: '{{' } });
+
+      await waitFor(() => {
+        // Should NOT show fetch-story (current task)
+        expect(screen.queryByText(/tasks\.fetch-story\.output/i)).not.toBeInTheDocument();
+      });
+    });
+
+    it('should insert selected suggestion into input field', async () => {
+      const user = userEvent.setup();
+      render(<PropertiesPanel />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('input-field-storyId')).toBeInTheDocument();
+      });
+
+      const inputField = screen.getByPlaceholderText(/enter value or template/i);
+      fireEvent.change(inputField, { target: { value: '{{' } });
+
+      await waitFor(() => {
+        expect(screen.getByTestId('template-suggestions')).toBeInTheDocument();
+      });
+
+      // Click on a suggestion
+      const suggestion = screen.getByText(/tasks\.get-stories\.output\.data/i);
+      await user.click(suggestion);
+
+      expect(inputField).toHaveValue('{{tasks.get-stories.output.data}}');
+    });
+
+    it('should show workflow input variables in suggestions', async () => {
+      // Add workflow input schema
+      mockStoreState = {
+        ...mockStoreState,
+        inputSchema: {
+          userId: { type: 'string', required: true },
+        },
+      } as any;
+
+      render(<PropertiesPanel />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('input-field-storyId')).toBeInTheDocument();
+      });
+
+      const inputField = screen.getByPlaceholderText(/enter value or template/i);
+      fireEvent.change(inputField, { target: { value: '{{' } });
+
+      await waitFor(() => {
+        expect(screen.getByText(/input\.userId/i)).toBeInTheDocument();
+      });
+    });
+
+    it('should close suggestions when pressing Escape', async () => {
+      render(<PropertiesPanel />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('input-field-storyId')).toBeInTheDocument();
+      });
+
+      const inputField = screen.getByPlaceholderText(/enter value or template/i);
+      fireEvent.change(inputField, { target: { value: '{{' } });
+
+      await waitFor(() => {
+        expect(screen.getByTestId('template-suggestions')).toBeInTheDocument();
+      });
+
+      fireEvent.keyDown(inputField, { key: 'Escape' });
+
+      await waitFor(() => {
+        expect(screen.queryByTestId('template-suggestions')).not.toBeInTheDocument();
+      });
     });
   });
 });

@@ -1,0 +1,32 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: transform-nth
+  namespace: default
+  annotations:
+    workflow.example.com/category: transform
+    workflow.example.com/tags: array,nth,index
+spec:
+  type: transform
+  description: Get the nth element from an array (0-indexed)
+  transform:
+    input: "$.items"
+    pipeline:
+      - operation: nth
+        index: 0
+  inputSchema:
+    type: object
+    properties:
+      items:
+        type: array
+        description: Array to get element from
+        items: {}
+    required:
+      - items
+  outputSchema:
+    type: object
+    properties:
+      result:
+        type: array
+        description: Array containing the nth element
+        items: {}

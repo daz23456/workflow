@@ -34,6 +34,9 @@ namespace WorkflowCore.Data.Migrations
                     b.Property<TimeSpan?>("Duration")
                         .HasColumnType("interval");
 
+                    b.Property<TimeSpan?>("GraphBuildDuration")
+                        .HasColumnType("interval");
+
                     b.Property<string>("InputSnapshot")
                         .HasColumnType("text");
 

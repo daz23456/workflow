@@ -11,8 +11,8 @@ export interface LayoutOptions {
 
 const DEFAULT_NODE_WIDTH = 250;
 const DEFAULT_NODE_HEIGHT = 80;
-const DEFAULT_NODE_SPACING = 50;
-const DEFAULT_RANK_SPACING = 100;
+const DEFAULT_NODE_SPACING = 80;   // Horizontal spacing between sibling nodes
+const DEFAULT_RANK_SPACING = 120;  // Vertical spacing between levels
 
 /**
  * Automatically layouts a React Flow graph using Dagre's hierarchical layout algorithm.
@@ -48,13 +48,12 @@ export function layoutGraph(nodes: Node[], edges: Edge[], options: LayoutOptions
   dagreGraph.setDefaultEdgeLabel(() => ({}));
 
   // Set graph direction and spacing
-  // For TB/BT (vertical layouts), ranksep controls vertical spacing
-  // For LR/RL (horizontal layouts), ranksep controls horizontal spacing
-  const isVertical = direction === 'TB' || direction === 'BT';
+  // nodesep: spacing between nodes in the same rank (horizontal for TB/BT)
+  // ranksep: spacing between ranks (vertical for TB/BT)
   dagreGraph.setGraph({
     rankdir: direction,
-    nodesep: isVertical ? rankSpacing : nodeSpacing,
-    ranksep: isVertical ? nodeSpacing : rankSpacing,
+    nodesep: nodeSpacing,  // Horizontal spacing between siblings
+    ranksep: rankSpacing,  // Vertical spacing between levels
   });
 
   // Add nodes to the graph

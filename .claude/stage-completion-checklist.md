@@ -1,7 +1,7 @@
 # Stage Completion Checklist
 
 **Last Updated:** 2025-11-29
-**Version:** 4.0.0 (Aligned with STAGE_EXECUTION_FRAMEWORK.md v4.0.0)
+**Version:** 4.0.1 (Aligned with STAGE_EXECUTION_FRAMEWORK.md v4.0.1)
 
 **Purpose:** Step-by-step executable workflow for completing stages with production-grade quality. Follow this checklist for every stage to ensure consistency and completeness.
 
@@ -53,20 +53,28 @@
 - Gate 11: Integration Tests (API/DB stages)
 - Gate 12: Performance Benchmarks (performance-critical)
 - Gate 13: API Contract Validation (public APIs)
-- Gate 14: Accessibility Testing (UI only)
-- Gate 15: E2E Tests (user-facing features)
+- Gate 14: Accessibility Testing (UI only - MANDATORY for FRONTEND_TS)
+- Gate 15: E2E Tests (user-facing features - MANDATORY for FRONTEND_TS)
 - Gates 16-19: SAST, Observability, Complexity, Dependencies
+- Gate 21: Storybook Stories (UI only - MANDATORY for FRONTEND_TS)
+
+### Gate Profiles (Pick ONE per stage)
+
+| Profile | Gates | Use For |
+|---------|-------|---------|
+| `BACKEND_DOTNET` | 1-8 | .NET API/service stages |
+| `FRONTEND_TS` | 1-8, 14, 15, 21 | TypeScript UI stages |
+| `MINIMAL` | 1-8 | POC, small fixes, learning |
 
 **Quick Selection by Stage Type:**
 
-| Stage Type | TIER 1 Gates | TIER 2 Gates | TIER 3 Gates | Tech Stack |
-|------------|--------------|--------------|--------------|------------|
-| .NET Backend API | 5, 8, 1, 2, 3, 4, 6 | 7, 13 | 10, 12 | .NET |
-| TypeScript UI | 5, 8, 1, 9, 2, 3, 4, 6 | 7, 13 | 14, 15 | TypeScript |
-| CLI Tool | 5, 8, 1, 2, 3, 4, 6 | 7, 13 | - | Any |
-| Library/SDK | 5, 8, 1, 2, 3, 4, 6 | 7, 13 | - | Any |
-| Performance-Critical | 5, 8, 1, 2, 3, 4, 6 | 7, 13 | 11 | Any |
-| POC/Learning | 1, 2, 3, 4, 6 | - | - | Any (Beginner Path) |
+| Stage Type | Profile | TIER 2 (Optional) | TIER 3 (Optional) |
+|------------|---------|-------------------|-------------------|
+| .NET Backend API | `BACKEND_DOTNET` | 9, 10 | 11, 12, 13 |
+| TypeScript UI | `FRONTEND_TS` | 9, 10 | - (14, 15, 21 included) |
+| CLI Tool | `MINIMAL` | 9, 10 | - |
+| Library/SDK | `BACKEND_DOTNET` | 9, 10 | - |
+| POC/Learning | `MINIMAL` | - | - |
 
 ---
 
@@ -946,6 +954,74 @@ npx npm-check-updates --target minor  # Safe updates only
 
 ---
 
+#### Gate 21: Storybook Stories (TypeScript UI Only - MANDATORY for FRONTEND_TS)
+
+**Why:** Component stories ensure visual documentation, enable design review, catch UI regressions, and make component APIs discoverable.
+
+**Order:** Run after Gate 15 (E2E Tests) for FRONTEND_TS profile.
+
+```bash
+STAGE_NUM=X
+
+echo "=== Gate 21: Storybook Stories ===" | tee ./stage-proofs/stage-$STAGE_NUM/reports/gates/gate-21-storybook.txt
+
+# 1. Count components vs stories (excluding /ui/* shadcn primitives)
+COMPONENT_COUNT=$(find src/components -name "*.tsx" ! -name "*.test.tsx" ! -name "*.stories.tsx" ! -path "*/ui/*" 2>/dev/null | wc -l | tr -d ' ')
+STORY_COUNT=$(find src/components -name "*.stories.tsx" ! -path "*/ui/*" 2>/dev/null | wc -l | tr -d ' ')
+
+echo "Total Components (excluding shadcn): $COMPONENT_COUNT" | tee -a ./stage-proofs/stage-$STAGE_NUM/reports/gates/gate-21-storybook.txt
+echo "Total Stories: $STORY_COUNT" | tee -a ./stage-proofs/stage-$STAGE_NUM/reports/gates/gate-21-storybook.txt
+
+# 2. List components missing stories
+echo "" | tee -a ./stage-proofs/stage-$STAGE_NUM/reports/gates/gate-21-storybook.txt
+echo "Components missing stories:" | tee -a ./stage-proofs/stage-$STAGE_NUM/reports/gates/gate-21-storybook.txt
+MISSING=0
+for comp in $(find src/components -name "*.tsx" ! -name "*.test.tsx" ! -name "*.stories.tsx" ! -path "*/ui/*" 2>/dev/null); do
+  story="${comp%.tsx}.stories.tsx"
+  if [ ! -f "$story" ]; then
+    echo "  - $comp" | tee -a ./stage-proofs/stage-$STAGE_NUM/reports/gates/gate-21-storybook.txt
+    MISSING=$((MISSING + 1))
+  fi
+done
+
+if [ $MISSING -eq 0 ]; then
+  echo "  All components have stories!" | tee -a ./stage-proofs/stage-$STAGE_NUM/reports/gates/gate-21-storybook.txt
+fi
+
+# 3. Build Storybook to verify stories compile
+echo "" | tee -a ./stage-proofs/stage-$STAGE_NUM/reports/gates/gate-21-storybook.txt
+echo "Building Storybook..." | tee -a ./stage-proofs/stage-$STAGE_NUM/reports/gates/gate-21-storybook.txt
+npm run build-storybook 2>&1 | tee -a ./stage-proofs/stage-$STAGE_NUM/reports/gates/gate-21-storybook.txt
+
+if [ $? -eq 0 ]; then
+  echo "Storybook build succeeded" | tee -a ./stage-proofs/stage-$STAGE_NUM/reports/gates/gate-21-storybook.txt
+else
+  echo "Storybook build FAILED" | tee -a ./stage-proofs/stage-$STAGE_NUM/reports/gates/gate-21-storybook.txt
+  exit 1
+fi
+```
+
+**Pass Criteria:**
+- [ ] **BLOCKER:** Every UI component (except `/ui/*` shadcn primitives) has a `.stories.tsx` file
+- [ ] **BLOCKER:** `npm run build-storybook` succeeds with no errors
+- [ ] Stories include at least `Default` variant
+- [ ] Stories use `tags: ['autodocs']` for auto-documentation
+
+**Exceptions:**
+- `/components/ui/*` (shadcn primitives) - don't need custom stories
+- Pure utility components with no visual output
+
+**When to Use:**
+- ALL TypeScript UI stages (FRONTEND_TS profile)
+- New component creation
+- Component refactoring
+
+**Artifacts:**
+- [ ] `stage-proofs/stage-X/reports/gates/gate-21-storybook.txt`
+- [ ] `storybook-static/` (generated build, not committed)
+
+---
+
 ## PHASE 4: Proof File Completion
 
 ### Option A: Auto-Generate (Recommended - Saves 10 minutes)
@@ -1336,4 +1412,6 @@ git check-ignore stage-proofs/stage-X/reports/coverage/index.html
 ---
 
 **Last Updated:** 2025-11-29
-**Version:** 2.0 (Aligned with STAGE_EXECUTION_FRAMEWORK.md v2.0 + Centralized Artifacts)
+**Version:** 4.0.1 (Aligned with STAGE_EXECUTION_FRAMEWORK.md v4.0.1)
+
+> **TIP:** For a shorter checklist, use `.claude/STAGE_CHECKLIST.md` (50 lines) instead of this detailed reference.

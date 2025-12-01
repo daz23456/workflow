@@ -1,0 +1,33 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: transform-chunk
+  namespace: default
+  annotations:
+    workflow.example.com/category: transform
+    workflow.example.com/tags: array,chunk,batch,partition
+spec:
+  type: transform
+  description: Split array into chunks of specified size
+  transform:
+    input: "$.items"
+    pipeline:
+      - operation: chunk
+        size: 3
+  inputSchema:
+    type: object
+    properties:
+      items:
+        type: array
+        description: Array to split into chunks
+        items: {}
+    required:
+      - items
+  outputSchema:
+    type: object
+    properties:
+      result:
+        type: array
+        description: Array of chunked arrays
+        items:
+          type: array

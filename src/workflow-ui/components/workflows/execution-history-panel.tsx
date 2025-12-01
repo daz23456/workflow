@@ -1,12 +1,15 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
+import Link from 'next/link';
 import type { ExecutionHistoryItem } from '@/types/execution';
 
 interface ExecutionHistoryPanelProps {
   executions: ExecutionHistoryItem[];
   onExecutionClick?: (executionId: string) => void;
   isLoading?: boolean;
+  /** Server-side total count (if provided, enables server-side pagination display) */
+  totalCount?: number;
 }
 
 type StatusFilter = 'all' | 'success' | 'failed';
@@ -61,6 +64,7 @@ export function ExecutionHistoryPanel({
   executions,
   onExecutionClick,
   isLoading = false,
+  totalCount,
 }: ExecutionHistoryPanelProps) {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [sortOrder, setSortOrder] = useState<SortOrder>('newest');
@@ -233,39 +237,61 @@ export function ExecutionHistoryPanel({
         ) : (
           <div className="divide-y divide-gray-200">
             {paginatedExecutions.map((execution) => (
-              <button
+              <div
                 key={execution.executionId}
-                type="button"
-                onClick={() => handleExecutionClick(execution.executionId)}
-                className="w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors"
+                className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0"
               >
-                <div className="flex items-start justify-between gap-3">
-                  {/* Left side: Status and ID */}
-                  <div className="flex items-center gap-3">
-                    <span
-                      className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ${getStatusColor(
-                        execution.status
-                      )}`}
-                    >
-                      {execution.status}
-                    </span>
-                    <div>
-                      <div className="text-sm font-mono text-gray-900">{execution.executionId}</div>
-                      {execution.error && (
-                        <div className="mt-1 text-xs text-red-600">{execution.error}</div>
-                      )}
+                {/* Main content - clickable for details */}
+                <button
+                  type="button"
+                  onClick={() => handleExecutionClick(execution.executionId)}
+                  className="flex-1 text-left"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    {/* Left side: Status and ID */}
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ${getStatusColor(
+                          execution.status
+                        )}`}
+                      >
+                        {execution.status}
+                      </span>
+                      <div>
+                        <div className="text-sm font-mono text-gray-900">{execution.executionId}</div>
+                        {execution.error && (
+                          <div className="mt-1 text-xs text-red-600">{execution.error}</div>
+                        )}
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Right side: Time and Duration */}
-                  <div className="text-right text-xs text-gray-500">
-                    <div>{formatTime(execution.startedAt)}</div>
-                    <div className="mt-1 font-medium text-gray-700">
-                      {formatDuration(execution.durationMs)}
+                    {/* Right side: Time and Duration */}
+                    <div className="text-right text-xs text-gray-500">
+                      <div>{formatTime(execution.startedAt)}</div>
+                      <div className="mt-1 font-medium text-gray-700">
+                        {formatDuration(execution.durationMs)}
+                      </div>
                     </div>
                   </div>
-                </div>
-              </button>
+                </button>
+
+                {/* Debug link */}
+                <Link
+                  href={`/executions/${execution.executionId}/debug`}
+                  className="ml-3 flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-blue-600 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                  title="Debug this execution"
+                >
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  Debug
+                </Link>
+              </div>
             ))}
           </div>
         )}
@@ -286,7 +312,10 @@ export function ExecutionHistoryPanel({
                 <span className="font-medium">
                   {Math.min(currentPage * pageSize, filteredAndSortedExecutions.length)}
                 </span>{' '}
-                of <span className="font-medium">{filteredAndSortedExecutions.length}</span> results
+                of <span className="font-medium">{totalCount ?? filteredAndSortedExecutions.length}</span> results
+                {totalCount && totalCount > filteredAndSortedExecutions.length && (
+                  <span className="text-gray-500"> ({filteredAndSortedExecutions.length} loaded)</span>
+                )}
               </p>
               <select
                 value={pageSize}

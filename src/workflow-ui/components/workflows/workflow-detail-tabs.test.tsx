@@ -69,6 +69,29 @@ vi.mock('./execution-result-panel', () => ({
   ),
 }));
 
+vi.mock('./execute-modal', () => ({
+  ExecuteModal: ({ isOpen, onClose, onExecute, onTest, mode }: any) => (
+    isOpen ? (
+      <div data-testid="execute-modal">
+        <button onClick={() => { onExecute({ test: 'data' }); onClose(); }}>Execute Modal Submit</button>
+        <button onClick={onClose}>Close Modal</button>
+      </div>
+    ) : null
+  ),
+}));
+
+vi.mock('../analytics/workflow-duration-trends-section', () => ({
+  WorkflowDurationTrendsSection: () => <div data-testid="duration-trends">Duration Trends</div>,
+}));
+
+// Mock useWorkflowVersions to avoid QueryClient dependency
+vi.mock('@/lib/api/queries', () => ({
+  useWorkflowVersions: () => ({
+    data: { versions: [] },
+    isLoading: false,
+  }),
+}));
+
 describe('WorkflowDetailTabs', () => {
   const mockWorkflow: WorkflowDetail = {
     name: 'user-signup',
@@ -164,8 +187,9 @@ describe('WorkflowDetailTabs', () => {
         />
       );
       expect(screen.getByRole('tab', { name: /overview/i })).toBeInTheDocument();
-      expect(screen.getByRole('tab', { name: /execute/i })).toBeInTheDocument();
       expect(screen.getByRole('tab', { name: /history/i })).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: /analytics/i })).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: /yaml/i })).toBeInTheDocument();
     });
 
     it('shows Overview tab by default', () => {
@@ -181,7 +205,7 @@ describe('WorkflowDetailTabs', () => {
   });
 
   describe('Tab Navigation', () => {
-    it('switches to Execute tab when clicked', async () => {
+    it('switches to Analytics tab when clicked', async () => {
       const user = userEvent.setup();
       render(
         <WorkflowDetailTabs
@@ -191,9 +215,9 @@ describe('WorkflowDetailTabs', () => {
         />
       );
 
-      await user.click(screen.getByRole('tab', { name: /execute/i }));
+      await user.click(screen.getByRole('tab', { name: /analytics/i }));
 
-      expect(screen.getByTestId('execution-input-form')).toBeInTheDocument();
+      expect(screen.getByTestId('duration-trends')).toBeInTheDocument();
       expect(screen.queryByTestId('workflow-graph-panel')).not.toBeInTheDocument();
     });
 
@@ -223,8 +247,8 @@ describe('WorkflowDetailTabs', () => {
         />
       );
 
-      await user.click(screen.getByRole('tab', { name: /execute/i }));
-      expect(screen.getByTestId('execution-input-form')).toBeInTheDocument();
+      await user.click(screen.getByRole('tab', { name: /analytics/i }));
+      expect(screen.getByTestId('duration-trends')).toBeInTheDocument();
 
       await user.click(screen.getByRole('tab', { name: /overview/i }));
       expect(screen.getByTestId('workflow-graph-panel')).toBeInTheDocument();
@@ -243,10 +267,10 @@ describe('WorkflowDetailTabs', () => {
         />
       );
 
-      const executeTab = screen.getByRole('tab', { name: /execute/i });
-      await user.click(executeTab);
+      const historyTab = screen.getByRole('tab', { name: /history/i });
+      await user.click(historyTab);
 
-      expect(executeTab).toHaveAttribute('aria-selected', 'true');
+      expect(historyTab).toHaveAttribute('aria-selected', 'true');
     });
   });
 
@@ -301,8 +325,8 @@ describe('WorkflowDetailTabs', () => {
     });
   });
 
-  describe('Execute Tab', () => {
-    it('displays execution input form', async () => {
+  describe('Execute Modal', () => {
+    it('opens execute modal when execute button clicked in header', async () => {
       const user = userEvent.setup();
       render(
         <WorkflowDetailTabs
@@ -312,12 +336,13 @@ describe('WorkflowDetailTabs', () => {
         />
       );
 
-      await user.click(screen.getByRole('tab', { name: /execute/i }));
+      // Click Execute button in the header (mocked)
+      await user.click(screen.getByRole('button', { name: /^execute$/i }));
 
-      expect(screen.getByTestId('execution-input-form')).toBeInTheDocument();
+      expect(screen.getByTestId('execute-modal')).toBeInTheDocument();
     });
 
-    it('shows execution result after submission', async () => {
+    it('calls onExecute when modal submit is clicked', async () => {
       const user = userEvent.setup();
       const mockExecutionResult = {
         executionId: 'exec-new',
@@ -340,8 +365,9 @@ describe('WorkflowDetailTabs', () => {
         />
       );
 
-      await user.click(screen.getByRole('tab', { name: /execute/i }));
-      await user.click(screen.getByRole('button', { name: /submit/i }));
+      // Click Execute button in the header, then submit in modal
+      await user.click(screen.getByRole('button', { name: /^execute$/i }));
+      await user.click(screen.getByRole('button', { name: /execute modal submit/i }));
 
       expect(onExecute).toHaveBeenCalled();
     });
@@ -456,7 +482,7 @@ describe('WorkflowDetailTabs', () => {
       );
 
       expect(screen.getByRole('tablist')).toBeInTheDocument();
-      expect(screen.getAllByRole('tab').length).toBeGreaterThanOrEqual(3);
+      expect(screen.getAllByRole('tab').length).toBeGreaterThanOrEqual(4); // Overview, History, Analytics, YAML
     });
 
     it('tabs are keyboard accessible', async () => {
@@ -469,11 +495,11 @@ describe('WorkflowDetailTabs', () => {
         />
       );
 
-      const executeTab = screen.getByRole('tab', { name: /execute/i });
-      executeTab.focus();
+      const historyTab = screen.getByRole('tab', { name: /history/i });
+      historyTab.focus();
       await user.keyboard('{Enter}');
 
-      expect(screen.getByTestId('execution-input-form')).toBeInTheDocument();
+      expect(screen.getByTestId('execution-history-panel')).toBeInTheDocument();
     });
   });
 });

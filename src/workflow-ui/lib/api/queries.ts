@@ -17,7 +17,7 @@ import type {
   TemplateFilters,
   TemplateDeployRequest,
 } from '@/types/template';
-import type { DurationTrendsResponse } from './types';
+import type { DurationTrendsResponse, ExecutionTraceResponse } from './types';
 
 /**
  * TanStack Query hooks for API data fetching
@@ -84,7 +84,9 @@ export const queryKeys = {
   ) => ['workflows', name, 'executions', filters] as const,
   workflowDurationTrends: (name: string, daysBack: number) =>
     ['workflows', name, 'duration-trends', daysBack] as const,
+  workflowVersions: (name: string) => ['workflows', name, 'versions'] as const,
   executionDetail: (id: string) => ['executions', id] as const,
+  executionTrace: (id: string) => ['executions', id, 'trace'] as const,
   tasks: ['tasks'] as const,
   taskDetail: (name: string) => ['tasks', name] as const,
   taskUsage: (name: string, filters?: { skip?: number; take?: number }) =>
@@ -162,13 +164,45 @@ export function useWorkflowExecutions(
       params.append('limit', String(limit));
       params.append('offset', String(offset));
 
+      // Backend returns ExecutionSummary with 'id', but frontend expects 'executionId'
       const data = await fetchJson<{
-        executions: ExecutionHistoryItem[];
-        total: number;
-        limit: number;
-        offset: number;
+        executions: Array<{
+          id?: string;
+          executionId?: string;
+          workflowName?: string;
+          status?: string;
+          startedAt: string;
+          completedAt?: string;
+          durationMs?: number;
+          inputSnapshot?: Record<string, unknown>;
+          outputSnapshot?: Record<string, unknown>;
+          error?: string;
+        }>;
+        total?: number;
+        totalCount?: number;
+        limit?: number;
+        offset?: number;
       }>(`${API_BASE_URL}/workflows/${name}/executions?${params}`);
-      return data;
+
+      // Transform executions to ensure executionId is set
+      const executions: ExecutionHistoryItem[] = data.executions.map((exec) => ({
+        executionId: exec.executionId || exec.id || '',
+        workflowName: exec.workflowName || name,
+        status: (exec.status?.toLowerCase() === 'succeeded' ? 'success' : exec.status?.toLowerCase() || 'running') as 'success' | 'failed' | 'running',
+        startedAt: exec.startedAt,
+        completedAt: exec.completedAt,
+        durationMs: exec.durationMs || 0,
+        inputSnapshot: exec.inputSnapshot || {},
+        outputSnapshot: exec.outputSnapshot,
+        error: exec.error,
+      }));
+
+      return {
+        executions,
+        total: data.total ?? data.totalCount ?? executions.length,
+        limit: data.limit ?? limit,
+        offset: data.offset ?? offset,
+      };
     },
     staleTime: 10000, // 10 seconds (execution history updates frequently)
     gcTime: 60000, // 1 minute
@@ -182,10 +216,113 @@ export function useExecutionDetail(id: string, options?: { enabled?: boolean }) 
   return useQuery({
     queryKey: queryKeys.executionDetail(id),
     queryFn: async () => {
-      const data = await fetchJson<WorkflowExecutionResponse>(`${API_BASE_URL}/executions/${id}`);
-      return data;
+      // Backend returns DetailedWorkflowExecutionResponse with 'status' field
+      // Frontend expects WorkflowExecutionResponse with 'success' boolean
+      const data = await fetchJson<{
+        executionId?: string;
+        workflowName: string;
+        status?: string;
+        success?: boolean;
+        startedAt: string;
+        completedAt?: string;
+        durationMs?: number;
+        executionTimeMs?: number;
+        graphBuildDurationMicros?: number;
+        input?: Record<string, unknown>;
+        inputSnapshot?: Record<string, unknown>;
+        output?: Record<string, unknown>;
+        outputSnapshot?: Record<string, unknown>;
+        tasks?: Array<{
+          taskId: string;
+          taskRef: string;
+          status?: string;
+          input?: unknown;
+          output?: unknown;
+          errors?: string[];
+          error?: string;
+          durationMs: number;
+          retryCount?: number;
+          startedAt?: string;
+          completedAt?: string;
+        }>;
+        taskExecutions?: Array<{
+          taskId: string;
+          taskRef: string;
+          status?: string;
+          input?: unknown;
+          output?: unknown;
+          errors?: string[];
+          error?: string;
+          durationMs: number;
+          retryCount?: number;
+          startedAt?: string;
+          completedAt?: string;
+        }>;
+        errors?: string[];
+        error?: string;
+      }>(`${API_BASE_URL}/executions/${id}`);
+
+      // Determine success from status or success field
+      const isSuccess =
+        data.success !== undefined
+          ? data.success
+          : data.status?.toLowerCase() === 'succeeded' || data.status?.toLowerCase() === 'success';
+
+      // Transform to expected format
+      const tasks = (data.tasks || data.taskExecutions || []).map((task) => ({
+        taskId: task.taskId,
+        taskRef: task.taskRef,
+        status: task.status?.toLowerCase() === 'succeeded' || task.status?.toLowerCase() === 'success'
+          ? 'success' as const
+          : task.status?.toLowerCase() === 'failed'
+          ? 'failed' as const
+          : task.status?.toLowerCase() === 'running'
+          ? 'running' as const
+          : 'pending' as const,
+        input: task.input,
+        output: task.output,
+        error: task.error || (task.errors && task.errors.length > 0 ? task.errors.join('; ') : undefined),
+        durationMs: task.durationMs,
+        retryCount: task.retryCount || 0,
+        startedAt: task.startedAt,
+        completedAt: task.completedAt,
+      }));
+
+      const result: WorkflowExecutionResponse = {
+        executionId: data.executionId || id,
+        workflowName: data.workflowName,
+        success: isSuccess,
+        input: data.input || data.inputSnapshot,
+        output: data.output || data.outputSnapshot || {},
+        tasks,
+        executionTimeMs: data.executionTimeMs || data.durationMs || 0,
+        graphBuildDurationMicros: data.graphBuildDurationMicros,
+        startedAt: data.startedAt,
+        completedAt: data.completedAt,
+        error: data.error || (data.errors && data.errors.length > 0 ? data.errors.join('; ') : undefined),
+      };
+
+      return result;
     },
     staleTime: 60000, // 1 minute
+    gcTime: 300000, // 5 minutes
+    enabled: options?.enabled ?? true,
+  });
+}
+
+/**
+ * Fetch execution trace with detailed timing analysis
+ */
+export function useExecutionTrace(id: string, options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: queryKeys.executionTrace(id),
+    queryFn: async () => {
+      const data = await fetchJson<ExecutionTraceResponse>(
+        `${API_BASE_URL}/executions/${id}/trace`
+      );
+      return data;
+    },
+    staleTime: 60000, // 1 minute (trace data doesn't change for completed executions)
     gcTime: 300000, // 5 minutes
     enabled: options?.enabled ?? true,
   });
@@ -217,6 +354,29 @@ export function useWorkflowDurationTrends(
     },
     staleTime: 300000, // 5 minutes (trends change slowly)
     gcTime: 900000, // 15 minutes
+    enabled: options?.enabled ?? !!name,
+  });
+}
+
+/**
+ * Fetch workflow version history (includes YAML definitions)
+ */
+export function useWorkflowVersions(name: string, options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: queryKeys.workflowVersions(name),
+    queryFn: async () => {
+      const data = await fetchJson<{
+        workflowName: string;
+        versions: Array<{
+          versionHash: string;
+          createdAt: string;
+          definitionSnapshot: string;
+        }>;
+      }>(`${API_BASE_URL}/workflows/${name}/versions`);
+      return data;
+    },
+    staleTime: 60000, // 1 minute
+    gcTime: 300000, // 5 minutes
     enabled: options?.enabled ?? !!name,
   });
 }
@@ -284,6 +444,7 @@ export function useTasks() {
       const data = await fetchJson<{
         tasks: Array<{
           name: string;
+          namespace: string;
           description: string;
           inputSchema: unknown;
           outputSchema: unknown;

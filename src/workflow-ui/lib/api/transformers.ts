@@ -20,7 +20,7 @@ export function transformWorkflowDetail(backendResponse: WorkflowDetailResponse)
     id: task.id,
     taskRef: task.taskRef,
     description: task.description || `Task: ${task.taskRef}`,
-    dependencies: task.dependencies,
+    dependsOn: task.dependsOn || [],
     timeout: task.timeout,
   }));
 
@@ -44,7 +44,7 @@ function generateGraphFromTasks(
     id: string;
     taskRef: string;
     description?: string;
-    dependencies: string[];
+    dependsOn: string[];
   }>
 ): { nodes: GraphNode[]; edges: GraphEdge[]; parallelGroups: ParallelGroup[] } {
   // Build dependency map
@@ -52,8 +52,8 @@ function generateGraphFromTasks(
   const reverseDependencyMap = new Map<string, string[]>();
 
   tasks.forEach((task) => {
-    dependencyMap.set(task.id, task.dependencies || []);
-    task.dependencies?.forEach((depId) => {
+    dependencyMap.set(task.id, task.dependsOn || []);
+    task.dependsOn?.forEach((depId) => {
       if (!reverseDependencyMap.has(depId)) {
         reverseDependencyMap.set(depId, []);
       }
@@ -83,10 +83,10 @@ function generateGraphFromTasks(
     };
   });
 
-  // Generate edges from dependencies
+  // Generate edges from dependsOn
   const edges: GraphEdge[] = [];
   tasks.forEach((task) => {
-    task.dependencies?.forEach((depId) => {
+    task.dependsOn?.forEach((depId) => {
       edges.push({
         id: `${depId}-${task.id}`,
         source: depId,
@@ -107,10 +107,10 @@ function generateGraphFromTasks(
 }
 
 /**
- * Calculate execution level for each task (0 = no dependencies, 1 = depends on level 0, etc.)
+ * Calculate execution level for each task (0 = no dependsOn, 1 = depends on level 0, etc.)
  */
 function calculateExecutionLevels(
-  tasks: Array<{ id: string; dependencies: string[] }>
+  tasks: Array<{ id: string; dependsOn: string[] }>
 ): Map<string, number> {
   const levels = new Map<string, number>();
   const visited = new Set<string>();
@@ -128,12 +128,12 @@ function calculateExecutionLevels(
     visited.add(taskId);
 
     const task = tasks.find((t) => t.id === taskId);
-    if (!task || !task.dependencies || task.dependencies.length === 0) {
+    if (!task || !task.dependsOn || task.dependsOn.length === 0) {
       levels.set(taskId, 0);
       return 0;
     }
 
-    const maxDepLevel = Math.max(...task.dependencies.map((depId) => calculateLevel(depId)));
+    const maxDepLevel = Math.max(...task.dependsOn.map((depId) => calculateLevel(depId)));
     const level = maxDepLevel + 1;
     levels.set(taskId, level);
     return level;
@@ -144,10 +144,10 @@ function calculateExecutionLevels(
 }
 
 /**
- * Find tasks that can execute in parallel (same level, no dependencies between them)
+ * Find tasks that can execute in parallel (same level, no dependsOn between them)
  */
 function findParallelGroups(
-  tasks: Array<{ id: string; dependencies: string[] }>,
+  tasks: Array<{ id: string; dependsOn: string[] }>,
   levels: Map<string, number>
 ): ParallelGroup[] {
   const groupsByLevel = new Map<number, string[]>();

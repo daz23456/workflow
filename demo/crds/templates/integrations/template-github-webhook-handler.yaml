@@ -1,0 +1,98 @@
+apiVersion: workflow.example.com/v1
+kind: Workflow
+metadata:
+  name: template-github-webhook-handler
+  namespace: default
+  annotations:
+    workflow.example.com/template: "true"
+    workflow.example.com/category: "integrations"
+    workflow.example.com/difficulty: "intermediate"
+    workflow.example.com/tags: "http,github,webhook,automation,ci-cd"
+    workflow.example.com/estimatedTime: "15"
+spec:
+  description: "🎯 TEMPLATE: GitHub webhook automation - Process GitHub webhook events (pull requests, issues, commits) and trigger automated actions. Great for CI/CD and DevOps automation workflows."
+  input:
+    event:
+      type: string
+      required: true
+      description: GitHub event type (pull_request, push, issue, etc.)
+    repository:
+      type: object
+      required: true
+      description: Repository information from webhook
+    action:
+      type: string
+      required: false
+      description: Action type (opened, closed, merged, etc.)
+    pullRequest:
+      type: object
+      required: false
+      description: Pull request data (if event is pull_request)
+  tasks:
+    # STAGE 1: Fetch repository details and commit info
+    - id: fetch-repo-details
+      taskRef: http-get-github-repo
+      input:
+        owner: "{{input.repository.owner.login}}"
+        repo: "{{input.repository.name}}"
+      timeout: 10s
+
+    - id: fetch-commit-info
+      taskRef: http-get-github-commits
+      input:
+        owner: "{{input.repository.owner.login}}"
+        repo: "{{input.repository.name}}"
+        sha: "{{input.pullRequest.head.sha}}"
+      timeout: 10s
+
+    # STAGE 2: Run automated checks (parallel)
+    - id: check-pr-title-format
+      taskRef: transform-validate-pr-title
+      dependsOn:
+        - fetch-repo-details
+      input:
+        title: "{{input.pullRequest.title}}"
+        pattern: "^(feat|fix|docs|refactor|test):"
+      timeout: 5s
+
+    - id: check-file-changes
+      taskRef: http-get-pr-files
+      dependsOn:
+        - fetch-repo-details
+      input:
+        owner: "{{input.repository.owner.login}}"
+        repo: "{{input.repository.name}}"
+        prNumber: "{{input.pullRequest.number}}"
+      timeout: 10s
+
+    # STAGE 3: Post results and notify
+    - id: post-status-check
+      taskRef: http-post-github-status
+      dependsOn:
+        - check-pr-title-format
+        - check-file-changes
+      input:
+        owner: "{{input.repository.owner.login}}"
+        repo: "{{input.repository.name}}"
+        sha: "{{input.pullRequest.head.sha}}"
+        state: "{{tasks.check-pr-title-format.output.valid}}"
+        context: "pr-validation"
+        description: "PR title and file checks"
+      timeout: 10s
+
+    - id: send-slack-notification
+      taskRef: http-post-slack
+      dependsOn:
+        - post-status-check
+      input:
+        message: "PR #{{input.pullRequest.number}} in {{input.repository.name}}: {{input.pullRequest.title}}"
+        status: "{{tasks.post-status-check.output.state}}"
+      timeout: 10s
+
+  output:
+    event: "{{input.event}}"
+    repository: "{{input.repository.full_name}}"
+    prNumber: "{{input.pullRequest.number}}"
+    checksStatus: "{{tasks.post-status-check.output.state}}"
+    notificationSent: "{{tasks.send-slack-notification.output.ok}}"
+    fileChanges: "{{tasks.check-file-changes.output.files}}"

@@ -18,10 +18,23 @@
           "description": "Resource namespace",
           "default": "default",
           "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$"
+        },
+        "annotations": {
+          "type": "object",
+          "description": "Resource annotations",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "labels": {
+          "type": "object",
+          "description": "Resource labels",
+          "additionalProperties": {
+            "type": "string"
+          }
         }
       },
-      "required": ["name", "namespace"],
-      "additionalProperties": false
+      "required": ["name", "namespace"]
     },
     "SchemaDefinition": {
       "type": "object",
@@ -33,9 +46,7 @@
         },
         "properties": {
           "type": "object",
-          "additionalProperties": {
-            "$ref": "#/definitions/PropertyDefinition"
-          }
+          "additionalProperties": true
         },
         "required": {
           "type": "array",
@@ -47,11 +58,10 @@
           "type": "string"
         },
         "items": {
-          "$ref": "#/definitions/PropertyDefinition"
+          "type": "object"
         }
       },
-      "required": ["type"],
-      "additionalProperties": false
+      "required": ["type"]
     },
     "PropertyDefinition": {
       "type": "object",
@@ -69,24 +79,19 @@
         },
         "properties": {
           "type": "object",
-          "additionalProperties": {
-            "$ref": "#/definitions/PropertyDefinition"
-          }
+          "additionalProperties": true
         },
         "items": {
-          "$ref": "#/definitions/PropertyDefinition"
+          "type": "object"
         },
         "enum": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
+          "type": "array"
         },
         "minimum": {
-          "type": "integer"
+          "type": "number"
         },
         "maximum": {
-          "type": "integer"
+          "type": "number"
         },
         "pattern": {
           "type": "string"
@@ -97,9 +102,7 @@
             "type": "string"
           }
         }
-      },
-      "required": ["type"],
-      "additionalProperties": false
+      }
     }
   }
 }

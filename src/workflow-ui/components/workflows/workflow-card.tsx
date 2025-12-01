@@ -64,7 +64,7 @@ export function WorkflowCard({ workflow, onClick }: WorkflowCardProps) {
   return (
     <article
       className={cn(
-        'rounded-lg border border-gray-200 bg-white p-6 shadow-sm transition-all duration-200 ease-in-out hover:shadow-md',
+        'rounded-lg border border-gray-200 bg-white p-6 shadow-sm transition-all duration-200 ease-in-out hover:shadow-md flex flex-col h-full',
         onClick &&
           'cursor-pointer hover:border-gray-300 hover:-translate-y-1 focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-offset-2'
       )}
@@ -88,11 +88,14 @@ export function WorkflowCard({ workflow, onClick }: WorkflowCardProps) {
             {namespace}
           </span>
         </div>
-        <p className="text-sm text-gray-600">{description}</p>
+        {/* Fixed height description area - 2 lines with ellipsis */}
+        <p className="text-sm text-gray-600 line-clamp-2 min-h-[2.5rem]">
+          {description || <span className="text-gray-400 italic">No description</span>}
+        </p>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 gap-4 border-t border-gray-100 pt-4">
+      <div className="grid grid-cols-2 gap-4 border-t border-gray-100 pt-4 flex-grow">
         {/* Success Rate */}
         <div>
           <Tooltip content="Percentage of successful executions in the last 30 days">
@@ -147,8 +150,8 @@ export function WorkflowCard({ workflow, onClick }: WorkflowCardProps) {
         </div>
       </div>
 
-      {/* Footer */}
-      <div className="mt-4 border-t border-gray-100 pt-3 text-xs">
+      {/* Footer - always at bottom */}
+      <div className="mt-auto pt-3 border-t border-gray-100 text-xs">
         {isNeverExecuted ? (
           <div className="flex items-center gap-1.5">
             <span className="inline-flex h-2 w-2 rounded-full bg-gray-400"></span>

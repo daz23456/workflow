@@ -1,19 +1,23 @@
 # Completed Stages Implementation Archive
 
-**Created:** 2025-11-22  
-**Purpose:** Archive of detailed implementation instructions for completed stages  
-**Status:** Stages 1-6 complete (50% project completion)
+**Created:** 2025-11-22
+**Updated:** 2025-12-01
+**Purpose:** Archive of detailed implementation instructions for completed stages
+**Status:** Stages 1-7.9 complete (53% project completion)
 
-This file contains the detailed TDD implementation instructions that were used to build Stages 1-4 of the Workflow Orchestration Engine. These stages are now complete and documented in their respective proof files:
+This file contains the detailed TDD implementation instructions that were used to build completed stages of the Workflow Orchestration Engine. These stages are now complete and documented in their respective proof files:
 
 - **Stage 1: Foundation** - See `STAGE_1_PROOF.md`
 - **Stage 2: Schema Validation** - See `STAGE_2_PROOF.md`
 - **Stage 3: Template Validation** - See `STAGE_3_PROOF.md`
 - **Stage 4: Execution Graph** - See `STAGE_4_PROOF.md`
-- **Stage 5: Workflow Execution** - See `STAGE_5_PROOF.md` (not in this archive)
-- **Stage 6: Kubernetes Operator** - See `STAGE_6_PROOF.md` (not in this archive)
+- **Stage 5: Workflow Execution** - See `STAGE_5_PROOF.md`
+- **Stage 6: Kubernetes Operator** - See `STAGE_6_PROOF.md`
+- **Stage 7: API Gateway** - See `STAGE_7_PROOF.md`
+- **Stage 7.5: Output Mapping & Parallel Execution** - See `STAGE_7.5_PROOF.md`
+- **Stage 7.9: Execution Trace & Workflow Versioning** - See `STAGE_7.9_PROOF.md`
 
-**Note:** Stages 5 and 6 were implemented from the "Next Steps" section and have their own proof files.
+**Note:** Stages 1-4 contain full TDD code examples. Stages 5-7.9 contain task specifications only.
 
 ---
 
@@ -2250,3 +2254,143 @@ public class ExecutionGraphResult
 
 ---
 
+## Stage 5: Workflow Execution (Week 3)
+
+**Status:** ✅ Complete - See `STAGE_5_PROOF.md`
+
+### Task Specifications
+
+1. **HTTP Task Executor**
+   - HTTP client with retries
+   - Template resolution at runtime
+   - Response parsing and validation
+
+2. **Workflow Orchestrator**
+   - Execute tasks in dependency order
+   - Handle parallel execution
+   - Collect and pass data between tasks
+
+3. **Error handling and retry logic**
+
+---
+
+## Stage 6: Kubernetes Operator with Validation Webhooks (Week 4)
+
+**Status:** ✅ Complete - See `STAGE_6_PROOF.md`
+
+### Task Specifications
+
+1. **Custom Resource Controllers**
+   - WorkflowTask controller
+   - Workflow controller
+   - Watch for CRD changes
+
+2. **Validating Admission Webhooks**
+   - Validate WorkflowTask on apply
+   - Validate Workflow on apply
+   - Reject invalid resources with helpful errors
+
+3. **Schema Evolution Protection**
+   - Detect breaking changes in task schemas
+   - Track dependent workflows
+   - Prevent breaking updates
+
+---
+
+## Stage 7: API Gateway (Week 5)
+
+**Status:** ✅ Complete - See `STAGE_7_PROOF.md`
+
+### Task Specifications
+
+1. **Workflow Execution API**
+   - POST /api/v1/workflows/{name}/execute
+   - Input validation against workflow schema
+   - Synchronous execution with timeout
+
+2. **Dry-Run & Testing API**
+   - POST /api/v1/workflows/{name}/test (dry-run mode)
+   - Validation-only execution
+   - Return execution plan without side effects
+
+3. **Workflow Management API**
+   - GET /api/v1/workflows (list)
+   - GET /api/v1/workflows/{name} (get)
+   - GET /api/v1/tasks (list tasks)
+
+---
+
+## Stage 7.5: Output Mapping & Parallel Execution (Week 5.5)
+
+**Status:** ✅ Complete - See `STAGE_7.5_PROOF.md`
+
+### Task Specifications
+
+1. **Workflow Output Mapping**
+   - Add Output property to WorkflowSpec model
+   - Implement output mapping in WorkflowOrchestrator
+   - Support nested output expressions (e.g., "{{tasks.fetch-user.output.data.email}}")
+   - Validate output mappings at workflow definition time
+   - Add comprehensive tests for output mapping edge cases
+
+2. **Parallel Task Execution**
+   - Analyze execution graph to identify independent tasks
+   - Execute independent tasks in parallel using Task.WhenAll()
+   - Maintain dependency ordering for dependent tasks
+   - Add configurable parallelism limits (max concurrent tasks)
+   - Measure and compare performance vs sequential execution
+
+3. **Task Timeout Support**
+   - Add Timeout property to WorkflowTaskSpec model
+   - Implement per-task timeout enforcement in WorkflowOrchestrator
+   - Handle timeout gracefully with clear error messages
+   - Add tests for timeout scenarios and cancellation
+
+---
+
+## Stages 7.75-7.9: Database Integration & API Extensions (Week 5.75-6)
+
+### Stage 7.75: PostgreSQL Integration (Foundation)
+**Status:** ✅ Complete
+
+*Scope:* Database setup - foundation for future features
+
+1. **Database Schema Design**
+   - ExecutionRecord table (id, workflow_name, status, started_at, completed_at, duration, input_snapshot)
+   - TaskExecutionRecord table (execution_id, task_id, task_ref, status, output, errors, duration, retry_count)
+   - WorkflowVersion table (workflow_name, version_hash, created_at, definition_snapshot)
+
+2. **DbContext with EF Core Migrations**
+   - Configure entity relationships (ExecutionRecord → TaskExecutionRecords)
+   - Add indexes for performance (workflow_name, created_at, status)
+
+3. **Repository Pattern**
+   - IExecutionRepository interface (SaveExecution, GetExecution, ListExecutions)
+   - IWorkflowVersionRepository interface (SaveVersion, GetVersions)
+
+4. **TestContainers Integration Tests**
+5. **DI Setup & Health Checks**
+
+### Stage 7.8: Execution History & Task Details
+**Status:** ✅ Complete
+
+1. **Generate Execution IDs & Save to Database**
+2. **Expose Task-Level Details in API Response**
+3. **List Executions Endpoint** - GET /api/v1/workflows/{name}/executions
+4. **Get Execution Details Endpoint** - GET /api/v1/executions/{id}
+
+### Stage 7.85: Enhanced Dry-Run Visualization
+**Status:** ✅ Complete
+
+1. **Parallel Group Detection**
+2. **Enhanced Execution Plan Model**
+3. **Template Resolution Preview & Time Estimation**
+
+### Stage 7.9: Execution Trace & Workflow Versioning
+**Status:** ✅ Complete - See `STAGE_7.9_PROOF.md`
+
+1. **Execution Trace Endpoint** - GET /api/v1/executions/{id}/trace
+2. **Simple Workflow Versioning (Hash-Based Change Detection)**
+3. **Workflow Versions Endpoint** - GET /api/v1/workflows/{name}/versions
+
+---

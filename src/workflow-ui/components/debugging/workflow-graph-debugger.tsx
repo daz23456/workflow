@@ -26,6 +26,7 @@ export interface ExecutionState {
   pendingTasks?: string[];
   taskData?: Record<string, any>;
   taskErrors?: Record<string, string>;
+  taskTimings?: Record<string, { startedAt: string; completedAt?: string; durationMs?: number }>;
 }
 
 export interface WorkflowGraphDebuggerProps {
@@ -44,7 +45,7 @@ export function WorkflowGraphDebugger({
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
   const [zoom, setZoom] = useState(1);
   const [showLayoutMenu, setShowLayoutMenu] = useState(false);
-  const [layout, setLayout] = useState<'horizontal' | 'vertical'>('vertical');
+  const [layout, setLayout] = useState<'horizontal' | 'vertical'>('horizontal');
 
   if (graphData.nodes.length === 0) {
     return (
@@ -75,6 +76,8 @@ export function WorkflowGraphDebugger({
   };
 
   const handleNodeClick = (nodeId: string) => {
+    // Filter out special visualization nodes (e.g., __input__, __output__)
+    if (nodeId.startsWith('__')) return;
     setSelectedNode(nodeId);
   };
 
@@ -115,6 +118,7 @@ export function WorkflowGraphDebugger({
         status: getNodeStatus(selectedNode),
         data: executionState?.taskData?.[selectedNode],
         error: executionState?.taskErrors?.[selectedNode],
+        timing: executionState?.taskTimings?.[selectedNode],
       }
     : null;
 
@@ -255,7 +259,31 @@ export function WorkflowGraphDebugger({
             <div>
               <span className="font-medium">Status:</span> {selectedNodeData.status}
             </div>
-            {selectedNodeData.data && (
+            {/* Timing information */}
+            {selectedNodeData.timing && (
+              <>
+                <div>
+                  <span className="font-medium">Started:</span>{' '}
+                  {new Date(selectedNodeData.timing.startedAt).toISOString().substring(11, 23)}
+                </div>
+                {selectedNodeData.timing.completedAt && (
+                  <div>
+                    <span className="font-medium">Completed:</span>{' '}
+                    {new Date(selectedNodeData.timing.completedAt).toISOString().substring(11, 23)}
+                  </div>
+                )}
+                {selectedNodeData.timing.durationMs !== undefined && (
+                  <div>
+                    <span className="font-medium">Duration:</span>{' '}
+                    {selectedNodeData.timing.durationMs < 1000
+                      ? `${selectedNodeData.timing.durationMs}ms`
+                      : `${(selectedNodeData.timing.durationMs / 1000).toFixed(3)}s`}
+                  </div>
+                )}
+              </>
+            )}
+            {/* Only show data when task is completed */}
+            {selectedNodeData.status === 'completed' && selectedNodeData.data && (
               <div>
                 <span className="font-medium">Data:</span>
                 <pre className="bg-gray-50 p-2 rounded text-xs overflow-auto mt-1">

@@ -1,0 +1,34 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: transform-scale
+  namespace: default
+  annotations:
+    workflow.example.com/category: transform
+    workflow.example.com/tags: math,scale,multiply
+spec:
+  type: transform
+  description: Scale numbers by a factor
+  transform:
+    input: "$.items"
+    pipeline:
+      - operation: scale
+        factor: 2.0
+  inputSchema:
+    type: object
+    properties:
+      items:
+        type: array
+        description: Array of numbers to scale
+        items:
+          type: number
+    required:
+      - items
+  outputSchema:
+    type: object
+    properties:
+      result:
+        type: array
+        description: Array of scaled numbers
+        items:
+          type: number

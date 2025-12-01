@@ -1,0 +1,14 @@
+
+Running 10 tests using 8 workers
+
+[1A[2K[1/10] [chromium] › e2e/templates.spec.ts:136:7 › Template Selection Flow › should auto-load template in workflow builder from URL parameter
+[1A[2K[2/10] [chromium] › e2e/templates.spec.ts:17:7 › Template Selection Flow › should display template cards with metadata
+[1A[2K[3/10] [chromium] › e2e/templates.spec.ts:96:7 › Template Selection Flow › should close template preview modal on close button click
+[1A[2K[4/10] [chromium] › e2e/templates.spec.ts:54:7 › Template Selection Flow › should search templates by name
+[1A[2K[5/10] [chromium] › e2e/templates.spec.ts:30:7 › Template Selection Flow › should filter templates by category
+[1A[2K[6/10] [chromium] › e2e/templates.spec.ts:9:7 › Template Selection Flow › should display templates page with title and description
+[1A[2K[7/10] [chromium] › e2e/templates.spec.ts:116:7 › Template Selection Flow › should navigate to workflow builder when deploying template
+[1A[2K[8/10] [chromium] › e2e/templates.spec.ts:80:7 › Template Selection Flow › should open template preview modal on preview button click
+[1A[2K[9/10] [chromium] › e2e/templates.spec.ts:151:7 › Template Selection Flow › should clear all filters when Clear All button is clicked
+[1A[2K[10/10] [chromium] › e2e/templates.spec.ts:180:7 › Template Selection Flow › should display template count in results summary
+[1A[2K  10 passed (18.6s)

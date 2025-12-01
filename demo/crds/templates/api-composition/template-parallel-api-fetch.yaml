@@ -1,0 +1,54 @@
+apiVersion: workflow.example.com/v1
+kind: Workflow
+metadata:
+  name: template-parallel-api-fetch
+  namespace: default
+  annotations:
+    workflow.example.com/template: "true"
+    workflow.example.com/category: "api-composition"
+    workflow.example.com/difficulty: "intermediate"
+    workflow.example.com/tags: "http,api,parallel,fetch,composition"
+    workflow.example.com/estimatedTime: "10"
+spec:
+  description: "🎯 TEMPLATE: Parallel API composition - Fetch data from multiple APIs simultaneously for maximum speed. Demonstrates parallel execution and data merging patterns."
+  input:
+    userId:
+      type: string
+      required: true
+      description: User ID for fetching related data
+  tasks:
+    # PARALLEL STAGE: Fetch from 3 different APIs simultaneously
+    - id: fetch-user-profile
+      taskRef: fetch-user
+      input:
+        userId: "{{input.userId}}"
+      timeout: 10s
+
+    - id: fetch-user-orders
+      taskRef: http-get-orders
+      input:
+        userId: "{{input.userId}}"
+      timeout: 10s
+
+    - id: fetch-user-preferences
+      taskRef: http-get-preferences
+      input:
+        userId: "{{input.userId}}"
+      timeout: 10s
+
+    # SEQUENTIAL STAGE: Merge all fetched data
+    - id: merge-user-data
+      taskRef: transform-aggregate-by-customer
+      dependsOn:
+        - fetch-user-profile
+        - fetch-user-orders
+        - fetch-user-preferences
+      input:
+        orders: "{{tasks.fetch-user-orders.output.orders}}"
+      timeout: 5s
+  output:
+    userId: "{{input.userId}}"
+    profile: "{{tasks.fetch-user-profile.output}}"
+    orders: "{{tasks.fetch-user-orders.output.orders}}"
+    preferences: "{{tasks.fetch-user-preferences.output}}"
+    aggregatedData: "{{tasks.merge-user-data.output}}"

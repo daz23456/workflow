@@ -1,0 +1,34 @@
+{
+  "testMode": "smoke",
+  "timestamp": "2025-11-30T18:09:06.635Z",
+  "metrics": {
+    "requests": {
+      "total": 596,
+      "rate": 9.624927399221075,
+      "failed": 0
+    },
+    "latency": {
+      "p50": 0,
+      "p95": 2620.584,
+      "p99": 0,
+      "max": 3888.775
+    },
+    "execution": {
+      "p50": 0,
+      "p95": 2620.5,
+      "p99": 0
+    },
+    "graphBuild": {
+      "p50_us": 0,
+      "p95_us": 96.29999999999995,
+      "p99_us": 0
+    },
+    "orchestrationOverhead": {
+      "p50": 0,
+      "p95": 0,
+      "avg": 0
+    },
+    "successRate": 1,
+    "timeoutRate": 0
+  }
+}

@@ -1,0 +1,42 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: task-fetch-ip-location
+  namespace: default
+spec:
+  type: http
+  http:
+    method: GET
+    url: "http://ip-api.com/json"
+    headers:
+      Accept: "application/json"
+  inputSchema:
+    type: object
+    properties: {}
+  outputSchema:
+    type: object
+    properties:
+      status:
+        type: string
+      country:
+        type: string
+      countryCode:
+        type: string
+      region:
+        type: string
+      regionName:
+        type: string
+      city:
+        type: string
+      zip:
+        type: string
+      lat:
+        type: number
+      lon:
+        type: number
+      timezone:
+        type: string
+      isp:
+        type: string
+      query:
+        type: string

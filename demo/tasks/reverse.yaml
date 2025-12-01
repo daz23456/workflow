@@ -1,0 +1,31 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: transform-reverse
+  namespace: default
+  annotations:
+    workflow.example.com/category: transform
+    workflow.example.com/tags: array,reverse,order
+spec:
+  type: transform
+  description: Reverse the order of array elements
+  transform:
+    input: "$.items"
+    pipeline:
+      - operation: reverse
+  inputSchema:
+    type: object
+    properties:
+      items:
+        type: array
+        description: Array to reverse
+        items: {}
+    required:
+      - items
+  outputSchema:
+    type: object
+    properties:
+      result:
+        type: array
+        description: Reversed array
+        items: {}

@@ -1,0 +1,33 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: transform-flatten
+  namespace: default
+  annotations:
+    workflow.example.com/category: transform
+    workflow.example.com/tags: array,flatten,nested
+spec:
+  type: transform
+  description: Flatten a nested array structure
+  transform:
+    input: "$.items"
+    pipeline:
+      - operation: flatten
+        depth: 1
+  inputSchema:
+    type: object
+    properties:
+      items:
+        type: array
+        description: Nested array to flatten
+        items:
+          type: array
+    required:
+      - items
+  outputSchema:
+    type: object
+    properties:
+      result:
+        type: array
+        description: Flattened array
+        items: {}

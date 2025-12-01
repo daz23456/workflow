@@ -24,6 +24,8 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTasks } from '@/lib/api/queries';
+import { HelpIcon } from '@/components/learning/help-icon';
+import { HELP_TOPICS } from '@/components/learning/help-content-registry';
 
 // Category icon mapping
 const categoryIcons: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -35,6 +37,7 @@ const categoryIcons: Record<string, React.ComponentType<{ className?: string }>>
 // API response type for tasks
 interface ApiTask {
   name: string;
+  namespace: string;
   description: string;
   inputSchema: unknown;
   outputSchema: unknown;
@@ -63,6 +66,7 @@ const toCategory = (name: string): string => {
 export function TaskPalette() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedNamespace, setSelectedNamespace] = useState<string | null>(null);
   const [expandedTask, setExpandedTask] = useState<string | null>(null);
   const [draggingTask, setDraggingTask] = useState<string | null>(null);
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -86,7 +90,13 @@ export function TaskPalette() {
     return Array.from(new Set(tasks.map((task) => task.category)));
   }, [tasks]);
 
-  // Filter tasks by search and category
+  // Get unique namespaces
+  const namespaces = useMemo(() => {
+    if (!tasks || tasks.length === 0) return [];
+    return Array.from(new Set(tasks.map((task) => task.namespace).filter(Boolean))).sort();
+  }, [tasks]);
+
+  // Filter tasks by search, category, and namespace
   const filteredTasks = useMemo(() => {
     if (!tasks || tasks.length === 0) return [];
 
@@ -101,9 +111,12 @@ export function TaskPalette() {
       // Category filter
       const matchesCategory = !selectedCategory || task.category === selectedCategory;
 
-      return matchesSearch && matchesCategory;
+      // Namespace filter
+      const matchesNamespace = !selectedNamespace || task.namespace === selectedNamespace;
+
+      return matchesSearch && matchesCategory && matchesNamespace;
     });
-  }, [tasks, searchQuery, selectedCategory]);
+  }, [tasks, searchQuery, selectedCategory, selectedNamespace]);
 
   // Handle drag start
   const handleDragStart = (task: TaskItem, event: React.DragEvent<HTMLDivElement>) => {
@@ -142,10 +155,9 @@ export function TaskPalette() {
     return (
       <div
         data-testid="task-palette"
-        className="w-64 bg-white border-r border-gray-200 p-4"
+        className="w-full h-full bg-white border-r border-gray-200 p-4"
         aria-label="Task palette"
       >
-        <h2 className="text-lg font-semibold mb-4">Tasks</h2>
         <div data-testid="loading-skeleton" className="space-y-2">
           {[1, 2, 3].map((i) => (
             <div key={i} className="h-16 bg-gray-200 rounded animate-pulse" />
@@ -160,10 +172,9 @@ export function TaskPalette() {
     return (
       <div
         data-testid="task-palette"
-        className="w-64 bg-white border-r border-gray-200 p-4"
+        className="w-full h-full bg-white border-r border-gray-200 p-4"
         aria-label="Task palette"
       >
-        <h2 className="text-lg font-semibold mb-4">Tasks</h2>
         <div className="flex flex-col items-center justify-center p-4 text-center">
           <AlertTriangle className="w-12 h-12 text-red-500 mb-2" />
           <p className="text-sm text-red-600 mb-4">Failed to load tasks</p>
@@ -182,25 +193,17 @@ export function TaskPalette() {
   return (
     <div
       data-testid="task-palette"
-      className={cn('w-64 bg-white border-r border-gray-200 flex flex-col', isCollapsed && 'w-12')}
+      className={cn('w-full h-full bg-white border-r border-gray-200 flex flex-col overflow-hidden', isCollapsed && 'w-12')}
       aria-label="Task palette"
     >
-      {/* Header */}
-      <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-        {!isCollapsed && <h2 className="text-lg font-semibold">Tasks</h2>}
-        <button
-          onClick={() => setIsCollapsed(!isCollapsed)}
-          className="p-1 hover:bg-gray-100 rounded"
-          aria-label={isCollapsed ? 'Expand palette' : 'Collapse palette'}
-        >
-          {isCollapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-        </button>
-      </div>
-
       {!isCollapsed && (
         <>
           {/* Search */}
           <div className="p-4 border-b border-gray-200">
+            <div className="flex items-center gap-1.5 mb-2">
+              <label className="text-sm font-medium text-gray-700">Search</label>
+              <HelpIcon topic={HELP_TOPICS.SEARCH_TASKS} />
+            </div>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
@@ -223,15 +226,36 @@ export function TaskPalette() {
             </div>
           </div>
 
+          {/* Namespace Filter */}
+          {namespaces.length > 1 && (
+            <div className="px-4 py-2 border-b border-gray-200">
+              <label className="text-xs font-medium text-gray-500 mb-1 block">Namespace</label>
+              <select
+                value={selectedNamespace || ''}
+                onChange={(e) => setSelectedNamespace(e.target.value || null)}
+                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                aria-label="Filter by namespace"
+              >
+                <option value="">All namespaces</option>
+                {namespaces.map((ns) => (
+                  <option key={ns} value={ns}>
+                    {ns}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
           {/* Category Filters */}
-          <div className="p-4 border-b border-gray-200">
-            <div className="flex flex-wrap gap-2">
+          <div className="px-4 py-2 border-b border-gray-200">
+            <label className="text-xs font-medium text-gray-500 mb-1 block">Category</label>
+            <div className="flex flex-wrap gap-1.5">
               {categories.map((category) => (
                 <button
                   key={category}
                   onClick={() => toggleCategoryFilter(category)}
                   className={cn(
-                    'px-3 py-1 text-sm rounded-full border transition-colors',
+                    'px-2 py-0.5 text-xs rounded-full border transition-colors',
                     selectedCategory === category
                       ? 'bg-blue-500 text-white border-blue-500'
                       : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400'

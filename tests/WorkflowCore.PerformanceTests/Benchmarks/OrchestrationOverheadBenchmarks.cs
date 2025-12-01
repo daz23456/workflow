@@ -1,5 +1,6 @@
 using BenchmarkDotNet.Attributes;
 using Moq;
+using WorkflowCore.Interfaces;
 using WorkflowCore.Models;
 using WorkflowCore.Services;
 
@@ -156,7 +157,8 @@ public class OrchestrationOverheadBenchmarks
                 Duration = TimeSpan.FromMilliseconds(1)
             });
 
-        var orchestrator = new WorkflowOrchestrator(_graphBuilder!, mockExecutor.Object, _templateResolver!);
+        var mockResponseStorage = new Mock<IResponseStorage>();
+        var orchestrator = new WorkflowOrchestrator(_graphBuilder!, mockExecutor.Object, _templateResolver!, mockResponseStorage.Object);
 
         // Create mock available tasks
         var availableTasks = new Dictionary<string, WorkflowTaskResource>();

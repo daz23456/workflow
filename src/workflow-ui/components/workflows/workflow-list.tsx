@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useWorkflows } from '@/lib/api/queries';
 import { WorkflowFilters } from './workflow-filters';
@@ -29,12 +29,64 @@ export function WorkflowList({ defaultFilters }: WorkflowListProps) {
 
   const { data, isLoading, error, dataUpdatedAt } = useWorkflows(filters);
 
-  const workflows = data?.workflows || [];
+  const rawWorkflows = data?.workflows || [];
   const lastUpdated = dataUpdatedAt ? formatRelativeTime(dataUpdatedAt) : null;
 
-  // Extract unique namespaces from workflows
+  // Client-side filtering (in case backend doesn't support search filtering)
+  const workflows = useMemo(() => {
+    let filtered = rawWorkflows;
+
+    // Apply search filter on client side
+    if (filters.search) {
+      const searchLower = filters.search.toLowerCase();
+      filtered = filtered.filter(
+        (workflow) =>
+          workflow.name.toLowerCase().includes(searchLower) ||
+          workflow.description?.toLowerCase().includes(searchLower) ||
+          workflow.namespace?.toLowerCase().includes(searchLower)
+      );
+    }
+
+    // Apply namespace filter on client side
+    if (filters.namespace) {
+      filtered = filtered.filter((workflow) => workflow.namespace === filters.namespace);
+    }
+
+    // Apply sorting on client side
+    if (filters.sort) {
+      filtered = [...filtered].sort((a, b) => {
+        switch (filters.sort) {
+          case 'name':
+            return a.name.localeCompare(b.name);
+          case 'namespace':
+            return (a.namespace || '').localeCompare(b.namespace || '');
+          case 'lastExecuted':
+            // Sort by last executed date (most recent first)
+            const aDate = a.stats?.lastExecuted ? new Date(a.stats.lastExecuted).getTime() : 0;
+            const bDate = b.stats?.lastExecuted ? new Date(b.stats.lastExecuted).getTime() : 0;
+            return bDate - aDate;
+          case 'success-rate':
+            // Sort by success rate (highest first)
+            const aRate = a.stats?.successRate ?? 0;
+            const bRate = b.stats?.successRate ?? 0;
+            return bRate - aRate;
+          case 'executions':
+            // Sort by total executions (highest first)
+            const aExecs = a.stats?.totalExecutions ?? 0;
+            const bExecs = b.stats?.totalExecutions ?? 0;
+            return bExecs - aExecs;
+          default:
+            return 0;
+        }
+      });
+    }
+
+    return filtered;
+  }, [rawWorkflows, filters.search, filters.namespace, filters.sort]);
+
+  // Extract unique namespaces from all workflows (before filtering)
   const namespaces =
-    workflows.length > 0 ? Array.from(new Set(workflows.map((w) => w.namespace))).sort() : [];
+    rawWorkflows.length > 0 ? Array.from(new Set(rawWorkflows.map((w) => w.namespace))).sort() : [];
 
   // Calculate active filter count (excluding default sort)
   const activeFilterCount =

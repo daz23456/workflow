@@ -8,11 +8,11 @@ namespace WorkflowCore.Tests.Data;
 public class WorkflowDbContextIndexTests
 {
     [Fact]
-    public void WorkflowDbContext_ExecutionRecord_ShouldHaveWorkflowNameIndex()
+    public void WorkflowDbContext_ExecutionRecord_ShouldHaveCompositeIndex_ForWorkflowNameStartedAtStatus()
     {
         // Arrange
         var options = new DbContextOptionsBuilder<WorkflowDbContext>()
-            .UseInMemoryDatabase(databaseName: "TestDb_IndexWorkflowName")
+            .UseInMemoryDatabase(databaseName: "TestDb_IndexComposite")
             .Options;
 
         // Act
@@ -20,14 +20,19 @@ public class WorkflowDbContextIndexTests
         var entityType = context.Model.FindEntityType(typeof(ExecutionRecord));
         var indexes = entityType!.GetIndexes();
 
-        // Assert
-        indexes.Should().Contain(i => i.Properties.Any(p => p.Name == nameof(ExecutionRecord.WorkflowName)));
-        var workflowNameIndex = indexes.First(i => i.Properties.Any(p => p.Name == nameof(ExecutionRecord.WorkflowName)));
-        workflowNameIndex.GetDatabaseName().Should().Be("IX_ExecutionRecords_WorkflowName");
+        // Assert - Composite index should contain WorkflowName, StartedAt, and Status
+        var compositeIndex = indexes.FirstOrDefault(i =>
+            i.Properties.Any(p => p.Name == nameof(ExecutionRecord.WorkflowName)) &&
+            i.Properties.Any(p => p.Name == nameof(ExecutionRecord.StartedAt)) &&
+            i.Properties.Any(p => p.Name == nameof(ExecutionRecord.Status)));
+
+        compositeIndex.Should().NotBeNull("Composite index for WorkflowName+StartedAt+Status should exist");
+        compositeIndex!.GetDatabaseName().Should().Be("IX_ExecutionRecords_WorkflowName_StartedAt_Status");
+        compositeIndex.Properties.Should().HaveCount(3);
     }
 
     [Fact]
-    public void WorkflowDbContext_ExecutionRecord_ShouldHaveStatusIndex()
+    public void WorkflowDbContext_ExecutionRecord_ShouldHaveIndividualStatusIndex()
     {
         // Arrange
         var options = new DbContextOptionsBuilder<WorkflowDbContext>()
@@ -39,14 +44,17 @@ public class WorkflowDbContextIndexTests
         var entityType = context.Model.FindEntityType(typeof(ExecutionRecord));
         var indexes = entityType!.GetIndexes();
 
-        // Assert
-        indexes.Should().Contain(i => i.Properties.Any(p => p.Name == nameof(ExecutionRecord.Status)));
-        var statusIndex = indexes.First(i => i.Properties.Any(p => p.Name == nameof(ExecutionRecord.Status)));
-        statusIndex.GetDatabaseName().Should().Be("IX_ExecutionRecords_Status");
+        // Assert - Should have an individual Status-only index (in addition to the composite)
+        var statusOnlyIndex = indexes.FirstOrDefault(i =>
+            i.Properties.Count == 1 &&
+            i.Properties.Any(p => p.Name == nameof(ExecutionRecord.Status)));
+
+        statusOnlyIndex.Should().NotBeNull("Individual Status index should exist for filtering by status");
+        statusOnlyIndex!.GetDatabaseName().Should().Be("IX_ExecutionRecords_Status");
     }
 
     [Fact]
-    public void WorkflowDbContext_ExecutionRecord_ShouldHaveStartedAtIndex()
+    public void WorkflowDbContext_ExecutionRecord_ShouldHaveStartedAt_InCompositeIndex()
     {
         // Arrange
         var options = new DbContextOptionsBuilder<WorkflowDbContext>()
@@ -58,10 +66,10 @@ public class WorkflowDbContextIndexTests
         var entityType = context.Model.FindEntityType(typeof(ExecutionRecord));
         var indexes = entityType!.GetIndexes();
 
-        // Assert
+        // Assert - StartedAt should be part of the composite index (no separate StartedAt index)
         indexes.Should().Contain(i => i.Properties.Any(p => p.Name == nameof(ExecutionRecord.StartedAt)));
-        var startedAtIndex = indexes.First(i => i.Properties.Any(p => p.Name == nameof(ExecutionRecord.StartedAt)));
-        startedAtIndex.GetDatabaseName().Should().Be("IX_ExecutionRecords_StartedAt");
+        var indexWithStartedAt = indexes.First(i => i.Properties.Any(p => p.Name == nameof(ExecutionRecord.StartedAt)));
+        indexWithStartedAt.GetDatabaseName().Should().Be("IX_ExecutionRecords_WorkflowName_StartedAt_Status");
     }
 
     [Fact]

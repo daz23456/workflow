@@ -20,6 +20,7 @@ public class DynamicWorkflowControllerEnhancedTestTests
     private readonly Mock<IExecutionGraphBuilder> _mockGraphBuilder;
     private readonly Mock<IExecutionRepository> _mockExecutionRepository;
     private readonly Mock<ITemplatePreviewService> _mockTemplatePreviewService;
+    private readonly Mock<IWorkflowYamlParser> _mockYamlParser;
     private readonly DynamicWorkflowController _controller;
 
     public DynamicWorkflowControllerEnhancedTestTests()
@@ -30,6 +31,7 @@ public class DynamicWorkflowControllerEnhancedTestTests
         _mockGraphBuilder = new Mock<IExecutionGraphBuilder>();
         _mockExecutionRepository = new Mock<IExecutionRepository>();
         _mockTemplatePreviewService = new Mock<ITemplatePreviewService>();
+        _mockYamlParser = new Mock<IWorkflowYamlParser>();
 
         // Setup default mocks for new functionality (can be overridden in tests)
         _mockExecutionRepository
@@ -46,7 +48,8 @@ public class DynamicWorkflowControllerEnhancedTestTests
             _mockExecutionService.Object,
             _mockGraphBuilder.Object,
             _mockExecutionRepository.Object,
-            _mockTemplatePreviewService.Object
+            _mockTemplatePreviewService.Object,
+            _mockYamlParser.Object
         );
     }
 
@@ -200,8 +203,11 @@ public class DynamicWorkflowControllerEnhancedTestTests
         var enhancedPlan = response.ExecutionPlan.Should().BeOfType<EnhancedExecutionPlan>().Subject;
 
         enhancedPlan.Edges.Should().HaveCount(2);
-        enhancedPlan.Edges.Should().Contain(e => e.Source == "task2" && e.Target == "task1");
-        enhancedPlan.Edges.Should().Contain(e => e.Source == "task3" && e.Target == "task2");
+        // Edges go from prerequisite (Source) to dependent (Target)
+        // task2 depends on task1, so edge is task1 -> task2
+        // task3 depends on task2, so edge is task2 -> task3
+        enhancedPlan.Edges.Should().Contain(e => e.Source == "task1" && e.Target == "task2");
+        enhancedPlan.Edges.Should().Contain(e => e.Source == "task2" && e.Target == "task3");
     }
 
     [Fact]

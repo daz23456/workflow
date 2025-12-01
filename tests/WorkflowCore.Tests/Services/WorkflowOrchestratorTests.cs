@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Moq;
+using WorkflowCore.Interfaces;
 using WorkflowCore.Models;
 using WorkflowCore.Services;
 using Xunit;
@@ -11,6 +12,7 @@ public class WorkflowOrchestratorTests
     private readonly Mock<IExecutionGraphBuilder> _graphBuilderMock;
     private readonly Mock<IHttpTaskExecutor> _taskExecutorMock;
     private readonly Mock<ITemplateResolver> _templateResolverMock;
+    private readonly Mock<IResponseStorage> _responseStorageMock;
     private readonly IWorkflowOrchestrator _orchestrator;
 
     public WorkflowOrchestratorTests()
@@ -18,10 +20,18 @@ public class WorkflowOrchestratorTests
         _graphBuilderMock = new Mock<IExecutionGraphBuilder>();
         _taskExecutorMock = new Mock<IHttpTaskExecutor>();
         _templateResolverMock = new Mock<ITemplateResolver>();
+        _responseStorageMock = new Mock<IResponseStorage>();
+
+        // Setup default mock for template resolver - returns the input template string by default
+        _templateResolverMock
+            .Setup(r => r.ResolveAsync(It.IsAny<string>(), It.IsAny<TemplateContext>()))
+            .ReturnsAsync((string template, TemplateContext ctx) => template);
+
         _orchestrator = new WorkflowOrchestrator(
             _graphBuilderMock.Object,
             _taskExecutorMock.Object,
-            _templateResolverMock.Object);
+            _templateResolverMock.Object,
+            _responseStorageMock.Object);
     }
 
     [Fact]
@@ -1085,6 +1095,7 @@ public class WorkflowOrchestratorTests
             _graphBuilderMock.Object,
             _taskExecutorMock.Object,
             _templateResolverMock.Object,
+            _responseStorageMock.Object,
             maxConcurrentTasks: 2);
 
         // Act
@@ -1168,6 +1179,7 @@ public class WorkflowOrchestratorTests
             _graphBuilderMock.Object,
             _taskExecutorMock.Object,
             _templateResolverMock.Object,
+            _responseStorageMock.Object,
             maxConcurrentTasks: 1);
 
         // Act
@@ -1186,6 +1198,7 @@ public class WorkflowOrchestratorTests
             _graphBuilderMock.Object,
             _taskExecutorMock.Object,
             _templateResolverMock.Object,
+            _responseStorageMock.Object,
             maxConcurrentTasks: 0);
 
         act.Should().Throw<ArgumentException>()
@@ -1200,6 +1213,7 @@ public class WorkflowOrchestratorTests
             _graphBuilderMock.Object,
             _taskExecutorMock.Object,
             _templateResolverMock.Object,
+            _responseStorageMock.Object,
             maxConcurrentTasks: -1);
 
         act.Should().Throw<ArgumentException>()
@@ -1265,6 +1279,7 @@ public class WorkflowOrchestratorTests
             _graphBuilderMock.Object,
             _taskExecutorMock.Object,
             _templateResolverMock.Object,
+            _responseStorageMock.Object,
             maxConcurrentTasks: 1);
 
         var sequentialResult = await sequentialOrchestrator.ExecuteAsync(workflow, tasks, inputs, CancellationToken.None);
@@ -1274,6 +1289,7 @@ public class WorkflowOrchestratorTests
             _graphBuilderMock.Object,
             _taskExecutorMock.Object,
             _templateResolverMock.Object,
+            _responseStorageMock.Object,
             maxConcurrentTasks: int.MaxValue);
 
         var parallelResult = await parallelOrchestrator.ExecuteAsync(workflow, tasks, inputs, CancellationToken.None);
@@ -1298,6 +1314,200 @@ public class WorkflowOrchestratorTests
             because: "4 tasks running in parallel should take less than 250ms");
     }
 
+    // ========== TIMESTAMP ACCURACY TESTS ==========
+
+    [Fact]
+    public async Task ExecuteAsync_ShouldPopulateActualStartedAtAndCompletedAt_OnTaskExecutionResult()
+    {
+        // Arrange - Single task workflow
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "task-1", TaskRef = "ref-1" }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["ref-1"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } }
+        };
+
+        var graph = new ExecutionGraph();
+        graph.AddNode("task-1");
+
+        _graphBuilderMock.Setup(x => x.Build(workflow))
+            .Returns(new ExecutionGraphResult { IsValid = true, Graph = graph });
+
+        var beforeExecution = DateTime.UtcNow;
+
+        _taskExecutorMock.Setup(x => x.ExecuteAsync(
+            It.IsAny<WorkflowTaskSpec>(),
+            It.IsAny<TemplateContext>(),
+            It.IsAny<CancellationToken>()))
+            .Returns(async () =>
+            {
+                await Task.Delay(50); // Simulate 50ms of work
+                return new TaskExecutionResult
+                {
+                    Success = true,
+                    Output = new Dictionary<string, object> { ["result"] = "done" }
+                };
+            });
+
+        // Act
+        var result = await _orchestrator.ExecuteAsync(workflow, tasks, new Dictionary<string, object>(), CancellationToken.None);
+
+        var afterExecution = DateTime.UtcNow;
+
+        // Assert - TaskExecutionResult must have actual timestamps
+        result.Success.Should().BeTrue();
+        result.TaskResults.Should().ContainKey("task-1");
+
+        var taskResult = result.TaskResults["task-1"];
+        taskResult.StartedAt.Should().BeOnOrAfter(beforeExecution, "StartedAt should be the actual time the task started");
+        taskResult.StartedAt.Should().BeOnOrBefore(afterExecution, "StartedAt should be before execution completed");
+        taskResult.CompletedAt.Should().BeOnOrAfter(taskResult.StartedAt, "CompletedAt should be after StartedAt");
+        taskResult.CompletedAt.Should().BeOnOrBefore(afterExecution, "CompletedAt should be before test completed");
+
+        // Duration should be approximately the time between StartedAt and CompletedAt
+        var calculatedDuration = taskResult.CompletedAt - taskResult.StartedAt;
+        calculatedDuration.Should().BeCloseTo(taskResult.Duration, TimeSpan.FromMilliseconds(20),
+            "Duration should match the time between StartedAt and CompletedAt");
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithDependentTasks_DependentTaskStartedAtShouldBeAfterDependencyCompletedAt()
+    {
+        // Arrange - task-2 depends on task-1, so task-2.StartedAt must be >= task-1.CompletedAt
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "task-1", TaskRef = "ref-1" },
+                    new WorkflowTaskStep
+                    {
+                        Id = "task-2",
+                        TaskRef = "ref-2",
+                        DependsOn = new List<string> { "task-1" }
+                    }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["ref-1"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } },
+            ["ref-2"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } }
+        };
+
+        var graph = new ExecutionGraph();
+        graph.AddDependency("task-2", "task-1");
+
+        _graphBuilderMock.Setup(x => x.Build(workflow))
+            .Returns(new ExecutionGraphResult { IsValid = true, Graph = graph });
+
+        _taskExecutorMock.Setup(x => x.ExecuteAsync(
+            It.IsAny<WorkflowTaskSpec>(),
+            It.IsAny<TemplateContext>(),
+            It.IsAny<CancellationToken>()))
+            .Returns(async () =>
+            {
+                await Task.Delay(30); // Each task takes 30ms
+                return new TaskExecutionResult
+                {
+                    Success = true,
+                    Output = new Dictionary<string, object> { ["result"] = "done" }
+                };
+            });
+
+        // Act
+        var result = await _orchestrator.ExecuteAsync(workflow, tasks, new Dictionary<string, object>(), CancellationToken.None);
+
+        // Assert - Dependent task timestamps must respect dependency order
+        result.Success.Should().BeTrue();
+        result.TaskResults.Should().ContainKey("task-1");
+        result.TaskResults.Should().ContainKey("task-2");
+
+        var task1Result = result.TaskResults["task-1"];
+        var task2Result = result.TaskResults["task-2"];
+
+        // CRITICAL: task-2 should NOT start until task-1 has completed
+        task2Result.StartedAt.Should().BeOnOrAfter(task1Result.CompletedAt,
+            "A dependent task's StartedAt must be >= its dependency's CompletedAt. " +
+            "This proves the execution order was respected.");
+
+        // Additional validation: timestamps should be sensible
+        task1Result.StartedAt.Should().BeBefore(task1Result.CompletedAt);
+        task2Result.StartedAt.Should().BeBefore(task2Result.CompletedAt);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithParallelTasks_BothShouldHaveOverlappingTimestamps()
+    {
+        // Arrange - task-1 and task-2 are independent, they should start at approximately the same time
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "task-1", TaskRef = "ref-1" },
+                    new WorkflowTaskStep { Id = "task-2", TaskRef = "ref-2" }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["ref-1"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } },
+            ["ref-2"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } }
+        };
+
+        var graph = new ExecutionGraph();
+        graph.AddNode("task-1");
+        graph.AddNode("task-2");
+
+        _graphBuilderMock.Setup(x => x.Build(workflow))
+            .Returns(new ExecutionGraphResult { IsValid = true, Graph = graph });
+
+        _taskExecutorMock.Setup(x => x.ExecuteAsync(
+            It.IsAny<WorkflowTaskSpec>(),
+            It.IsAny<TemplateContext>(),
+            It.IsAny<CancellationToken>()))
+            .Returns(async () =>
+            {
+                await Task.Delay(100); // Each task takes 100ms
+                return new TaskExecutionResult
+                {
+                    Success = true,
+                    Output = new Dictionary<string, object> { ["result"] = "done" }
+                };
+            });
+
+        // Act
+        var result = await _orchestrator.ExecuteAsync(workflow, tasks, new Dictionary<string, object>(), CancellationToken.None);
+
+        // Assert - Parallel tasks should have overlapping timestamps (started within 50ms of each other)
+        result.Success.Should().BeTrue();
+
+        var task1Result = result.TaskResults["task-1"];
+        var task2Result = result.TaskResults["task-2"];
+
+        var startTimeDifference = Math.Abs((task1Result.StartedAt - task2Result.StartedAt).TotalMilliseconds);
+        startTimeDifference.Should().BeLessThan(50,
+            "Independent parallel tasks should start within 50ms of each other");
+
+        // Both should have taken ~100ms
+        task1Result.Duration.TotalMilliseconds.Should().BeGreaterThanOrEqualTo(90);
+        task2Result.Duration.TotalMilliseconds.Should().BeGreaterThanOrEqualTo(90);
+    }
+
     [Fact]
     public async Task ExecuteAsync_WithTransformTask_ShouldRouteToTransformExecutor()
     {
@@ -1312,7 +1522,12 @@ public class WorkflowOrchestratorTests
                     new WorkflowTaskStep
                     {
                         Id = "extract-names",
-                        TaskRef = "transform-extract-names"
+                        TaskRef = "transform-extract-names",
+                        // Must define Input to map workflow inputs to transform data
+                        Input = new Dictionary<string, string>
+                        {
+                            ["users"] = "{{input.users}}"
+                        }
                     }
                 }
             }
@@ -1327,7 +1542,7 @@ public class WorkflowOrchestratorTests
                     Type = "transform",
                     Transform = new TransformDefinition
                     {
-                        Query = "$.users[*].name"
+                        JsonPath = "$.users[*].name"
                     }
                 }
             }
@@ -1354,6 +1569,10 @@ public class WorkflowOrchestratorTests
                 Graph = graph
             });
 
+        // Setup template resolver to return the workflow input serialized as JSON
+        _templateResolverMock.Setup(x => x.ResolveAsync("{{input.users}}", It.IsAny<TemplateContext>()))
+            .ReturnsAsync("[{\"name\":\"Alice\",\"age\":30},{\"name\":\"Bob\",\"age\":25}]");
+
         // Create orchestrator with real transform executor
         var transformer = new JsonPathTransformer();
         var transformExecutor = new TransformTaskExecutor(transformer);
@@ -1361,6 +1580,7 @@ public class WorkflowOrchestratorTests
             _graphBuilderMock.Object,
             _taskExecutorMock.Object,
             _templateResolverMock.Object,
+            _responseStorageMock.Object,
             int.MaxValue,
             transformExecutor);
 
@@ -1379,5 +1599,323 @@ public class WorkflowOrchestratorTests
         namesList.Should().HaveCount(2);
         namesList.Should().Contain("Alice");
         namesList.Should().Contain("Bob");
+    }
+
+    // ========== INTEGRATION TESTS WITH REAL GRAPH BUILDER ==========
+
+    [Fact]
+    public async Task ExecuteAsync_Integration_WithRealGraphBuilder_DependentTaskShouldWaitForDependency()
+    {
+        // Arrange - Use REAL ExecutionGraphBuilder, not a mock
+        // This tests the full flow from workflow definition through graph building to execution
+        var realGraphBuilder = new ExecutionGraphBuilder();
+
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "dependency-task", TaskRef = "ref-1" },
+                    new WorkflowTaskStep
+                    {
+                        Id = "dependent-task",
+                        TaskRef = "ref-2",
+                        DependsOn = new List<string> { "dependency-task" } // Explicit dependency
+                    }
+                }
+            }
+        };
+
+        var availableTasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["ref-1"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } },
+            ["ref-2"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } }
+        };
+
+        // Use real orchestrator with real graph builder
+        var orchestrator = new WorkflowOrchestrator(
+            realGraphBuilder,
+            _taskExecutorMock.Object,
+            _templateResolverMock.Object,
+            _responseStorageMock.Object);
+
+        // Add significant delay to make timing differences obvious
+        _taskExecutorMock.Setup(x => x.ExecuteAsync(
+            It.IsAny<WorkflowTaskSpec>(),
+            It.IsAny<TemplateContext>(),
+            It.IsAny<CancellationToken>()))
+            .Returns(async () =>
+            {
+                await Task.Delay(100); // 100ms delay per task
+                return new TaskExecutionResult
+                {
+                    Success = true,
+                    Output = new Dictionary<string, object> { ["result"] = "done" }
+                };
+            });
+
+        // Act
+        var result = await orchestrator.ExecuteAsync(workflow, availableTasks, new Dictionary<string, object>(), CancellationToken.None);
+
+        // Assert - CRITICAL: dependent task must start AFTER dependency completes
+        result.Success.Should().BeTrue();
+        result.TaskResults.Should().ContainKey("dependency-task");
+        result.TaskResults.Should().ContainKey("dependent-task");
+
+        var dependencyResult = result.TaskResults["dependency-task"];
+        var dependentResult = result.TaskResults["dependent-task"];
+
+        // This is the critical assertion: dependent task StartedAt must be >= dependency CompletedAt
+        dependentResult.StartedAt.Should().BeOnOrAfter(dependencyResult.CompletedAt,
+            "CRITICAL: A task with dependsOn MUST start after its dependency completes. " +
+            $"Dependency completed at {dependencyResult.CompletedAt:HH:mm:ss.ffffff}, " +
+            $"but dependent started at {dependentResult.StartedAt:HH:mm:ss.ffffff}");
+
+        // Total duration should be at least 200ms (sequential: 100 + 100)
+        result.TotalDuration.Should().BeGreaterThanOrEqualTo(TimeSpan.FromMilliseconds(180),
+            "Dependent tasks should execute sequentially, taking ~200ms total");
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_Integration_WithMultipleDependsOn_ShouldWaitForAllDependencies()
+    {
+        // Arrange - Task depends on TWO prior tasks
+        var realGraphBuilder = new ExecutionGraphBuilder();
+
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "task-a", TaskRef = "ref-1" },
+                    new WorkflowTaskStep { Id = "task-b", TaskRef = "ref-2" },
+                    new WorkflowTaskStep
+                    {
+                        Id = "task-c",
+                        TaskRef = "ref-3",
+                        DependsOn = new List<string> { "task-a", "task-b" } // Depends on BOTH
+                    }
+                }
+            }
+        };
+
+        var availableTasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["ref-1"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } },
+            ["ref-2"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } },
+            ["ref-3"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } }
+        };
+
+        var orchestrator = new WorkflowOrchestrator(
+            realGraphBuilder,
+            _taskExecutorMock.Object,
+            _templateResolverMock.Object,
+            _responseStorageMock.Object);
+
+        _taskExecutorMock.Setup(x => x.ExecuteAsync(
+            It.IsAny<WorkflowTaskSpec>(),
+            It.IsAny<TemplateContext>(),
+            It.IsAny<CancellationToken>()))
+            .Returns(async () =>
+            {
+                await Task.Delay(50);
+                return new TaskExecutionResult
+                {
+                    Success = true,
+                    Output = new Dictionary<string, object> { ["result"] = "done" }
+                };
+            });
+
+        // Act
+        var result = await orchestrator.ExecuteAsync(workflow, availableTasks, new Dictionary<string, object>(), CancellationToken.None);
+
+        // Assert
+        result.Success.Should().BeTrue();
+
+        var taskAResult = result.TaskResults["task-a"];
+        var taskBResult = result.TaskResults["task-b"];
+        var taskCResult = result.TaskResults["task-c"];
+
+        // Task C must start after BOTH A and B complete
+        var latestDependencyCompletion = taskAResult.CompletedAt > taskBResult.CompletedAt
+            ? taskAResult.CompletedAt
+            : taskBResult.CompletedAt;
+
+        taskCResult.StartedAt.Should().BeOnOrAfter(latestDependencyCompletion,
+            "Task C must wait for ALL dependencies (A and B) to complete before starting");
+
+        // A and B should run in parallel (started close together)
+        var abStartDiff = Math.Abs((taskAResult.StartedAt - taskBResult.StartedAt).TotalMilliseconds);
+        abStartDiff.Should().BeLessThan(30, "Tasks A and B should start in parallel");
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_Integration_YamlParsedWorkflow_ShouldRespectDependsOn()
+    {
+        // Arrange - This simulates the EXACT flow from Visual Builder:
+        // 1. YAML string generated by frontend
+        // 2. Parsed by WorkflowYamlParser (via YamlDotNet)
+        // 3. Executed by WorkflowOrchestrator with real ExecutionGraphBuilder
+
+        // YAML with explicit dependsOn (as generated by yaml-adapter.ts)
+        var yamlString = @"
+apiVersion: workflow.example.com/v1
+kind: Workflow
+metadata:
+  name: test-workflow
+  namespace: default
+spec:
+  description: Test workflow with explicit dependencies
+  input: {}
+  output: {}
+  tasks:
+    - id: task-first
+      taskRef: http-task
+    - id: task-second
+      taskRef: http-task
+      dependsOn:
+        - task-first
+";
+
+        // Use YamlDotNet to parse (same as WorkflowYamlParser)
+        var deserializer = new YamlDotNet.Serialization.DeserializerBuilder()
+            .WithNamingConvention(YamlDotNet.Serialization.NamingConventions.CamelCaseNamingConvention.Instance)
+            .IgnoreUnmatchedProperties()
+            .Build();
+
+        var workflow = deserializer.Deserialize<WorkflowResource>(yamlString);
+
+        // Verify DependsOn was parsed correctly
+        workflow.Spec.Tasks.Should().HaveCount(2);
+        workflow.Spec.Tasks[0].Id.Should().Be("task-first");
+        workflow.Spec.Tasks[0].DependsOn.Should().BeNull();
+        workflow.Spec.Tasks[1].Id.Should().Be("task-second");
+        workflow.Spec.Tasks[1].DependsOn.Should().NotBeNull("CRITICAL: dependsOn must be parsed from YAML");
+        workflow.Spec.Tasks[1].DependsOn.Should().Contain("task-first");
+
+        var availableTasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["http-task"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } }
+        };
+
+        // Use REAL ExecutionGraphBuilder
+        var realGraphBuilder = new ExecutionGraphBuilder();
+        var orchestrator = new WorkflowOrchestrator(
+            realGraphBuilder,
+            _taskExecutorMock.Object,
+            _templateResolverMock.Object,
+            _responseStorageMock.Object);
+
+        // Each task takes 100ms
+        _taskExecutorMock.Setup(x => x.ExecuteAsync(
+            It.IsAny<WorkflowTaskSpec>(),
+            It.IsAny<TemplateContext>(),
+            It.IsAny<CancellationToken>()))
+            .Returns(async () =>
+            {
+                await Task.Delay(100);
+                return new TaskExecutionResult
+                {
+                    Success = true,
+                    Output = new Dictionary<string, object> { ["result"] = "done" }
+                };
+            });
+
+        // Act
+        var result = await orchestrator.ExecuteAsync(workflow, availableTasks, new Dictionary<string, object>(), CancellationToken.None);
+
+        // Assert - CRITICAL: task-second must start AFTER task-first completes
+        result.Success.Should().BeTrue();
+
+        var firstTaskResult = result.TaskResults["task-first"];
+        var secondTaskResult = result.TaskResults["task-second"];
+
+        secondTaskResult.StartedAt.Should().BeOnOrAfter(firstTaskResult.CompletedAt,
+            "YAML-parsed dependsOn must be respected! " +
+            $"First task completed at {firstTaskResult.CompletedAt:HH:mm:ss.ffffff}, " +
+            $"but second task started at {secondTaskResult.StartedAt:HH:mm:ss.ffffff}");
+
+        // Sequential execution should take ~200ms
+        result.TotalDuration.Should().BeGreaterThanOrEqualTo(TimeSpan.FromMilliseconds(180),
+            "Two sequential 100ms tasks should take at least 180ms total");
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_Integration_DynamicTaskIds_ShouldRespectDependsOn()
+    {
+        // Arrange - Simulate production scenario with dynamic task IDs (as Visual Builder generates)
+        var timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        var taskFirstId = $"task-{timestamp}-first";
+        var taskSecondId = $"task-{timestamp}-second";
+
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = "dynamic-workflow", Namespace = "default" },
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = taskFirstId, TaskRef = "http-task" },
+                    new WorkflowTaskStep
+                    {
+                        Id = taskSecondId,
+                        TaskRef = "http-task",
+                        DependsOn = new List<string> { taskFirstId }
+                    }
+                }
+            }
+        };
+
+        var availableTasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["http-task"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } }
+        };
+
+        var realGraphBuilder = new ExecutionGraphBuilder();
+        var orchestrator = new WorkflowOrchestrator(
+            realGraphBuilder,
+            _taskExecutorMock.Object,
+            _templateResolverMock.Object,
+            _responseStorageMock.Object);
+
+        // Track execution order
+        var executionOrder = new List<string>();
+        var executionLock = new object();
+
+        _taskExecutorMock.Setup(x => x.ExecuteAsync(
+            It.IsAny<WorkflowTaskSpec>(),
+            It.IsAny<TemplateContext>(),
+            It.IsAny<CancellationToken>()))
+            .Returns(async (WorkflowTaskSpec spec, TemplateContext ctx, CancellationToken ct) =>
+            {
+                // Record which task is executing
+                var taskId = ctx.TaskOutputs.Count == 0 ? taskFirstId : taskSecondId;
+                lock (executionLock)
+                {
+                    executionOrder.Add(taskId);
+                }
+                await Task.Delay(100);
+                return new TaskExecutionResult
+                {
+                    Success = true,
+                    Output = new Dictionary<string, object> { ["result"] = "done" }
+                };
+            });
+
+        // Act
+        var result = await orchestrator.ExecuteAsync(workflow, availableTasks, new Dictionary<string, object>(), CancellationToken.None);
+
+        // Assert
+        result.Success.Should().BeTrue();
+
+        var firstResult = result.TaskResults[taskFirstId];
+        var secondResult = result.TaskResults[taskSecondId];
+
+        secondResult.StartedAt.Should().BeOnOrAfter(firstResult.CompletedAt,
+            $"Dynamic task ID dependency must be respected! " +
+            $"First ({taskFirstId}) completed at {firstResult.CompletedAt:HH:mm:ss.ffffff}, " +
+            $"but second ({taskSecondId}) started at {secondResult.StartedAt:HH:mm:ss.ffffff}");
     }
 }

@@ -5,6 +5,7 @@
   "main": "./dist/server.js",
   "scripts": {
     "build": "webpack --mode production",
+    "type-check": "tsc --noEmit",
     "watch": "webpack --mode development --watch",
     "clean": "rm -rf dist"
   },

@@ -26,36 +26,54 @@ Build a production-grade, enterprise-ready Kubernetes-native workflow orchestrat
 
 ## Stage Execution Protocol (MANDATORY)
 
-**BEFORE starting ANY stage, you MUST:**
-1. Read `STAGE_EXECUTION_FRAMEWORK.md` in full
-2. Complete the "BEFORE Starting" section for that stage
-3. Review objectives, value to project, and success criteria
-4. Get explicit approval to proceed
-5. Create a todo list for tracking progress
+> **📋 CHECKLIST:** `.claude/STAGE_CHECKLIST.md` - the ONLY file you need
+> **⚠️ SCRIPTS ARE REQUIRED** - No manual alternatives. If you skip scripts, artifacts go to wrong locations.
 
-**DURING stage execution:**
-1. Follow strict TDD: RED → GREEN → REFACTOR
-2. Update todo list as each task completes
-3. Run tests after every implementation
-4. Maintain ≥90% code coverage at all times
-5. Commit working code frequently
+### Every Stage: 3 Commands
 
-**AFTER completing the stage:**
-1. Create `STAGE_X_PROOF.md` file with all results (see STAGE_PROOF_TEMPLATE.md)
-2. Include test output, coverage report, and build verification
-3. Verify ALL deliverables checklist items are ✅
-4. Create stage completion commit with proof file
-5. Tag commit as `stage-X-complete`
-6. Get explicit sign-off before proceeding to next stage
+```bash
+# 1. BEFORE: Initialize (creates all files in correct locations)
+./scripts/init-stage.sh --stage 9.7 --name "Feature Name" --profile BACKEND_DOTNET
 
-**🚨 NON-COMPLIANCE = UNACCEPTABLE**
-- No stage may begin without completing BEFORE requirements
-- No stage may be considered complete without STAGE_X_PROOF.md file
-- No next stage may begin without explicit sign-off on current stage
-- Framework template: `STAGE_EXECUTION_FRAMEWORK.md`
-- Proof template: `STAGE_PROOF_TEMPLATE.md`
+# 2. DURING: Implement with TDD (RED → GREEN → REFACTOR)
 
-**This protocol ensures production-ready quality at every step. No exceptions.**
+# 3. AFTER: Run gates then complete
+./scripts/run-quality-gates.sh --stage 9.7 1 2 3 4 5 6 7 8
+./scripts/complete-stage.sh --stage 9.7 --name "Feature Name"
+```
+
+### Gate Profiles
+
+| Profile | Gates | Use For |
+|---------|-------|---------|
+| `BACKEND_DOTNET` | 1-8 | .NET API/service stages |
+| `FRONTEND_TS` | 1-8, 14, 15 | TypeScript UI stages |
+| `MINIMAL` | 1-8 | POC, small fixes |
+
+### Parallel Stages (Worktrees)
+
+```bash
+./scripts/init-stage.sh --stage 9.7 --name "Feature" --profile BACKEND_DOTNET --worktree
+cd ../workflow-stage-9.7
+# When done: git checkout master && git merge stage-9.7
+```
+
+### Context Recovery
+
+```bash
+cat stage-proofs/stage-X/.stage-state.yaml  # Shows phase, progress
+./scripts/stage-status.sh --stage X          # Visual summary
+```
+
+### ❌ DO NOT (Causes Wrong File Locations)
+
+- ❌ Manually create `stage-proofs/` directories
+- ❌ Manually copy proof template
+- ❌ Run `run-quality-gates.sh` without `--stage` parameter
+- ❌ Manually update CHANGELOG.md
+- ❌ Manually create git tags
+
+**Use the scripts. Every time. No exceptions.**
 
 ---
 
@@ -96,25 +114,6 @@ workflow-operator/
 ```
 
 ---
-
-**📋 EXECUTION CHECKPOINT**
-
-**Before implementing this stage:**
-1. ✅ Open and review `STAGE_EXECUTION_FRAMEWORK.md`
-2. ✅ Read Stage 1 objectives and understand value to project
-3. ✅ Review success criteria (14 tests, ≥90% coverage, 17 deliverables)
-4. ✅ Get approval to proceed with Stage 1
-
-**After completing this stage:**
-1. ✅ Create `STAGE_1_PROOF.md` with all test results and coverage
-2. ✅ Verify all 14 tests passing, 0 failures
-3. ✅ Verify coverage ≥90%
-4. ✅ Commit with message: "✅ Stage 1 Complete: Foundation"
-5. ✅ Tag commit: `git tag -a stage-1-complete -m "Stage 1 complete"`
-6. ✅ Get sign-off before proceeding to Stage 2
-
----
-
 
 ## Completed Stages (1-7.9)
 
@@ -247,62 +246,13 @@ For proof of completion and actual results, see the respective `STAGE_X_PROOF.md
 
 ## GitLab CI Pipeline
 
-Create `.gitlab-ci.yml`:
-```yaml
-stages:
-  - test
-  - build
+See `.gitlab-ci.yml` for the complete pipeline configuration.
 
-variables:
-  MINIMUM_COVERAGE: "90"
-
-test:unit:
-  stage: test
-  image: mcr.microsoft.com/dotnet/sdk:8.0
-  script:
-    - dotnet restore
-    - dotnet test tests/WorkflowCore.Tests 
-        --configuration Release 
-        --logger "junit;LogFilePath=test-results.xml"
-        --collect:"XPlat Code Coverage"
-        --results-directory ./coverage
-    
-    - dotnet tool install --global dotnet-reportgenerator-globaltool
-    - export PATH="$PATH:$HOME/.dotnet/tools"
-    - reportgenerator 
-        -reports:./coverage/**/coverage.cobertura.xml 
-        -targetdir:./coverage/report 
-        -reporttypes:"Html;TextSummary;Cobertura"
-    
-    - |
-      COVERAGE=$(grep -oP 'Line coverage: \K[0-9.]+' ./coverage/report/Summary.txt)
-      echo "Coverage: $COVERAGE%"
-      if (( $(echo "$COVERAGE < $MINIMUM_COVERAGE" | bc -l) )); then
-        echo "ERROR: Coverage $COVERAGE% is below minimum $MINIMUM_COVERAGE%"
-        exit 1
-      fi
-  
-  coverage: '/Line coverage: \d+\.\d+%/'
-  artifacts:
-    reports:
-      junit: tests/WorkflowCore.Tests/test-results.xml
-      coverage_report:
-        coverage_format: cobertura
-        path: coverage/report/Cobertura.xml
-    paths:
-      - coverage/report/
-    expire_in: 30 days
-
-build:
-  stage: build
-  image: mcr.microsoft.com/dotnet/sdk:8.0
-  script:
-    - dotnet build --configuration Release
-  dependencies:
-    - test:unit
-  only:
-    - main
-```
+**Key features:**
+- Minimum 90% code coverage enforcement
+- JUnit test reporting
+- Cobertura coverage reporting
+- Build only runs after tests pass
 
 ---
 
@@ -360,313 +310,22 @@ reportgenerator -reports:coverage/**/coverage.cobertura.xml -targetdir:coverage/
 
 ## Performance Testing Setup
 
-Create `tests/WorkflowCore.PerformanceTests/WorkflowCore.PerformanceTests.csproj`:
-```xml
-<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
-  </PropertyGroup>
+See `tests/WorkflowCore.PerformanceTests/` for benchmark implementations.
 
-  <ItemGroup>
-    <PackageReference Include="BenchmarkDotNet" Version="0.13.11" />
-    <ProjectReference Include="..\..\src\WorkflowCore\WorkflowCore.csproj" />
-  </ItemGroup>
-</Project>
-```
-
-Create `tests/WorkflowCore.PerformanceTests/Benchmarks/SchemaValidationBenchmarks.cs`:
-```csharp
-using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Running;
-using WorkflowCore.Models;
-using WorkflowCore.Services;
-
-namespace WorkflowCore.PerformanceTests.Benchmarks;
-
-[MemoryDiagnoser]
-public class SchemaValidationBenchmarks
-{
-    private ISchemaValidator _validator = null!;
-    private SchemaDefinition _schema = null!;
-    private Dictionary<string, object> _validData = null!;
-
-    [GlobalSetup]
-    public void Setup()
-    {
-        var parser = new SchemaParser();
-        _validator = new SchemaValidator(parser);
-        
-        _schema = new SchemaDefinition
-        {
-            Type = "object",
-            Properties = new Dictionary<string, PropertyDefinition>
-            {
-                ["name"] = new PropertyDefinition { Type = "string" },
-                ["age"] = new PropertyDefinition { Type = "integer" }
-            }
-        };
-
-        _validData = new Dictionary<string, object>
-        {
-            ["name"] = "John",
-            ["age"] = 30
-        };
-    }
-
-    [Benchmark]
-    public async Task<ValidationResult> ValidateSchema()
-    {
-        return await _validator.ValidateAsync(_schema, _validData);
-    }
-}
-
-public class Program
-{
-    public static void Main(string[] args)
-    {
-        BenchmarkRunner.Run<SchemaValidationBenchmarks>();
-    }
-}
+**Running benchmarks:**
+```bash
+dotnet run -c Release --project tests/WorkflowCore.PerformanceTests
 ```
 
 ---
 
-## Next Steps
+## Active Roadmap
 
-### Week 1 (COMPLETE - Foundation & Validation):
-**Stage 1: Foundation**
-- ✅ Task 1.1: Project Setup
-- ✅ Task 1.2: Schema Models (SchemaDefinition, PropertyDefinition)
-- ✅ Task 1.3: CRD Models (WorkflowTaskResource)
-- ✅ Task 1.4: Schema Parser
-- ✅ Task 1.5: Type Compatibility Checker
-- ✅ Task 1.6: Workflow CRD Models
-- ✅ Task 1.7: Error Message Standards
-
-**Stage 2: Schema Validation**
-- ✅ Task 2.1: Schema Validator with ValidationResult
-
-### Week 2 (Template & Execution Graph):
-**Stage 3: Template Validation**
-- ✅ Task 3.1: Template Parser ({{input.x}}, {{tasks.y.output.z}})
-- ✅ Task 3.2: Workflow Validator (orchestrates all validations)
-
-**Stage 4: Execution Graph**
-- ✅ Task 4.1: Execution Graph Builder
-- ✅ Circular dependency detection
-- ✅ Topological sort for execution order
-
-### Week 3 (Workflow Execution Engine):
-**Stage 5: Workflow Execution (TDD)**
-1. HTTP Task Executor
-   - HTTP client with retries
-   - Template resolution at runtime
-   - Response parsing and validation
-2. Workflow Orchestrator
-   - Execute tasks in dependency order
-   - Handle parallel execution
-   - Collect and pass data between tasks
-3. Error handling and retry logic
-
-### Week 4 (Kubernetes Operator):
-**Stage 6: Kubernetes Operator with Validation Webhooks (TDD)**
-1. Custom Resource Controllers
-   - WorkflowTask controller
-   - Workflow controller
-   - Watch for CRD changes
-2. Validating Admission Webhooks
-   - Validate WorkflowTask on apply
-   - Validate Workflow on apply
-   - Reject invalid resources with helpful errors
-3. Schema Evolution Protection
-   - Detect breaking changes in task schemas
-   - Track dependent workflows
-   - Prevent breaking updates
-
-### Week 5 (API Gateway):
-**Stage 7: API Gateway (TDD)** ✅
-1. Workflow Execution API
-   - POST /api/v1/workflows/{name}/execute
-   - Input validation against workflow schema
-   - Synchronous execution with timeout
-2. Dry-Run & Testing API
-   - POST /api/v1/workflows/{name}/test (dry-run mode)
-   - Validation-only execution
-   - Return execution plan without side effects
-3. Workflow Management API
-   - GET /api/v1/workflows (list)
-   - GET /api/v1/workflows/{name} (get)
-   - GET /api/v1/tasks (list tasks)
-
-### Week 5.5 (Workflow Orchestration Enhancements):
-**Stage 7.5: Output Mapping & Parallel Execution (TDD)**
-1. Workflow Output Mapping
-   - Add Output property to WorkflowSpec model
-   - Implement output mapping in WorkflowOrchestrator (currently returns empty dictionary)
-   - Support nested output expressions (e.g., "{{tasks.fetch-user.output.data.email}}")
-   - Validate output mappings at workflow definition time
-   - Add comprehensive tests for output mapping edge cases
-2. Parallel Task Execution
-   - Analyze execution graph to identify independent tasks
-   - Execute independent tasks in parallel using Task.WhenAll()
-   - Maintain dependency ordering for dependent tasks
-   - Add configurable parallelism limits (max concurrent tasks)
-   - Measure and compare performance vs sequential execution
-3. Task Timeout Support
-   - Add Timeout property to WorkflowTaskSpec model
-   - Implement per-task timeout enforcement in WorkflowOrchestrator
-   - Handle timeout gracefully with clear error messages
-   - Add tests for timeout scenarios and cancellation
-
-### Week 5.75-6 (Database Integration & API Gateway Extensions):
-**Breaking down into 4 focused stages for better manageability**
-
-**Stage 7.75: PostgreSQL Integration (Foundation)**
-*Scope:* Database setup - foundation for future features
-*Deliverables:* 5
-*Tests:* ~20-25 tests
-*Value:* Persistent storage ready for execution history
-
-1. Database Schema Design
-   - ExecutionRecord table (id, workflow_name, status, started_at, completed_at, duration, input_snapshot)
-   - TaskExecutionRecord table (execution_id, task_id, task_ref, status, output, errors, duration, retry_count, started_at, completed_at)
-   - WorkflowVersion table (workflow_name, version_hash, created_at, definition_snapshot)
-2. DbContext with EF Core Migrations
-   - Configure entity relationships (ExecutionRecord → TaskExecutionRecords)
-   - Add indexes for performance (workflow_name, created_at, status)
-   - Create initial migration
-3. Repository Pattern
-   - IExecutionRepository interface (SaveExecution, GetExecution, ListExecutions)
-   - IWorkflowVersionRepository interface (SaveVersion, GetVersions)
-   - ExecutionRepository and WorkflowVersionRepository implementations
-4. TestContainers Integration Tests
-   - Real PostgreSQL integration tests
-   - Test CRUD operations on ExecutionRecord
-   - Test entity relationships and foreign keys
-5. DI Setup & Health Checks
-   - Connection string configuration (appsettings.json)
-   - Register DbContext in DI container
-   - Add database health check endpoint
-   - Configure connection pooling
-
-**Stage 7.8: Execution History & Task Details**
-*Scope:* Track and retrieve execution history with full task-level data
-*Deliverables:* 4
-*Tests:* ~20-25 tests
-*Dependencies:* Requires Stage 7.75 (PostgreSQL)
-*Value:* Full execution audit trail with task-level observability
-
-1. Generate Execution IDs & Save to Database
-   - Modify WorkflowExecutionService to generate Guid execution IDs
-   - Save ExecutionRecord at workflow start (status: Running)
-   - Update ExecutionRecord on completion (status: Succeeded/Failed, duration)
-   - Save TaskExecutionRecords as each task completes
-2. Expose Task-Level Details in API Response
-   - Modify WorkflowExecutionResponse to include execution ID
-   - Add TaskExecutionDetail list (task outputs, timing, retries, errors)
-   - Map from TaskExecutionResult to TaskExecutionDetail
-   - Include task start/end timestamps
-3. List Executions Endpoint
-   - GET /api/v1/workflows/{name}/executions
-   - Query parameters: status filter, pagination (skip, take), date range
-   - Return ExecutionSummary list (id, workflow_name, status, started_at, duration)
-   - Order by started_at descending (most recent first)
-4. Get Execution Details Endpoint
-   - GET /api/v1/executions/{id}
-   - Return DetailedWorkflowExecutionResponse with all task data
-   - Include workflow input snapshot, outputs, errors
-   - 404 if execution not found
-
-**Stage 7.85: Enhanced Dry-Run Visualization**
-*Scope:* Rich execution plan with parallel groups and template preview
-*Deliverables:* 3
-*Tests:* ~15-20 tests
-*Dependencies:* Stage 7.8 (for execution time estimates from history)
-*Value:* Visual workflow understanding before execution
-
-1. Parallel Group Detection
-   - Add GetParallelGroups() method to ExecutionGraph
-   - Implement parallel level detection algorithm (BFS-based)
-   - Return List<ParallelGroup> with level and task IDs
-   - Write tests for complex dependency scenarios
-2. Enhanced Execution Plan Model
-   - Create EnhancedExecutionPlan model
-   - Include graph visualization data (nodes: tasks, edges: dependencies)
-   - Add ParallelGroup list to show which tasks run concurrently
-   - Include execution order (topological sort)
-3. Template Resolution Preview & Time Estimation
-   - Add template resolution preview (resolve templates with input, no HTTP calls)
-   - Show resolved template values in execution plan
-   - Calculate estimated execution time from historical data (average task durations)
-   - Update POST /api/v1/workflows/{name}/test to return EnhancedExecutionPlan
-   - Validate all templates without side effects
-
-**Stage 7.9: Execution Trace & Workflow Versioning**
-*Scope:* Detailed execution traces and workflow change tracking
-*Deliverables:* 3
-*Tests:* ~15-20 tests
-*Dependencies:* Stages 7.75, 7.8
-*Value:* Deep debugging capability and change tracking
-
-1. Execution Trace Endpoint
-   - GET /api/v1/executions/{id}/trace
-   - Create ExecutionTraceResponse model
-   - Include detailed timing breakdown (per-task start, end, duration, wait time)
-   - Show dependency resolution order (which tasks blocked on which)
-   - Show parallel vs sequential execution (which tasks ran concurrently)
-   - Include template resolution log (before/after values)
-2. Simple Workflow Versioning (Hash-Based Change Detection)
-   - Calculate SHA256 hash of workflow definition (YAML string)
-   - Save WorkflowVersion record when workflow changes detected
-   - Store definition snapshot for comparison
-   - Track created_at timestamp for version history
-3. Workflow Versions Endpoint
-   - GET /api/v1/workflows/{name}/versions
-   - Return list of versions (version_hash, created_at, definition_snapshot)
-   - Order by created_at descending
-   - Simple version comparison (hash match = no changes)
-
-**Note:** Execution resume (POST /api/v1/executions/{id}/resume) deferred - requires complex orchestrator state management and doesn't align with synchronous execution model
+> **Completed stages (1-7.9):** See "Completed Stages" section above for summaries, and `COMPLETED_STAGES_ARCHIVE.md` for detailed task specifications.
 
 ### Stage 8: Workflow State Persistence & Recovery ❌ SKIPPED
 
-**Status:** ❌ **SKIPPED** - Not applicable for synchronous workflows
-
-**Architectural Decision (2025-11-24):**
-Stage 8 features (pause/resume, state recovery, partial execution recovery) are designed for **asynchronous, long-running workflows** (think: AWS Step Functions, Temporal, Airflow), but this engine is explicitly **synchronous** with 30-second max execution time.
-
-**Why Stage 8 Doesn't Fit:**
-
-1. **Pause/Resume** - Impossible when user is waiting for HTTP response (30s timeout)
-   - User makes synchronous API call and waits for response
-   - There's no "pause" in a sync API - you either respond or timeout
-   - This feature requires async execution model
-
-2. **State Recovery** - User already received error/timeout, they just retry the request
-   - If process crashes, user's HTTP request fails with error
-   - User retries the entire workflow with a new execution ID
-   - No need for complex state recovery - just re-execute from scratch
-
-3. **Partial Execution Recovery** - Each execution is independent; no "resume" makes sense
-   - Synchronous workflows are short-lived (seconds to minutes)
-   - Full retry is faster and simpler than partial recovery
-   - State migration complexity not justified for 30-second workflows
-
-4. **Audit Log** - Already implemented in Stage 7.9 (WorkflowVersioningService)
-   - SHA256 hash-based workflow versioning ✅
-   - Version history with timestamps ✅
-   - Definition snapshots for comparison ✅
-
-**What's Already Built (Stages 7.8-7.9):**
-- ✅ Execution History (Stage 7.8) - Every execution saved to PostgreSQL
-- ✅ Execution Traces (Stage 7.9) - Detailed timing breakdown and dependency analysis
-- ✅ Workflow Versioning (Stage 7.9) - SHA256 change tracking with version history
-- ✅ Retry Logic (Stage 5) - Exponential backoff with configurable policies
-- ✅ Timeouts (Stage 7.5) - Per-task timeout enforcement
-- ✅ Input Validation (Stage 7) - Schema validation at API gateway
-
-**Conclusion:** All valuable Stage 8 features already delivered in previous stages. Proceed directly to Stage 9 (UI) or Stage 10 (Performance).
+**Architectural Decision:** Stage 8 (pause/resume, state recovery) is designed for async workflows but this engine is synchronous with 30s max execution. All valuable features already delivered in Stages 7.8-7.9 (execution history, traces, versioning, retry logic, timeouts).
 
 ---
 
@@ -836,10 +495,33 @@ Stage 8 features (pause/resume, state recovery, partial execution recovery) are 
    - Concurrent workflow executions
    - Stress test admission webhooks
    - Database performance under load
-3. Observability
+3. Observability & Real-Time Monitoring Dashboard
    - New Relic integration
    - Distributed tracing
    - Custom metrics and dashboards
+   - **System Health Dashboard (UI)**:
+     - Platform-wide orchestration overhead (average across all workflows)
+     - Execution volume / throughput (requests/sec, trends over time)
+     - Error rates by workflow (success/failure breakdown)
+     - P50/P95/P99 latency percentiles
+     - "Health score" for the platform (composite metric)
+   - **Per-Workflow Metrics**:
+     - Average execution time and trends
+     - Orchestration overhead percentage
+     - Task-level bottleneck identification
+     - Comparison against historical baseline
+   - **Worst Performers Panel**:
+     - Top 10 slowest workflows (by avg execution time)
+     - Top 10 highest overhead workflows (by orchestration %)
+     - Workflows with degrading performance (trend detection)
+   - **Alerting & Thresholds**:
+     - Configurable alerts (overhead > X%, error rate > Y%)
+     - Slack/webhook notifications
+     - Anomaly detection (sudden performance degradation)
+   - **Historical Analysis**:
+     - Time-range selector (1h, 24h, 7d, 30d)
+     - Before/after comparison for deployments
+     - Export metrics as CSV/JSON
 
 ### Week 11-12 (Cloud Deployment & E2E):
 **Stage 11: Cloud Deployment & Production Hardening (TDD)**
@@ -927,6 +609,165 @@ Stage 8 features (pause/resume, state recovery, partial execution recovery) are 
 - Support 100+ concurrent workflow visualizations
 - Sub-100ms latency for event → visualization
 - Efficient WebGL rendering (no DOM manipulation)
+
+### Week 14+ (AI-Powered Creation):
+**Stage 13: AI-Powered Workflow Generation (TDD)**
+*Scope:* Natural language workflow creation via MCP server
+*Deliverables:* 5
+*Tests:* ~35-40 tests
+*Dependencies:* Stages 9.1 (Visual Builder), 9.2 (Templates)
+*Value:* "Describe what you want, get a working workflow" - the ultimate DX
+
+*Philosophy:* Users shouldn't need to know YAML syntax, task schemas, or template expressions. They describe their intent; the system figures out the rest.
+
+1. **Task Discovery MCP Tool**
+   - `list_tasks(category?, capability?, search?)` → task metadata + schemas
+   - `get_task_schema(task_name)` → full input/output schema with examples
+   - `search_tasks(natural_language_query)` → semantic search over task descriptions
+   - Rich task metadata: descriptions, examples, tags, capabilities
+   - Tests for search relevance and schema accuracy
+
+2. **Workflow Generation MCP Tool**
+   - `generate_workflow(intent, constraints?)` → YAML workflow definition
+   - Intent parsing: extract tasks, dependencies, data flow from natural language
+   - Auto-insert transform tasks to bridge schema mismatches
+   - Handle parallel vs sequential based on dependency analysis
+   - Configurable constraints: max tasks, allowed categories, timeout limits
+   - Tests for common patterns (fan-out, pipeline, aggregation)
+
+3. **Validation & Refinement Loop**
+   - `validate_workflow(yaml)` → errors with suggested fixes
+   - `refine_workflow(yaml, feedback)` → improved YAML based on user feedback
+   - Schema compatibility checking with clear error messages
+   - Template expression validation
+   - Circular dependency detection
+   - Tests for error recovery and refinement scenarios
+
+4. **Workflow Execution MCP Tools**
+   - `dry_run_workflow(yaml, sample_input)` → execution plan preview
+   - `execute_workflow(name, input)` → run and return results
+   - `get_execution_status(execution_id)` → real-time status
+   - Integration with existing WorkflowGateway APIs
+   - Tests for execution lifecycle
+
+5. **Claude Desktop / MCP Integration**
+   - MCP server implementation (TypeScript or C#)
+   - Claude Desktop configuration examples
+   - Interactive workflow building sessions
+   - Conversational refinement ("make it faster", "add error handling")
+   - Documentation and setup guide
+
+**Example Interaction:**
+```
+User: "When a new order comes in, fetch the customer details,
+       check their credit limit, and if approved, send a
+       confirmation email and update inventory"
+
+AI: I'll create a workflow with these tasks:
+    1. fetch-customer (from order.customer_id)
+    2. check-credit-limit (parallel with inventory check)
+    3. check-inventory (parallel with credit check)
+    4. send-confirmation-email (depends on both checks passing)
+    5. update-inventory (depends on confirmation)
+
+    [Shows generated YAML]
+
+    Want me to deploy this or make changes first?
+```
+
+**TDD Targets:**
+- 35+ tests across MCP tools
+- Integration tests with real Claude API (mocked)
+- E2E test: natural language → deployed workflow
+- Maintain ≥90% coverage
+
+**Success Metrics:**
+- Intent-to-workflow accuracy: >85% on common patterns
+- Generation time: <5 seconds for typical workflows
+- User satisfaction: 90%+ approve generated workflow on first try
+- Adoption: 30% of new workflows created via AI after launch
+
+**Value:** **Zero-to-workflow in 30 seconds** - just describe what you want!
+
+### Week 15+ (Intelligent Optimization):
+**Stage 14: Workflow Optimization Engine (TDD)**
+*Scope:* Automated workflow analysis and optimization with correctness verification
+*Deliverables:* 5
+*Tests:* ~40-45 tests
+*Dependencies:* Stages 7.8 (Execution History), 7.9 (Traces), 9.6.1 (Transform DSL)
+*Value:* "Your workflows, but faster" - automatic performance tuning with safety guarantees
+
+*Philosophy:* Use execution history as a regression test suite. Propose optimizations, replay past executions, verify outputs match. No guessing - only provably-safe changes.
+
+*Trigger Mode:* Smart hybrid scheduling - automatic prioritization (slowest workflows first, cooldown periods, execution frequency) plus on-demand user trigger.
+
+1. **Static Workflow Analyzer**
+   - Parse workflow and build optimization graph
+   - Detect optimization candidates:
+     - Filter-before-map reordering (reduce data volume early)
+     - Redundant transform elimination (select ignoring mapped fields)
+     - Dead task detection (outputs never used downstream)
+     - Parallel promotion (sequential tasks with no real dependency)
+     - Transform fusion (multiple maps → single map)
+   - Calculate theoretical performance impact
+   - Tests for each optimization pattern detection
+
+2. **Transform Equivalence Checker**
+   - Algebraic rules for transform operations:
+     - `filter(A) → filter(B)` = `filter(A && B)` (filter fusion)
+     - `map(f) → map(g)` = `map(g ∘ f)` (map composition)
+     - `filter → map` vs `map → filter` (commutativity check)
+     - `limit(N) → filter` vs `filter → limit(N)` (may differ!)
+   - Identify safe vs unsafe reorderings
+   - Generate equivalence proofs for audit trail
+   - Tests for algebraic properties
+
+3. **Historical Replay Engine**
+   - Fetch past N executions for a workflow
+   - Execute both original and optimized versions
+   - Deep comparison of outputs (structural equality)
+   - Handle non-deterministic tasks (timestamps, random IDs)
+   - Report: match rate, timing delta, confidence score
+   - Tests for replay accuracy and edge cases
+
+4. **Optimization Suggestions API**
+   - `GET /api/v1/workflows/{name}/optimizations`
+   - Returns list of suggested optimizations with confidence scores
+   - `POST /api/v1/workflows/{name}/optimizations/{id}/apply` - apply suggestion
+   - `POST /api/v1/workflows/{name}/optimizations/{id}/test` - run more replays
+   - Tests for API contracts and edge cases
+
+5. **Optimization Dashboard (UI)**
+   - Visual diff: original vs optimized workflow graph
+   - Performance comparison chart (before/after timing)
+   - Confidence indicator based on replay results
+   - One-click apply with rollback option
+   - History of applied optimizations
+   - Tests for UI components
+
+**Optimization Types:**
+
+| Type | Detection | Validation | Risk |
+|------|-----------|------------|------|
+| Filter-first | Static | Replay | Low |
+| Dead task removal | Static | Replay | Low |
+| Transform fusion | Algebraic | Replay | Low |
+| Parallel promotion | Dependency analysis | Replay | Medium |
+| Task reordering | Dependency analysis | Replay | Medium |
+
+**TDD Targets:**
+- 40+ tests across analyzer, replay engine, and API
+- Property-based tests for algebraic equivalence
+- Integration tests with real execution history
+- Maintain ≥90% coverage
+
+**Success Metrics:**
+- Optimization detection rate: Find opportunities in 60%+ of workflows
+- Correctness: 0 false positives (never suggest breaking change)
+- Average speedup: 1.5x+ for workflows with optimizations
+- Adoption: 40% of suggestions applied within 7 days
+
+**Value:** **Automatic performance tuning with zero risk** - every suggestion is proven safe!
 
 ---
 

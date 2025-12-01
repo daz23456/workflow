@@ -89,10 +89,10 @@ public class KubernetesWorkflowClient : IKubernetesWorkflowClient
     {
         var tasks = new List<WorkflowTaskResource>();
 
+        // Use default options which properly respect [JsonPolymorphic] attributes
         var options = new JsonSerializerOptions
         {
-            PropertyNameCaseInsensitive = true,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            PropertyNameCaseInsensitive = true
         };
 
         var json = JsonSerializer.Serialize(response);
@@ -103,11 +103,22 @@ public class KubernetesWorkflowClient : IKubernetesWorkflowClient
         {
             foreach (var item in itemsElement.EnumerateArray())
             {
-                var taskJson = item.GetRawText();
-                var task = JsonSerializer.Deserialize<WorkflowTaskResource>(taskJson, options);
-                if (task != null)
+                var taskName = item.TryGetProperty("metadata", out var meta) && meta.TryGetProperty("name", out var name)
+                    ? name.GetString()
+                    : "unknown";
+                try
                 {
-                    tasks.Add(task);
+                    var taskJson = item.GetRawText();
+                    var task = JsonSerializer.Deserialize<WorkflowTaskResource>(taskJson, options);
+                    if (task != null)
+                    {
+                        tasks.Add(task);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Log but continue - one bad task shouldn't break all discovery
+                    Console.WriteLine($"Warning: Failed to deserialize task '{taskName}' ({ex.GetType().Name}): {ex.Message}");
                 }
             }
         }

@@ -61,9 +61,24 @@ vi.mock('./tour-definitions', () => ({
   ]),
 }));
 
-// Mock the Tour component to avoid rendering complexities
+// Capture Tour props to test callbacks
+let capturedTourProps: {
+  onNext?: () => void;
+  onPrevious?: () => void;
+  onSkip?: () => void;
+  onComplete?: () => void;
+} | null = null;
+
 vi.mock('./tour', () => ({
-  Tour: () => null,
+  Tour: (props: {
+    onNext?: () => void;
+    onPrevious?: () => void;
+    onSkip?: () => void;
+    onComplete?: () => void;
+  }) => {
+    capturedTourProps = props;
+    return null;
+  },
 }));
 
 describe('TourProvider', () => {
@@ -76,6 +91,7 @@ describe('TourProvider', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    capturedTourProps = null;
     (useLearningStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue(mockLearningStore);
     document.body.innerHTML = '<div data-tour="test-target"></div><div data-tour="auto-target"></div>';
   });
@@ -290,6 +306,130 @@ describe('TourProvider', () => {
       await waitFor(() => {
         expect(result.current.currentTourId).toBe('auto-start-tour');
       });
+    });
+  });
+
+  describe('Tour Callbacks', () => {
+    it('should call completeTour and stop tour when onComplete is called', async () => {
+      const { result } = renderHook(() => useTour(), {
+        wrapper: ({ children }) => <TourProvider>{children}</TourProvider>,
+      });
+
+      // Start a tour
+      act(() => {
+        result.current.startTour('test-tour');
+      });
+
+      await waitFor(() => {
+        expect(result.current.isRunning).toBe(true);
+        expect(capturedTourProps).not.toBeNull();
+      });
+
+      // Call onComplete callback
+      act(() => {
+        capturedTourProps?.onComplete?.();
+      });
+
+      // Tour should be stopped and completeTour should be called
+      expect(result.current.isRunning).toBe(false);
+      expect(result.current.currentTourId).toBeNull();
+      expect(mockLearningStore.completeTour).toHaveBeenCalledWith('test-tour');
+    });
+
+    it('should stop tour when onSkip is called for non-autoStart tour', async () => {
+      const { result } = renderHook(() => useTour(), {
+        wrapper: ({ children }) => <TourProvider>{children}</TourProvider>,
+      });
+
+      // Start a non-autoStart tour
+      act(() => {
+        result.current.startTour('test-tour');
+      });
+
+      await waitFor(() => {
+        expect(result.current.isRunning).toBe(true);
+        expect(capturedTourProps).not.toBeNull();
+      });
+
+      // Call onSkip callback
+      act(() => {
+        capturedTourProps?.onSkip?.();
+      });
+
+      // Tour should be stopped but dismissTour should NOT be called
+      expect(result.current.isRunning).toBe(false);
+      expect(result.current.currentTourId).toBeNull();
+      expect(mockLearningStore.dismissTour).not.toHaveBeenCalled();
+    });
+
+    it('should call dismissTour when onSkip is called for autoStart tour', async () => {
+      const { result } = renderHook(() => useTour(), {
+        wrapper: ({ children }) => <TourProvider>{children}</TourProvider>,
+      });
+
+      // Start an autoStart tour
+      act(() => {
+        result.current.startTour('auto-start-tour');
+      });
+
+      await waitFor(() => {
+        expect(result.current.isRunning).toBe(true);
+        expect(capturedTourProps).not.toBeNull();
+      });
+
+      // Call onSkip callback
+      act(() => {
+        capturedTourProps?.onSkip?.();
+      });
+
+      // Tour should be stopped and dismissTour should be called
+      expect(result.current.isRunning).toBe(false);
+      expect(result.current.currentTourId).toBeNull();
+      expect(mockLearningStore.dismissTour).toHaveBeenCalled();
+    });
+
+    it('should handle onNext callback to advance step', async () => {
+      const { result } = renderHook(() => useTour(), {
+        wrapper: ({ children }) => <TourProvider>{children}</TourProvider>,
+      });
+
+      act(() => {
+        result.current.startTour('test-tour');
+      });
+
+      await waitFor(() => {
+        expect(capturedTourProps).not.toBeNull();
+      });
+
+      // Call onNext - should not error even if only one step
+      act(() => {
+        capturedTourProps?.onNext?.();
+      });
+
+      // Tour should still be running
+      expect(result.current.isRunning).toBe(true);
+    });
+
+    it('should handle onPrevious callback', async () => {
+      const { result } = renderHook(() => useTour(), {
+        wrapper: ({ children }) => <TourProvider>{children}</TourProvider>,
+      });
+
+      act(() => {
+        result.current.startTour('test-tour');
+      });
+
+      await waitFor(() => {
+        expect(capturedTourProps).not.toBeNull();
+      });
+
+      // Call onPrevious - should not error even if at first step
+      act(() => {
+        capturedTourProps?.onPrevious?.();
+      });
+
+      // Tour should still be running
+      expect(result.current.isRunning).toBe(true);
     });
   });
 });

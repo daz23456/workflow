@@ -20,12 +20,12 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       executionId: backendResponse.executionId,
       workflowName: backendResponse.workflowName,
       success: backendResponse.status === 'Succeeded',
-      input: backendResponse.inputSnapshot,
-      output: backendResponse.outputSnapshot || {},
-      tasks: (backendResponse.taskExecutions || []).map((task): TaskExecutionDetail => ({
+      input: backendResponse.input || backendResponse.inputSnapshot,
+      output: backendResponse.output || backendResponse.outputSnapshot || {},
+      tasks: (backendResponse.tasks || []).map((task): TaskExecutionDetail => ({
         taskId: task.taskId,
         taskRef: task.taskRef,
-        status: task.status === 'Succeeded' ? 'success' : task.status === 'Failed' ? 'failed' : 'pending',
+        status: task.success ? 'success' : 'failed',
         startedAt: task.startedAt,
         completedAt: task.completedAt,
         durationMs: task.durationMs || 0,

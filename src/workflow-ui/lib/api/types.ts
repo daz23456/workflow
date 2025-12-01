@@ -308,7 +308,7 @@ export interface ExecutionListResponse {
 export interface DetailedTaskExecution {
   taskId: string;
   taskRef: string;
-  status: string;
+  success: boolean;
   output?: Record<string, any>;
   errors: string[];
   durationMs: number;
@@ -326,9 +326,11 @@ export interface DetailedWorkflowExecutionResponse {
   durationMs?: number;
   /** Time taken to build the execution graph in microseconds. Typically under 1000μs (1ms) */
   graphBuildDurationMicros?: number;
-  inputSnapshot: Record<string, any>;
+  input?: Record<string, any>;
+  inputSnapshot?: Record<string, any>;
+  output?: Record<string, any>;
   outputSnapshot?: Record<string, any>;
-  taskExecutions: DetailedTaskExecution[];
+  tasks: DetailedTaskExecution[];
   errors?: string[];
 }
 

@@ -31,11 +31,11 @@ describe('GET /api/executions/[id]', () => {
       durationMs: 5250,
       inputSnapshot: { userId: '42' },
       outputSnapshot: { email: 'test@example.com', name: 'John Doe' },
-      taskExecutions: [
+      tasks: [
         {
           taskId: 'task1',
           taskRef: 'fetch-user',
-          status: 'Succeeded',
+          success: true,
           output: { id: '42', email: 'test@example.com', name: 'John Doe' },
           errors: [],
           durationMs: 150,
@@ -46,7 +46,7 @@ describe('GET /api/executions/[id]', () => {
         {
           taskId: 'task2',
           taskRef: 'fetch-posts',
-          status: 'Succeeded',
+          success: true,
           output: { posts: [{ id: 1, title: 'Test Post' }] },
           errors: [],
           durationMs: 200,
@@ -138,7 +138,7 @@ describe('GET /api/executions/[id]', () => {
         result: 15,
         processedCount: 5,
       },
-      taskExecutions: [],
+      tasks: [],
     };
 
     vi.mocked(getExecutionDetail).mockResolvedValue(mockBackendResponse);
@@ -168,11 +168,11 @@ describe('GET /api/executions/[id]', () => {
       inputSnapshot: { test: 'data' },
       outputSnapshot: undefined,
       errors: ['Task task2 failed after retries'],
-      taskExecutions: [
+      tasks: [
         {
           taskId: 'task1',
           taskRef: 'reliable-task',
-          status: 'Succeeded',
+          success: true,
           output: { success: true },
           errors: [],
           durationMs: 100,
@@ -183,7 +183,7 @@ describe('GET /api/executions/[id]', () => {
         {
           taskId: 'task2',
           taskRef: 'flaky-task',
-          status: 'Failed',
+          success: false,
           output: undefined,
           errors: [
             'Connection timeout',
@@ -230,11 +230,11 @@ describe('GET /api/executions/[id]', () => {
       durationMs: undefined,
       inputSnapshot: { data: 'test' },
       outputSnapshot: undefined,
-      taskExecutions: [
+      tasks: [
         {
           taskId: 'task1',
           taskRef: 'step1',
-          status: 'Succeeded',
+          success: true,
           output: { done: true },
           errors: [],
           durationMs: 500,

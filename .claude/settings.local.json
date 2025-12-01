@@ -23,7 +23,8 @@
       "Bash(BASE_URL=http://localhost:5001 k6 run:*)",
       "Bash(kubectl apply:*)",
       "Bash(pnpm exec vitest run:*)",
-      "Bash(git log:*)"
+      "Bash(git log:*)",
+      "Bash(/Users/darren/dev/workflow/scripts/complete-stage.sh:*)"
     ],
     "deny": [],
     "ask": []

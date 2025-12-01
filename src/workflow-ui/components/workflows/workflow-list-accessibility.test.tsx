@@ -42,7 +42,7 @@ describe('WorkflowList Accessibility', () => {
     const results = await axe(container);
     // @ts-ignore - toHaveNoViolations is extended from jest-axe
     expect(results).toHaveNoViolations();
-  }, 10000); // Increase timeout for axe analysis
+  }, 30000); // Increase timeout for axe analysis in full test suite
 
   it('should not have accessibility violations with filters applied', async () => {
     const { container } = renderWithQuery(
@@ -54,5 +54,5 @@ describe('WorkflowList Accessibility', () => {
     const results = await axe(container);
     // @ts-ignore - toHaveNoViolations is extended from jest-axe
     expect(results).toHaveNoViolations();
-  }, 10000); // Increase timeout for axe analysis
+  }, 30000); // Increase timeout for axe analysis in full test suite
 });

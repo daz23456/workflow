@@ -65,10 +65,9 @@ test.describe('Debug Page', () => {
           tasks: [
             {
               taskId: 'task-1',
-              taskName: 'fetch-user',
-              status: 'Succeeded',
+              taskRef: 'fetch-user',
+              status: 'success',
               output: { name: 'John', email: 'john@example.com' },
-              input: { userId: 123 },
               durationMs: 500,
               startedAt: '2025-01-01T10:00:00.100Z',
               completedAt: '2025-01-01T10:00:00.600Z',
@@ -76,16 +75,44 @@ test.describe('Debug Page', () => {
             },
             {
               taskId: 'task-2',
-              taskName: 'send-email',
-              status: 'Succeeded',
+              taskRef: 'send-email',
+              status: 'success',
               output: { sent: true },
-              input: { email: 'john@example.com' },
               durationMs: 1300,
               startedAt: '2025-01-01T10:00:00.700Z',
               completedAt: '2025-01-01T10:00:02Z',
               retryCount: 0,
             },
           ],
+        }),
+      });
+    });
+
+    // Mock workflow detail for graph structure
+    await page.route('**/api/workflows/test-workflow', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          name: 'test-workflow',
+          namespace: 'default',
+          description: 'Test workflow',
+          inputSchema: { type: 'object', properties: { userId: { type: 'number' } } },
+          outputSchema: { type: 'object' },
+          tasks: [
+            { id: 'task-1', taskRef: 'fetch-user', dependsOn: [] },
+            { id: 'task-2', taskRef: 'send-email', dependsOn: ['task-1'] },
+          ],
+          graph: {
+            nodes: [
+              { id: 'task-1', type: 'task', data: { label: 'Fetch User', taskRef: 'fetch-user' }, position: { x: 100, y: 100 } },
+              { id: 'task-2', type: 'task', data: { label: 'Send Email', taskRef: 'send-email' }, position: { x: 100, y: 200 } },
+            ],
+            edges: [
+              { id: 'edge-1', source: 'task-1', target: 'task-2' },
+            ],
+            parallelGroups: [],
+          },
         }),
       });
     });
@@ -118,17 +145,61 @@ test.describe('Debug Page', () => {
     await expect(page.getByRole('region', { name: /workflow graph/i })).toBeVisible();
   });
 
-  test('Test 3: Click task in graph shows inspector', async ({ page }) => {
+  test('Test 3: Click task node in graph shows task details panel', async ({ page }) => {
     await page.goto(`/executions/${mockExecutionId}/debug`);
 
-    // Wait for page to load
-    await expect(page.getByRole('region', { name: /workflow graph/i })).toBeVisible();
+    // Wait for the workflow graph to render
+    await expect(page.locator('[data-testid="rf__wrapper"]')).toBeVisible();
 
-    // Switch to Inspect tab
-    await page.getByRole('button', { name: /inspect/i }).click();
+    // Initially should show "Click a task node to view details"
+    await expect(page.getByText(/click a task node to view details/i)).toBeVisible();
 
-    // Initially shows message to click a task
-    await expect(page.getByText(/click on a task in the graph/i)).toBeVisible();
+    // Click on the fetch-user task node in the graph
+    // ReactFlow nodes can be clicked by their label text
+    const fetchUserNode = page.locator('[data-testid="rf__wrapper"]').getByText('Fetch User');
+    await fetchUserNode.click();
+
+    // Task details panel should now show task information
+    await expect(page.getByText('Task Details')).toBeVisible();
+
+    // Should show the task name
+    await expect(page.getByText('fetch-user')).toBeVisible();
+
+    // Should show task status (completed/success)
+    await expect(page.getByText(/completed|success/i)).toBeVisible();
+  });
+
+  test('Test 3b: Click different task nodes updates details panel', async ({ page }) => {
+    await page.goto(`/executions/${mockExecutionId}/debug`);
+
+    // Wait for the workflow graph to render
+    await expect(page.locator('[data-testid="rf__wrapper"]')).toBeVisible();
+
+    // Click on first task
+    await page.locator('[data-testid="rf__wrapper"]').getByText('Fetch User').click();
+    await expect(page.getByText('fetch-user')).toBeVisible();
+
+    // Click on second task
+    await page.locator('[data-testid="rf__wrapper"]').getByText('Send Email').click();
+
+    // Should now show send-email task details
+    await expect(page.getByText('send-email')).toBeVisible();
+  });
+
+  test('Test 3c: Task details shows output data when available', async ({ page }) => {
+    await page.goto(`/executions/${mockExecutionId}/debug`);
+
+    // Wait for the workflow graph to render
+    await expect(page.locator('[data-testid="rf__wrapper"]')).toBeVisible();
+
+    // Click on fetch-user task which has output data
+    await page.locator('[data-testid="rf__wrapper"]').getByText('Fetch User').click();
+
+    // Should show output section with data
+    await expect(page.getByText('Task Details')).toBeVisible();
+
+    // The output should contain the user data (name: John)
+    await expect(page.getByText(/john/i)).toBeVisible();
   });
 
   test('Test 4: Tab navigation between Timeline, Inspect, and Compare', async ({ page }) => {
@@ -203,10 +274,9 @@ test.describe('Debug Page', () => {
           tasks: [
             {
               taskId: 'task-1',
-              taskName: 'fetch-user',
-              status: 'Failed',
+              taskRef: 'fetch-user',
+              status: 'failed',
               error: 'Connection timeout',
-              input: { userId: 123 },
               durationMs: 1500,
               startedAt: '2025-01-01T10:00:00Z',
               completedAt: '2025-01-01T10:00:01.500Z',
@@ -221,6 +291,74 @@ test.describe('Debug Page', () => {
 
     // Should show Failed badge
     await expect(page.getByText('Failed')).toBeVisible();
+  });
+
+  test('Test 9: Task node click shows error details for failed task', async ({ page }) => {
+    // Override mock for failed execution with error info
+    await page.route(`**/api/executions/${mockExecutionId}`, async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          executionId: mockExecutionId,
+          workflowName: 'test-workflow',
+          success: false,
+          error: 'Task failed',
+          executionTimeMs: 1500,
+          startedAt: '2025-01-01T10:00:00Z',
+          completedAt: '2025-01-01T10:00:01.500Z',
+          input: { userId: 123 },
+          tasks: [
+            {
+              taskId: 'task-1',
+              taskRef: 'fetch-user',
+              status: 'failed',
+              error: 'Connection timeout after 30s',
+              durationMs: 30000,
+              startedAt: '2025-01-01T10:00:00Z',
+              completedAt: '2025-01-01T10:00:30Z',
+              retryCount: 3,
+            },
+          ],
+        }),
+      });
+    });
+
+    // Mock workflow detail for graph structure
+    await page.route('**/api/workflows/test-workflow', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          name: 'test-workflow',
+          namespace: 'default',
+          description: 'Test workflow',
+          inputSchema: {},
+          outputSchema: {},
+          tasks: [{ id: 'task-1', taskRef: 'fetch-user', dependsOn: [] }],
+          graph: {
+            nodes: [
+              { id: 'task-1', type: 'task', data: { label: 'Fetch User', taskRef: 'fetch-user' }, position: { x: 100, y: 100 } },
+            ],
+            edges: [],
+            parallelGroups: [],
+          },
+        }),
+      });
+    });
+
+    await page.goto(`/executions/${mockExecutionId}/debug`);
+
+    // Wait for the workflow graph to render
+    await expect(page.locator('[data-testid="rf__wrapper"]')).toBeVisible();
+
+    // Click on the failed task
+    await page.locator('[data-testid="rf__wrapper"]').getByText('Fetch User').click();
+
+    // Should show task details with error
+    await expect(page.getByText('Task Details')).toBeVisible();
+    await expect(page.getByText(/failed/i)).toBeVisible();
+    await expect(page.getByText(/connection timeout/i)).toBeVisible();
   });
 });
 

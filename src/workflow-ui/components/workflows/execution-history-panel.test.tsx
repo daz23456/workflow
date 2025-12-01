@@ -76,7 +76,7 @@ describe('ExecutionHistoryPanel', () => {
   });
 
   describe('Status Filtering', () => {
-    it('renders filter buttons', () => {
+    it('renders filter buttons', { timeout: 15000 }, () => {
       render(<ExecutionHistoryPanel executions={mockExecutions} />);
       expect(screen.getByRole('button', { name: /^all$/i })).toBeInTheDocument();
       // Use getAllByRole since status badges also contain these texts

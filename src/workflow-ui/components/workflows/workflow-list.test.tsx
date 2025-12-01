@@ -63,15 +63,18 @@ describe('WorkflowList', () => {
     it('hides loading skeletons after data loads', async () => {
       renderWithQuery(<WorkflowList />);
 
+      // First, wait for data to load (workflow cards should appear)
       await waitFor(() => {
-        // Skeletons (with role="status") should be hidden
-        // Note: Workflow count also has role="status" for screen readers, so count will be 1
-        const statusElements = screen.queryAllByRole('status');
-        const skeletons = statusElements.filter(
-          (el) => el.getAttribute('aria-label') === 'Loading workflow'
-        );
-        expect(skeletons.length).toBe(0);
+        const cards = screen.getAllByRole('article');
+        expect(cards.length).toBeGreaterThan(0);
       });
+
+      // Then verify skeletons are hidden
+      const statusElements = screen.queryAllByRole('status');
+      const skeletons = statusElements.filter(
+        (el) => el.getAttribute('aria-label') === 'Loading workflow'
+      );
+      expect(skeletons.length).toBe(0);
     });
   });
 

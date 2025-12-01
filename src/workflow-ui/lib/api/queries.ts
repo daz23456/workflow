@@ -235,6 +235,7 @@ export function useExecutionDetail(id: string, options?: { enabled?: boolean }) 
         tasks?: Array<{
           taskId: string;
           taskRef: string;
+          success?: boolean;
           status?: string;
           input?: unknown;
           output?: unknown;
@@ -248,6 +249,7 @@ export function useExecutionDetail(id: string, options?: { enabled?: boolean }) 
         taskExecutions?: Array<{
           taskId: string;
           taskRef: string;
+          success?: boolean;
           status?: string;
           input?: unknown;
           output?: unknown;
@@ -262,11 +264,6 @@ export function useExecutionDetail(id: string, options?: { enabled?: boolean }) 
         error?: string;
       }>(`${API_BASE_URL}/executions/${id}`);
 
-      // DEBUG LOG - REMOVE AFTER DEBUGGING
-      console.log('[DEBUG useExecutionDetail] Raw API response for', id, ':', data);
-      console.log('[DEBUG useExecutionDetail] data.tasks:', data.tasks);
-      console.log('[DEBUG useExecutionDetail] data.taskExecutions:', data.taskExecutions);
-
       // Determine success from status or success field
       const isSuccess =
         data.success !== undefined
@@ -277,13 +274,7 @@ export function useExecutionDetail(id: string, options?: { enabled?: boolean }) 
       const tasks = (data.tasks || data.taskExecutions || []).map((task) => ({
         taskId: task.taskId,
         taskRef: task.taskRef,
-        status: task.status?.toLowerCase() === 'succeeded' || task.status?.toLowerCase() === 'success'
-          ? 'success' as const
-          : task.status?.toLowerCase() === 'failed'
-          ? 'failed' as const
-          : task.status?.toLowerCase() === 'running'
-          ? 'running' as const
-          : 'pending' as const,
+        status: task.success ? 'success' as const : 'failed' as const,
         input: task.input,
         output: task.output,
         error: task.error || (task.errors && task.errors.length > 0 ? task.errors.join('; ') : undefined),

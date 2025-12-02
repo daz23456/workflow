@@ -26,9 +26,13 @@ describe('PreviewPanel', () => {
   });
 
   it('should show record count', () => {
-    useTransformBuilderStore.setState({ outputData: [{ a: 1 }, { b: 2 }, { c: 3 }] });
+    // inputData is used for "records loaded" message
+    useTransformBuilderStore.setState({
+      inputData: [{ a: 1 }, { b: 2 }, { c: 3 }],
+      outputData: [{ a: 1 }, { b: 2 }, { c: 3 }],
+    });
     render(<PreviewPanel />);
-    expect(screen.getByText(/3 records/i)).toBeInTheDocument();
+    expect(screen.getByText(/3 records loaded/i)).toBeInTheDocument();
   });
 
   it('should display JSON data', () => {
@@ -80,9 +84,9 @@ describe('PreviewPanel', () => {
   });
 
   it('should handle empty arrays gracefully', () => {
-    useTransformBuilderStore.setState({ outputData: [] });
+    useTransformBuilderStore.setState({ inputData: [], outputData: [] });
     render(<PreviewPanel />);
-    expect(screen.getByText(/0 records/i)).toBeInTheDocument();
+    expect(screen.getByText(/0 records loaded/i)).toBeInTheDocument();
   });
 
   it('should format nested objects', () => {

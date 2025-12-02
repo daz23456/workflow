@@ -1,5 +1,7 @@
 /**
  * Transform Builder Page
+ *
+ * Visual transform pipeline builder with drag-and-drop operation palette.
  */
 
 'use client';
@@ -10,6 +12,7 @@ import { ReactFlowProvider } from '@xyflow/react';
 import { JsonUploadPanel } from '@/components/transforms/json-upload-panel';
 import { PipelineBuilder } from '@/components/transforms/pipeline-builder';
 import { PreviewPanel } from '@/components/transforms/preview-panel';
+import { OperationPalette } from '@/components/transforms/operation-palette';
 import { useTransformBuilderStore } from '@/lib/stores/transform-builder-store';
 import { transformToWorkflowTask } from '@/lib/adapters/transform-yaml-adapter';
 
@@ -90,36 +93,56 @@ export default function TransformsPage() {
         </div>
 
         {/* Main Content */}
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          {/* Left Column: Upload + Pipeline Builder */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Upload Section */}
+        {!hasData ? (
+          // Upload Section (shown when no data)
+          <div className="max-w-2xl mx-auto">
             <section className="rounded-lg bg-white p-6 shadow">
               <h2 className="mb-4 text-lg font-semibold text-gray-900">1. Upload Sample JSON</h2>
               <JsonUploadPanel onUpload={handleUpload} />
             </section>
-
-            {/* Pipeline Builder Section */}
-            {hasData && (
-              <section className="rounded-lg bg-white p-6 shadow">
-                <h2 className="mb-4 text-lg font-semibold text-gray-900">2. Build Pipeline</h2>
-                <ReactFlowProvider>
-                  <PipelineBuilder />
-                </ReactFlowProvider>
-              </section>
-            )}
           </div>
-
-          {/* Right Column: Preview */}
-          {hasData && (
-            <div className="lg:col-span-1">
-              <section className="rounded-lg bg-white p-6 shadow sticky top-8">
-                <h2 className="mb-4 text-lg font-semibold text-gray-900">3. Preview</h2>
-                <PreviewPanel />
+        ) : (
+          // Main Builder (shown when data is loaded)
+          <div className="grid grid-cols-12 gap-4 h-[calc(100vh-200px)]">
+            {/* Left Column: Operation Palette */}
+            <div className="col-span-3 xl:col-span-2">
+              <section className="rounded-lg bg-white shadow h-full overflow-hidden">
+                <div className="px-4 py-3 border-b border-gray-200">
+                  <h2 className="text-sm font-semibold text-gray-900">Operations</h2>
+                </div>
+                <div className="h-[calc(100%-48px)]">
+                  <OperationPalette />
+                </div>
               </section>
             </div>
-          )}
-        </div>
+
+            {/* Center Column: Pipeline Canvas */}
+            <div className="col-span-5 xl:col-span-6">
+              <section className="rounded-lg bg-white shadow h-full overflow-hidden">
+                <div className="px-4 py-3 border-b border-gray-200">
+                  <h2 className="text-sm font-semibold text-gray-900">2. Build Pipeline</h2>
+                </div>
+                <div className="h-[calc(100%-48px)]">
+                  <ReactFlowProvider>
+                    <PipelineBuilder />
+                  </ReactFlowProvider>
+                </div>
+              </section>
+            </div>
+
+            {/* Right Column: Preview */}
+            <div className="col-span-4">
+              <section className="rounded-lg bg-white shadow h-full overflow-hidden">
+                <div className="px-4 py-3 border-b border-gray-200">
+                  <h2 className="text-sm font-semibold text-gray-900">Preview</h2>
+                </div>
+                <div className="h-[calc(100%-48px)] overflow-auto p-4">
+                  <PreviewPanel />
+                </div>
+              </section>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* YAML Export Dialog */}

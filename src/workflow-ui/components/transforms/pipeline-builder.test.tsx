@@ -6,7 +6,7 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { PipelineBuilder } from './pipeline-builder';
 import { useTransformBuilderStore } from '@/lib/stores/transform-builder-store';
@@ -326,67 +326,52 @@ describe('PipelineBuilder', () => {
     it('should accept dropped operations', async () => {
       render(<PipelineBuilder />);
 
-      const canvas = screen.getByTestId('react-flow');
+      // The drop zone is the wrapper div with aria-label
+      const dropZone = screen.getByLabelText('Transform pipeline canvas');
 
-      // Simulate drop event with operation data
+      // Simulate drop event with operation data using fireEvent
       const dropData = JSON.stringify({
         operationType: 'filter',
         label: 'Filter',
         description: 'Keep matching records',
       });
 
-      const dataTransfer = {
-        getData: vi.fn().mockReturnValue(dropData),
-      };
-
-      // Fire drag over to allow drop
-      await waitFor(() => {
-        canvas.dispatchEvent(
-          new DragEvent('dragover', {
-            bubbles: true,
-            cancelable: true,
-            dataTransfer: dataTransfer as unknown as DataTransfer,
-          })
-        );
-      });
+      // Fire drag over first
+      fireEvent.dragOver(dropZone);
 
       // Fire drop event
-      await waitFor(() => {
-        canvas.dispatchEvent(
-          new DragEvent('drop', {
-            bubbles: true,
-            cancelable: true,
-            dataTransfer: dataTransfer as unknown as DataTransfer,
-          })
-        );
+      fireEvent.drop(dropZone, {
+        dataTransfer: {
+          getData: () => dropData,
+        },
       });
 
       // Verify operation was added to store
-      const state = useTransformBuilderStore.getState();
-      expect(state.pipeline.length).toBeGreaterThanOrEqual(0); // Drop adds operation
+      await waitFor(() => {
+        const state = useTransformBuilderStore.getState();
+        expect(state.pipeline.length).toBe(1);
+        expect(state.pipeline[0].operation).toBe('filter');
+      });
     });
 
-    it('should show drop indicator on drag over', () => {
+    it('should show drop indicator on drag over', async () => {
       render(<PipelineBuilder />);
 
-      const canvas = screen.getByTestId('react-flow');
+      const dropZone = screen.getByLabelText('Transform pipeline canvas');
 
       // Fire drag over
-      canvas.dispatchEvent(
-        new DragEvent('dragover', {
-          bubbles: true,
-          cancelable: true,
-        })
-      );
+      fireEvent.dragOver(dropZone);
 
-      // Canvas should be visible (drop zone active)
-      expect(canvas).toBeInTheDocument();
+      // Canvas should have drag-over styling (async state update)
+      await waitFor(() => {
+        expect(dropZone).toHaveClass('ring-2');
+      });
     });
 
     it('should handle drop with select operation type', async () => {
       render(<PipelineBuilder />);
 
-      const canvas = screen.getByTestId('react-flow');
+      const dropZone = screen.getByLabelText('Transform pipeline canvas');
 
       const dropData = JSON.stringify({
         operationType: 'select',
@@ -394,48 +379,55 @@ describe('PipelineBuilder', () => {
         description: 'Extract fields',
       });
 
-      const dataTransfer = {
-        getData: vi.fn().mockReturnValue(dropData),
-      };
-
-      await waitFor(() => {
-        canvas.dispatchEvent(
-          new DragEvent('drop', {
-            bubbles: true,
-            cancelable: true,
-            dataTransfer: dataTransfer as unknown as DataTransfer,
-          })
-        );
+      fireEvent.drop(dropZone, {
+        dataTransfer: {
+          getData: () => dropData,
+        },
       });
 
-      // Component handles drop gracefully
-      expect(canvas).toBeInTheDocument();
+      // Verify select operation was added
+      await waitFor(() => {
+        const state = useTransformBuilderStore.getState();
+        expect(state.pipeline.length).toBe(1);
+        expect(state.pipeline[0].operation).toBe('select');
+      });
     });
 
     it('should ignore invalid drop data', async () => {
       render(<PipelineBuilder />);
 
-      const canvas = screen.getByTestId('react-flow');
+      const dropZone = screen.getByLabelText('Transform pipeline canvas');
       const initialState = useTransformBuilderStore.getState();
       const initialPipelineLength = initialState.pipeline.length;
 
-      const dataTransfer = {
-        getData: vi.fn().mockReturnValue('invalid json'),
-      };
-
-      await waitFor(() => {
-        canvas.dispatchEvent(
-          new DragEvent('drop', {
-            bubbles: true,
-            cancelable: true,
-            dataTransfer: dataTransfer as unknown as DataTransfer,
-          })
-        );
+      fireEvent.drop(dropZone, {
+        dataTransfer: {
+          getData: () => 'invalid json',
+        },
       });
 
-      // Pipeline should remain unchanged
-      const state = useTransformBuilderStore.getState();
-      expect(state.pipeline.length).toBe(initialPipelineLength);
+      // Wait a tick to ensure any state updates would have occurred
+      await waitFor(() => {
+        const state = useTransformBuilderStore.getState();
+        expect(state.pipeline.length).toBe(initialPipelineLength);
+      });
+    });
+
+    it('should remove drop indicator on drag leave', async () => {
+      render(<PipelineBuilder />);
+
+      const dropZone = screen.getByLabelText('Transform pipeline canvas');
+
+      // Fire drag over then leave
+      fireEvent.dragOver(dropZone);
+      await waitFor(() => {
+        expect(dropZone).toHaveClass('ring-2');
+      });
+
+      fireEvent.dragLeave(dropZone);
+      await waitFor(() => {
+        expect(dropZone).not.toHaveClass('ring-2');
+      });
     });
   });
 });

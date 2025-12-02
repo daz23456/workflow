@@ -9,10 +9,12 @@ import { AlertCircle, AlertTriangle, ChevronLeft, ChevronRight } from 'lucide-re
 import { useTransformBuilderStore } from '@/lib/stores/transform-builder-store';
 
 export function PreviewPanel() {
-  const { outputData, validation } = useTransformBuilderStore();
+  const { inputData, outputData, validation } = useTransformBuilderStore();
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(10);
 
+  // Use inputData for "records loaded" count, outputData for actual preview
+  const loadedCount = inputData.length;
   const totalRecords = outputData.length;
   const totalPages = Math.ceil(totalRecords / pageSize);
   const startIdx = page * pageSize;
@@ -24,9 +26,9 @@ export function PreviewPanel() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">Preview</h3>
+          <h3 className="text-lg font-semibold text-gray-900">3. Preview</h3>
           <p className="text-sm text-gray-600">
-            {totalRecords} record{totalRecords !== 1 ? 's' : ''}
+            {loadedCount} records loaded
           </p>
         </div>
 

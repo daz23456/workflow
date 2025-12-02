@@ -3,11 +3,12 @@
  *
  * React Flow-based visual transform pipeline builder.
  * Displays operations as sequential nodes with vertical layout.
+ * Supports drag-and-drop from operation palette.
  */
 
 'use client';
 
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState, type DragEvent } from 'react';
 import {
   ReactFlow,
   Background,
@@ -20,7 +21,9 @@ import {
   type NodeTypes,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
+import { cn } from '@/lib/utils';
 import { useTransformBuilderStore } from '@/lib/stores/transform-builder-store';
+import type { TransformOperation } from '@/lib/types/transform-dsl';
 
 /**
  * Custom node component for transform operations
@@ -55,12 +58,45 @@ const nodeTypes: NodeTypes = {
 };
 
 /**
+ * Create a default operation configuration based on type
+ */
+function createDefaultOperation(operationType: string): TransformOperation {
+  switch (operationType) {
+    case 'select':
+      return { operation: 'select', fields: {} };
+    case 'filter':
+      return { operation: 'filter', condition: { field: '', operator: 'eq', value: '' } };
+    case 'map':
+      return { operation: 'map', mappings: {} };
+    case 'flatMap':
+      return { operation: 'flatMap', path: '' };
+    case 'groupBy':
+      return { operation: 'groupBy', key: '', aggregations: {} };
+    case 'join':
+      return { operation: 'join', leftKey: '', rightKey: '', rightData: [], joinType: 'inner' };
+    case 'sortBy':
+      return { operation: 'sortBy', field: '', order: 'asc' };
+    case 'enrich':
+      return { operation: 'enrich', fields: {} };
+    case 'aggregate':
+      return { operation: 'aggregate', aggregations: {} };
+    case 'limit':
+      return { operation: 'limit', count: 10 };
+    case 'skip':
+      return { operation: 'skip', count: 0 };
+    default:
+      return { operation: operationType } as TransformOperation;
+  }
+}
+
+/**
  * Pipeline Builder Canvas
  */
 export function PipelineBuilder() {
   const { fitView } = useReactFlow();
-  const { pipeline, selection, deleteOperation, undo, redo, clearSelection } =
+  const { pipeline, selection, deleteOperation, undo, redo, clearSelection, addOperation } =
     useTransformBuilderStore();
+  const [isDragOver, setIsDragOver] = useState(false);
 
   // Convert pipeline operations to React Flow nodes
   const nodes = useMemo<Node[]>(() => {
@@ -130,8 +166,54 @@ export function PipelineBuilder() {
     clearSelection();
   }, [clearSelection]);
 
+  // Handle drag over for drop zone
+  const handleDragOver = useCallback((event: DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = 'move';
+    }
+    setIsDragOver(true);
+  }, []);
+
+  // Handle drag leave
+  const handleDragLeave = useCallback(() => {
+    setIsDragOver(false);
+  }, []);
+
+  // Handle drop from operation palette
+  const handleDrop = useCallback(
+    (event: DragEvent<HTMLDivElement>) => {
+      event.preventDefault();
+      setIsDragOver(false);
+
+      const data = event.dataTransfer.getData('application/reactflow');
+      if (!data) return;
+
+      try {
+        const { operationType } = JSON.parse(data);
+        if (!operationType) return;
+
+        // Create default operation and add to pipeline
+        const operation = createDefaultOperation(operationType);
+        addOperation(operation);
+      } catch {
+        // Invalid JSON, ignore the drop
+      }
+    },
+    [addOperation]
+  );
+
   return (
-    <div className="h-full w-full" aria-label="Transform pipeline canvas">
+    <div
+      className={cn(
+        'h-full w-full transition-colors',
+        isDragOver && 'bg-blue-50 ring-2 ring-blue-400 ring-inset'
+      )}
+      aria-label="Transform pipeline canvas"
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
       <ReactFlow
         nodes={nodes}
         edges={edges}

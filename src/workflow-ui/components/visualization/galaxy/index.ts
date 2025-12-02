@@ -11,3 +11,4 @@
 
 export { GalaxyScene, type GalaxySceneProps } from './galaxy-scene';
 export { NamespaceCluster, type NamespaceClusterProps } from './namespace-cluster';
+export { WorkflowPlanet, type WorkflowPlanetProps } from './workflow-planet';

@@ -44,16 +44,17 @@ describe('TransformsPage', () => {
     useTransformBuilderStore.getState().reset();
   });
 
-  it('should render all main sections', () => {
+  it('should render all main sections when data is loaded', () => {
     const store = useTransformBuilderStore.getState();
     store.setInputData([{ x: 1 }]);
 
     render(<TransformsPage />);
 
     expect(screen.getByRole('heading', { name: /data transform assistant/i })).toBeInTheDocument();
-    expect(screen.getByText(/1\. upload sample json/i)).toBeInTheDocument();
-    expect(screen.getByText(/2\. build pipeline/i)).toBeInTheDocument();
-    expect(screen.getByText(/3\. preview/i)).toBeInTheDocument();
+    // After data upload, shows 3-column builder layout
+    expect(screen.getByRole('heading', { name: /^operations$/i, level: 2 })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /2\. build pipeline/i, level: 2 })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /3\. preview/i, level: 3 })).toBeInTheDocument();
   });
 
   it('should show upload section initially', () => {

@@ -1,0 +1,2 @@
+./src/workflow-ui/node_modules/.ignored_date-fns/docs/logo.svg
+./src/workflow-ui/node_modules/date-fns-jalali/docs/logo.svg

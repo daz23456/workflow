@@ -56,9 +56,10 @@ describe('NamespaceCluster', () => {
   });
 
   describe('rendering', () => {
-    it('renders a sphere for the cluster', () => {
+    it('renders spheres for the cluster (main + glow core)', () => {
       render(<NamespaceCluster {...defaultProps} />);
-      expect(screen.getByTestId('sphere')).toBeInTheDocument();
+      const spheres = screen.getAllByTestId('sphere');
+      expect(spheres.length).toBeGreaterThanOrEqual(1);
     });
 
     it('renders the namespace name as a label', () => {
@@ -78,11 +79,12 @@ describe('NamespaceCluster', () => {
       const { rerender } = render(
         <NamespaceCluster {...defaultProps} workflowCount={1} />
       );
-      const sphere1 = screen.getByTestId('sphere');
+      // Get the first (main) sphere
+      const sphere1 = screen.getAllByTestId('sphere')[0];
       const radius1 = parseFloat(sphere1.getAttribute('data-radius') || '0');
 
       rerender(<NamespaceCluster {...defaultProps} workflowCount={10} />);
-      const sphere2 = screen.getByTestId('sphere');
+      const sphere2 = screen.getAllByTestId('sphere')[0];
       const radius2 = parseFloat(sphere2.getAttribute('data-radius') || '0');
 
       expect(radius2).toBeGreaterThan(radius1);
@@ -90,8 +92,8 @@ describe('NamespaceCluster', () => {
 
     it('has minimum size even with zero workflows', () => {
       render(<NamespaceCluster {...defaultProps} workflowCount={0} />);
-      const sphere = screen.getByTestId('sphere');
-      const radius = parseFloat(sphere.getAttribute('data-radius') || '0');
+      const spheres = screen.getAllByTestId('sphere');
+      const radius = parseFloat(spheres[0].getAttribute('data-radius') || '0');
       expect(radius).toBeGreaterThan(0);
     });
   });
@@ -100,16 +102,18 @@ describe('NamespaceCluster', () => {
     it('calls onClick when cluster is clicked', () => {
       const onClick = vi.fn();
       render(<NamespaceCluster {...defaultProps} onClick={onClick} />);
-      const sphere = screen.getByTestId('sphere');
-      sphere.click();
+      // Click the first (main) sphere with click handler
+      const spheres = screen.getAllByTestId('sphere');
+      spheres[0].click();
       expect(onClick).toHaveBeenCalledWith('ns-production');
     });
 
     it('shows hover state with onPointerOver', () => {
       const onHover = vi.fn();
       render(<NamespaceCluster {...defaultProps} onHover={onHover} />);
-      const sphere = screen.getByTestId('sphere');
-      sphere.dispatchEvent(new MouseEvent('pointerover', { bubbles: true }));
+      // Trigger pointer over on the main sphere
+      const spheres = screen.getAllByTestId('sphere');
+      spheres[0].dispatchEvent(new MouseEvent('pointerover', { bubbles: true }));
       expect(onHover).toHaveBeenCalledWith('ns-production', true);
     });
   });

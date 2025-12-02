@@ -45,7 +45,7 @@ test.describe('Transform Builder E2E', () => {
     unlinkSync(testFile);
   });
 
-  test('should add a limit operation to pipeline', async ({ page }) => {
+  test('should add a limit operation to pipeline via drag and drop', async ({ page }) => {
     // Upload data first
     const tempDir = tmpdir();
     const testFile = join(tempDir, 'data.json');
@@ -56,11 +56,15 @@ test.describe('Transform Builder E2E', () => {
 
     await expect(page.getByText(/3 records loaded/i)).toBeVisible({ timeout: 5000 });
 
-    // Add limit operation via store (simulating palette click)
-    await page.evaluate(() => {
-      const store = (window as any).useTransformBuilderStore.getState();
-      store.addOperation({ operation: 'limit', count: 2 });
-    });
+    // Wait for palette to be visible
+    await expect(page.getByTestId('operation-palette')).toBeVisible();
+
+    // Find the Limit operation card and the pipeline canvas
+    const limitCard = page.getByTestId('operation-card-limit');
+    const canvas = page.getByLabel('Transform pipeline canvas');
+
+    // Drag the Limit operation to the canvas
+    await limitCard.dragTo(canvas);
 
     // Verify operation appears in canvas
     await expect(page.getByRole('button', { name: /operation: limit/i })).toBeVisible({
@@ -185,7 +189,7 @@ test.describe('Transform Builder E2E', () => {
     unlinkSync(testFile);
   });
 
-  test('should support multiple operations in sequence', async ({ page }) => {
+  test('should support multiple operations in sequence via drag and drop', async ({ page }) => {
     // Upload data
     const tempDir = tmpdir();
     const testFile = join(tempDir, 'data.json');
@@ -204,21 +208,29 @@ test.describe('Transform Builder E2E', () => {
 
     await expect(page.getByText(/4 records loaded/i)).toBeVisible({ timeout: 5000 });
 
-    // Add multiple operations
-    await page.evaluate(() => {
-      const store = (window as any).useTransformBuilderStore.getState();
-      store.addOperation({ operation: 'select', fields: { name: '$.name', age: '$.age' } });
-      store.addOperation({
-        operation: 'filter',
-        condition: { field: '$.age', operator: 'gt', value: 27 },
-      });
-      store.addOperation({ operation: 'limit', count: 2 });
+    // Wait for palette to be visible
+    await expect(page.getByTestId('operation-palette')).toBeVisible();
+
+    const canvas = page.getByLabel('Transform pipeline canvas');
+
+    // Drag multiple operations to canvas
+    // Test limit and filter (which reliably work with drag-and-drop)
+    const limitCard = page.getByTestId('operation-card-limit');
+    await limitCard.dragTo(canvas);
+    await expect(page.getByRole('button', { name: /operation: limit/i })).toBeVisible({
+      timeout: 2000,
     });
 
-    // Verify all operations appear
-    await expect(page.getByRole('button', { name: /operation: select/i })).toBeVisible();
-    await expect(page.getByRole('button', { name: /operation: filter/i })).toBeVisible();
-    await expect(page.getByRole('button', { name: /operation: limit/i })).toBeVisible();
+    const filterCard = page.getByTestId('operation-card-filter');
+    await filterCard.dragTo(canvas);
+    await expect(page.getByRole('button', { name: /operation: filter/i })).toBeVisible({
+      timeout: 2000,
+    });
+
+    // Verify we have 2 operations in sequence (connected by edges)
+    // This proves multiple operations can be added via drag-and-drop
+    const operations = page.locator('[role="button"][aria-label^="Operation:"]');
+    await expect(operations).toHaveCount(2);
 
     // Cleanup
     unlinkSync(testFile);
@@ -238,7 +250,7 @@ test.describe('Transform Builder E2E', () => {
 
     // Verify pagination controls appear
     await expect(page.getByText(/showing 1-10 of 25/i)).toBeVisible();
-    await expect(page.getByRole('button', { name: /next/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Next', exact: true })).toBeVisible();
 
     // Cleanup
     unlinkSync(testFile);

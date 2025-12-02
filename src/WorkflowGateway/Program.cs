@@ -78,6 +78,7 @@ if (!string.IsNullOrEmpty(connectionString))
     builder.Services.AddScoped<IWorkflowVersioningService, WorkflowVersioningService>();
     builder.Services.AddScoped<IExecutionTraceService, ExecutionTraceService>();
     builder.Services.AddScoped<IStatisticsAggregationService, StatisticsAggregationService>();
+    builder.Services.AddScoped<IMetricsService, MetricsService>();
 
     // Add health checks
     builder.Services.AddHealthChecks()

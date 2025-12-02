@@ -20,6 +20,14 @@ public class TransformTaskExecutorPipelineTests
         _executor = new TransformTaskExecutor(_mockDataTransformer.Object, _transformExecutor);
     }
 
+    /// <summary>
+    /// Helper to convert a list of transform operations to JsonElement for the Pipeline property.
+    /// </summary>
+    private static JsonElement? ToPipeline(List<TransformOperation> operations)
+    {
+        return JsonSerializer.SerializeToElement(operations);
+    }
+
     [Fact]
     public async Task ExecuteAsync_WithPipeline_AppliesOperationsSequentially()
     {
@@ -29,11 +37,11 @@ public class TransformTaskExecutorPipelineTests
             Transform = new TransformDefinition
             {
                 Input = "$.items",
-                Pipeline = new List<TransformOperation>
+                Pipeline = ToPipeline(new List<TransformOperation>
                 {
                     new LimitOperation { Count = 2 },
                     new ReverseOperation()
-                }
+                })
             }
         };
 
@@ -63,10 +71,10 @@ public class TransformTaskExecutorPipelineTests
             Transform = new TransformDefinition
             {
                 Input = "$.items",
-                Pipeline = new List<TransformOperation>
+                Pipeline = ToPipeline(new List<TransformOperation>
                 {
                     new RandomOneOperation { Seed = 42 }
-                }
+                })
             }
         };
 
@@ -95,11 +103,11 @@ public class TransformTaskExecutorPipelineTests
             Transform = new TransformDefinition
             {
                 Input = "$.values",
-                Pipeline = new List<TransformOperation>
+                Pipeline = ToPipeline(new List<TransformOperation>
                 {
                     new ScaleOperation { Factor = 2 },
                     new RoundOperation { Decimals = 0 }
-                }
+                })
             }
         };
 
@@ -127,11 +135,11 @@ public class TransformTaskExecutorPipelineTests
             Transform = new TransformDefinition
             {
                 Input = "$.names",
-                Pipeline = new List<TransformOperation>
+                Pipeline = ToPipeline(new List<TransformOperation>
                 {
                     new UppercaseOperation(),
                     new TrimOperation()
-                }
+                })
             }
         };
 
@@ -159,12 +167,12 @@ public class TransformTaskExecutorPipelineTests
             Transform = new TransformDefinition
             {
                 Input = "$.numbers",
-                Pipeline = new List<TransformOperation>
+                Pipeline = ToPipeline(new List<TransformOperation>
                 {
                     new UniqueOperation(),
                     new ReverseOperation(),
                     new FirstOperation()
-                }
+                })
             }
         };
 
@@ -194,7 +202,7 @@ public class TransformTaskExecutorPipelineTests
             Transform = new TransformDefinition
             {
                 Input = "$.data",
-                Pipeline = new List<TransformOperation>()
+                Pipeline = ToPipeline(new List<TransformOperation>())
             }
         };
 
@@ -221,10 +229,10 @@ public class TransformTaskExecutorPipelineTests
         {
             Transform = new TransformDefinition
             {
-                Pipeline = new List<TransformOperation>
+                Pipeline = ToPipeline(new List<TransformOperation>
                 {
                     new LimitOperation { Count = 2 }
-                }
+                })
             }
         };
 
@@ -253,10 +261,10 @@ public class TransformTaskExecutorPipelineTests
             {
                 Input = "$.items",
                 JsonPath = "$.shouldBeIgnored",
-                Pipeline = new List<TransformOperation>
+                Pipeline = ToPipeline(new List<TransformOperation>
                 {
                     new ReverseOperation()
-                }
+                })
             }
         };
 

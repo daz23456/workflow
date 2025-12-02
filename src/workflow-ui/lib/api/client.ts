@@ -24,6 +24,11 @@ import type {
   DurationTrendsResponse,
   ApiError,
   ExecutionStatus,
+  TimeRange,
+  SystemMetrics,
+  WorkflowMetrics,
+  WorkflowHistoryPoint,
+  SlowestWorkflow,
 } from './types';
 
 // Get API base URL from environment variable
@@ -353,4 +358,45 @@ export async function checkHealth(): Promise<{ status: string }> {
     throw new Error('Health check failed');
   }
   return { status: 'healthy' };
+}
+
+// ============================================================================
+// Metrics API
+// ============================================================================
+
+/**
+ * Get system-wide metrics
+ * GET /api/v1/metrics/system
+ */
+export async function getSystemMetrics(range: TimeRange = '24h'): Promise<SystemMetrics> {
+  return apiFetch<SystemMetrics>(`/metrics/system?range=${range}`);
+}
+
+/**
+ * Get metrics for all workflows
+ * GET /api/v1/metrics/workflows
+ */
+export async function getWorkflowsMetrics(): Promise<WorkflowMetrics[]> {
+  return apiFetch<WorkflowMetrics[]>('/metrics/workflows');
+}
+
+/**
+ * Get historical metrics for a specific workflow
+ * GET /api/v1/metrics/workflows/{name}/history
+ */
+export async function getWorkflowHistory(
+  name: string,
+  range: TimeRange = '24h'
+): Promise<WorkflowHistoryPoint[]> {
+  return apiFetch<WorkflowHistoryPoint[]>(
+    `/metrics/workflows/${encodeURIComponent(name)}/history?range=${range}`
+  );
+}
+
+/**
+ * Get slowest workflows
+ * GET /api/v1/metrics/slowest
+ */
+export async function getSlowestWorkflows(limit: number = 10): Promise<SlowestWorkflow[]> {
+  return apiFetch<SlowestWorkflow[]>(`/metrics/slowest?limit=${limit}`);
 }

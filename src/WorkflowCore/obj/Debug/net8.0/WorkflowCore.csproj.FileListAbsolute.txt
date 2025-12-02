@@ -12,3 +12,4 @@
 /Users/darren/dev/workflow/src/WorkflowCore/obj/Debug/net8.0/WorkflowCore.pdb
 /Users/darren/dev/workflow/src/WorkflowCore/obj/Debug/net8.0/WorkflowCore.genruntimeconfig.cache
 /Users/darren/dev/workflow/src/WorkflowCore/obj/Debug/net8.0/ref/WorkflowCore.dll
+/Users/darren/dev/workflow/src/WorkflowCore/obj/Debug/net8.0/WorkflowCore.sourcelink.json

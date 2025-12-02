@@ -136,3 +136,4 @@
 /Users/darren/dev/workflow/tests/WorkflowCore.Tests/obj/Debug/net8.0/WorkflowCore.Tests.pdb
 /Users/darren/dev/workflow/tests/WorkflowCore.Tests/obj/Debug/net8.0/WorkflowCore.Tests.genruntimeconfig.cache
 /Users/darren/dev/workflow/tests/WorkflowCore.Tests/obj/Debug/net8.0/ref/WorkflowCore.Tests.dll
+/Users/darren/dev/workflow/tests/WorkflowCore.Tests/obj/Debug/net8.0/WorkflowCore.Tests.sourcelink.json

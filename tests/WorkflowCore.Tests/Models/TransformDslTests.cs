@@ -93,8 +93,8 @@ public class FilterOperationTests
             Value = "active"
         };
 
-        // Act
-        var json = JsonSerializer.Serialize(operation);
+        // Act - serialize as base type to include polymorphic discriminator
+        var json = JsonSerializer.Serialize<TransformOperation>(operation);
 
         // Assert
         json.Should().Contain("\"operation\":\"filter\"");
@@ -118,7 +118,7 @@ public class FilterOperationTests
             };
 
             // Act
-            var json = JsonSerializer.Serialize(operation);
+            var json = JsonSerializer.Serialize<TransformOperation>(operation);
 
             // Assert
             json.Should().Contain($"\"operator\":\"{op}\"");
@@ -141,8 +141,8 @@ public class SelectOperationTests
             }
         };
 
-        // Act
-        var json = JsonSerializer.Serialize(operation);
+        // Act - serialize as base type to include polymorphic discriminator
+        var json = JsonSerializer.Serialize<TransformOperation>(operation);
 
         // Assert
         json.Should().Contain("\"operation\":\"select\"");
@@ -167,8 +167,8 @@ public class GroupByOperationTests
             }
         };
 
-        // Act
-        var json = JsonSerializer.Serialize(operation);
+        // Act - serialize as base type to include polymorphic discriminator
+        var json = JsonSerializer.Serialize<TransformOperation>(operation);
 
         // Assert
         json.Should().Contain("\"operation\":\"groupBy\"");
@@ -193,8 +193,8 @@ public class MapOperationTests
             }
         };
 
-        // Act
-        var json = JsonSerializer.Serialize(operation);
+        // Act - serialize as base type to include polymorphic discriminator
+        var json = JsonSerializer.Serialize<TransformOperation>(operation);
 
         // Assert
         json.Should().Contain("\"operation\":\"map\"");
@@ -213,8 +213,8 @@ public class SortByOperationTests
             Field = "$.createdAt"
         };
 
-        // Act
-        var json = JsonSerializer.Serialize(operation);
+        // Act - serialize as base type to include polymorphic discriminator
+        var json = JsonSerializer.Serialize<TransformOperation>(operation);
 
         // Assert
         json.Should().Contain("\"order\":\"asc\"");
@@ -230,8 +230,8 @@ public class SortByOperationTests
             Order = "desc"
         };
 
-        // Act
-        var json = JsonSerializer.Serialize(operation);
+        // Act - serialize as base type to include polymorphic discriminator
+        var json = JsonSerializer.Serialize<TransformOperation>(operation);
 
         // Assert
         json.Should().Contain("\"order\":\"desc\"");
@@ -251,8 +251,8 @@ public class JoinOperationTests
             JoinType = "left"
         };
 
-        // Act
-        var json = JsonSerializer.Serialize(operation);
+        // Act - serialize as base type to include polymorphic discriminator
+        var json = JsonSerializer.Serialize<TransformOperation>(operation);
 
         // Assert
         json.Should().Contain("\"operation\":\"join\"");
@@ -269,8 +269,8 @@ public class LimitOperationTests
         // Arrange
         var operation = new LimitOperation { Count = 10 };
 
-        // Act
-        var json = JsonSerializer.Serialize(operation);
+        // Act - serialize as base type to include polymorphic discriminator
+        var json = JsonSerializer.Serialize<TransformOperation>(operation);
 
         // Assert
         json.Should().Contain("\"operation\":\"limit\"");
@@ -286,8 +286,8 @@ public class SkipOperationTests
         // Arrange
         var operation = new SkipOperation { Count = 20 };
 
-        // Act
-        var json = JsonSerializer.Serialize(operation);
+        // Act - serialize as base type to include polymorphic discriminator
+        var json = JsonSerializer.Serialize<TransformOperation>(operation);
 
         // Assert
         json.Should().Contain("\"operation\":\"skip\"");
@@ -311,8 +311,8 @@ public class AggregateOperationTests
             }
         };
 
-        // Act
-        var json = JsonSerializer.Serialize(operation);
+        // Act - serialize as base type to include polymorphic discriminator
+        var json = JsonSerializer.Serialize<TransformOperation>(operation);
 
         // Assert
         json.Should().Contain("\"operation\":\"aggregate\"");

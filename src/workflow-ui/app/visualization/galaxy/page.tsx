@@ -17,7 +17,7 @@ import React, { useState, useCallback, useMemo } from 'react';
 import { GalaxyScene, NamespaceCluster, WorkflowPlanet } from '../../../components/visualization/galaxy';
 import { Button } from '../../../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card';
-import { Play, Pause, RotateCcw, ZoomIn, ZoomOut, Info } from 'lucide-react';
+import { Play, Pause, RotateCcw, Info } from 'lucide-react';
 
 // Demo data for namespaces, workflows, and tasks
 interface DemoWorkflow {

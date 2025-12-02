@@ -414,6 +414,45 @@ export interface DurationTrendsResponse {
 }
 
 // ============================================================================
+// Metrics Types
+// ============================================================================
+
+export type TimeRange = '1h' | '24h' | '7d' | '30d';
+
+export interface SystemMetrics {
+  totalExecutions: number;
+  throughput: number;
+  p50Ms: number;
+  p95Ms: number;
+  p99Ms: number;
+  errorRate: number;
+  timeRange: string;
+}
+
+export interface WorkflowMetrics {
+  name: string;
+  avgDurationMs: number;
+  p95Ms: number;
+  errorRate: number;
+  executionCount: number;
+}
+
+export interface WorkflowHistoryPoint {
+  timestamp: string;
+  avgDurationMs: number;
+  p95Ms: number;
+  errorRate: number;
+  count: number;
+}
+
+export interface SlowestWorkflow {
+  name: string;
+  avgDurationMs: number;
+  p95Ms: number;
+  degradationPercent: number;
+}
+
+// ============================================================================
 // API Error Types
 // ============================================================================
 

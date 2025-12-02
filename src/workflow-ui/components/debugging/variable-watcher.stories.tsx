@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { VariableWatcher, type Variable, type VariableHistory } from './variable-watcher';
+import { VariableWatcher, type Variable } from './variable-watcher';
 
 /**
  * VariableWatcher displays and tracks variables during workflow execution.

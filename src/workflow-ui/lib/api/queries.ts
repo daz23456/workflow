@@ -97,6 +97,11 @@ export const queryKeys = {
     ['tasks', name, 'duration-trends', daysBack] as const,
   templates: (filters?: TemplateFilters) => ['templates', filters] as const,
   templateDetail: (name: string) => ['templates', name] as const,
+  // Metrics
+  systemMetrics: (range: string) => ['metrics', 'system', range] as const,
+  workflowsMetrics: ['metrics', 'workflows'] as const,
+  workflowHistory: (name: string, range: string) => ['metrics', 'workflows', name, 'history', range] as const,
+  slowestWorkflows: (limit: number) => ['metrics', 'slowest', limit] as const,
 };
 
 // ============================================================================
@@ -753,5 +758,82 @@ export function useDeployTemplate() {
         queryKey: ['workflows'],
       });
     },
+  });
+}
+
+// ============================================================================
+// METRICS QUERIES
+// ============================================================================
+
+import type {
+  SystemMetrics,
+  WorkflowMetrics,
+  WorkflowHistoryPoint,
+  SlowestWorkflow,
+  TimeRange,
+} from './types';
+
+/**
+ * Fetch system-wide metrics
+ */
+export function useSystemMetrics(range: TimeRange = '24h') {
+  return useQuery({
+    queryKey: queryKeys.systemMetrics(range),
+    queryFn: async () => {
+      const data = await fetchJson<SystemMetrics>(`${API_BASE_URL}/metrics/system?range=${range}`);
+      return data;
+    },
+    staleTime: 30000, // 30 seconds
+    gcTime: 60000, // 1 minute
+    refetchInterval: 30000, // Auto-refresh every 30 seconds
+  });
+}
+
+/**
+ * Fetch metrics for all workflows
+ */
+export function useWorkflowsMetrics() {
+  return useQuery({
+    queryKey: queryKeys.workflowsMetrics,
+    queryFn: async () => {
+      const data = await fetchJson<WorkflowMetrics[]>(`${API_BASE_URL}/metrics/workflows`);
+      return data;
+    },
+    staleTime: 30000,
+    gcTime: 60000,
+    refetchInterval: 30000,
+  });
+}
+
+/**
+ * Fetch historical metrics for a specific workflow
+ */
+export function useWorkflowHistoryMetrics(name: string, range: TimeRange = '24h') {
+  return useQuery({
+    queryKey: queryKeys.workflowHistory(name, range),
+    queryFn: async () => {
+      const data = await fetchJson<WorkflowHistoryPoint[]>(
+        `${API_BASE_URL}/metrics/workflows/${encodeURIComponent(name)}/history?range=${range}`
+      );
+      return data;
+    },
+    staleTime: 30000,
+    gcTime: 60000,
+  });
+}
+
+/**
+ * Fetch slowest workflows
+ */
+export function useSlowestWorkflows(limit: number = 10) {
+  return useQuery({
+    queryKey: queryKeys.slowestWorkflows(limit),
+    queryFn: async () => {
+      const data = await fetchJson<SlowestWorkflow[]>(`${API_BASE_URL}/metrics/slowest?limit=${limit}`);
+      return data;
+    },
+    staleTime: 30000,
+    gcTime: 60000,
+    refetchInterval: 30000,
   });
 }

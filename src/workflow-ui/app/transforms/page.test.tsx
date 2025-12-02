@@ -12,7 +12,7 @@ import { useTransformBuilderStore } from '@/lib/stores/transform-builder-store';
 const mockFitView = vi.fn();
 
 vi.mock('@xyflow/react', () => ({
-  ReactFlow: ({ children, nodes, edges, nodeTypes, onPaneClick, ...props }: any) => {
+  ReactFlow: ({ children, nodes, _edges, nodeTypes, onPaneClick, ...props }: any) => {
     const OperationNode = nodeTypes?.operation;
     return (
       <div data-testid="react-flow" onClick={onPaneClick} {...props}>

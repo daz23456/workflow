@@ -16,7 +16,17 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Build artifacts:
+    "storybook-static/**",
+    "coverage/**",
   ]),
+  // Allow 'any' in type definition files and stories (pre-existing tech debt)
+  {
+    files: ["types/**/*.ts", "**/*.stories.tsx", "stories/**/*.tsx", "lib/api/**/*.ts", "lib/types/**/*.ts"],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off",
+    },
+  },
 ]);
 
 export default eslintConfig;

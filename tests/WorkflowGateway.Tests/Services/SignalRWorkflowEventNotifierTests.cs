@@ -23,6 +23,7 @@ public class SignalRWorkflowEventNotifierTests
     private readonly Mock<IHubContext<WorkflowExecutionHub, IWorkflowExecutionClient>> _mockHubContext;
     private readonly Mock<IHubClients<IWorkflowExecutionClient>> _mockClients;
     private readonly Mock<IWorkflowExecutionClient> _mockGroupClient;
+    private readonly Mock<IWorkflowExecutionClient> _mockVisualizationClient;
     private readonly SignalRWorkflowEventNotifier _notifier;
 
     public SignalRWorkflowEventNotifierTests()
@@ -30,8 +31,20 @@ public class SignalRWorkflowEventNotifierTests
         _mockHubContext = new Mock<IHubContext<WorkflowExecutionHub, IWorkflowExecutionClient>>();
         _mockClients = new Mock<IHubClients<IWorkflowExecutionClient>>();
         _mockGroupClient = new Mock<IWorkflowExecutionClient>();
+        _mockVisualizationClient = new Mock<IWorkflowExecutionClient>();
 
         _mockHubContext.Setup(h => h.Clients).Returns(_mockClients.Object);
+
+        // Setup the visualization group mock (broadcasts go to both execution group AND visualization group)
+        _mockClients.Setup(c => c.Group(WorkflowExecutionHub.VisualizationGroupName))
+            .Returns(_mockVisualizationClient.Object);
+
+        // Setup visualization client methods to return completed tasks
+        _mockVisualizationClient.Setup(c => c.WorkflowStarted(It.IsAny<WorkflowStartedEvent>())).Returns(Task.CompletedTask);
+        _mockVisualizationClient.Setup(c => c.TaskStarted(It.IsAny<TaskStartedEvent>())).Returns(Task.CompletedTask);
+        _mockVisualizationClient.Setup(c => c.TaskCompleted(It.IsAny<TaskCompletedEvent>())).Returns(Task.CompletedTask);
+        _mockVisualizationClient.Setup(c => c.WorkflowCompleted(It.IsAny<WorkflowCompletedEvent>())).Returns(Task.CompletedTask);
+        _mockVisualizationClient.Setup(c => c.SignalFlow(It.IsAny<SignalFlowEvent>())).Returns(Task.CompletedTask);
 
         _notifier = new SignalRWorkflowEventNotifier(_mockHubContext.Object);
     }
@@ -65,9 +78,11 @@ public class SignalRWorkflowEventNotifierTests
         // Act
         await _notifier.OnWorkflowStartedAsync(executionId, workflowName, timestamp);
 
-        // Assert
+        // Assert - Verifies both execution group and visualization group received the event
         _mockClients.Verify(c => c.Group(expectedGroupName), Times.Once);
+        _mockClients.Verify(c => c.Group(WorkflowExecutionHub.VisualizationGroupName), Times.Once);
         _mockGroupClient.Verify(c => c.WorkflowStarted(It.IsAny<WorkflowStartedEvent>()), Times.Once);
+        _mockVisualizationClient.Verify(c => c.WorkflowStarted(It.IsAny<WorkflowStartedEvent>()), Times.Once);
 
         capturedEvent.Should().NotBeNull();
         capturedEvent!.ExecutionId.Should().Be(executionId);
@@ -96,9 +111,11 @@ public class SignalRWorkflowEventNotifierTests
         // Act
         await _notifier.OnTaskStartedAsync(executionId, taskId, taskName, timestamp);
 
-        // Assert
+        // Assert - Verifies both execution group and visualization group received the event
         _mockClients.Verify(c => c.Group(expectedGroupName), Times.Once);
+        _mockClients.Verify(c => c.Group(WorkflowExecutionHub.VisualizationGroupName), Times.Once);
         _mockGroupClient.Verify(c => c.TaskStarted(It.IsAny<TaskStartedEvent>()), Times.Once);
+        _mockVisualizationClient.Verify(c => c.TaskStarted(It.IsAny<TaskStartedEvent>()), Times.Once);
 
         capturedEvent.Should().NotBeNull();
         capturedEvent!.ExecutionId.Should().Be(executionId);
@@ -131,9 +148,11 @@ public class SignalRWorkflowEventNotifierTests
         // Act
         await _notifier.OnTaskCompletedAsync(executionId, taskId, taskName, status, output, duration, timestamp);
 
-        // Assert
+        // Assert - Verifies both execution group and visualization group received the event
         _mockClients.Verify(c => c.Group(expectedGroupName), Times.Once);
+        _mockClients.Verify(c => c.Group(WorkflowExecutionHub.VisualizationGroupName), Times.Once);
         _mockGroupClient.Verify(c => c.TaskCompleted(It.IsAny<TaskCompletedEvent>()), Times.Once);
+        _mockVisualizationClient.Verify(c => c.TaskCompleted(It.IsAny<TaskCompletedEvent>()), Times.Once);
 
         capturedEvent.Should().NotBeNull();
         capturedEvent!.ExecutionId.Should().Be(executionId);
@@ -168,9 +187,11 @@ public class SignalRWorkflowEventNotifierTests
         // Act
         await _notifier.OnWorkflowCompletedAsync(executionId, workflowName, status, output, duration, timestamp);
 
-        // Assert
+        // Assert - Verifies both execution group and visualization group received the event
         _mockClients.Verify(c => c.Group(expectedGroupName), Times.Once);
+        _mockClients.Verify(c => c.Group(WorkflowExecutionHub.VisualizationGroupName), Times.Once);
         _mockGroupClient.Verify(c => c.WorkflowCompleted(It.IsAny<WorkflowCompletedEvent>()), Times.Once);
+        _mockVisualizationClient.Verify(c => c.WorkflowCompleted(It.IsAny<WorkflowCompletedEvent>()), Times.Once);
 
         capturedEvent.Should().NotBeNull();
         capturedEvent!.ExecutionId.Should().Be(executionId);
@@ -202,9 +223,11 @@ public class SignalRWorkflowEventNotifierTests
         // Act
         await _notifier.OnSignalFlowAsync(executionId, fromTaskId, toTaskId, timestamp);
 
-        // Assert
+        // Assert - Verifies both execution group and visualization group received the event
         _mockClients.Verify(c => c.Group(expectedGroupName), Times.Once);
+        _mockClients.Verify(c => c.Group(WorkflowExecutionHub.VisualizationGroupName), Times.Once);
         _mockGroupClient.Verify(c => c.SignalFlow(It.IsAny<SignalFlowEvent>()), Times.Once);
+        _mockVisualizationClient.Verify(c => c.SignalFlow(It.IsAny<SignalFlowEvent>()), Times.Once);
 
         capturedEvent.Should().NotBeNull();
         capturedEvent!.ExecutionId.Should().Be(executionId);

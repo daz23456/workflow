@@ -648,6 +648,68 @@ export const handlers = [
   }),
 
   // ============================================================================
+  // METRICS ENDPOINTS
+  // ============================================================================
+
+  // GET /api/metrics/system - System metrics
+  http.get('/api/metrics/system', async ({ request }) => {
+    await delay(100);
+    const url = new URL(request.url);
+    const range = url.searchParams.get('range') || '24h';
+
+    // Return different values based on time range for testing
+    const multiplier = range === '1h' ? 1 : range === '7d' ? 7 : range === '30d' ? 30 : 1;
+
+    return HttpResponse.json({
+      totalExecutions: 1500 * multiplier,
+      throughput: 4.17 * multiplier,
+      p50Ms: 120,
+      p95Ms: 450,
+      p99Ms: 890,
+      errorRate: 2.5,
+      timeRange: range,
+    });
+  }),
+
+  // GET /api/metrics/workflows - All workflows metrics
+  http.get('/api/metrics/workflows', async () => {
+    await delay(100);
+
+    return HttpResponse.json([
+      { name: 'user-signup', avgDurationMs: 234, p95Ms: 400, errorRate: 0.5, executionCount: 1000 },
+      { name: 'order-process', avgDurationMs: 456, p95Ms: 700, errorRate: 3.2, executionCount: 500 },
+      { name: 'payment-flow', avgDurationMs: 892, p95Ms: 1200, errorRate: 5.5, executionCount: 250 },
+    ]);
+  }),
+
+  // GET /api/metrics/workflows/:name/history - Workflow history
+  http.get('/api/metrics/workflows/:name/history', async ({ params }) => {
+    await delay(100);
+    const { name } = params;
+
+    return HttpResponse.json([
+      { timestamp: '2024-01-01T00:00:00Z', avgDurationMs: 100, p95Ms: 200, errorRate: 1, count: 50 },
+      { timestamp: '2024-01-02T00:00:00Z', avgDurationMs: 150, p95Ms: 300, errorRate: 2, count: 60 },
+      { timestamp: '2024-01-03T00:00:00Z', avgDurationMs: 120, p95Ms: 250, errorRate: 1.5, count: 55 },
+    ]);
+  }),
+
+  // GET /api/metrics/slowest - Slowest workflows
+  http.get('/api/metrics/slowest', async ({ request }) => {
+    await delay(100);
+    const url = new URL(request.url);
+    const limit = parseInt(url.searchParams.get('limit') || '10', 10);
+
+    const workflows = [
+      { name: 'slow-workflow', avgDurationMs: 2000, p95Ms: 3000, degradationPercent: 50 },
+      { name: 'medium-workflow', avgDurationMs: 1000, p95Ms: 1500, degradationPercent: -20 },
+      { name: 'improving-workflow', avgDurationMs: 500, p95Ms: 800, degradationPercent: 5 },
+    ];
+
+    return HttpResponse.json(workflows.slice(0, limit));
+  }),
+
+  // ============================================================================
   // HEALTH CHECK
   // ============================================================================
 

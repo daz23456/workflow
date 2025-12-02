@@ -77,7 +77,7 @@ export default function WorkflowBuilderPage() {
 
         // Set workflow name from template name
         setWorkflowName(templateData.name);
-      } catch (error) {
+      } catch (_error) {
         setErrorMessage('Failed to load template. Please try again.');
       }
     }

@@ -165,8 +165,8 @@ export default function TubeMapPage() {
     return DEMO_LINES.find((line) => line.id === selectedLine);
   }, [selectedLine]);
 
-  // Get selected station details
-  const selectedStationDetails = useMemo(() => {
+  // Get selected station details - inline function for simple computation
+  const getSelectedStationDetails = () => {
     if (!selectedStation) return null;
     for (const line of DEMO_LINES) {
       const station = line.stations.find((s) => s.id === selectedStation);
@@ -175,7 +175,8 @@ export default function TubeMapPage() {
       }
     }
     return null;
-  }, [selectedStation]);
+  };
+  const selectedStationDetails = getSelectedStationDetails();
 
   return (
     <div className="h-screen w-full relative bg-[#0a1628] overflow-hidden">

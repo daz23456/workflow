@@ -14,7 +14,6 @@ import {
   getAllThemePresets,
   getAllSignalFlowPresets,
   getAllNodeSizeModes,
-  type NodeSizeModeName,
 } from '../../lib/visualization/theme';
 
 export function VisualizationSettings() {

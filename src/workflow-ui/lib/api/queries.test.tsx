@@ -23,6 +23,10 @@ import {
   useTemplateDetail,
   usePrefetchTemplateDetail,
   useDeployTemplate,
+  useSystemMetrics,
+  useWorkflowsMetrics,
+  useWorkflowHistoryMetrics,
+  useSlowestWorkflows,
 } from './queries';
 
 /**
@@ -1146,6 +1150,176 @@ describe('TanStack Query Hooks', () => {
 
       // Verify the mutation succeeded
       expect(deployResult.current.data).toBeDefined();
+    });
+  });
+
+  // ============================================================================
+  // METRICS QUERIES
+  // ============================================================================
+
+  describe('useSystemMetrics', () => {
+    it('fetches system metrics successfully', async () => {
+      const { result } = renderHook(() => useSystemMetrics(), {
+        wrapper: createWrapper(),
+      });
+
+      // Initially loading
+      expect(result.current.isLoading).toBe(true);
+
+      // Wait for data
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      expect(result.current.data).toBeDefined();
+      expect(result.current.data?.totalExecutions).toBeDefined();
+      expect(result.current.data?.throughput).toBeDefined();
+      expect(result.current.data?.p95Ms).toBeDefined();
+      expect(result.current.data?.errorRate).toBeDefined();
+    });
+
+    it('supports different time ranges', async () => {
+      const { result } = renderHook(() => useSystemMetrics('7d'), {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      expect(result.current.data?.timeRange).toBe('7d');
+    });
+
+    it('uses default time range of 24h', async () => {
+      const { result } = renderHook(() => useSystemMetrics(), {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      expect(result.current.data?.timeRange).toBe('24h');
+    });
+  });
+
+  describe('useWorkflowsMetrics', () => {
+    it('fetches workflows metrics successfully', async () => {
+      const { result } = renderHook(() => useWorkflowsMetrics(), {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      expect(result.current.data).toBeDefined();
+      expect(Array.isArray(result.current.data)).toBe(true);
+      expect(result.current.data!.length).toBeGreaterThan(0);
+    });
+
+    it('includes workflow metrics details', async () => {
+      const { result } = renderHook(() => useWorkflowsMetrics(), {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      const workflow = result.current.data![0];
+      expect(workflow).toHaveProperty('name');
+      expect(workflow).toHaveProperty('avgDurationMs');
+      expect(workflow).toHaveProperty('p95Ms');
+      expect(workflow).toHaveProperty('errorRate');
+      expect(workflow).toHaveProperty('executionCount');
+    });
+  });
+
+  describe('useWorkflowHistoryMetrics', () => {
+    it('fetches workflow history successfully', async () => {
+      const { result } = renderHook(() => useWorkflowHistoryMetrics('user-signup'), {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      expect(result.current.data).toBeDefined();
+      expect(Array.isArray(result.current.data)).toBe(true);
+    });
+
+    it('includes history data points', async () => {
+      const { result } = renderHook(() => useWorkflowHistoryMetrics('user-signup'), {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      const dataPoint = result.current.data![0];
+      expect(dataPoint).toHaveProperty('timestamp');
+      expect(dataPoint).toHaveProperty('avgDurationMs');
+      expect(dataPoint).toHaveProperty('p95Ms');
+      expect(dataPoint).toHaveProperty('errorRate');
+      expect(dataPoint).toHaveProperty('count');
+    });
+
+    it('supports different time ranges', async () => {
+      const { result } = renderHook(() => useWorkflowHistoryMetrics('user-signup', '7d'), {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      expect(result.current.data).toBeDefined();
+    });
+  });
+
+  describe('useSlowestWorkflows', () => {
+    it('fetches slowest workflows successfully', async () => {
+      const { result } = renderHook(() => useSlowestWorkflows(), {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      expect(result.current.data).toBeDefined();
+      expect(Array.isArray(result.current.data)).toBe(true);
+    });
+
+    it('includes degradation data', async () => {
+      const { result } = renderHook(() => useSlowestWorkflows(), {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      const workflow = result.current.data![0];
+      expect(workflow).toHaveProperty('name');
+      expect(workflow).toHaveProperty('avgDurationMs');
+      expect(workflow).toHaveProperty('p95Ms');
+      expect(workflow).toHaveProperty('degradationPercent');
+    });
+
+    it('supports custom limit', async () => {
+      const { result } = renderHook(() => useSlowestWorkflows(5), {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      expect(result.current.data).toBeDefined();
     });
   });
 });

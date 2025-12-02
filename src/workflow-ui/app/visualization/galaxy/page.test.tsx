@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import React from 'react';
 
 // Mock all Three.js related imports
@@ -75,13 +75,6 @@ describe('GalaxyPage', () => {
 
       // Initially visible
       expect(screen.getByText('Namespaces')).toBeInTheDocument();
-
-      // Find and click the info button (toggle legend)
-      const buttons = screen.getAllByRole('button');
-      const infoButton = buttons.find((btn) =>
-        btn.querySelector('svg')?.classList.contains('lucide-info') ||
-        btn.innerHTML.includes('Info')
-      );
 
       // Legend should be visible initially
       expect(screen.getByText('Namespaces')).toBeInTheDocument();

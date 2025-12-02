@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { WorkflowGraphDebugger, type GraphData, type ExecutionState } from './workflow-graph-debugger';
+import { WorkflowGraphDebugger, type GraphData } from './workflow-graph-debugger';
 
 /**
  * WorkflowGraphDebugger provides interactive workflow graph visualization for debugging.

@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "clean": "rm -rf .next out node_modules/.cache",
+    "clean": "rm -rf .next out",
     "lint": "eslint",
     "test": "vitest",
     "test:watch": "vitest --ui",

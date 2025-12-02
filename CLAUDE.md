@@ -807,6 +807,94 @@ AI: I'll create a workflow with these tasks:
 
 **Value:** **Automatic performance tuning with zero risk** - every suggestion is proven safe!
 
+### Week 16+ (External Integration):
+**Stage 15: MCP Server for External Workflow Consumption (TDD)**
+*Scope:* Enable external chatbots and AI assistants to discover and execute workflows via Model Context Protocol
+*Deliverables:* 5 substages
+*Tests:* ~50 tests
+*Dependencies:* Stages 7 (API Gateway), 9.2 (Templates), 14 (Optimization Engine)
+*Package:* `packages/workflow-mcp-consumer` (new, separate from Stage 13)
+*Value:* "Let any chatbot use your workflows" - democratize workflow access beyond internal users
+
+*Philosophy:* External users (via chatbots) should be able to explore, understand, and invoke workflows without reading documentation. The MCP server provides rich metadata that enables LLMs to reason about which workflow to use and how to use it.
+
+*Key Distinction from Stage 13:* Stage 13 is about *creating* workflows (internal, developer-focused). Stage 15 is about *consuming* existing workflows (external, end-user focused via chatbots).
+
+**Stage 15.1: Backend Metadata Enrichment**
+- Add `categories`, `tags`, `examples` fields to WorkflowSpec
+- Structured `MissingInputsResult` response (field names, types, descriptions)
+- New endpoint: `POST /api/v1/workflows/{name}/validate-input`
+- Update existing APIs to expose enriched metadata
+- Profile: `BACKEND_DOTNET`, Gates: 1-8
+- Tests: 20+
+
+**Stage 15.2: MCP Tools for Workflow Discovery**
+- `list_workflows` - All workflows with rich metadata (categories, tags, input summary, stats)
+- `search_workflows` - Query by keywords/intent with ranked matches
+- `get_workflow_details` - Full schema, examples, required inputs
+- `autoExecute` mode: returns bestMatch with confidence, extractedInputs, canAutoExecute
+- Profile: `FRONTEND_TS`, Gates: 1-8, 15
+- Tests: 18+
+
+**Stage 15.3: MCP Tool for Workflow Execution**
+- `execute_workflow` - Execute with structured error responses
+- Success: executionId, output, duration, task results
+- Validation failure: missingInputs, invalidInputs, suggestedPrompt
+- Execution failure: failedTask, errorMessage, partialOutput
+- Profile: `FRONTEND_TS`, Gates: 1-8, 15
+- Tests: 10+
+
+**Stage 15.4: MCP Resources & Prompts**
+- Resources: `workflow://{name}`, `workflow://{name}/schema`
+- Prompts: `discover-workflow`, `execute-workflow`, `troubleshoot-execution`
+- Profile: `FRONTEND_TS`, Gates: 1-8
+- Tests: 10+
+
+**Stage 15.5: Integration & Documentation**
+- Claude Desktop configuration example
+- Streamable HTTP transport for web-based chatbots
+- README, tool reference, troubleshooting docs
+- E2E integration tests (full discover → execute flow)
+- Profile: `FRONTEND_TS`, Gates: 1-8, 15
+- Tests: 5+
+
+**Execution Modes (Feature Flag):**
+
+| Mode | Behavior |
+|------|----------|
+| `autoExecute: false` | Show ranked options, user confirms, gather inputs interactively |
+| `autoExecute: true` | Auto-select best match if confidence ≥0.8 AND all inputs available |
+
+**Example Interaction (Auto-Execute Mode):**
+```
+User: "Get me the profile for user 3"
+
+LLM: [Calls search_workflows with autoExecute=true, context={userId: "3"}]
+     → Gets: bestMatch={workflow: user-profile, confidence: 0.95, canAutoExecute: true}
+
+LLM: [Calls execute_workflow with input={userId: "3"}]
+     → Gets: success with profile data
+
+LLM: "Here's the profile for user 3:
+     - Name: Clementine Bauch
+     - Email: Nathan@yesenia.net"
+```
+
+**TDD Targets:**
+- 50+ tests across all substages
+- E2E tests for full discover → execute flow
+- Test autoExecute mode: confidence thresholds, input extraction, fallback
+- Maintain ≥90% coverage
+
+**Success Metrics:**
+- Workflow discovery accuracy: >90%
+- Input validation clarity: 100% (always includes description)
+- Execution success rate: >95% (after valid input)
+- Response latency (discovery): <500ms
+- Response latency (execution): <5s (p95)
+
+**Value:** **Any chatbot can now be a workflow executor** - democratize access beyond technical users!
+
 ---
 
 ## Quality Gates (Enforced)

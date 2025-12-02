@@ -11,7 +11,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { X, Plus, Trash2, HelpCircle, Loader2 } from 'lucide-react';
+import { Plus, Trash2, HelpCircle, Loader2 } from 'lucide-react';
 import { useWorkflowBuilderStore } from '@/lib/stores/workflow-builder-store';
 import { getTaskDetail } from '@/lib/api/client';
 import type { TaskDetailResponse } from '@/lib/api/types';
@@ -61,7 +61,7 @@ function OutputMappingEditor({
   };
 
   // Build object expression from selected outputs
-  const buildObjectExpression = (selectedOutputs: AvailableOutput[]): string => {
+  const _buildObjectExpression = (selectedOutputs: AvailableOutput[]): string => {
     const obj: Record<string, string> = {};
     selectedOutputs.forEach((output) => {
       const key = output.propertyName || 'value';
@@ -256,7 +256,7 @@ function OutputMappingEditor({
 
 export function OutputMappingPanel() {
   const outputMapping = useWorkflowBuilderStore((state) => state.outputMapping);
-  const closePanel = useWorkflowBuilderStore((state) => state.closePanel);
+  const _closePanel = useWorkflowBuilderStore((state) => state.closePanel);
   const nodes = useWorkflowBuilderStore((state) => state.graph.nodes);
 
   // State for task details (fetched from API)

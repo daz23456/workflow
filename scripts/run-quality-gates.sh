@@ -436,10 +436,10 @@ run_gate_5() {
 
     if [[ "$TECH_STACK" == "dotnet" ]]; then
         print_info "Checking for: Class1.cs, UnitTest1.cs, WeatherForecast.cs"
-        find . -path ./node_modules -prune -o \( -name "Class1.cs" -o -name "UnitTest1.cs" -o -name "WeatherForecast.cs" \) -print > "$output_file" 2>&1
+        find . -path '*/node_modules' -prune -o \( -name "Class1.cs" -o -name "UnitTest1.cs" -o -name "WeatherForecast.cs" \) -print > "$output_file" 2>&1
     else
         print_info "Checking for: App.test.tsx, setupTests.ts, logo.svg"
-        find . -path ./node_modules -prune -o \( -name "App.test.tsx" -o -name "setupTests.ts" -o -name "logo.svg" \) -print > "$output_file" 2>&1
+        find . -path '*/node_modules' -prune -o \( -name "App.test.tsx" -o -name "setupTests.ts" -o -name "logo.svg" \) -print > "$output_file" 2>&1
     fi
 
     if [[ ! -s "$output_file" ]]; then

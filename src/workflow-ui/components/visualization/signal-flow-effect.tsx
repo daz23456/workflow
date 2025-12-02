@@ -3,6 +3,7 @@
  *
  * Renders animated effects representing data flow through the workflow.
  * Effects follow the curved edge paths (quadratic bezier curves).
+ * In hub-spoke mode, signals route through the center hub.
  *
  * Different presets create distinct visual styles:
  * - Electric Pulses: Sparking, jittery particles with flashes
@@ -17,8 +18,8 @@ import React, { useRef, useState, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Sphere, Ring } from '@react-three/drei';
 import * as THREE from 'three';
-import { useVisualizationStore } from '../../lib/visualization/visualization-store';
-import { getSignalFlowPreset, type SignalFlowPresetName } from '../../lib/visualization/theme';
+import { useVisualizationStore, type LayoutMode } from '../../lib/visualization/visualization-store';
+import { getSignalFlowPreset } from '../../lib/visualization/theme';
 
 interface SignalFlowEffectProps {
   id: string;
@@ -45,10 +46,76 @@ function quadraticBezier(
   );
 }
 
+// Check if a position is at/near the hub center
+function isAtHub(pos: THREE.Vector3): boolean {
+  const threshold = 1.0;
+  return Math.abs(pos.x) < threshold &&
+         Math.abs(pos.y) < threshold &&
+         Math.abs(pos.z) < threshold;
+}
+
+// Hub center position
+const HUB_CENTER = new THREE.Vector3(0, 0, 0.5);
+
 /**
- * Calculate the curved midpoint for the bezier curve (same as edge calculation)
+ * Linear interpolation between two points
  */
-function calculateCurveControl(start: THREE.Vector3, end: THREE.Vector3): THREE.Vector3 {
+function lerp(start: THREE.Vector3, end: THREE.Vector3, t: number): THREE.Vector3 {
+  return new THREE.Vector3(
+    start.x + (end.x - start.x) * t,
+    start.y + (end.y - start.y) * t,
+    start.z + (end.z - start.z) * t
+  );
+}
+
+/**
+ * Calculate animation position for hub-spoke mode
+ * Animates in two segments: source → hub (0-0.5), hub → target (0.5-1)
+ */
+function hubSpokePosition(
+  start: THREE.Vector3,
+  end: THREE.Vector3,
+  progress: number
+): THREE.Vector3 {
+  if (progress <= 0.5) {
+    // First half: source spoke → hub
+    const t = progress * 2; // 0-1 for first segment
+    return lerp(start, HUB_CENTER, t);
+  } else {
+    // Second half: hub → target spoke
+    const t = (progress - 0.5) * 2; // 0-1 for second segment
+    return lerp(HUB_CENTER, end, t);
+  }
+}
+
+/**
+ * Calculate the curved midpoint for the bezier curve
+ * In hub-spoke mode, routes through center if both nodes are spokes
+ */
+function calculateCurveControl(
+  start: THREE.Vector3,
+  end: THREE.Vector3,
+  layoutMode: LayoutMode
+): THREE.Vector3 {
+  // Hub-spoke mode: use hub center (actual animation uses hubSpokePosition)
+  if (layoutMode === 'hub-spoke') {
+    const startIsHub = isAtHub(start);
+    const endIsHub = isAtHub(end);
+
+    if (!startIsHub && !endIsHub) {
+      // Both are spokes - control point at hub
+      return HUB_CENTER.clone();
+    }
+
+    // One is hub - direct path (midpoint)
+    return new THREE.Vector3(
+      (start.x + end.x) / 2,
+      (start.y + end.y) / 2,
+      (start.z + end.z) / 2
+    );
+  }
+
+  // Default curve calculation
   const midX = (start.x + end.x) / 2;
   const midY = (start.y + end.y) / 2;
   const midZ = (start.z + end.z) / 2;
@@ -70,8 +137,26 @@ function calculateCurveControl(start: THREE.Vector3, end: THREE.Vector3): THREE.
   );
 }
 
+/**
+ * Get position along path based on layout mode
+ */
+function getPathPosition(
+  start: THREE.Vector3,
+  control: THREE.Vector3,
+  end: THREE.Vector3,
+  progress: number,
+  layoutMode: LayoutMode
+): THREE.Vector3 {
+  // Hub-spoke with both nodes as spokes: use two-segment linear path
+  if (layoutMode === 'hub-spoke' && !isAtHub(start) && !isAtHub(end)) {
+    return hubSpokePosition(start, end, progress);
+  }
+  // Default: quadratic bezier
+  return quadraticBezier(start, control, end, progress);
+}
+
 export function SignalFlowEffect({
-  id,
+  id: _id,
   fromNodeId,
   toNodeId,
   onComplete,
@@ -81,6 +166,7 @@ export function SignalFlowEffect({
   const [, forceUpdate] = useState(0);
 
   const signalFlowPreset = useVisualizationStore((state) => state.signalFlowPreset);
+  const layoutMode = useVisualizationStore((state) => state.layoutMode);
   const nodes = useVisualizationStore((state) => state.nodes);
 
   const preset = getSignalFlowPreset(signalFlowPreset);
@@ -106,10 +192,10 @@ export function SignalFlowEffect({
     [targetNode]
   );
 
-  // Calculate curve control point (same as edge curve)
+  // Calculate curve control point (same as edge curve, hub-spoke aware)
   const controlPos = useMemo(
-    () => calculateCurveControl(startPos, endPos),
-    [startPos, endPos]
+    () => calculateCurveControl(startPos, endPos, layoutMode),
+    [startPos, endPos, layoutMode]
   );
 
   // Don't render if nodes don't exist or animation is complete
@@ -130,6 +216,7 @@ export function SignalFlowEffect({
           isCompleteRef={isCompleteRef}
           onComplete={onComplete}
           forceUpdate={forceUpdate}
+          layoutMode={layoutMode}
         />
       );
     case 'wave-ripple':
@@ -143,6 +230,7 @@ export function SignalFlowEffect({
           isCompleteRef={isCompleteRef}
           onComplete={onComplete}
           forceUpdate={forceUpdate}
+          layoutMode={layoutMode}
         />
       );
     case 'light-trail':
@@ -156,6 +244,7 @@ export function SignalFlowEffect({
           isCompleteRef={isCompleteRef}
           onComplete={onComplete}
           forceUpdate={forceUpdate}
+          layoutMode={layoutMode}
         />
       );
     case 'particle-stream':
@@ -170,6 +259,7 @@ export function SignalFlowEffect({
           isCompleteRef={isCompleteRef}
           onComplete={onComplete}
           forceUpdate={forceUpdate}
+          layoutMode={layoutMode}
         />
       );
   }
@@ -185,6 +275,7 @@ interface EffectProps {
   isCompleteRef: React.MutableRefObject<boolean>;
   onComplete?: () => void;
   forceUpdate: React.Dispatch<React.SetStateAction<number>>;
+  layoutMode: LayoutMode;
 }
 
 /**
@@ -199,6 +290,7 @@ function ElectricPulsesEffect({
   isCompleteRef,
   onComplete,
   forceUpdate,
+  layoutMode,
 }: EffectProps) {
   const groupRef = useRef<THREE.Group>(null);
   const sparkRefs = useRef<THREE.Mesh[]>([]);
@@ -214,7 +306,7 @@ function ElectricPulsesEffect({
     }));
   }, []);
 
-  useFrame((state, delta) => {
+  useFrame((_state, delta) => {
     if (isCompleteRef.current) return;
 
     progressRef.current += (delta * preset.speed) / 2;
@@ -228,8 +320,8 @@ function ElectricPulsesEffect({
     }
 
     if (groupRef.current) {
-      // Follow bezier curve
-      const basePos = quadraticBezier(startPos, controlPos, endPos, progressRef.current);
+      // Follow path (hub-spoke aware)
+      const basePos = getPathPosition(startPos, controlPos, endPos, progressRef.current, layoutMode);
       groupRef.current.position.copy(basePos);
 
       // Update individual sparks with jittery movement
@@ -287,6 +379,7 @@ function ParticleStreamEffect({
   isCompleteRef,
   onComplete,
   forceUpdate,
+  layoutMode,
 }: EffectProps) {
   const particleRefs = useRef<THREE.Mesh[]>([]);
   const particleCount = 6;
@@ -307,8 +400,8 @@ function ParticleStreamEffect({
     particleRefs.current.forEach((particle, i) => {
       if (particle) {
         const particleProgress = Math.max(0, Math.min(1, progressRef.current - i * spacing));
-        // Follow bezier curve
-        const pos = quadraticBezier(startPos, controlPos, endPos, particleProgress);
+        // Follow path (hub-spoke aware)
+        const pos = getPathPosition(startPos, controlPos, endPos, particleProgress, layoutMode);
         particle.position.copy(pos);
 
         // Fade in at start, fade out at end
@@ -352,6 +445,7 @@ function WaveRippleEffect({
   isCompleteRef,
   onComplete,
   forceUpdate,
+  layoutMode,
 }: EffectProps) {
   const ringRefs = useRef<THREE.Mesh[]>([]);
   const centerRef = useRef<THREE.Mesh>(null);
@@ -373,15 +467,15 @@ function WaveRippleEffect({
     // Update center particle
     if (centerRef.current) {
       const centerProgress = Math.min(1, progressRef.current);
-      const pos = quadraticBezier(startPos, controlPos, endPos, centerProgress);
+      const pos = getPathPosition(startPos, controlPos, endPos, centerProgress, layoutMode);
       centerRef.current.position.copy(pos);
     }
 
-    // Update rings - they follow the curve and expand
+    // Update rings - they follow the path and expand
     ringRefs.current.forEach((ring, i) => {
       if (ring) {
         const ringProgress = Math.max(0, Math.min(1, progressRef.current - i * ringSpacing));
-        const pos = quadraticBezier(startPos, controlPos, endPos, ringProgress);
+        const pos = getPathPosition(startPos, controlPos, endPos, ringProgress, layoutMode);
         ring.position.copy(pos);
 
         // Calculate tangent direction for ring orientation
@@ -452,6 +546,7 @@ function LightTrailEffect({
   isCompleteRef,
   onComplete,
   forceUpdate,
+  layoutMode,
 }: EffectProps) {
   const leadRef = useRef<THREE.Mesh>(null);
   const haloRef = useRef<THREE.Mesh>(null);
@@ -473,7 +568,7 @@ function LightTrailEffect({
 
     // Update lead particle
     if (leadRef.current) {
-      const pos = quadraticBezier(startPos, controlPos, endPos, progressRef.current);
+      const pos = getPathPosition(startPos, controlPos, endPos, progressRef.current, layoutMode);
       leadRef.current.position.copy(pos);
     }
 
@@ -482,11 +577,11 @@ function LightTrailEffect({
       haloRef.current.position.copy(leadRef.current.position);
     }
 
-    // Update trail particles - each follows the curve at a delayed position
+    // Update trail particles - each follows the path at a delayed position
     trailRefs.current.forEach((trail, i) => {
       if (trail) {
         const trailProgress = Math.max(0, progressRef.current - (i + 1) * trailSpacing);
-        const pos = quadraticBezier(startPos, controlPos, endPos, trailProgress);
+        const pos = getPathPosition(startPos, controlPos, endPos, trailProgress, layoutMode);
         trail.position.copy(pos);
 
         // Fade trail based on position in trail

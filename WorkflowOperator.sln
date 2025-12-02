@@ -23,6 +23,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorkflowCore.IntegrationTes
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorkflowCore.PerformanceTests", "tests\WorkflowCore.PerformanceTests\WorkflowCore.PerformanceTests.csproj", "{B84669DD-D2DA-4792-94A2-71C3FEC7BE8E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorkflowGateway.LoadTests", "tests\WorkflowGateway.LoadTests\WorkflowGateway.LoadTests.csproj", "{C835E13B-0033-4482-ABFD-05952AD43B1E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -64,6 +66,10 @@ Global
 		{B84669DD-D2DA-4792-94A2-71C3FEC7BE8E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B84669DD-D2DA-4792-94A2-71C3FEC7BE8E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B84669DD-D2DA-4792-94A2-71C3FEC7BE8E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C835E13B-0033-4482-ABFD-05952AD43B1E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C835E13B-0033-4482-ABFD-05952AD43B1E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C835E13B-0033-4482-ABFD-05952AD43B1E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C835E13B-0033-4482-ABFD-05952AD43B1E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{7E8902D5-2A3A-41DE-B9D8-6C3CD6D0BA5F} = {5DC9F8FC-022F-4CD0-83C1-5831B945F5B9}
@@ -74,5 +80,6 @@ Global
 		{7EFE1CF4-A6CD-4FE0-9632-42D6903B7B6A} = {5EC92A02-D35A-4168-8D83-B8E5F0143230}
 		{1625021A-AC02-44F5-A69F-76DCBF59C1CE} = {5EC92A02-D35A-4168-8D83-B8E5F0143230}
 		{B84669DD-D2DA-4792-94A2-71C3FEC7BE8E} = {5EC92A02-D35A-4168-8D83-B8E5F0143230}
+		{C835E13B-0033-4482-ABFD-05952AD43B1E} = {5EC92A02-D35A-4168-8D83-B8E5F0143230}
 	EndGlobalSection
 EndGlobal

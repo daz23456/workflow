@@ -6,6 +6,7 @@
  * - Straight and curved (bezier) lines
  * - Theme-based styling
  * - Active/highlighted state for signal flow
+ * - Hub-spoke routing: ALL edges go through central hub (star topology)
  */
 
 'use client';
@@ -23,6 +24,17 @@ interface DependencyEdge3DProps {
   active?: boolean;
 }
 
+// Check if a node is at/near the hub center
+function isAtHub(position: { x: number; y: number; z: number }): boolean {
+  const threshold = 1.0; // Within 1 unit of center
+  return Math.abs(position.x) < threshold &&
+         Math.abs(position.y) < threshold &&
+         Math.abs(position.z) < threshold;
+}
+
+// Hub center position
+const HUB_CENTER: [number, number, number] = [0, 0, 0.5];
+
 export function DependencyEdge3D({
   id: _id,
   sourceId,
@@ -31,6 +43,7 @@ export function DependencyEdge3D({
   active = false,
 }: DependencyEdge3DProps) {
   const themePreset = useVisualizationStore((state) => state.themePreset);
+  const layoutMode = useVisualizationStore((state) => state.layoutMode);
   const nodes = useVisualizationStore((state) => state.nodes);
 
   const theme = getThemePreset(themePreset);
@@ -39,8 +52,8 @@ export function DependencyEdge3D({
   const sourceNode = nodes.get(sourceId);
   const targetNode = nodes.get(targetId);
 
-  // Calculate positions and midpoint
-  const positions = useMemo(() => {
+  // Calculate edge data based on layout mode
+  const edgeData = useMemo(() => {
     if (!sourceNode || !targetNode) {
       return null;
     }
@@ -57,7 +70,37 @@ export function DependencyEdge3D({
       targetNode.position.z,
     ];
 
-    // Calculate midpoint with curve offset
+    // Hub-spoke mode: TRUE star topology - all edges through hub
+    if (layoutMode === 'hub-spoke') {
+      const sourceIsHub = isAtHub(sourceNode.position);
+      const targetIsHub = isAtHub(targetNode.position);
+
+      // If both are spokes, render TWO separate edges: spoke→hub and hub→spoke
+      if (!sourceIsHub && !targetIsHub) {
+        return {
+          type: 'hub-routed' as const,
+          // Edge 1: Source spoke → Hub (inbound)
+          edge1: {
+            start,
+            end: HUB_CENTER,
+          },
+          // Edge 2: Hub → Target spoke (outbound)
+          edge2: {
+            start: HUB_CENTER,
+            end,
+          },
+        };
+      }
+
+      // One is the hub - draw direct line
+      return {
+        type: 'direct' as const,
+        start,
+        end,
+      };
+    }
+
+    // Default: curved line calculation
     const midX = (start[0] + end[0]) / 2;
     const midY = (start[1] + end[1]) / 2;
     const midZ = (start[2] + end[2]) / 2;
@@ -75,14 +118,19 @@ export function DependencyEdge3D({
     const mid: [number, number, number] = [
       midX + perpX * curveOffset,
       midY + perpY * curveOffset,
-      midZ + 0.2, // Slight Z offset to avoid z-fighting
+      midZ + 0.2,
     ];
 
-    return { start, end, mid };
-  }, [sourceNode, targetNode]);
+    return {
+      type: 'curved' as const,
+      start,
+      end,
+      mid,
+    };
+  }, [sourceNode, targetNode, layoutMode]);
 
   // Don't render if nodes don't exist
-  if (!positions) {
+  if (!edgeData) {
     return null;
   }
 
@@ -91,12 +139,50 @@ export function DependencyEdge3D({
   const opacity = active ? Math.min(theme.edgeOpacity * 2, 1) : theme.edgeOpacity;
   const color = theme.edgeColor;
 
-  if (curved) {
+  // Hub-routed: render two separate straight lines through hub
+  if (edgeData.type === 'hub-routed') {
+    return (
+      <>
+        {/* Inbound: Source spoke → Hub */}
+        <Line
+          points={[edgeData.edge1.start, edgeData.edge1.end]}
+          color={color}
+          lineWidth={lineWidth}
+          transparent
+          opacity={opacity}
+        />
+        {/* Outbound: Hub → Target spoke */}
+        <Line
+          points={[edgeData.edge2.start, edgeData.edge2.end]}
+          color={color}
+          lineWidth={lineWidth}
+          transparent
+          opacity={opacity}
+        />
+      </>
+    );
+  }
+
+  // Direct line (hub to spoke)
+  if (edgeData.type === 'direct') {
+    return (
+      <Line
+        points={[edgeData.start, edgeData.end]}
+        color={color}
+        lineWidth={lineWidth}
+        transparent
+        opacity={opacity}
+      />
+    );
+  }
+
+  // Curved line (radial/stacked modes)
+  if (curved && edgeData.type === 'curved') {
     return (
       <QuadraticBezierLine
-        start={positions.start}
-        end={positions.end}
-        mid={positions.mid}
+        start={edgeData.start}
+        end={edgeData.end}
+        mid={edgeData.mid}
         color={color}
         lineWidth={lineWidth}
         transparent
@@ -108,7 +194,7 @@ export function DependencyEdge3D({
 
   return (
     <Line
-      points={[positions.start, positions.end]}
+      points={[edgeData.start, edgeData.end]}
       color={color}
       lineWidth={lineWidth}
       transparent

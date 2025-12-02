@@ -1,5 +1,17 @@
 'use client';
 
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Area,
+  ComposedChart,
+} from 'recharts';
+import { format } from 'date-fns';
 import type { WorkflowHistoryPoint } from '@/lib/api/types';
 
 interface LatencyChartProps {
@@ -13,7 +25,7 @@ export function LatencyChart({ data, isLoading, title = 'Latency Over Time' }: L
     return (
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">{title}</h2>
-        <div className="h-48 bg-gray-100 animate-pulse rounded" role="status" aria-label="Loading chart" />
+        <div className="h-64 bg-gray-100 animate-pulse rounded" role="status" aria-label="Loading chart" />
       </div>
     );
   }
@@ -22,47 +34,131 @@ export function LatencyChart({ data, isLoading, title = 'Latency Over Time' }: L
     return (
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">{title}</h2>
-        <div className="h-48 flex items-center justify-center text-gray-500">
+        <div className="h-64 flex items-center justify-center text-gray-500">
           No data available
         </div>
       </div>
     );
   }
 
+  // Transform data for recharts
+  const chartData = data.map((point) => ({
+    timestamp: point.timestamp,
+    dateStr: format(new Date(point.timestamp), 'MMM dd'),
+    fullDate: format(new Date(point.timestamp), 'MMM dd, yyyy HH:mm'),
+    p95Ms: Math.round(point.p95Ms),
+    avgMs: Math.round(point.avgDurationMs),
+    errorRate: point.errorRate,
+    count: point.count,
+  }));
+
+  // Custom tooltip
+  const CustomTooltip = ({ active, payload }: any) => {
+    if (!active || !payload || !payload[0]) return null;
+    const data = payload[0].payload;
+
+    return (
+      <div className="bg-white p-3 rounded-lg border shadow-lg text-sm">
+        <p className="font-semibold mb-2">{data.fullDate}</p>
+        <div className="space-y-1">
+          <div className="flex justify-between gap-4">
+            <span className="text-gray-600">P95:</span>
+            <span className="font-semibold text-orange-600">{data.p95Ms}ms</span>
+          </div>
+          <div className="flex justify-between gap-4">
+            <span className="text-gray-600">Average:</span>
+            <span className="font-semibold text-blue-600">{data.avgMs}ms</span>
+          </div>
+          <div className="flex justify-between gap-4">
+            <span className="text-gray-600">Executions:</span>
+            <span className="font-semibold">{data.count}</span>
+          </div>
+          <div className="flex justify-between gap-4">
+            <span className="text-gray-600">Error Rate:</span>
+            <span className={`font-semibold ${data.errorRate > 10 ? 'text-red-600' : 'text-green-600'}`}>
+              {data.errorRate.toFixed(1)}%
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const p95Values = data.map((d) => d.p95Ms);
   const maxP95 = Math.max(...p95Values);
   const minP95 = Math.min(...p95Values);
-  const range = maxP95 - minP95 || 1;
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4" data-testid="latency-chart">
       <h2 className="text-lg font-semibold text-gray-900 mb-4">{title}</h2>
-      <div className="h-48 flex items-end gap-1">
-        {data.map((point, index) => {
-          const height = ((point.p95Ms - minP95) / range) * 100;
-          const date = new Date(point.timestamp);
-          const dateLabel = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
-          return (
-            <div
-              key={index}
-              className="flex-1 flex flex-col items-center group cursor-pointer"
-              title={`${dateLabel}: ${point.p95Ms}ms (P95)`}
-            >
-              <div
-                className="w-full bg-blue-500 rounded-t transition-all group-hover:bg-blue-600"
-                style={{ height: `${Math.max(height, 5)}%` }}
-              />
-              {index % Math.ceil(data.length / 5) === 0 && (
-                <span className="text-xs text-gray-500 mt-1 truncate">{dateLabel}</span>
-              )}
-            </div>
-          );
-        })}
-      </div>
-      <div className="flex justify-between mt-2 text-xs text-gray-500">
-        <span>P95 Min: {minP95.toFixed(0)}ms</span>
-        <span>P95 Max: {maxP95.toFixed(0)}ms</span>
+      <ResponsiveContainer width="100%" height={220}>
+        <ComposedChart data={chartData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+          <defs>
+            <linearGradient id="p95Gradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#f97316" stopOpacity={0.3} />
+              <stop offset="95%" stopColor="#f97316" stopOpacity={0.05} />
+            </linearGradient>
+          </defs>
+
+          <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+
+          <XAxis
+            dataKey="dateStr"
+            stroke="#6b7280"
+            style={{ fontSize: '11px' }}
+            tickLine={false}
+          />
+
+          <YAxis
+            stroke="#6b7280"
+            style={{ fontSize: '11px' }}
+            tickLine={false}
+            axisLine={false}
+            tickFormatter={(value) => `${value}ms`}
+          />
+
+          <Tooltip content={<CustomTooltip />} />
+
+          {/* Shaded area under P95 line */}
+          <Area
+            type="monotone"
+            dataKey="p95Ms"
+            stroke="none"
+            fill="url(#p95Gradient)"
+            fillOpacity={1}
+          />
+
+          {/* P95 line */}
+          <Line
+            type="monotone"
+            dataKey="p95Ms"
+            stroke="#f97316"
+            strokeWidth={2}
+            dot={{ fill: '#f97316', r: 4 }}
+            activeDot={{ r: 6, stroke: '#fff', strokeWidth: 2 }}
+            name="P95"
+          />
+
+          {/* Average line */}
+          <Line
+            type="monotone"
+            dataKey="avgMs"
+            stroke="#3b82f6"
+            strokeWidth={2}
+            strokeDasharray="5 5"
+            dot={{ fill: '#3b82f6', r: 3 }}
+            activeDot={{ r: 5, stroke: '#fff', strokeWidth: 2 }}
+            name="Average"
+          />
+        </ComposedChart>
+      </ResponsiveContainer>
+
+      {/* Summary stats */}
+      <div className="flex justify-between mt-3 pt-3 border-t text-xs text-gray-500">
+        <span>Min P95: <strong className="text-gray-700">{Math.round(minP95)}ms</strong></span>
+        <span>Max P95: <strong className="text-gray-700">{Math.round(maxP95)}ms</strong></span>
+        <span>Data points: <strong className="text-gray-700">{data.length}</strong></span>
       </div>
     </div>
   );

@@ -1,0 +1,64 @@
+
+> workflow-root@1.0.0 build
+> turbo run build
+
+turbo 2.6.1
+
+ WARNING  Unable to calculate transitive closures: Workspace 'packages/workflow-mcp-server' not found in lockfile.
+• Packages in scope: @workflow/api-client, @workflow/graph, @workflow/mcp-server, @workflow/types, @workflow/ui-components, @workflow/validation, workflow-ui, workflow-vscode-client, workflow-vscode-server
+• Running build in 9 packages
+• Remote caching disabled
+@workflow/api-client:build: cache miss, executing 71dd7dfe73969d6a
+workflow-ui:build: cache miss, executing d2b55a5cfbd45163
+@workflow/types:build: cache miss, executing 4213e4d00c4c7cb5
+@workflow/mcp-server:build: cache miss, executing 91bcabafc434b219
+@workflow/api-client:build: 
+@workflow/api-client:build: > @workflow/api-client@0.1.0 build /Users/darren/dev/workflow/packages/workflow-api-client
+@workflow/api-client:build: > tsc
+@workflow/api-client:build: 
+workflow-ui:build: 
+workflow-ui:build: > workflow-ui@0.1.0 build /Users/darren/dev/workflow/src/workflow-ui
+workflow-ui:build: > next build
+workflow-ui:build: 
+@workflow/types:build: 
+@workflow/types:build: > @workflow/types@0.1.0 build /Users/darren/dev/workflow/packages/workflow-types
+@workflow/types:build: > tsc
+@workflow/types:build: 
+@workflow/mcp-server:build: 
+@workflow/mcp-server:build: > @workflow/mcp-server@0.1.0 build /Users/darren/dev/workflow/packages/workflow-mcp-server
+@workflow/mcp-server:build: > tsc
+@workflow/mcp-server:build: 
+workflow-ui:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+@workflow/validation:build: cache miss, executing 5fa3649bf5327fd7
+workflow-ui:build:  ⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+workflow-ui:build:  We detected multiple lockfiles and selected the directory of /Users/darren/package-lock.json as the root directory.
+workflow-ui:build:  To silence this warning, set `turbopack.root` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+workflow-ui:build:    See https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory for more information.
+workflow-ui:build:  Detected additional lockfiles: 
+workflow-ui:build:    * /Users/darren/dev/workflow/src/workflow-ui/package-lock.json
+workflow-ui:build:    * /Users/darren/dev/workflow/pnpm-lock.yaml
+workflow-ui:build: 
+workflow-ui:build:    ▲ Next.js 16.0.3 (Turbopack)
+workflow-ui:build:    - Environments: .env.local
+workflow-ui:build: 
+workflow-ui:build:    Creating an optimized production build ...
+@workflow/validation:build: 
+@workflow/validation:build: > @workflow/validation@0.1.0 build /Users/darren/dev/workflow/packages/workflow-validation
+@workflow/validation:build: > tsc
+@workflow/validation:build: 
+workflow-ui:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+@workflow/validation:build: src/schemaValidator.ts(2,51): error TS6305: Output file '/Users/darren/dev/workflow/packages/workflow-types/dist/index.d.ts' has not been built from source file '/Users/darren/dev/workflow/packages/workflow-types/src/index.ts'.
+@workflow/validation:build: src/templateParser.ts(1,57): error TS6305: Output file '/Users/darren/dev/workflow/packages/workflow-types/dist/index.d.ts' has not been built from source file '/Users/darren/dev/workflow/packages/workflow-types/src/index.ts'.
+@workflow/validation:build:  ELIFECYCLE  Command failed with exit code 2.
+@workflow/validation:build: ERROR: command finished with error: command (/Users/darren/dev/workflow/packages/workflow-validation) /usr/local/bin/pnpm run build exited (2)
+workflow-ui:build:  ELIFECYCLE  Command failed with exit code 130.
+@workflow/validation#build: command (/Users/darren/dev/workflow/packages/workflow-validation) /usr/local/bin/pnpm run build exited (2)
+
+ Tasks:    3 successful, 5 total
+Cached:    0 cached, 5 total
+  Time:    4.61s 
+Failed:    @workflow/validation#build
+
+ WARNING  no output files found for task @workflow/api-client#build. Please check your `outputs` key in `turbo.json`
+ WARNING  no output files found for task @workflow/types#build. Please check your `outputs` key in `turbo.json`
+ ERROR  run failed: command  exited (2)

@@ -7,6 +7,8 @@ import type { SlowestWorkflow } from '@/lib/api/types';
 interface SlowestWorkflowsPanelProps {
   workflows: SlowestWorkflow[] | undefined;
   isLoading: boolean;
+  selectedWorkflow?: string;
+  onSelectWorkflow?: (name: string) => void;
 }
 
 function DegradationIndicator({ percent }: { percent: number }) {
@@ -34,7 +36,7 @@ function DegradationIndicator({ percent }: { percent: number }) {
   );
 }
 
-export function SlowestWorkflowsPanel({ workflows, isLoading }: SlowestWorkflowsPanelProps) {
+export function SlowestWorkflowsPanel({ workflows, isLoading, selectedWorkflow, onSelectWorkflow }: SlowestWorkflowsPanelProps) {
   if (isLoading) {
     return (
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
@@ -68,25 +70,35 @@ export function SlowestWorkflowsPanel({ workflows, isLoading }: SlowestWorkflows
         <h2 className="text-lg font-semibold text-gray-900">Slowest Workflows</h2>
       </div>
       <div className="divide-y divide-gray-200" data-testid="slowest-workflows-panel">
-        {workflows.map((workflow, index) => (
-          <div key={workflow.name} className="p-4 flex items-center justify-between hover:bg-gray-50">
-            <div className="flex items-center gap-3">
-              <span className="text-lg font-bold text-gray-400 w-6">{index + 1}</span>
-              <div>
-                <Link
-                  href={`/workflows/${encodeURIComponent(workflow.name)}`}
-                  className="text-blue-600 hover:text-blue-800 font-medium"
-                >
-                  {workflow.name}
-                </Link>
-                <p className="text-sm text-gray-500">
-                  Avg: {workflow.avgDurationMs}ms | P95: {workflow.p95Ms}ms
-                </p>
+        {workflows.map((workflow, index) => {
+          const isSelected = selectedWorkflow === workflow.name;
+          return (
+            <button
+              key={workflow.name}
+              onClick={() => onSelectWorkflow?.(workflow.name)}
+              className={`w-full p-4 flex items-center justify-between text-left transition-colors ${
+                isSelected
+                  ? 'bg-blue-50 border-l-4 border-blue-600'
+                  : 'hover:bg-gray-50 border-l-4 border-transparent'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <span className={`text-lg font-bold w-6 ${isSelected ? 'text-blue-600' : 'text-gray-400'}`}>
+                  {index + 1}
+                </span>
+                <div>
+                  <span className={`font-medium ${isSelected ? 'text-blue-700' : 'text-gray-900'}`}>
+                    {workflow.name}
+                  </span>
+                  <p className="text-sm text-gray-500">
+                    Avg: {workflow.avgDurationMs}ms | P95: {workflow.p95Ms}ms
+                  </p>
+                </div>
               </div>
-            </div>
-            <DegradationIndicator percent={workflow.degradationPercent} />
-          </div>
-        ))}
+              <DegradationIndicator percent={workflow.degradationPercent} />
+            </button>
+          );
+        })}
       </div>
     </div>
   );

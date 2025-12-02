@@ -177,7 +177,61 @@ function stackedPosition(
   return { x, y, z };
 }
 
-type LayoutMode = 'radial' | 'stacked';
+// Transform task labels - these get positioned at half radius
+const TRANSFORM_TASK_LABELS = [
+  'Transform', 'Merge', 'Aggregate', 'Filter', 'Map', 'Reduce',
+  'Merge Data', 'Validate Data', 'Parse', 'Enrich', 'Convert',
+];
+
+function isTransformTask(label: string): boolean {
+  return TRANSFORM_TASK_LABELS.some(t =>
+    label.toLowerCase().includes(t.toLowerCase())
+  );
+}
+
+// Calculate hub-and-spoke position (input at center, all tasks around outside)
+// Uses XY plane so the wheel faces the viewer (camera at z=10)
+// Transform tasks positioned at half radius (inner ring)
+function hubSpokePosition(
+  depth: number,
+  _maxDepth: number,
+  _index: number,
+  _totalAtDepth: number,
+  totalNodes: number,
+  globalIndex: number,
+  isInput: boolean,
+  hubRadius: number,
+  label: string
+): { x: number; y: number; z: number } {
+  // Input node at the center (slightly forward for visibility)
+  if (isInput || depth === 0) {
+    return { x: 0, y: 0, z: 0.5 };
+  }
+
+  // All other nodes arranged in a circle around the hub
+  // Use global index for even distribution around the circle
+  const angle = (globalIndex / Math.max(totalNodes - 1, 1)) * Math.PI * 2;
+
+  // Transform tasks at half radius (inner ring), HTTP tasks at full radius
+  const isTransform = isTransformTask(label);
+  const baseRadius = isTransform ? hubRadius * 0.5 : hubRadius;
+
+  // Slight radius variation based on depth for visual layering
+  const radiusVariation = 1 + (depth * 0.1);
+  const radius = baseRadius * radiusVariation;
+
+  // XY plane positioning (vertical wheel facing viewer)
+  // Transform tasks slightly forward, HTTP tasks slightly back
+  const zOffset = isTransform ? 0.2 : -depth * 0.3;
+
+  return {
+    x: radius * Math.cos(angle),
+    y: radius * Math.sin(angle),
+    z: zOffset,
+  };
+}
+
+type LayoutMode = 'radial' | 'stacked' | 'hub-spoke';
 
 export default function VisualizationPage() {
   // Data source toggle
@@ -210,6 +264,7 @@ export default function VisualizationPage() {
   const triggerSignal = useVisualizationStore((state) => state.triggerSignal);
   const clearGraph = useVisualizationStore((state) => state.clearGraph);
   const nodeSizeMode = useVisualizationStore((state) => state.nodeSizeMode);
+  const setStoreLayoutMode = useVisualizationStore((state) => state.setLayoutMode);
 
   // Generate node ID from task name
   const taskToNodeId = useCallback((taskName: string): string => {
@@ -436,13 +491,36 @@ export default function VisualizationPage() {
     const nodes: { id: string; label: string; position: { x: number; y: number; z: number }; workflows: string[]; connectionCount: number }[] = [];
     const nodeMap = new Map<string, typeof nodes[0]>();
 
+    // For hub-spoke layout, count total non-input nodes for circular distribution
+    const totalNonInputNodes = Array.from(labelToTasks.entries())
+      .filter(([_, info]) => info.type !== 'input').length;
+    let hubSpokeGlobalIndex = 0;
+
     nodesByDepth.forEach((labels, depth) => {
       labels.forEach((label, index) => {
-        // Choose position based on layout mode
-        const position = layoutMode === 'radial'
-          ? sphericalPosition(depth, maxDepth, index, labels.length, sphereRadius)
-          : stackedPosition(depth, maxDepth, index, labels.length);
         const info = labelToTasks.get(label)!;
+        const isInput = info.type === 'input';
+
+        // Choose position based on layout mode
+        let position: { x: number; y: number; z: number };
+        if (layoutMode === 'radial') {
+          position = sphericalPosition(depth, maxDepth, index, labels.length, sphereRadius);
+        } else if (layoutMode === 'hub-spoke') {
+          position = hubSpokePosition(
+            depth,
+            maxDepth,
+            index,
+            labels.length,
+            totalNonInputNodes,
+            isInput ? 0 : hubSpokeGlobalIndex++,
+            isInput,
+            sphereRadius,
+            label
+          );
+        } else {
+          position = stackedPosition(depth, maxDepth, index, labels.length);
+        }
+
         const node = {
           id: `node-${label.toLowerCase().replace(/\s+/g, '-')}`,
           label,
@@ -643,6 +721,11 @@ export default function VisualizationPage() {
     };
   }, []);
 
+  // Sync layoutMode to store for edge routing
+  useEffect(() => {
+    setStoreLayoutMode(layoutMode);
+  }, [layoutMode, setStoreLayoutMode]);
+
   const resetStats = () => {
     setTotalSignals(0);
     setActiveExecutions(0);
@@ -673,7 +756,9 @@ export default function VisualizationPage() {
                     : 'Live: Connecting to SignalR...'
                 : layoutMode === 'radial'
                   ? 'Simulation: Radial layout with shared task merging'
-                  : 'Simulation: Stacked layout with shared task merging'}
+                  : layoutMode === 'hub-spoke'
+                    ? 'Simulation: Hub & Spoke - Input at center, services around the outside'
+                    : 'Simulation: Stacked layout with shared task merging'}
             </p>
           </div>
 
@@ -758,16 +843,38 @@ export default function VisualizationPage() {
           {/* Layout toggle - available in both modes */}
           <div className="flex items-center gap-2">
             <label className="text-sm text-white/60">Layout:</label>
-            <button
-              onClick={() => setLayoutMode(layoutMode === 'radial' ? 'stacked' : 'radial')}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                layoutMode === 'radial'
-                  ? 'bg-purple-600 hover:bg-purple-500 text-white'
-                  : 'bg-blue-600 hover:bg-blue-500 text-white'
-              }`}
-            >
-              {layoutMode === 'radial' ? 'Radial' : 'Stacked'}
-            </button>
+            <div className="flex rounded-lg overflow-hidden border border-white/20">
+              <button
+                onClick={() => setLayoutMode('radial')}
+                className={`px-3 py-1.5 text-sm font-medium transition-all ${
+                  layoutMode === 'radial'
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-gray-800 text-white/60 hover:text-white hover:bg-gray-700'
+                }`}
+              >
+                Radial
+              </button>
+              <button
+                onClick={() => setLayoutMode('hub-spoke')}
+                className={`px-3 py-1.5 text-sm font-medium transition-all ${
+                  layoutMode === 'hub-spoke'
+                    ? 'bg-cyan-600 text-white'
+                    : 'bg-gray-800 text-white/60 hover:text-white hover:bg-gray-700'
+                }`}
+              >
+                Hub &amp; Spoke
+              </button>
+              <button
+                onClick={() => setLayoutMode('stacked')}
+                className={`px-3 py-1.5 text-sm font-medium transition-all ${
+                  layoutMode === 'stacked'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-800 text-white/60 hover:text-white hover:bg-gray-700'
+                }`}
+              >
+                Stacked
+              </button>
+            </div>
           </div>
 
           {/* Simulation-only filters */}
@@ -906,20 +1013,41 @@ export default function VisualizationPage() {
 
         {/* Legend */}
         <div className="absolute top-4 right-20 bg-black/70 rounded-lg px-4 py-3 text-sm">
-          <div className="text-white/60 mb-2">Layout</div>
+          <div className="text-white/60 mb-2">
+            {layoutMode === 'radial' ? 'Radial Layout' : layoutMode === 'hub-spoke' ? 'Hub & Spoke' : 'Stacked Layout'}
+          </div>
           <div className="space-y-1 text-xs">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-cyan-400" />
-              <span className="text-white/60">Center = Input</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-blue-400" />
-              <span className="text-white/60">Middle = Processing</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-green-400" />
-              <span className="text-white/60">Outer = Output</span>
-            </div>
+            {layoutMode === 'hub-spoke' ? (
+              <>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-cyan-400 border-2 border-cyan-300" />
+                  <span className="text-white/60">Hub = Input/Trigger</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-blue-400" />
+                  <span className="text-white/60">Spoke = Service/Task</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-green-400" />
+                  <span className="text-white/60">Ring = Output</span>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-cyan-400" />
+                  <span className="text-white/60">{layoutMode === 'stacked' ? 'Top' : 'Center'} = Input</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-blue-400" />
+                  <span className="text-white/60">Middle = Processing</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-green-400" />
+                  <span className="text-white/60">{layoutMode === 'stacked' ? 'Bottom' : 'Outer'} = Output</span>
+                </div>
+              </>
+            )}
             <div className="flex items-center gap-2 mt-2 pt-2 border-t border-white/10">
               <span className="text-white/40">(n)</span>
               <span className="text-white/60">= shared by n workflows</span>

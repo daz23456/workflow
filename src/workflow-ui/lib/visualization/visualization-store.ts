@@ -12,6 +12,11 @@
 import { create } from 'zustand';
 import type { ThemePresetName, SignalFlowPresetName, NodeSizeModeName } from './theme';
 
+export type LayoutMode = 'radial' | 'stacked' | 'hub-spoke';
+
+// Export for use in other components
+export { type LayoutMode as VisualizationLayoutMode };
+
 export interface Vector3 {
   x: number;
   y: number;
@@ -48,6 +53,7 @@ export interface VisualizationState {
   themePreset: ThemePresetName;
   signalFlowPreset: SignalFlowPresetName;
   nodeSizeMode: NodeSizeModeName;
+  layoutMode: LayoutMode;
 
   // Graph data
   nodes: Map<string, VisualizationNode>;
@@ -64,6 +70,7 @@ export interface VisualizationState {
   setThemePreset: (preset: ThemePresetName) => void;
   setSignalFlowPreset: (preset: SignalFlowPresetName) => void;
   setNodeSizeMode: (mode: NodeSizeModeName) => void;
+  setLayoutMode: (mode: LayoutMode) => void;
 
   // Actions - Nodes
   addNode: (node: VisualizationNode) => void;
@@ -102,6 +109,7 @@ const initialState = {
   themePreset: 'sci-fi-cyber' as ThemePresetName,
   signalFlowPreset: 'particle-stream' as SignalFlowPresetName,
   nodeSizeMode: 'uniform' as NodeSizeModeName,
+  layoutMode: 'radial' as LayoutMode,
   nodes: new Map<string, VisualizationNode>(),
   edges: [] as VisualizationEdge[],
   activeSignals: [] as ActiveSignal[],
@@ -220,6 +228,10 @@ export const useVisualizationStore = create<VisualizationState>((set, get) => ({
 
   setNodeSizeMode: (mode: NodeSizeModeName) => {
     set({ nodeSizeMode: mode });
+  },
+
+  setLayoutMode: (mode: LayoutMode) => {
+    set({ layoutMode: mode });
   },
 
   addNode: (node: VisualizationNode) => {
@@ -366,6 +378,8 @@ export const useSignalFlowPreset = () =>
   useVisualizationStore((state) => state.signalFlowPreset);
 export const useNodeSizeMode = () =>
   useVisualizationStore((state) => state.nodeSizeMode);
+export const useLayoutMode = () =>
+  useVisualizationStore((state) => state.layoutMode);
 export const useVisualizationNodes = () =>
   useVisualizationStore((state) => state.nodes);
 export const useVisualizationEdges = () =>

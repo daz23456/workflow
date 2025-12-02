@@ -33,6 +33,10 @@ export function Navigation() {
               <span className="text-xl font-bold text-gray-900">Workflow</span>
             </Link>
 
+            <Link href="/dashboard" className={linkClasses('/dashboard')}>
+              Dashboard
+            </Link>
+
             <Link href="/workflows" className={linkClasses('/workflows')}>
               Workflows
             </Link>
@@ -43,6 +47,10 @@ export function Navigation() {
 
             <Link href="/tasks" className={linkClasses('/tasks')}>
               Tasks
+            </Link>
+
+            <Link href="/visualization" className={linkClasses('/visualization')}>
+              Visualization
             </Link>
           </div>
         </div>

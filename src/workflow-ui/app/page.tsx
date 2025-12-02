@@ -456,11 +456,11 @@ export default function Home() {
       {/* Coming Soon Section */}
       <section className="container mx-auto px-4 py-16">
         <h2 className="text-3xl font-bold text-center mb-12">Coming Soon</h2>
-        <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-          {/* Visual Workflow Designer - commented out
-          <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-6 rounded-lg border border-purple-200">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          {/* Stage 11: Cloud Deployment */}
+          <div className="bg-gradient-to-br from-sky-50 to-blue-50 p-6 rounded-lg border border-sky-200">
             <div className="flex items-start gap-4">
-              <div className="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
+              <div className="w-10 h-10 bg-sky-600 rounded-lg flex items-center justify-center flex-shrink-0">
                 <svg
                   className="w-6 h-6 text-white"
                   fill="none"
@@ -471,100 +471,20 @@ export default function Home() {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
-                    d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"
+                    d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"
                   />
                 </svg>
               </div>
               <div>
-                <h3 className="font-semibold text-lg mb-2">Visual Workflow Designer</h3>
+                <h3 className="font-semibold text-lg mb-2">Cloud Deployment</h3>
                 <p className="text-gray-600 text-sm">
-                  Drag-and-drop workflow builder with real-time validation and execution preview
-                </p>
-              </div>
-            </div>
-          </div>
-          */}
-
-          <div className="bg-gradient-to-br from-green-50 to-teal-50 p-6 rounded-lg border border-green-200">
-            <div className="flex items-start gap-4">
-              <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                <svg
-                  className="w-6 h-6 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                  />
-                </svg>
-              </div>
-              <div>
-                <h3 className="font-semibold text-lg mb-2">Platform Health Dashboard</h3>
-                <p className="text-gray-600 text-sm">
-                  System-wide metrics, worst performers, alerting, and historical trends
+                  Helm charts for GKE & AKS, production hardening, and high availability configuration
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-orange-50 to-red-50 p-6 rounded-lg border border-orange-200">
-            <div className="flex items-start gap-4">
-              <div className="w-10 h-10 bg-orange-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                <svg
-                  className="w-6 h-6 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
-                  />
-                </svg>
-              </div>
-              <div>
-                <h3 className="font-semibold text-lg mb-2">Team Collaboration</h3>
-                <p className="text-gray-600 text-sm">
-                  Shared workspace with role-based access control and workflow versioning
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Neural Network Visualization - commented out
-          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-lg border border-blue-200">
-            <div className="flex items-start gap-4">
-              <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                <svg
-                  className="w-6 h-6 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M13 10V3L4 14h7v7l9-11h-7z"
-                  />
-                </svg>
-              </div>
-              <div>
-                <h3 className="font-semibold text-lg mb-2">Neural Network Visualization</h3>
-                <p className="text-gray-600 text-sm">
-                  Stunning 3D real-time visualization of workflow execution as neural network
-                </p>
-              </div>
-            </div>
-          </div>
-          */}
-
+          {/* Stage 13: AI Workflow Generation */}
           <div className="bg-gradient-to-br from-amber-50 to-yellow-50 p-6 rounded-lg border border-amber-200">
             <div className="flex items-start gap-4">
               <div className="w-10 h-10 bg-amber-600 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -585,12 +505,13 @@ export default function Home() {
               <div>
                 <h3 className="font-semibold text-lg mb-2">AI Workflow Generation</h3>
                 <p className="text-gray-600 text-sm">
-                  Describe what you want in plain English - AI builds the workflow for you
+                  Describe what you want in plain English - AI builds the workflow via MCP integration
                 </p>
               </div>
             </div>
           </div>
 
+          {/* Stage 14: Workflow Optimizer */}
           <div className="bg-gradient-to-br from-emerald-50 to-teal-50 p-6 rounded-lg border border-emerald-200">
             <div className="flex items-start gap-4">
               <div className="w-10 h-10 bg-emerald-600 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -611,7 +532,115 @@ export default function Home() {
               <div>
                 <h3 className="font-semibold text-lg mb-2">Workflow Optimizer</h3>
                 <p className="text-gray-600 text-sm">
-                  Automatic performance tuning - proven safe by replaying past executions
+                  Automatic performance tuning with algebraic transforms - proven safe by replaying past executions
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Stage 15: MCP Server */}
+          <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-6 rounded-lg border border-purple-200">
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                <svg
+                  className="w-6 h-6 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                  />
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-semibold text-lg mb-2">MCP Workflow Server</h3>
+                <p className="text-gray-600 text-sm">
+                  Let any chatbot discover and execute workflows via Model Context Protocol
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Stage 16: OpenAPI Task Generator */}
+          <div className="bg-gradient-to-br from-orange-50 to-red-50 p-6 rounded-lg border border-orange-200">
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 bg-orange-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                <svg
+                  className="w-6 h-6 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"
+                  />
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-semibold text-lg mb-2">OpenAPI Task Generator</h3>
+                <p className="text-gray-600 text-sm">
+                  Auto-generate WorkflowTask CRDs from OpenAPI specs - complete PACT replacement
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Stage 17: Test API Server */}
+          <div className="bg-gradient-to-br from-cyan-50 to-teal-50 p-6 rounded-lg border border-cyan-200">
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 bg-cyan-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                <svg
+                  className="w-6 h-6 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
+                  />
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-semibold text-lg mb-2">Test API Server</h3>
+                <p className="text-gray-600 text-sm">
+                  100 endpoints for testing orchestration - validates transforms, errors, and retries
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Stage 18: Synthetic Health Checks */}
+          <div className="bg-gradient-to-br from-rose-50 to-pink-50 p-6 rounded-lg border border-rose-200">
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 bg-rose-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                <svg
+                  className="w-6 h-6 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                  />
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-semibold text-lg mb-2">Synthetic Health Checks</h3>
+                <p className="text-gray-600 text-sm">
+                  Proactive endpoint monitoring - catch broken APIs before users do
                 </p>
               </div>
             </div>

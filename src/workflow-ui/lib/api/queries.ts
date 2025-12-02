@@ -34,8 +34,8 @@ import type { DurationTrendsResponse, ExecutionTraceResponse } from './types';
 // API BASE URL
 // ============================================================================
 
-// Changed from '/api/v1' to '/api' to use Next.js proxy routes instead of MSW
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
+// Use the backend API directly - NEXT_PUBLIC_API_BASE_URL must be set in .env.local
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5001/api/v1';
 
 // ============================================================================
 // API CLIENT UTILITIES

@@ -895,6 +895,245 @@ LLM: "Here's the profile for user 3:
 
 **Value:** **Any chatbot can now be a workflow executor** - democratize access beyond technical users!
 
+### Stage 16: OpenAPI Task Generator CLI (Complete Contract Testing Platform)
+*Scope:* Auto-generate WorkflowTask CRDs from OpenAPI/Swagger specifications - **replaces PACT testing**
+*Deliverables:* 8 substages
+*Tests:* ~140 tests
+*Dependencies:* Stage 6 (WorkflowTask CRD model)
+*Package:* `packages/workflow-cli` (new CLI tool)
+*Value:* "Point at an API spec, get all tasks instantly" - eliminate manual task creation
+
+*Philosophy:* Integrating with external APIs shouldn't require manual YAML writing. Import an OpenAPI spec and get production-ready WorkflowTask definitions in seconds. No separate PACT broker needed.
+
+**Stage 16.1: OpenAPI Parser**
+- OpenAPI 2.0 (Swagger) and 3.x auto-detection and parsing
+- Schema resolution ($ref handling, circular reference detection)
+- Endpoint extraction (parameters, request/response schemas, security schemes)
+- 18+ tests
+
+**Stage 16.2: Task Generator**
+- WorkflowTask CRD generation from endpoints
+- Task naming: `operationId` or `{method}-{path}` sanitized
+- Input/output schema generation with auth placeholders
+- Error mapping configuration (4xx/5xx → normalized error codes)
+- 22+ tests
+
+**Stage 16.3: Sample Workflow Generator**
+- Workflow scaffolding with task chaining
+- Permission check task generation
+- Workflow permission validation
+- 15+ tests
+
+**Stage 16.4: Version Management & Migrations**
+- SHA256 hash-based change detection (`workflow.io/content-hash` label)
+- Auto-versioning: breaking changes → `get-user-v2` with `workflow.io/replaces`
+- TaskMigration CRD generation with transform suggestions
+- Draft/experimental version support
+- 14+ tests
+
+**Stage 16.5: CLI Integration**
+- `workflow-cli import openapi <source> --base-url <url>` command
+- Options: `--prefix`, `--single-file`, `--tags`, `--exclude-tags`, `--group-by-tag`
+- Deprecation handling, endpoint filtering
+- E2E tests with real OpenAPI specs (Petstore, Stripe)
+- 15+ tests
+
+**Stage 16.6: CI/CD Integration & Impact Notifications**
+- Pipeline mode (`--ci` flag, non-interactive)
+- Exit codes: 0=success, 1=breaking changes, **2=BLOCKED (removal with dependent workflows)**, 3=error
+- Task lifecycle: `active` → `superseded` → `deprecated`
+- Task removal protection (blocks if workflows depend on it)
+- Webhook/email notifications, team subscriptions by task pattern
+- Impact Analysis API: `GET /api/v1/tasks/{name}/impact`
+- 18+ tests
+
+**Stage 16.7: Field-Level Usage Tracking (PACT Consumer Contracts)**
+- WorkflowTaskUsage CRD: track which fields each workflow actually uses
+- `requiredFields` in workflow spec (consumer contract declaration)
+- Field-level impact analysis (unused field removal = safe, no breaking change)
+- `workflow-cli analyze-usage`, `workflow-cli field-impact <task> --field <field>`
+- 18+ tests
+
+**Stage 16.8: Contract Verification (PACT Provider States & Interactions)**
+- TaskTestScenarios CRD: auto-generated from OpenAPI error responses
+- RecordedInteraction CRD: golden file testing
+- TaskDeploymentMatrix CRD: environment tracking (dev/staging/prod)
+- `workflow-cli can-deploy <task-version> --to <env>`: cross-environment check
+- `workflow-cli verify`, `workflow-cli record`, `workflow-cli replay-verify`
+- 20+ tests
+
+**Dual Error Response Model:**
+```yaml
+error:
+  originalError:    # Preserve external API's exact response (Stripe, Twilio, etc.)
+    status: 400
+    body: { error: { type: card_error, code: card_declined, message: "..." }}
+  normalizedError:  # Uniform structure for all services
+    code: VALIDATION_ERROR
+    title: "Payment card declined"
+    suggestedAction: "Ask customer to use a different payment method"
+```
+
+**PACT Replacement Summary:**
+| PACT Feature | Stage 16 Implementation |
+|--------------|------------------------|
+| Consumer contracts | `requiredFields` + WorkflowTaskUsage |
+| Provider verification | OpenAPI import + hash detection |
+| Field-level analysis | FieldUsageAnalyzer (unused field = safe) |
+| Provider states | TaskTestScenarios (auto-generated) |
+| Interaction recording | RecordedInteraction CRD |
+| Can I Deploy? | TaskDeploymentMatrix + CLI |
+| Webhook notifications | TaskNotificationConfig |
+| Breaking change blocking | Exit code 2 (pipeline blocked) |
+
+**Success Metrics:**
+- OpenAPI 2.0/3.x: 100% valid specs supported
+- CLI response: <5s for 50-endpoint spec
+- Field-level precision: 100% (unused field removal = no breaking change)
+- Can-I-Deploy: 100% correct deployment recommendations
+- Test coverage: ≥90%
+
+**Value:** **Complete PACT replacement with zero broker infrastructure** - contract testing built into the workflow system with automatic field usage tracking!
+
+### Stage 17: Test API Server (Testing Infrastructure)
+*Scope:* Standalone HTTP test server with 100 endpoints for orchestration service capability testing
+*Deliverables:* 3 substages
+*Tests:* ~100 tests
+*Dependencies:* Stage 7 (API Gateway), Stage 5 (Workflow Execution)
+*Location:* `tests/TestApiServer`
+*Value:* "Comprehensive testing infrastructure with real-world scenarios" - validate auto-transforms, error handling, and retry logic
+
+*Philosophy:* A dedicated test server that returns content in various shapes and forms, enabling thorough testing of orchestration capabilities. Mix of structural endpoints (schema testing) and business domain endpoints (real-world scenarios).
+
+**Stage 17.1: Core Infrastructure & Structural Endpoints**
+- Project setup (`.NET Minimal API`, test dependencies)
+- Middleware: DelayMiddleware, FailureSimulationMiddleware
+- Primitive endpoints (10): string, integer, decimal, boolean, guid, datetime, echo, null
+- Array endpoints (10): strings, numbers, nested, large (1000/10000 items), mixed types
+- 20 WorkflowTask CRDs in `test` namespace
+- 25+ tests
+
+**Stage 17.2: Business Domain Endpoints**
+- Orders endpoints (15): full order lifecycle, calculate totals, shipping, invoices
+- Inventory endpoints (10): product catalog, availability, reservations, pricing
+- Payments endpoints (15): process, refund, validate card, auth/capture flow
+- Users & Auth endpoints (15): profiles, preferences, login/logout, JWT validation
+- Notifications endpoints (10): email, SMS, push, templates, bulk send
+- 65 WorkflowTask CRDs in `test` namespace
+- 50+ tests
+
+**Stage 17.3: Error Handling, Retry & Sample Workflows**
+- Error simulation (10): HTTP status codes 400-503, configurable, random
+- Retry endpoints (5): fail-once, fail-n-times, intermittent, slow responses
+- FailureStateService, RetryCounterService
+- Sample workflows (5):
+  - Order processing (create → inventory → payment → notify)
+  - User onboarding (register → verify → preferences → welcome)
+  - Payment retry (authorize → capture with retry)
+  - Bulk notifications (parallel sends)
+  - Inventory check (multi-product availability)
+- 25+ tests
+
+**Success Metrics:**
+- Total endpoints: 100 (structural + business domain)
+- WorkflowTask CRDs: 100 in `test` namespace
+- Sample workflows: 5 realistic business scenarios
+- Test coverage: ≥90%
+
+**Value:** **Comprehensive testing infrastructure** - validate orchestration capabilities against realistic API behavior including failures, timeouts, and complex nested responses!
+
+### Stage 18: Synthetic Health Checks (Proactive Monitoring)
+*Scope:* Proactive endpoint health monitoring - replay GET requests from previous executions to verify services are up
+*Deliverables:* 2 substages
+*Tests:* ~40 tests
+*Dependencies:* Stage 7 (API Gateway), Stage 7.8 (Execution History), Stage 10.2 (Dashboard)
+*Value:* "Catch broken endpoints before users do" - full end-to-end validation including DB connectivity on target services
+
+*Philosophy:* Don't wait for users to discover that an external API is down. Replay GET requests from the last successful execution using a service account token. This validates the full path: DNS, TLS, service health, database connectivity, and response format.
+
+**Stage 18.1: Backend Health Check Service**
+- Configuration for service account token:
+  ```yaml
+  # appsettings.json
+  SyntheticCheck:
+    Enabled: true
+    IntervalMinutes: 5
+    TimeoutSeconds: 10
+    ServiceAccountToken: "${HEALTH_CHECK_TOKEN}"  # From env/secret
+  ```
+- `ISyntheticCheckService` / `SyntheticCheckService`:
+  - Find last successful execution for workflow
+  - Extract GET requests with resolved URLs from execution history
+  - Replay each GET request with service account token
+  - Expect 2xx response (full validation)
+  - Run checks in parallel (Task.WhenAll)
+  - Record: reachable, latencyMs, statusCode, responseValid
+- `SyntheticCheckBackgroundService` (IHostedService):
+  - Configurable interval (default: 5 min)
+  - Check all workflows with execution history
+  - Cache results in memory
+  - Log warnings on failures
+- API endpoints:
+  - `POST /api/v1/workflows/{name}/health-check` (run now)
+  - `GET /api/v1/workflows/{name}/health-status` (cached result)
+  - `GET /api/v1/health/summary` (all workflows overview)
+- Profile: `BACKEND_DOTNET`, Gates: 1-8
+- 25+ tests
+
+**What gets validated:**
+- DNS resolution ✓
+- TLS/SSL certificates ✓
+- Service is running ✓
+- Database connectivity (service can query) ✓
+- Response format matches expected ✓
+
+**Stage 18.2: Dashboard Health Widget & UI**
+- Health status widget on dashboard:
+  - Green/yellow/red indicators per workflow
+  - Click for task-level breakdown
+  - "Run Check Now" button
+- Health summary panel showing:
+  - Workflows by health status
+  - Last check timestamp
+  - Degraded/unhealthy count
+- Integration with existing dashboard layout
+- Profile: `FRONTEND_TS`, Gates: 1-8, 14, 15
+- 15+ tests
+
+**Response Model:**
+```json
+{
+  "workflow": "order-processing",
+  "overallHealth": "healthy",
+  "tasks": [
+    {
+      "taskId": "fetch-user",
+      "taskRef": "get-user",
+      "status": "healthy",
+      "checkType": "healthEndpoint",
+      "latencyMs": 45,
+      "reachable": true
+    }
+  ],
+  "checkedAt": "2024-01-15T10:30:00Z",
+  "durationMs": 234
+}
+```
+
+**TDD Targets:**
+- 40+ tests across service, background worker, and UI
+- Integration tests with mock HTTP endpoints
+- E2E test: trigger check → verify dashboard updates
+- Maintain ≥90% coverage
+
+**Success Metrics:**
+- Health check latency: <5s for 10-task workflow
+- Background check interval: configurable (1-60 min)
+- Dashboard update: <1s after check completes
+- Zero false positives (reliable connectivity detection)
+
+**Value:** **Proactive failure detection** - know about broken endpoints before your users do!
+
 ---
 
 ## Quality Gates (Enforced)

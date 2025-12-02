@@ -4,3 +4,4 @@ export { SystemMetricsCard } from './system-metrics-card';
 export { WorkflowMetricsTable } from './workflow-metrics-table';
 export { SlowestWorkflowsPanel } from './slowest-workflows-panel';
 export { LatencyChart } from './latency-chart';
+export { LatencyDistribution } from './latency-distribution';

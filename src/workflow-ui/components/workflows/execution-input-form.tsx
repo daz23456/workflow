@@ -11,7 +11,7 @@ interface ExecutionInputFormProps {
     type: string;
     properties?: Record<string, any>;
     required?: string[];
-  };
+  } | null | undefined;
   onSubmit: (data: Record<string, any>) => void | Promise<void>;
   onTest?: (data: Record<string, any>) => void | Promise<void>;
   submitLabel?: string;
@@ -23,7 +23,7 @@ interface ExecutionInputFormProps {
 function jsonSchemaToZod(schema: ExecutionInputFormProps['schema']): z.ZodObject<any> {
   const shape: Record<string, z.ZodTypeAny> = {};
 
-  if (!schema.properties) {
+  if (!schema || !schema.properties) {
     return z.object({});
   }
 
@@ -118,7 +118,7 @@ function cleanFormData(
   schema: ExecutionInputFormProps['schema']
 ): Record<string, any> {
   const cleaned: Record<string, any> = {};
-  const required = schema.required || [];
+  const required = schema?.required || [];
 
   for (const [key, value] of Object.entries(data)) {
     // Skip NaN values (from empty number inputs)

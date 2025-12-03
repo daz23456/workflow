@@ -398,7 +398,7 @@ export function useExecuteWorkflow(name: string) {
         `${API_BASE_URL}/workflows/${name}/execute`,
         {
           method: 'POST',
-          body: JSON.stringify(input),
+          body: JSON.stringify({ input }), // Backend expects { input: {...} }
         }
       );
       return data;
@@ -424,7 +424,7 @@ export function useDryRun(name: string) {
     mutationFn: async (input: Record<string, unknown>) => {
       const data = await fetchJson<DryRunResponse>(`${API_BASE_URL}/workflows/${name}/test`, {
         method: 'POST',
-        body: JSON.stringify(input),
+        body: JSON.stringify({ input }), // Backend expects { input: {...} }
       });
       return data;
     },

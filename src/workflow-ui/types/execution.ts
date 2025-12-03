@@ -4,7 +4,10 @@ export interface WorkflowExecutionResponse {
   success: boolean;
   input?: Record<string, any>;
   output: Record<string, any>;
-  tasks: TaskExecutionDetail[];
+  /** Task execution details - backend may return as 'tasks' or 'taskDetails' */
+  tasks?: TaskExecutionDetail[];
+  /** Task execution details - backend may return as 'tasks' or 'taskDetails' */
+  taskDetails?: TaskExecutionDetail[];
   executionTimeMs: number;
   /** Time taken to build the execution graph in microseconds. Typically under 1000μs (1ms) */
   graphBuildDurationMicros?: number;

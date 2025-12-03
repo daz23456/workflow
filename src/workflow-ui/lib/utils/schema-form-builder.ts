@@ -64,8 +64,8 @@ export interface FormField {
  * // ]
  * ```
  */
-export function buildFormFields(schema: JSONSchema): FormField[] {
-  if (!schema.properties) {
+export function buildFormFields(schema: JSONSchema | null | undefined): FormField[] {
+  if (!schema || !schema.properties) {
     return [];
   }
 

@@ -7,9 +7,9 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Save, Upload, X, AlertTriangle, Play, Code, Copy, Check } from 'lucide-react';
+import { Save, Upload, X, AlertTriangle, Play, Code, Copy, Check, Sparkles, Loader2, Wand2 } from 'lucide-react';
 import { TaskPalette } from '@/components/builder/task-palette';
 import { WorkflowCanvas } from '@/components/builder/workflow-canvas';
 import { PropertiesPanel } from '@/components/builder/properties-panel';
@@ -57,6 +57,14 @@ export default function WorkflowBuilderPage() {
   const [showPropertiesPanel, setShowPropertiesPanel] = useState(true);
   const [showYamlPreview, setShowYamlPreview] = useState(false);
   const [yamlCopied, setYamlCopied] = useState(false);
+
+  // AI Generation state
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [showAiInput, setShowAiInput] = useState(true);
+  const [aiError, setAiError] = useState('');
+  const [aiSuccess, setAiSuccess] = useState('');
+  const aiInputRef = useRef<HTMLInputElement>(null);
 
   // Detect mobile viewport
   useEffect(() => {
@@ -141,6 +149,66 @@ export default function WorkflowBuilderPage() {
       return graphToYaml(builderState, { format: 'string' }) as string;
     } catch {
       return '# Error generating YAML preview';
+    }
+  };
+
+  // AI Workflow Generation
+  const handleAiGenerate = async () => {
+    if (!aiPrompt.trim() || isGenerating) return;
+
+    setIsGenerating(true);
+    setAiError('');
+    setAiSuccess('');
+    setErrorMessage('');
+
+    try {
+      // Call the Next.js API route for AI generation
+      const response = await fetch('/api/generate-workflow', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          intent: aiPrompt.trim(),
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || result.message || `Generation failed (${response.status})`);
+      }
+
+      if (result.yaml) {
+        // Import the generated YAML into the workflow builder
+        importFromYaml(result.yaml);
+
+        // Extract workflow name from the generated YAML
+        const nameMatch = result.yaml.match(/name:\s*([a-z0-9-]+)/);
+        if (nameMatch) {
+          setWorkflowName(nameMatch[1]);
+        }
+
+        setAiSuccess(`Generated ${result.pattern} workflow with ${result.taskCount} tasks`);
+        setShowAiInput(false);
+        setAiPrompt('');
+
+        // Clear success message after a few seconds
+        setTimeout(() => setAiSuccess(''), 5000);
+      } else {
+        throw new Error('No workflow YAML in response');
+      }
+    } catch (error: any) {
+      console.error('AI generation error:', error);
+      setAiError(error.message || 'Failed to generate workflow');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  // Handle Enter key in AI input
+  const handleAiKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleAiGenerate();
     }
   };
 
@@ -308,6 +376,7 @@ export default function WorkflowBuilderPage() {
 
         {/* Center: Toolbar */}
         <div className="flex items-center justify-center gap-3 px-6">
+          {/* Workflow Name - Always visible */}
           <label htmlFor="workflow-name" className="text-sm font-medium text-gray-600">
             Workflow:
           </label>
@@ -319,13 +388,87 @@ export default function WorkflowBuilderPage() {
             onBlur={handleNameBlur}
             placeholder="my-workflow-name"
             className={cn(
-              'w-48 px-3 py-1.5 text-sm border rounded-md focus:outline-none focus:ring-2',
+              'w-40 px-3 py-1.5 text-sm border rounded-md focus:outline-none focus:ring-2',
               nameError
                 ? 'border-red-300 focus:ring-red-500 bg-red-50'
                 : 'border-gray-300 focus:ring-blue-500'
             )}
             title={nameError || 'Workflow name'}
           />
+
+          <div className="w-px h-6 bg-gray-200" />
+
+          {/* AI Generation Input */}
+          {showAiInput ? (
+            <div className="flex items-center gap-2 flex-1 max-w-md">
+              <div className="relative flex-1">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                  <Sparkles className="w-4 h-4 text-purple-500" />
+                </div>
+                <input
+                  ref={aiInputRef}
+                  type="text"
+                  value={aiPrompt}
+                  onChange={(e) => setAiPrompt(e.target.value)}
+                  onKeyDown={handleAiKeyDown}
+                  placeholder="Describe workflow... e.g., 'fetch ISS then joke'"
+                  disabled={isGenerating}
+                  className={cn(
+                    'w-full pl-10 pr-4 py-1.5 text-sm border rounded-lg',
+                    'bg-gradient-to-r from-purple-50 to-indigo-50',
+                    'border-purple-200 focus:border-purple-400',
+                    'focus:outline-none focus:ring-2 focus:ring-purple-300',
+                    'placeholder:text-gray-400',
+                    isGenerating && 'opacity-60 cursor-not-allowed'
+                  )}
+                />
+              </div>
+              <button
+                onClick={handleAiGenerate}
+                disabled={!aiPrompt.trim() || isGenerating}
+                className={cn(
+                  'px-3 py-1.5 text-sm font-medium rounded-lg flex items-center gap-1.5',
+                  'bg-gradient-to-r from-purple-600 to-indigo-600',
+                  'hover:from-purple-700 hover:to-indigo-700',
+                  'text-white shadow-sm',
+                  'disabled:opacity-50 disabled:cursor-not-allowed',
+                  'transition-all duration-200'
+                )}
+                title="Generate workflow with AI"
+              >
+                {isGenerating ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Wand2 className="w-4 h-4" />
+                )}
+              </button>
+              <button
+                onClick={() => setShowAiInput(false)}
+                className="p-1.5 text-gray-400 hover:text-gray-600 rounded-md"
+                title="Hide AI input"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => {
+                setShowAiInput(true);
+                setTimeout(() => aiInputRef.current?.focus(), 100);
+              }}
+              className={cn(
+                'px-3 py-1.5 text-sm font-medium rounded-md flex items-center gap-1.5',
+                'bg-gradient-to-r from-purple-100 to-indigo-100',
+                'text-purple-700 hover:from-purple-200 hover:to-indigo-200',
+                'border border-purple-200',
+                'transition-all duration-200'
+              )}
+              title="Generate workflow with AI"
+            >
+              <Sparkles className="w-4 h-4" />
+              AI Generate
+            </button>
+          )}
 
           <div className="w-px h-6 bg-gray-200" />
 
@@ -396,6 +539,18 @@ export default function WorkflowBuilderPage() {
           )}
           {errorMessage && (
             <span className="text-sm text-red-600">{errorMessage}</span>
+          )}
+          {aiSuccess && (
+            <span className="text-sm text-purple-600 font-medium flex items-center gap-1">
+              <Sparkles className="w-3 h-3" />
+              {aiSuccess}
+            </span>
+          )}
+          {aiError && (
+            <span className="text-sm text-red-600 flex items-center gap-1">
+              <AlertTriangle className="w-3 h-3" />
+              {aiError}
+            </span>
           )}
         </div>
 

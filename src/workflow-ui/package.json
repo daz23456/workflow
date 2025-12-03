@@ -26,6 +26,7 @@
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,css,md}\""
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.71.0",
     "@codemirror/lang-yaml": "^6.1.2",
     "@codemirror/state": "^6.5.2",
     "@codemirror/theme-one-dark": "^6.1.3",

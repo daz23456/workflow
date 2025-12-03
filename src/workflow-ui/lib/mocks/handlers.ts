@@ -17,13 +17,16 @@ import { mockTemplateList, mockTemplateDetails } from './templates';
  * - Storybook (msw-storybook-addon)
  */
 
+// Base URL for API handlers - matches API_BASE_URL in queries.ts
+const API_BASE = 'http://localhost:5001/api/v1';
+
 export const handlers = [
   // ============================================================================
   // WORKFLOW ENDPOINTS
   // ============================================================================
 
-  // GET /api/workflows - List all workflows
-  http.get('/api/workflows', async ({ request }) => {
+  // GET /api/v1/workflows - List all workflows
+  http.get(`${API_BASE}/workflows`, async ({ request }) => {
     await delay(300); // Simulate network latency
 
     const url = new URL(request.url);
@@ -65,7 +68,7 @@ export const handlers = [
   }),
 
   // GET /api/workflows/:name - Get workflow details
-  http.get('/api/workflows/:name', async ({ params }) => {
+  http.get(`${API_BASE}/workflows/:name`, async ({ params }) => {
     await delay(200);
     const { name } = params;
 
@@ -91,10 +94,13 @@ export const handlers = [
   // ============================================================================
 
   // POST /api/workflows/:name/execute - Execute workflow
-  http.post('/api/workflows/:name/execute', async ({ params, request }) => {
+  http.post(`${API_BASE}/workflows/:name/execute`, async ({ params, request }) => {
     await delay(500); // Simulate execution time
     const { name } = params;
-    const body = await request.json();
+    const body = (await request.json()) as { input?: Record<string, unknown> };
+
+    // Extract input from wrapper (backend expects { input: {...} })
+    const input = body?.input || body;
 
     // Check if workflow exists
     if (!mockWorkflowDetails[name as string]) {
@@ -102,7 +108,7 @@ export const handlers = [
     }
 
     // Simulate validation error for invalid input
-    if (body && typeof body === 'object' && 'simulateError' in body) {
+    if (input && typeof input === 'object' && 'simulateError' in input) {
       return HttpResponse.json(
         {
           error: 'Input validation failed',
@@ -115,10 +121,10 @@ export const handlers = [
     // Return successful or failed execution based on workflow
     if (
       name === 'payment-flow' &&
-      body &&
-      typeof body === 'object' &&
-      'amount' in body &&
-      (body as { amount: number }).amount > 100
+      input &&
+      typeof input === 'object' &&
+      'amount' in input &&
+      (input as { amount: number }).amount > 100
     ) {
       // Simulate payment failure for amounts > 100
       return HttpResponse.json(mockFailedExecutions['payment-flow']);
@@ -149,10 +155,13 @@ export const handlers = [
   }),
 
   // POST /api/workflows/:name/test - Dry-run workflow
-  http.post('/api/workflows/:name/test', async ({ params, request }) => {
+  http.post(`${API_BASE}/workflows/:name/test`, async ({ params, request }) => {
     await delay(300);
     const { name } = params;
-    const body = await request.json();
+    const body = (await request.json()) as { input?: Record<string, unknown> };
+
+    // Extract input from wrapper (backend expects { input: {...} })
+    const input = body?.input || body;
 
     // Check if workflow exists
     if (!mockWorkflowDetails[name as string]) {
@@ -160,7 +169,7 @@ export const handlers = [
     }
 
     // Simulate validation error for invalid input
-    if (body && typeof body === 'object' && 'simulateError' in body) {
+    if (input && typeof input === 'object' && 'simulateError' in input) {
       return HttpResponse.json(
         {
           error: 'Input validation failed',
@@ -191,7 +200,7 @@ export const handlers = [
   }),
 
   // GET /api/workflows/:name/executions - Get execution history for workflow
-  http.get('/api/workflows/:name/executions', async ({ params, request }) => {
+  http.get(`${API_BASE}/workflows/:name/executions`, async ({ params, request }) => {
     await delay(200);
     const { name } = params;
     const url = new URL(request.url);
@@ -224,7 +233,7 @@ export const handlers = [
   }),
 
   // GET /api/executions/:id - Get execution details by ID
-  http.get('/api/executions/:id', async ({ params }) => {
+  http.get(`${API_BASE}/executions/:id`, async ({ params }) => {
     await delay(200);
     const { id } = params;
 
@@ -257,7 +266,7 @@ export const handlers = [
   // ============================================================================
 
   // GET /api/tasks - List all available tasks
-  http.get('/api/tasks', async () => {
+  http.get(`${API_BASE}/tasks`, async () => {
     await delay(200);
     return HttpResponse.json({
       tasks: [
@@ -372,7 +381,7 @@ export const handlers = [
   }),
 
   // GET /api/tasks/:name - Get task details
-  http.get('/api/tasks/:name', async ({ params }) => {
+  http.get(`${API_BASE}/tasks/:name`, async ({ params }) => {
     await delay(200);
     const { name } = params;
     const task = mockTaskDetails[name as string];
@@ -385,7 +394,7 @@ export const handlers = [
   }),
 
   // GET /api/tasks/:name/usage - Get workflows using this task
-  http.get('/api/tasks/:name/usage', async ({ params, request }) => {
+  http.get(`${API_BASE}/tasks/:name/usage`, async ({ params, request }) => {
     await delay(200);
     const { name } = params;
     const url = new URL(request.url);
@@ -410,7 +419,7 @@ export const handlers = [
   }),
 
   // GET /api/tasks/:name/executions - Get task execution history
-  http.get('/api/tasks/:name/executions', async ({ params, request }) => {
+  http.get(`${API_BASE}/tasks/:name/executions`, async ({ params, request }) => {
     await delay(200);
     const { name } = params;
     const url = new URL(request.url);
@@ -449,7 +458,7 @@ export const handlers = [
   }),
 
   // POST /api/tasks/:name/execute - Execute task standalone
-  http.post('/api/tasks/:name/execute', async ({ params, request }) => {
+  http.post(`${API_BASE}/tasks/:name/execute`, async ({ params, request }) => {
     await delay(300);
     const { name } = params;
     const body = await request.json();
@@ -489,7 +498,7 @@ export const handlers = [
   // ============================================================================
 
   // GET /api/workflows/:name/duration-trends - Get workflow duration trends
-  http.get('/api/workflows/:name/duration-trends', async ({ params, request }) => {
+  http.get(`${API_BASE}/workflows/:name/duration-trends`, async ({ params, request }) => {
     await delay(200);
     const { name } = params;
     const url = new URL(request.url);
@@ -524,7 +533,7 @@ export const handlers = [
   }),
 
   // GET /api/tasks/:name/duration-trends - Get task duration trends
-  http.get('/api/tasks/:name/duration-trends', async ({ params, request }) => {
+  http.get(`${API_BASE}/tasks/:name/duration-trends`, async ({ params, request }) => {
     await delay(200);
     const { name } = params;
     const url = new URL(request.url);
@@ -563,7 +572,7 @@ export const handlers = [
   // ============================================================================
 
   // GET /api/templates - List all templates
-  http.get('/api/templates', async ({ request }) => {
+  http.get(`${API_BASE}/templates`, async ({ request }) => {
     await delay(300);
 
     const url = new URL(request.url);
@@ -604,7 +613,7 @@ export const handlers = [
   }),
 
   // GET /api/templates/:name - Get template details
-  http.get('/api/templates/:name', async ({ params }) => {
+  http.get(`${API_BASE}/templates/:name`, async ({ params }) => {
     await delay(200);
     const { name } = params;
 
@@ -618,7 +627,7 @@ export const handlers = [
   }),
 
   // POST /api/templates/deploy - Deploy a template
-  http.post('/api/templates/deploy', async ({ request }) => {
+  http.post(`${API_BASE}/templates/deploy`, async ({ request }) => {
     await delay(300);
     const body = (await request.json()) as {
       templateName: string;
@@ -652,7 +661,7 @@ export const handlers = [
   // ============================================================================
 
   // GET /api/metrics/system - System metrics
-  http.get('/api/metrics/system', async ({ request }) => {
+  http.get(`${API_BASE}/metrics/system`, async ({ request }) => {
     await delay(100);
     const url = new URL(request.url);
     const range = url.searchParams.get('range') || '24h';
@@ -672,7 +681,7 @@ export const handlers = [
   }),
 
   // GET /api/metrics/workflows - All workflows metrics
-  http.get('/api/metrics/workflows', async () => {
+  http.get(`${API_BASE}/metrics/workflows`, async () => {
     await delay(100);
 
     return HttpResponse.json([
@@ -683,7 +692,7 @@ export const handlers = [
   }),
 
   // GET /api/metrics/workflows/:name/history - Workflow history
-  http.get('/api/metrics/workflows/:name/history', async ({ params }) => {
+  http.get(`${API_BASE}/metrics/workflows/:name/history`, async ({ params }) => {
     await delay(100);
     const { name } = params;
 
@@ -695,7 +704,7 @@ export const handlers = [
   }),
 
   // GET /api/metrics/slowest - Slowest workflows
-  http.get('/api/metrics/slowest', async ({ request }) => {
+  http.get(`${API_BASE}/metrics/slowest`, async ({ request }) => {
     await delay(100);
     const url = new URL(request.url);
     const limit = parseInt(url.searchParams.get('limit') || '10', 10);
@@ -714,7 +723,7 @@ export const handlers = [
   // ============================================================================
 
   // GET /api/health - Health check endpoint
-  http.get('/api/health', async () => {
+  http.get(`${API_BASE}/health`, async () => {
     await delay(50);
     return HttpResponse.json({
       status: 'healthy',

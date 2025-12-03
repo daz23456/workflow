@@ -28,7 +28,9 @@ export function ExecutionResultPanel({ execution, onClose }: ExecutionResultPane
     await navigator.clipboard.writeText(execution.executionId);
   };
 
-  const hasOutput = Object.keys(execution.output).length > 0;
+  const hasOutput = execution.output && Object.keys(execution.output).length > 0;
+  // Backend may return tasks as 'tasks' or 'taskDetails'
+  const tasks = execution.tasks || execution.taskDetails || [];
 
   return (
     <div className="flex h-full flex-col bg-white border-l border-gray-200">
@@ -190,7 +192,9 @@ export function ExecutionResultPanel({ execution, onClose }: ExecutionResultPane
         <div className="mb-6">
           <div className="text-sm font-medium text-gray-900 mb-3">Task Results</div>
           <div className="space-y-2">
-            {execution.tasks.map((task) => (
+            {tasks.length === 0 ? (
+              <div className="text-sm text-gray-500 italic">No task results available</div>
+            ) : tasks.map((task) => (
               <div key={task.taskId} className="rounded-md border border-gray-200">
                 {/* Task Header */}
                 <button

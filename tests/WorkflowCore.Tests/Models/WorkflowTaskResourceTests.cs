@@ -106,14 +106,15 @@ spec:
             Id = "step1",
             TaskRef = "task-ref",
             Input = new Dictionary<string, string> { ["key"] = "value" },
-            Condition = "{{tasks.previous.output.success}}"
+            Condition = new ConditionSpec { If = "{{tasks.previous.output.success}}" }
         };
 
         // Assert
         step.Id.Should().Be("step1");
         step.TaskRef.Should().Be("task-ref");
         step.Input.Should().ContainKey("key");
-        step.Condition.Should().NotBeNullOrEmpty();
+        step.Condition.Should().NotBeNull();
+        step.Condition!.If.Should().NotBeNullOrEmpty();
     }
 
     [Fact]

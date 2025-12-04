@@ -1,0 +1,63 @@
+apiVersion: workflow.example.com/v1
+kind: Workflow
+metadata:
+  name: diamond-pattern
+  namespace: test
+spec:
+  description: |
+    Diamond pattern workflow for testing parallel execution and join behavior.
+    Tests that two parallel branches complete before the join step executes.
+
+        ┌──→ [check-inventory] ──┐
+    [get-user] ─┤                        ├──→ [process-payment]
+        └──→ [get-orders] ──────┘
+
+  input:
+    type: object
+    properties:
+      userId:
+        type: string
+    required:
+      - userId
+
+  tasks:
+    # Start: Get user (single entry point)
+    - id: get-user
+      taskRef: getuser
+      input:
+        id: "{{input.userId}}"
+
+    # Parallel Branch A: Check inventory
+    - id: check-inventory
+      taskRef: bulkcheckavailability
+      input:
+        body:
+          items:
+            - productId: "prod-1"
+              quantity: 2
+            - productId: "prod-2"
+              quantity: 1
+      dependsOn: [get-user]
+
+    # Parallel Branch B: Get user orders
+    - id: get-orders
+      taskRef: getuserorders
+      input:
+        id: "{{input.userId}}"
+      dependsOn: [get-user]
+
+    # Join: Process payment (waits for BOTH branches)
+    - id: process-payment
+      taskRef: processpayment
+      input:
+        body:
+          userId: "{{input.userId}}"
+          amount: 150.00
+          orderId: "diamond-test"
+      dependsOn: [check-inventory, get-orders]
+
+  output:
+    user: "{{tasks.get-user.output.name}}"
+    inventoryAvailable: "{{tasks.check-inventory.output.allAvailable}}"
+    orderCount: "{{tasks.get-orders.output.orders | length}}"
+    transactionId: "{{tasks.process-payment.output.transactionId}}"

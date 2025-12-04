@@ -1,0 +1,42 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: calculateordertotal
+  namespace: test
+  labels:
+    workflow.io/generated-from: openapi
+    workflow.io/operation-id: CalculateOrderTotal
+  annotations:
+    workflow.io/source-path: /api/orders/{id}/calculate-total
+    workflow.io/source-method: GET
+spec:
+  type: http
+  description: GET /api/orders/{id}/calculate-total
+  request:
+    url: http://localhost:5100/api/orders/{{input.id}}/calculate-total
+    method: GET
+    headers:
+      Accept: application/json
+  inputSchema:
+    type: object
+    properties:
+      id:
+        type: string
+        description: 'Path parameter: id'
+      shippingRate:
+        type: number
+        format: double
+        description: 'Query parameter: shippingRate'
+      taxRate:
+        type: number
+        format: double
+        description: 'Query parameter: taxRate'
+    required:
+      - id
+  outputSchema:
+    type: object
+    description: Response from the endpoint
+  timeout: 30s
+  retry:
+    maxAttempts: 3
+    backoffMs: 1000

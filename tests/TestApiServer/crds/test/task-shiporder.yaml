@@ -1,0 +1,39 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: shiporder
+  namespace: test
+  labels:
+    workflow.io/generated-from: openapi
+    workflow.io/operation-id: ShipOrder
+  annotations:
+    workflow.io/source-path: /api/orders/{id}/ship
+    workflow.io/source-method: POST
+spec:
+  type: http
+  description: POST /api/orders/{id}/ship
+  request:
+    url: http://localhost:5100/api/orders/{{input.id}}/ship
+    method: POST
+    headers:
+      Accept: application/json
+      Content-Type: application/json
+    body: '{{input.body | toJson}}'
+  inputSchema:
+    type: object
+    properties:
+      id:
+        type: string
+        description: 'Path parameter: id'
+      body:
+        description: Request body
+    required:
+      - id
+      - body
+  outputSchema:
+    type: object
+    description: Response from the endpoint
+  timeout: 30s
+  retry:
+    maxAttempts: 3
+    backoffMs: 1000

@@ -132,14 +132,15 @@ spec:
             Id = "fetch-user",
             TaskRef = "fetch-user-task",
             Input = new Dictionary<string, string> { ["userId"] = "{{input.userId}}" },
-            Condition = "{{input.active}} == true"
+            Condition = new ConditionSpec { If = "{{input.active}} == true" }
         };
 
         // Assert
         step.Id.Should().Be("fetch-user");
         step.TaskRef.Should().Be("fetch-user-task");
         step.Input.Should().ContainKey("userId");
-        step.Condition.Should().Be("{{input.active}} == true");
+        step.Condition.Should().NotBeNull();
+        step.Condition!.If.Should().Be("{{input.active}} == true");
     }
 
     [Fact]

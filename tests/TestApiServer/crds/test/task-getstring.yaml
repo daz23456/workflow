@@ -1,0 +1,29 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: getstring
+  namespace: test
+  labels:
+    workflow.io/generated-from: openapi
+    workflow.io/operation-id: GetString
+  annotations:
+    workflow.io/source-path: /api/primitives/string
+    workflow.io/source-method: GET
+spec:
+  type: http
+  description: GET /api/primitives/string
+  request:
+    url: http://localhost:5100/api/primitives/string
+    method: GET
+    headers:
+      Accept: application/json
+  inputSchema:
+    type: object
+    properties: {}
+  outputSchema:
+    type: object
+    description: Response from the endpoint
+  timeout: 30s
+  retry:
+    maxAttempts: 3
+    backoffMs: 1000

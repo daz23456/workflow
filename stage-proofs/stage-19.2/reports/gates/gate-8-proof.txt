@@ -1,0 +1,1 @@
+Proof file exists: stage-proofs/stage-19.2/STAGE_19.2_PROOF.md

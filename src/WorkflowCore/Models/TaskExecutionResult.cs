@@ -6,6 +6,18 @@ public class TaskExecutionResult
     public Dictionary<string, object>? Output { get; set; }
 
     /// <summary>
+    /// Indicates whether the task was skipped due to a condition evaluation.
+    /// A skipped task has Success=true but WasSkipped=true.
+    /// </summary>
+    public bool WasSkipped { get; set; }
+
+    /// <summary>
+    /// The reason the task was skipped, if WasSkipped is true.
+    /// Contains the evaluated condition expression that resulted in false.
+    /// </summary>
+    public string? SkipReason { get; set; }
+
+    /// <summary>
     /// Legacy error messages (maintained for backward compatibility)
     /// </summary>
     public List<string> Errors { get; set; } = new();

@@ -1,0 +1,110 @@
+apiVersion: workflow.example.com/v1
+kind: Workflow
+metadata:
+  name: order-fulfillment
+  namespace: test
+spec:
+  description: Complete order fulfillment workflow - validates user, checks inventory, processes payment, ships order
+  input:
+    type: object
+    properties:
+      userId:
+        type: string
+        description: The user ID placing the order
+      orderId:
+        type: string
+        description: The order ID to fulfill
+    required:
+      - userId
+      - orderId
+
+  tasks:
+    # Step 1: Get user details and verify credit
+    - id: get-user
+      taskRef: getuser
+      input:
+        id: "{{input.userId}}"
+
+    # Step 2: Get order details (depends on user existing)
+    - id: get-order
+      taskRef: getorder
+      input:
+        id: "{{input.orderId}}"
+      dependsOn: [get-user]
+
+    # Step 3: Check inventory for all order items (parallel with payment eligibility)
+    - id: check-inventory
+      taskRef: bulkcheckavailability
+      input:
+        body:
+          items: "{{tasks.get-order.output.items | map({ productId: .productId, quantity: .quantity })}}"
+      dependsOn: [get-order]
+
+    # Step 4: Calculate total with tax and shipping
+    - id: calculate-total
+      taskRef: calculateordertotal
+      input:
+        id: "{{input.orderId}}"
+      dependsOn: [get-order]
+
+    # Step 5: Process payment (depends on inventory check and total calculation)
+    - id: process-payment
+      taskRef: processpayment
+      input:
+        body:
+          userId: "{{input.userId}}"
+          amount: "{{tasks.calculate-total.output.total}}"
+          orderId: "{{input.orderId}}"
+      dependsOn: [check-inventory, calculate-total]
+
+    # Step 6: Reserve inventory after successful payment
+    - id: reserve-stock
+      taskRef: reservestock
+      input:
+        body:
+          productId: "{{tasks.get-order.output.items[0].productId}}"
+          quantity: "{{tasks.get-order.output.items[0].quantity}}"
+          orderId: "{{input.orderId}}"
+          expirationMinutes: 30
+      dependsOn: [process-payment]
+
+    # Step 7: Update order status to paid
+    - id: update-status-paid
+      taskRef: updateorderstatus
+      input:
+        id: "{{input.orderId}}"
+        body:
+          status: "paid"
+      dependsOn: [reserve-stock]
+
+    # Step 8: Fulfill order
+    - id: fulfill-order
+      taskRef: fulfillorder
+      input:
+        id: "{{input.orderId}}"
+      dependsOn: [update-status-paid]
+
+    # Step 9: Ship order
+    - id: ship-order
+      taskRef: shiporder
+      input:
+        id: "{{input.orderId}}"
+        body:
+          carrier: "Express"
+      dependsOn: [fulfill-order]
+
+    # Step 10: Send confirmation notification
+    - id: send-notification
+      taskRef: sendnotification
+      input:
+        body:
+          userId: "{{input.userId}}"
+          type: "order_shipped"
+          message: "Your order {{input.orderId}} has been shipped! Tracking: {{tasks.ship-order.output.trackingNumber}}"
+      dependsOn: [ship-order]
+
+  output:
+    orderId: "{{input.orderId}}"
+    trackingNumber: "{{tasks.ship-order.output.trackingNumber}}"
+    transactionId: "{{tasks.process-payment.output.transactionId}}"
+    notificationId: "{{tasks.send-notification.output.notificationId}}"

@@ -22,6 +22,8 @@ public class WorkflowOrchestrator : IWorkflowOrchestrator
     private readonly ITemplateResolver _templateResolver;
     private readonly IWorkflowEventNotifier? _eventNotifier;
     private readonly IResponseStorage _responseStorage;
+    private readonly IConditionEvaluator? _conditionEvaluator;
+    private readonly ISwitchEvaluator? _switchEvaluator;
     private readonly SemaphoreSlim _semaphore;
 
     public WorkflowOrchestrator(
@@ -31,7 +33,9 @@ public class WorkflowOrchestrator : IWorkflowOrchestrator
         IResponseStorage responseStorage,
         int maxConcurrentTasks = int.MaxValue,
         ITransformTaskExecutor? transformTaskExecutor = null,
-        IWorkflowEventNotifier? eventNotifier = null)
+        IWorkflowEventNotifier? eventNotifier = null,
+        IConditionEvaluator? conditionEvaluator = null,
+        ISwitchEvaluator? switchEvaluator = null)
     {
         _graphBuilder = graphBuilder ?? throw new ArgumentNullException(nameof(graphBuilder));
         _httpTaskExecutor = httpTaskExecutor ?? throw new ArgumentNullException(nameof(httpTaskExecutor));
@@ -39,6 +43,8 @@ public class WorkflowOrchestrator : IWorkflowOrchestrator
         _responseStorage = responseStorage ?? throw new ArgumentNullException(nameof(responseStorage));
         _transformTaskExecutor = transformTaskExecutor;
         _eventNotifier = eventNotifier;
+        _conditionEvaluator = conditionEvaluator;
+        _switchEvaluator = switchEvaluator;
 
         if (maxConcurrentTasks <= 0)
         {
@@ -194,11 +200,81 @@ public class WorkflowOrchestrator : IWorkflowOrchestrator
                         });
                     }
 
+                    // Evaluate condition if present
+                    if (taskStep.Condition?.If != null && _conditionEvaluator != null)
+                    {
+                        var conditionResult = await _conditionEvaluator.EvaluateAsync(taskStep.Condition.If, context);
+
+                        if (conditionResult.Error != null)
+                        {
+                            // Condition evaluation failed - treat as task failure
+                            var errorTime = DateTime.UtcNow;
+                            return (taskId, new TaskExecutionResult
+                            {
+                                Success = false,
+                                Errors = new List<string> { $"Condition evaluation failed: {conditionResult.Error}" },
+                                StartedAt = errorTime,
+                                CompletedAt = errorTime
+                            });
+                        }
+
+                        if (!conditionResult.ShouldExecute)
+                        {
+                            // Condition evaluated to false - skip task
+                            var skippedTime = DateTime.UtcNow;
+                            return (taskId, new TaskExecutionResult
+                            {
+                                Success = true,
+                                WasSkipped = true,
+                                SkipReason = $"Condition '{conditionResult.EvaluatedExpression}' evaluated to false",
+                                StartedAt = skippedTime,
+                                CompletedAt = skippedTime,
+                                Duration = TimeSpan.Zero
+                            });
+                        }
+                    }
+
+                    // Evaluate switch if present to determine taskRef
+                    var effectiveTaskRef = taskStep.TaskRef;
+                    if (taskStep.Switch != null && _switchEvaluator != null)
+                    {
+                        var switchResult = await _switchEvaluator.EvaluateAsync(taskStep.Switch, context);
+
+                        if (switchResult.Error != null)
+                        {
+                            // Switch evaluation failed
+                            var errorTime = DateTime.UtcNow;
+                            return (taskId, new TaskExecutionResult
+                            {
+                                Success = false,
+                                Errors = new List<string> { $"Switch evaluation failed: {switchResult.Error}" },
+                                StartedAt = errorTime,
+                                CompletedAt = errorTime
+                            });
+                        }
+
+                        if (!switchResult.Matched)
+                        {
+                            // No match found and no default
+                            var errorTime = DateTime.UtcNow;
+                            return (taskId, new TaskExecutionResult
+                            {
+                                Success = false,
+                                Errors = new List<string> { switchResult.Error ?? "Switch did not match any case" },
+                                StartedAt = errorTime,
+                                CompletedAt = errorTime
+                            });
+                        }
+
+                        // Use the matched taskRef
+                        effectiveTaskRef = switchResult.TaskRef!;
+                    }
+
                     // Get task spec
-                    if (!availableTasks.ContainsKey(taskStep.TaskRef))
+                    if (!availableTasks.ContainsKey(effectiveTaskRef))
                     {
                         var errorTime = DateTime.UtcNow;
-                        var errorMessage = $"Task reference '{taskStep.TaskRef}' not found";
+                        var errorMessage = $"Task reference '{effectiveTaskRef}' not found";
                         return (taskId, new TaskExecutionResult
                         {
                             Success = false,
@@ -208,7 +284,7 @@ public class WorkflowOrchestrator : IWorkflowOrchestrator
                         });
                     }
 
-                    var taskSpec = availableTasks[taskStep.TaskRef].Spec;
+                    var taskSpec = availableTasks[effectiveTaskRef].Spec;
 
                     // Execute task with concurrency control
                     await _semaphore.WaitAsync(cancellationToken);
@@ -380,7 +456,8 @@ public class WorkflowOrchestrator : IWorkflowOrchestrator
                     if (_eventNotifier != null)
                     {
                         var taskStep = workflow.Spec.Tasks.First(t => t.Id == taskId);
-                        var taskStatus = taskResult.Success ? "Succeeded" : "Failed";
+                        var taskStatus = taskResult.WasSkipped ? "Skipped" :
+                                        taskResult.Success ? "Succeeded" : "Failed";
                         var output = taskResult.Output ?? new Dictionary<string, object>();
 
                         await _eventNotifier.OnTaskCompletedAsync(

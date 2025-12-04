@@ -1,0 +1,34 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: setchaosmode
+  namespace: test
+  labels:
+    workflow.io/generated-from: openapi
+    workflow.io/operation-id: SetChaosMode
+  annotations:
+    workflow.io/source-path: /api/chaos/mode/{mode}
+    workflow.io/source-method: POST
+spec:
+  type: http
+  description: POST /api/chaos/mode/{mode}
+  request:
+    url: http://localhost:5100/api/chaos/mode/{{input.mode}}
+    method: POST
+    headers:
+      Accept: application/json
+  inputSchema:
+    type: object
+    properties:
+      mode:
+        type: string
+        description: 'Path parameter: mode'
+    required:
+      - mode
+  outputSchema:
+    type: object
+    description: Response from the endpoint
+  timeout: 30s
+  retry:
+    maxAttempts: 3
+    backoffMs: 1000

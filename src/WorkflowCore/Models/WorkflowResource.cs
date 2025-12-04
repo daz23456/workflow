@@ -82,9 +82,21 @@ public class WorkflowTaskStep
     [JsonPropertyName("dependsOn")]
     public List<string>? DependsOn { get; set; }
 
+    /// <summary>
+    /// Optional condition to evaluate before executing the task.
+    /// If the condition evaluates to false, the task is skipped.
+    /// </summary>
     [YamlMember(Alias = "condition")]
     [JsonPropertyName("condition")]
-    public string? Condition { get; set; }
+    public ConditionSpec? Condition { get; set; }
+
+    /// <summary>
+    /// Optional switch/case for multi-branch task routing.
+    /// Routes to different taskRefs based on value matching.
+    /// </summary>
+    [YamlMember(Alias = "switch")]
+    [JsonPropertyName("switch")]
+    public SwitchSpec? Switch { get; set; }
 
     [YamlMember(Alias = "timeout")]
     [JsonPropertyName("timeout")]

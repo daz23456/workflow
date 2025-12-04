@@ -1,0 +1,27 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: getlarge500kb
+  namespace: test
+  labels:
+    workflow.io/generated-from: openapi
+    workflow.io/operation-id: GetLarge500KB
+  annotations:
+    workflow.io/source-path: /api/large/500kb
+    workflow.io/source-method: GET
+spec:
+  type: http
+  description: GET /api/large/500kb
+  request:
+    url: http://localhost:5100/api/large/500kb
+    method: GET
+    headers:
+      Accept: application/json
+  inputSchema:
+    type: object
+    properties: {}
+  outputSchema: {}
+  timeout: 30s
+  retry:
+    maxAttempts: 3
+    backoffMs: 1000

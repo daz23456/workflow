@@ -1,0 +1,35 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: listproducts
+  namespace: test
+  labels:
+    workflow.io/generated-from: openapi
+    workflow.io/operation-id: ListProducts
+  annotations:
+    workflow.io/source-path: /api/inventory/products
+    workflow.io/source-method: GET
+spec:
+  type: http
+  description: GET /api/inventory/products
+  request:
+    url: http://localhost:5100/api/inventory/products
+    method: GET
+    headers:
+      Accept: application/json
+  inputSchema:
+    type: object
+    properties:
+      category:
+        type: string
+        description: 'Query parameter: category'
+      inStock:
+        type: boolean
+        description: 'Query parameter: inStock'
+  outputSchema:
+    type: object
+    description: Response from the endpoint
+  timeout: 30s
+  retry:
+    maxAttempts: 3
+    backoffMs: 1000

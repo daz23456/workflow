@@ -87,9 +87,13 @@ export function SlowestWorkflowsPanel({ workflows, isLoading, selectedWorkflow, 
                   {index + 1}
                 </span>
                 <div>
-                  <span className={`font-medium ${isSelected ? 'text-blue-700' : 'text-gray-900'}`}>
+                  <Link
+                    href={`/workflows/${workflow.name}`}
+                    className={`font-medium hover:underline ${isSelected ? 'text-blue-700' : 'text-gray-900'}`}
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     {workflow.name}
-                  </span>
+                  </Link>
                   <p className="text-sm text-gray-500">
                     Avg: {workflow.avgDurationMs}ms | P95: {workflow.p95Ms}ms
                   </p>

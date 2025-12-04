@@ -55,9 +55,9 @@ export default function Home() {
                 <h3 className="text-xl font-semibold mb-3 text-red-600">❌ Before</h3>
                 <ul className="space-y-2 text-gray-600">
                   <li>• 3 weeks to ship a simple API composition</li>
-                  <li>• Update payment provider → touch 30 codebases</li>
+                  <li>• Update a shared API → coordinate 30 deployments</li>
                   <li>• Copy-paste retry logic across 50 services</li>
-                  <li>• Every team writes their own HTTP wrapper</li>
+                  <li>• Lock-step deployments required for breaking changes</li>
                   <li>• Custom code to merge and reshape data from 5 APIs</li>
                 </ul>
               </div>
@@ -66,7 +66,7 @@ export default function Home() {
                 <ul className="space-y-2 text-gray-600">
                   <li>• Ship features in hours, not weeks</li>
                   <li>• Update task once → 50 workflows auto-upgrade</li>
-                  <li>• Reusable task library (payments, emails, webhooks)</li>
+                  <li>• Safe continuous deployment - no lock-step required</li>
                   <li>• Compose workflows from existing tasks in 5 minutes</li>
                   <li>• Chain transforms declaratively - map → filter → aggregate</li>
                 </ul>
@@ -249,12 +249,12 @@ export default function Home() {
                     <p className="text-xs text-gray-600 mt-1">Get user from API</p>
                   </div>
                   <div className="p-3 bg-blue-50 rounded border border-blue-200">
-                    <code className="text-sm font-mono text-blue-800">send-email</code>
-                    <p className="text-xs text-gray-600 mt-1">Send email via service</p>
+                    <code className="text-sm font-mono text-blue-800">send-notification</code>
+                    <p className="text-xs text-gray-600 mt-1">Send via notification service</p>
                   </div>
                   <div className="p-3 bg-blue-50 rounded border border-blue-200">
-                    <code className="text-sm font-mono text-blue-800">charge-payment</code>
-                    <p className="text-xs text-gray-600 mt-1">Process payments</p>
+                    <code className="text-sm font-mono text-blue-800">validate-data</code>
+                    <p className="text-xs text-gray-600 mt-1">Validate against rules</p>
                   </div>
                 </div>
               </div>
@@ -272,41 +272,41 @@ export default function Home() {
                 </div>
                 <div className="space-y-3">
                   <div className="p-3 bg-green-50 rounded border border-green-200">
-                    <p className="font-semibold text-sm mb-1">Order Fulfillment</p>
+                    <p className="font-semibold text-sm mb-1">User Registration</p>
                     <div className="flex gap-1 flex-wrap">
+                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                        validate-data
+                      </span>
                       <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
                         fetch-user
                       </span>
                       <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                        charge-payment
-                      </span>
-                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                        send-email
+                        send-notification
                       </span>
                     </div>
                   </div>
                   <div className="p-3 bg-green-50 rounded border border-green-200">
-                    <p className="font-semibold text-sm mb-1">User Onboarding</p>
+                    <p className="font-semibold text-sm mb-1">Profile Update</p>
                     <div className="flex gap-1 flex-wrap">
                       <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
                         fetch-user
                       </span>
                       <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                        send-email
+                        validate-data
                       </span>
                     </div>
                   </div>
                   <div className="p-3 bg-green-50 rounded border border-green-200">
-                    <p className="font-semibold text-sm mb-1">Subscription Renewal</p>
+                    <p className="font-semibold text-sm mb-1">Alert Workflow</p>
                     <div className="flex gap-1 flex-wrap">
                       <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
                         fetch-user
                       </span>
                       <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                        charge-payment
+                        validate-data
                       </span>
                       <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                        send-email
+                        send-notification
                       </span>
                     </div>
                   </div>
@@ -321,8 +321,8 @@ export default function Home() {
                 <strong className="text-green-600">zero code duplication</strong>
               </p>
               <p className="text-center text-sm text-gray-600 mt-2">
-                Update <code className="text-xs bg-white px-2 py-1 rounded">charge-payment</code>{' '}
-                once → Both Order Fulfillment and Subscription Renewal get the upgrade
+                Update <code className="text-xs bg-white px-2 py-1 rounded">send-notification</code>{' '}
+                once → All three workflows get the upgrade. Deploy independently, no lock-step needed.
               </p>
             </div>
           </div>

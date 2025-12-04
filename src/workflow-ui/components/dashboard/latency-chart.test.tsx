@@ -37,8 +37,8 @@ describe('LatencyChart', () => {
   it('should display min and max P95 values', () => {
     render(<LatencyChart data={mockData} isLoading={false} />);
 
-    expect(screen.getByText(/P95 Min:/)).toBeInTheDocument();
-    expect(screen.getByText(/P95 Max:/)).toBeInTheDocument();
+    expect(screen.getByText(/Min P95:/)).toBeInTheDocument();
+    expect(screen.getByText(/Max P95:/)).toBeInTheDocument();
     expect(screen.getByText(/200/)).toBeInTheDocument();
     expect(screen.getByText(/300/)).toBeInTheDocument();
   });

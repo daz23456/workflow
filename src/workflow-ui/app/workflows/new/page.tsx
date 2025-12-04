@@ -174,6 +174,17 @@ export default function WorkflowBuilderPage() {
       const result = await response.json();
 
       if (!response.ok) {
+        // Handle specific error cases with helpful messages
+        if (result.cannotGenerate || result.invalidTasks) {
+          const errorMsg = result.invalidTasks
+            ? `Missing tasks: ${result.invalidTasks.join(', ')}`
+            : 'Required tasks not available';
+          setAiError(errorMsg);
+          if (result.explanation) {
+            setErrorMessage(result.explanation);
+          }
+          return;
+        }
         throw new Error(result.error || result.message || `Generation failed (${response.status})`);
       }
 
@@ -537,19 +548,10 @@ export default function WorkflowBuilderPage() {
           {saveStatus === 'success' && (
             <span className="text-sm text-green-600 font-medium">Saved!</span>
           )}
-          {errorMessage && (
-            <span className="text-sm text-red-600">{errorMessage}</span>
-          )}
           {aiSuccess && (
             <span className="text-sm text-purple-600 font-medium flex items-center gap-1">
               <Sparkles className="w-3 h-3" />
               {aiSuccess}
-            </span>
-          )}
-          {aiError && (
-            <span className="text-sm text-red-600 flex items-center gap-1">
-              <AlertTriangle className="w-3 h-3" />
-              {aiError}
             </span>
           )}
         </div>
@@ -665,6 +667,39 @@ export default function WorkflowBuilderPage() {
           panel,
         }}
       />
+
+      {/* AI Generation Error Modal */}
+      {aiError && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 max-w-lg w-full mx-4 shadow-2xl">
+            <div className="flex items-start gap-4 mb-4">
+              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <AlertTriangle className="w-6 h-6 text-red-600" />
+              </div>
+              <div className="flex-1">
+                <h2 className="text-lg font-semibold text-gray-900 mb-1">Cannot Generate Workflow</h2>
+                <p className="text-sm text-red-600 font-medium">{aiError}</p>
+              </div>
+            </div>
+            {errorMessage && (
+              <div className="bg-gray-50 rounded-lg p-4 mb-4 max-h-64 overflow-auto">
+                <p className="text-sm text-gray-700 whitespace-pre-wrap">{errorMessage}</p>
+              </div>
+            )}
+            <div className="flex justify-end">
+              <button
+                onClick={() => {
+                  setAiError('');
+                  setErrorMessage('');
+                }}
+                className="px-4 py-2 text-white bg-gray-900 rounded-lg hover:bg-gray-800 font-medium"
+              >
+                Got it
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* YAML Preview Panel */}
       {showYamlPreview && (

@@ -1,0 +1,6 @@
+=== Gate 8: Linting (workflow-cli only) ===
+
+> @workflow/cli@0.1.0 lint
+> eslint src tests
+
+GATE 8: PASS

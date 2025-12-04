@@ -52,6 +52,7 @@
     "dagre": "^0.8.5",
     "date-fns": "^4.1.0",
     "driver.js": "^1.4.0",
+    "framer-motion": "^12.23.25",
     "immer": "^11.0.1",
     "js-yaml": "^4.1.1",
     "jsonpath-plus": "^10.3.0",

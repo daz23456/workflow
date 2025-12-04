@@ -1,13 +1,19 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
+import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
+import { Maximize2 } from 'lucide-react';
 import { ExecutionTimeline, type ExecutionEvent } from './execution-timeline';
+import { FullscreenControls } from './fullscreen-controls';
 import { VariableWatcher, type Variable } from './variable-watcher';
 import { WorkflowGraphPanel, type ExecutionState } from '@/components/workflows/workflow-graph-panel';
 import type { WorkflowGraph } from '@/types/workflow';
 import type { ExecutionTraceResponse } from '@/lib/api/types';
 import type { WorkflowExecutionResponse } from '@/types/execution';
+
+const PLAYBACK_SPEEDS = [0.125, 0.25, 0.5, 1, 2] as const;
+type PlaybackSpeed = (typeof PLAYBACK_SPEEDS)[number];
 
 type DebugTab = 'timeline';
 
@@ -99,7 +105,8 @@ function executionToWorkflowGraph(
   detail: WorkflowExecutionResponse,
   trace: ExecutionTraceResponse
 ): WorkflowGraph {
-  const nodes: WorkflowGraph['nodes'] = detail.tasks.map((task, index) => ({
+  const tasks = detail.tasks || [];
+  const nodes: WorkflowGraph['nodes'] = tasks.map((task, index) => ({
     id: task.taskId,
     type: 'task' as const,
     data: {
@@ -114,7 +121,7 @@ function executionToWorkflowGraph(
 
   // Build mappings: taskRef -> taskId and taskId -> dependencies
   const taskRefToId = new Map<string, string>();
-  detail.tasks.forEach((task) => {
+  tasks.forEach((task) => {
     if (task.taskRef) {
       taskRefToId.set(task.taskRef, task.taskId);
     }
@@ -128,7 +135,7 @@ function executionToWorkflowGraph(
   });
 
   // Create edges from dependencies
-  detail.tasks.forEach((task) => {
+  tasks.forEach((task) => {
     const deps = dependencyMap.get(task.taskId) || [];
     deps.forEach((depRef) => {
       // depRef could be either taskId or taskRef, resolve to taskId
@@ -207,7 +214,7 @@ function traceToExecutionState(
   });
 
   // Get task outputs from detail
-  detail.tasks.forEach((task) => {
+  (detail.tasks || []).forEach((task) => {
     if (task.output) {
       taskData[task.taskId] = task.output;
     }
@@ -245,7 +252,7 @@ function detailToVariables(detail: WorkflowExecutionResponse): Variable[] {
   }
 
   // Add task output variables
-  detail.tasks.forEach((task) => {
+  (detail.tasks || []).forEach((task) => {
     if (task.output) {
       Object.entries(task.output as Record<string, unknown>).forEach(([key, value]) => {
         variables.push({
@@ -286,8 +293,68 @@ export function DebugLayout({
   const [pinnedVariables, setPinnedVariables] = useState<string[]>([]);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
 
+  // Fullscreen state
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Lifted playback state for fullscreen controls
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [playbackSpeed, setPlaybackSpeed] = useState<PlaybackSpeed>(0.25);
+  const playIntervalRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   // Convert data for components
   const events = useMemo(() => traceToEvents(executionTrace), [executionTrace]);
+
+  // Update timestamp when index changes
+  const updateIndex = useCallback(
+    (index: number) => {
+      setCurrentIndex(index);
+      if (events[index]) {
+        setCurrentTimestamp(events[index].timestamp);
+      }
+    },
+    [events]
+  );
+
+  // Auto-play effect with real-time intervals (for fullscreen mode)
+  useEffect(() => {
+    if (isPlaying && events.length > 0 && isFullscreen) {
+      const scheduleNext = (fromIndex: number) => {
+        const nextIndex = fromIndex + 1;
+        if (nextIndex >= events.length) {
+          setIsPlaying(false);
+          return;
+        }
+
+        const currentTime = new Date(events[fromIndex].timestamp).getTime();
+        const nextTime = new Date(events[nextIndex].timestamp).getTime();
+        const realDiffMs = Math.max(10, nextTime - currentTime);
+        const scaledInterval = realDiffMs / playbackSpeed;
+
+        playIntervalRef.current = setTimeout(() => {
+          updateIndex(nextIndex);
+          scheduleNext(nextIndex);
+        }, scaledInterval);
+      };
+
+      scheduleNext(currentIndex);
+
+      return () => {
+        if (playIntervalRef.current) {
+          clearTimeout(playIntervalRef.current);
+        }
+      };
+    }
+  }, [isPlaying, playbackSpeed, events, currentIndex, isFullscreen, updateIndex]);
+
+  // Handle play/pause toggle
+  const handlePlayPause = useCallback(() => {
+    if (currentIndex >= events.length - 1) {
+      updateIndex(0);
+    }
+    setIsPlaying(!isPlaying);
+  }, [currentIndex, events.length, isPlaying, updateIndex]);
 
   // Use provided graph (from workflow detail) or fall back to reconstructed graph
   const workflowGraph = useMemo(
@@ -330,7 +397,8 @@ export function DebugLayout({
     // When workflowGraph is provided from workflow detail, node IDs are WorkflowTaskStep.id
     // which may differ from taskId (GUID) and taskRef (CRD name).
     // First try direct match on taskId or taskRef
-    let task = executionDetail.tasks.find(
+    const detailTasks = executionDetail.tasks || [];
+    let task = detailTasks.find(
       (t) => t.taskId === selectedNodeId || t.taskRef === selectedNodeId
     );
 
@@ -338,7 +406,7 @@ export function DebugLayout({
     if (!task && workflowGraph) {
       const graphNode = workflowGraph.nodes.find((n) => n.id === selectedNodeId);
       if (graphNode?.data?.taskRef) {
-        task = executionDetail.tasks.find(
+        task = detailTasks.find(
           (t) => t.taskRef === graphNode.data.taskRef || t.taskId === graphNode.data.taskRef
         );
       }
@@ -407,7 +475,15 @@ export function DebugLayout({
               Debugging: <span className="font-mono text-sm">{executionId.slice(0, 8)}...</span>
             </h1>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setIsFullscreen(true)}
+              className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-600 hover:text-gray-900"
+              aria-label="Enter fullscreen"
+              title="Fullscreen mode"
+            >
+              <Maximize2 className="w-5 h-5" />
+            </button>
             <span
               className={`rounded-full px-3 py-1 text-sm font-medium ${
                 executionDetail.success
@@ -563,6 +639,80 @@ export function DebugLayout({
           </div>
         </div>
       </div>
+
+      {/* Fullscreen Mode */}
+      <AnimatePresence>
+        {isFullscreen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="fixed inset-0 z-50 bg-gray-950"
+          >
+            {/* Full viewport graph */}
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ duration: 0.4, ease: 'easeOut' }}
+              className="w-full h-full"
+            >
+              <WorkflowGraphPanel
+                graph={workflowGraph}
+                executionState={executionState}
+                direction="TB"
+                onNodeClick={handleNodeClick}
+              />
+            </motion.div>
+
+            {/* Floating controls */}
+            <FullscreenControls
+              events={events}
+              currentIndex={currentIndex}
+              isPlaying={isPlaying}
+              playbackSpeed={playbackSpeed}
+              sidebarOpen={sidebarOpen}
+              onIndexChange={updateIndex}
+              onPlayPause={handlePlayPause}
+              onSpeedChange={setPlaybackSpeed}
+              onExit={() => {
+                setIsFullscreen(false);
+                setIsPlaying(false);
+              }}
+              onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+            />
+
+            {/* Sliding sidebar */}
+            <AnimatePresence>
+              {sidebarOpen && (
+                <motion.div
+                  initial={{ x: '100%' }}
+                  animate={{ x: 0 }}
+                  exit={{ x: '100%' }}
+                  transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                  className="absolute right-0 top-0 h-full w-[400px] bg-white shadow-2xl overflow-hidden flex flex-col"
+                >
+                  <div className="border-b border-gray-200 px-4 py-3">
+                    <h3 className="font-semibold text-gray-900">Timeline & Variables</h3>
+                  </div>
+                  <div className="flex-1 overflow-auto">
+                    <ExecutionTimeline events={events} onTimeChange={handleTimeChange} />
+                    <div className="border-t border-gray-200">
+                      <VariableWatcher
+                        variables={variables}
+                        pinnedVariables={pinnedVariables}
+                        onPin={handlePinVariable}
+                        groupBySource={true}
+                      />
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

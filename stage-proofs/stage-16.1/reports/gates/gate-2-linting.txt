@@ -1,0 +1,816 @@
+npm error Missing script: "format"
+npm error
+npm error To see a list of scripts, run:
+npm error   npm run
+npm error A complete log of this run can be found in: /Users/darren/.npm/_logs/2025-12-04T22_27_32_519Z-debug-0.log
+
+  ! eslint(no-unused-vars): Parameter 'page' is declared but never used. Unused parameters should start with a '_'.
+     ,-[src/workflow-ui/e2e/workflow-builder.spec.ts:174:66]
+ 173 | 
+ 174 |   test('complete workflow creation flow (integration)', async ({ page }) => {
+     :                                                                  ^^|^
+     :                                                                    `-- 'page' is declared here
+ 175 |     // This is a high-level integration test that would test the full flow:
+     `----
+  help: Consider removing this parameter.
+
+  ! eslint(no-unused-vars): Identifier 'Panel' is imported but never used.
+    ,-[src/vscode-extension/client/src/webview/WorkflowGraphViewer.tsx:12:3]
+ 11 |   ReactFlowProvider,
+ 12 |   Panel,
+    :   ^^|^^
+    :     `-- 'Panel' is imported here
+ 13 | } from '@xyflow/react';
+    `----
+  help: Consider removing this import.
+
+  ! eslint(no-unused-vars): Variable 'getNodes' is declared but never used. Unused variables should start with a '_'.
+     ,-[src/vscode-extension/client/src/webview/WorkflowGraphViewer.tsx:129:11]
+ 128 |   const [error, setError] = useState<string | null>(null);
+ 129 |   const { getNodes } = useReactFlow();
+     :           ^^^^|^^^
+     :               `-- 'getNodes' is declared here
+ 130 | 
+     `----
+  help: Consider removing this declaration.
+
+  ! eslint(no-unused-vars): Identifier 'Link' is imported but never used.
+   ,-[src/workflow-ui/components/navigation.stories.tsx:2:8]
+ 1 | import type { Meta, StoryObj } from '@storybook/react';
+ 2 | import Link from 'next/link';
+   :        ^^|^
+   :          `-- 'Link' is imported here
+ 3 | 
+   `----
+  help: Consider removing this import.
+
+  ! eslint(no-unused-vars): Parameter 'name' is declared but never used. Unused parameters should start with a '_'.
+    ,-[src/workflow-ui/components/builder/task-palette.stories.tsx:41:21]
+ 40 | 
+ 41 | const TaskItem = ({ name, displayName, description, category, expanded = false }: { name: string; displayName: string; description: string; category: string; expanded?: boolean }) => {
+    :                     ^^|^
+    :                       `-- 'name' is declared here
+ 42 |   const Icon = category === 'Data' ? Database : category === 'Notifications' ? Mail : FileCheck;
+    `----
+  help: Consider removing this parameter.
+
+  ! eslint(no-unused-vars): Identifier 'within' is imported but never used.
+    ,-[src/workflow-ui/components/builder/task-palette.test.tsx:9:37]
+  8 | import { describe, it, expect, vi, beforeEach } from 'vitest';
+  9 | import { render, screen, fireEvent, within } from '@testing-library/react';
+    :                                     ^^^|^^
+    :                                        `-- 'within' is imported here
+ 10 | import userEvent from '@testing-library/user-event';
+    `----
+  help: Consider removing this import.
+
+  ! eslint(no-unused-vars): Parameter 'filters' is declared but never used. Unused parameters should start with a '_'.
+    ,-[src/workflow-ui/components/templates/template-browser.test.tsx:23:32]
+ 22 | vi.mock('./template-filters', () => ({
+ 23 |   TemplateFiltersComponent: ({ filters, onFiltersChange, availableTags }: any) => (
+    :                                ^^^|^^^
+    :                                   `-- 'filters' is declared here
+ 24 |     <div data-testid="template-filters">
+    `----
+  help: Consider removing this parameter.
+
+  ! eslint(no-unused-vars): Identifier 'within' is imported but never used.
+   ,-[src/workflow-ui/components/workflows/execution-history-panel.test.tsx:2:26]
+ 1 | import { describe, it, expect, vi } from 'vitest';
+ 2 | import { render, screen, within } from '@testing-library/react';
+   :                          ^^^|^^
+   :                             `-- 'within' is imported here
+ 3 | import { userEvent } from '@testing-library/user-event';
+   `----
+  help: Consider removing this import.
+
+  ! eslint(no-unused-vars): Type 'ExecutionSummary' is imported but never used.
+   ,-[src/workflow-ui/components/workflows/execution-history-panel.test.tsx:6:15]
+ 5 | import type { ExecutionHistoryItem } from '@/types/execution';
+ 6 | import type { ExecutionSummary } from '@/lib/api/types';
+   :               ^^^^^^^^|^^^^^^^
+   :                       `-- 'ExecutionSummary' is imported here
+ 7 | 
+   `----
+  help: Consider removing this import.
+
+  ! eslint(no-unused-vars): Variable 'container' is declared but never used. Unused variables should start with a '_'.
+     ,-[src/workflow-ui/components/workflows/execution-history-panel.test.tsx:133:15]
+ 132 |       const user = userEvent.setup();
+ 133 |       const { container } = render(<ExecutionHistoryPanel executions={mockExecutions} />);
+     :               ^^^^|^^^^
+     :                   `-- 'container' is declared here
+ 134 | 
+     `----
+  help: Consider removing this declaration.
+
+  ! eslint(no-unused-vars): Type 'GraphNode' is imported but never used.
+   ,-[src/workflow-ui/components/workflows/workflow-graph-panel.test.tsx:5:30]
+ 4 | import { WorkflowGraphPanel } from './workflow-graph-panel';
+ 5 | import type { WorkflowGraph, GraphNode, GraphEdge, ParallelGroup } from '@/types/workflow';
+   :                              ^^^^|^^^^
+   :                                  `-- 'GraphNode' is imported here
+ 6 | 
+   `----
+  help: Consider removing this import.
+
+  ! eslint(no-unused-vars): Type 'GraphEdge' is imported but never used.
+   ,-[src/workflow-ui/components/workflows/workflow-graph-panel.test.tsx:5:41]
+ 4 | import { WorkflowGraphPanel } from './workflow-graph-panel';
+ 5 | import type { WorkflowGraph, GraphNode, GraphEdge, ParallelGroup } from '@/types/workflow';
+   :                                         ^^^^|^^^^
+   :                                             `-- 'GraphEdge' is imported here
+ 6 | 
+   `----
+  help: Consider removing this import.
+
+  ! eslint(no-unused-vars): Type 'ParallelGroup' is imported but never used.
+   ,-[src/workflow-ui/components/workflows/workflow-graph-panel.test.tsx:5:52]
+ 4 | import { WorkflowGraphPanel } from './workflow-graph-panel';
+ 5 | import type { WorkflowGraph, GraphNode, GraphEdge, ParallelGroup } from '@/types/workflow';
+   :                                                    ^^^^^^|^^^^^^
+   :                                                          `-- 'ParallelGroup' is imported here
+ 6 | 
+   `----
+  help: Consider removing this import.
+
+  ! eslint(no-unused-vars): Identifier 'readFileSync' is imported but never used.
+    ,-[src/workflow-ui/e2e/transform-builder.spec.ts:9:10]
+  8 | import { test, expect } from '@playwright/test';
+  9 | import { readFileSync, writeFileSync, unlinkSync, mkdirSync } from 'fs';
+    :          ^^^^^^|^^^^^
+    :                `-- 'readFileSync' is imported here
+ 10 | import { join } from 'path';
+    `----
+  help: Consider removing this import.
+
+  ! eslint(no-unused-vars): Identifier 'mkdirSync' is imported but never used.
+    ,-[src/workflow-ui/e2e/transform-builder.spec.ts:9:51]
+  8 | import { test, expect } from '@playwright/test';
+  9 | import { readFileSync, writeFileSync, unlinkSync, mkdirSync } from 'fs';
+    :                                                   ^^^^|^^^^
+    :                                                       `-- 'mkdirSync' is imported here
+ 10 | import { join } from 'path';
+    `----
+  help: Consider removing this import.
+
+  ! eslint(no-unused-vars): Variable 'isVirtualNode' is declared but never used. Unused variables should start with a '_'.
+     ,-[src/workflow-ui/components/builder/workflow-canvas.tsx:183:9]
+ 182 |   // Helper to check if an ID is a virtual node (Input/Output)
+ 183 |   const isVirtualNode = (id: string) => id === '__input__' || id === '__output__';
+     :         ^^^^^^|^^^^^^
+     :               `-- 'isVirtualNode' is declared here
+ 184 |   const isVirtualEdge = (id: string) => id.startsWith('__input__-to-') || id.endsWith('-to-__output__');
+     `----
+  help: Consider removing this declaration.
+
+  ! eslint(no-unused-vars): Identifier 'LayoutGroup' is imported but never used.
+   ,-[src/workflow-ui/components/debugging/debug-layout.tsx:5:35]
+ 4 | import Link from 'next/link';
+ 5 | import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
+   :                                   ^^^^^|^^^^^
+   :                                        `-- 'LayoutGroup' is imported here
+ 6 | import { Maximize2 } from 'lucide-react';
+   `----
+  help: Consider removing this import.
+
+  ! eslint(no-unused-vars): Variable 'store' is declared but never used. Unused variables should start with a '_'.
+    ,-[src/workflow-ui/components/transforms/preview-panel.test.tsx:22:11]
+ 21 |   it('should display output data', () => {
+ 22 |     const store = useTransformBuilderStore.getState();
+    :           ^^|^^
+    :             `-- 'store' is declared here
+ 23 |     useTransformBuilderStore.setState({ outputData: [{ name: 'Alice', age: 30 }] });
+    `----
+  help: Consider removing this declaration.
+
+  ! eslint(no-unused-vars): Type 'TemplateFilters' is imported but never used.
+   ,-[src/workflow-ui/components/templates/template-filters.stories.tsx:3:53]
+ 2 | import { TemplateFiltersComponent } from './template-filters';
+ 3 | import { TemplateCategory, TemplateDifficulty, type TemplateFilters } from '@/types/template';
+   :                                                     ^^^^^^^|^^^^^^^
+   :                                                            `-- 'TemplateFilters' is imported here
+ 4 | 
+   `----
+  help: Consider removing this import.
+
+  ! eslint(no-unused-vars): Identifier 'waitFor' is imported but never used.
+   ,-[src/workflow-ui/components/debugging/task-state-inspector.test.tsx:2:26]
+ 1 | import { describe, it, expect, vi } from 'vitest';
+ 2 | import { render, screen, waitFor } from '@testing-library/react';
+   :                          ^^^|^^^
+   :                             `-- 'waitFor' is imported here
+ 3 | import userEvent from '@testing-library/user-event';
+   `----
+  help: Consider removing this import.
+
+  ! eslint(no-unused-vars): Variable 'selectCard' is declared but never used. Unused variables should start with a '_'.
+     ,-[src/workflow-ui/components/transforms/operation-palette.test.tsx:167:13]
+ 166 | 
+ 167 |       const selectCard = screen.getByTestId('operation-card-select');
+     :             ^^^^^|^^^^
+     :                  `-- 'selectCard' is declared here
+ 168 | 
+     `----
+  help: Consider removing this declaration.
+
+  ! eslint(no-unused-vars): Variable 'currentDepth' is declared but never used. Unused variables should start with a '_'.
+     ,-[src/workflow-ui/lib/visualization/visualization-store.ts:161:11]
+ 160 |     const currentId = queue.shift()!;
+ 161 |     const currentDepth = depths.get(currentId)!;
+     :           ^^^^^^|^^^^^
+     :                 `-- 'currentDepth' is declared here
+ 162 | 
+     `----
+  help: Consider removing this declaration.
+
+  ! eslint(no-unused-vars): Type 'DebugLayoutProps' is imported but never used.
+   ,-[src/workflow-ui/components/debugging/debug-layout.stories.tsx:2:28]
+ 1 | import type { Meta, StoryObj } from '@storybook/react';
+ 2 | import { DebugLayout, type DebugLayoutProps } from './debug-layout';
+   :                            ^^^^^^^^|^^^^^^^
+   :                                    `-- 'DebugLayoutProps' is imported here
+ 3 | import type { ExecutionTraceResponse } from '@/lib/api/types';
+   `----
+  help: Consider removing this import.
+
+  ! eslint(no-unused-vars): Catch parameter 'error' is caught but never used.
+    ,-[src/workflow-ui/app/api/workflows/[name]/execute/route.ts:20:14]
+ 19 |       requestBody = await request.json();
+ 20 |     } catch (error) {
+    :              ^^|^^
+    :                `-- 'error' is declared here
+ 21 |       return NextResponse.json(
+    `----
+  help: Consider handling this error.
+
+  ! eslint(no-unused-vars): Variable 'schemaValidator' is declared but never used. Unused variables should start with a '_'.
+    ,-[src/vscode-extension/server/src/server.ts:22:7]
+ 21 | // Initialize schema validator
+ 22 | const schemaValidator = new SchemaValidator();
+    :       ^^^^^^^|^^^^^^^
+    :              `-- 'schemaValidator' is declared here
+ 23 | 
+    `----
+  help: Consider removing this declaration.
+
+  ! eslint(no-unused-vars): Parameter 'params' is declared but never used. Unused parameters should start with a '_'.
+    ,-[src/vscode-extension/server/src/server.ts:24:26]
+ 23 | 
+ 24 | connection.onInitialize((params: InitializeParams) => {
+    :                          ^^^|^^
+    :                             `-- 'params' is declared here
+ 25 |   const result: InitializeResult = {
+    `----
+  help: Consider removing this parameter.
+
+  ! eslint(no-unused-vars): Parameter 'textDocument' is declared but never used. Unused parameters should start with a '_'.
+    ,-[src/vscode-extension/server/src/server.ts:89:3]
+ 88 |   diagnostics: Diagnostic[],
+ 89 |   textDocument: TextDocument
+    :   ^^^^^^|^^^^^
+    :         `-- 'textDocument' is declared here
+ 90 | ): void {
+    `----
+  help: Consider removing this parameter.
+
+  ! eslint(no-unused-vars): Parameter 'textDocument' is declared but never used. Unused parameters should start with a '_'.
+     ,-[src/vscode-extension/server/src/server.ts:148:3]
+ 147 |   diagnostics: Diagnostic[],
+ 148 |   textDocument: TextDocument
+     :   ^^^^^^|^^^^^
+     :         `-- 'textDocument' is declared here
+ 149 | ): void {
+     `----
+  help: Consider removing this parameter.
+
+  ! eslint(no-unused-vars): Identifier 'AnimatePresence' is imported but never used.
+   ,-[src/workflow-ui/components/debugging/fullscreen-controls.tsx:4:18]
+ 3 | import { useState, useEffect, useRef, useCallback } from 'react';
+ 4 | import { motion, AnimatePresence } from 'framer-motion';
+   :                  ^^^^^^^|^^^^^^^
+   :                         `-- 'AnimatePresence' is imported here
+ 5 | import {
+   `----
+  help: Consider removing this import.
+
+  ! eslint(no-unused-vars): Catch parameter 'err' is caught but never used.
+    ,-[src/workflow-ui/components/transforms/json-upload-panel.tsx:44:18]
+ 43 |           onUpload?.(data);
+ 44 |         } catch (err) {
+    :                  ^|^
+    :                   `-- 'err' is declared here
+ 45 |           setError('Invalid JSON file');
+    `----
+  help: Consider handling this error.
+
+  ! eslint(no-unused-vars): Identifier 'LineChart' is imported but never used.
+   ,-[src/workflow-ui/components/analytics/duration-trends-chart.tsx:5:3]
+ 4 | import {
+ 5 |   LineChart,
+   :   ^^^^|^^^^
+   :       `-- 'LineChart' is imported here
+ 6 |   Line,
+   `----
+  help: Consider removing this import.
+
+  ! eslint(no-unused-vars): Parameter 'entityName' is declared but never used. Unused parameters should start with a '_'.
+    ,-[src/workflow-ui/components/analytics/duration-trends-chart.tsx:46:3]
+ 45 |   entityType,
+ 46 |   entityName,
+    :   ^^^^^|^^^^
+    :        `-- 'entityName' is declared here
+ 47 |   isLoading = false,
+    `----
+  help: Consider removing this parameter.
+
+  ! eslint(no-unused-vars): Identifier 'vi' is imported but never used.
+   ,-[src/workflow-ui/components/analytics/duration-trends-chart.test.tsx:1:32]
+ 1 | import { describe, it, expect, vi, beforeEach } from 'vitest';
+   :                                ^|
+   :                                 `-- 'vi' is imported here
+ 2 | import { render, screen } from '@testing-library/react';
+   `----
+  help: Consider removing this import.
+
+  ! eslint(no-unused-vars): Identifier 'beforeEach' is imported but never used.
+   ,-[src/workflow-ui/components/analytics/duration-trends-chart.test.tsx:1:36]
+ 1 | import { describe, it, expect, vi, beforeEach } from 'vitest';
+   :                                    ^^^^^|^^^^
+   :                                         `-- 'beforeEach' is imported here
+ 2 | import { render, screen } from '@testing-library/react';
+   `----
+  help: Consider removing this import.
+
+  ! eslint(no-unused-vars): Variable 'expectedExecutions' is declared but never used. Unused variables should start with a '_'.
+     ,-[src/workflow-ui/components/analytics/duration-trends-chart.test.tsx:844:13]
+ 843 |       const testData = mockDataPoints[0];
+ 844 |       const expectedExecutions = testData.executionCount;
+     :             ^^^^^^^^^|^^^^^^^^
+     :                      `-- 'expectedExecutions' is declared here
+ 845 | 
+     `----
+  help: Consider removing this declaration.
+
+  ! eslint(no-unused-vars): Parameter 'get' is declared but never used. Unused parameters should start with a '_'.
+    ,-[src/workflow-ui/lib/stores/learning-store.ts:68:11]
+ 67 |   persist(
+ 68 |     (set, get) => ({
+    :           ^|^
+    :            `-- 'get' is declared here
+ 69 |       ...initialState,
+    `----
+  help: Consider removing this parameter.
+
+  ! eslint(no-unused-vars): Identifier 'LineChart' is imported but never used.
+   ,-[src/workflow-ui/components/dashboard/latency-chart.tsx:4:3]
+ 3 | import {
+ 4 |   LineChart,
+   :   ^^^^|^^^^
+   :       `-- 'LineChart' is imported here
+ 5 |   Line,
+   `----
+  help: Consider removing this import.
+
+  ! eslint(no-unused-vars): Catch parameter '_error' is caught but never used.
+    ,-[src/workflow-ui/app/workflows/new/page.tsx:88:16]
+ 87 |         setWorkflowName(templateData.name);
+ 88 |       } catch (_error) {
+    :                ^^^|^^
+    :                   `-- '_error' is declared here
+ 89 |         setErrorMessage('Failed to load template. Please try again.');
+    `----
+  help: Consider handling this error.
+
+  ! eslint(no-unused-vars): Parameter 'event' is declared but never used. Unused parameters should start with a '_'.
+     ,-[src/workflow-ui/app/visualization/page.tsx:312:35]
+ 311 |         // Handle workflow started - track the workflow
+ 312 |         client.onWorkflowStarted((event: WorkflowStartedEvent) => {
+     :                                   ^^|^^
+     :                                     `-- 'event' is declared here
+ 313 |           setActiveExecutions((n) => n + 1);
+     `----
+  help: Consider removing this parameter.
+
+  ! eslint(no-unused-vars): Catch parameter 'error' is caught but never used.
+    ,-[src/workflow-ui/app/api/workflows/[name]/test/route.ts:20:14]
+ 19 |       requestBody = await request.json();
+ 20 |     } catch (error) {
+    :              ^^|^^
+    :                `-- 'error' is declared here
+ 21 |       return NextResponse.json(
+    `----
+  help: Consider handling this error.
+
+  ! eslint(no-unused-vars): Identifier 'X' is imported but never used.
+    ,-[src/workflow-ui/components/builder/input-schema-panel.tsx:14:10]
+ 13 | import { useState } from 'react';
+ 14 | import { X, Plus, Trash2, ChevronDown, ChevronRight } from 'lucide-react';
+    :          |
+    :          `-- 'X' is imported here
+ 15 | import { useWorkflowBuilderStore } from '@/lib/stores/workflow-builder-store';
+    `----
+  help: Consider removing this import.
+
+  ! eslint(no-unused-vars): Variable 'closePanel' is declared but never used. Unused variables should start with a '_'.
+     ,-[src/workflow-ui/components/builder/input-schema-panel.tsx:244:9]
+ 243 |   const inputSchema = useWorkflowBuilderStore((state) => state.inputSchema);
+ 244 |   const closePanel = useWorkflowBuilderStore((state) => state.closePanel);
+     :         ^^^^^|^^^^
+     :              `-- 'closePanel' is declared here
+ 245 | 
+     `----
+  help: Consider removing this declaration.
+
+  ! eslint(no-unused-vars): Identifier 'produce' is imported but never used.
+    ,-[src/workflow-ui/lib/stores/workflow-builder-store.ts:11:10]
+ 10 | import { immer } from 'zustand/middleware/immer';
+ 11 | import { produce } from 'immer';
+    :          ^^^|^^^
+    :             `-- 'produce' is imported here
+ 12 | import {
+    `----
+  help: Consider removing this import.
+
+  ! eslint(no-unused-vars): Identifier 'path' is imported but never used.
+   ,-[src/vscode-extension/client/src/graphPanel.ts:2:13]
+ 1 | import * as vscode from 'vscode';
+ 2 | import * as path from 'path';
+   :             ^^|^
+   :               `-- 'path' is imported here
+ 3 | import * as YAML from 'yaml';
+   `----
+  help: Consider removing this import.
+
+  ! eslint(no-unused-vars): Variable 'container' is declared but never used. Unused variables should start with a '_'.
+    ,-[src/workflow-ui/components/workflows/execution-input-form.test.tsx:45:15]
+ 44 |     it('shows required indicator for required fields', () => {
+ 45 |       const { container } = render(
+    :               ^^^^|^^^^
+    :                   `-- 'container' is declared here
+ 46 |         <ExecutionInputForm schema={mockSimpleSchema} onSubmit={vi.fn()} />
+    `----
+  help: Consider removing this declaration.
+
+  ! eslint(no-unused-vars): Variable 'container' is declared but never used. Unused variables should start with a '_'.
+    ,-[src/workflow-ui/components/workflows/execution-input-form.test.tsx:56:15]
+ 55 |     it('does not show required indicator for optional fields', () => {
+ 56 |       const { container } = render(
+    :               ^^^^|^^^^
+    :                   `-- 'container' is declared here
+ 57 |         <ExecutionInputForm schema={mockSimpleSchema} onSubmit={vi.fn()} />
+    `----
+  help: Consider removing this declaration.
+
+  ! eslint(no-unused-vars): Identifier 'TaskExecutionDetail' is imported but never used.
+   ,-[src/workflow-ui/lib/mocks/executions.ts:5:3]
+ 4 |   DryRunResponse,
+ 5 |   TaskExecutionDetail,
+   :   ^^^^^^^^^|^^^^^^^^^
+   :            `-- 'TaskExecutionDetail' is imported here
+ 6 | } from '@/types/execution';
+   `----
+  help: Consider removing this import.
+
+  ! eslint(no-unused-vars): Type 'NodeProps' is imported but never used.
+    ,-[src/workflow-ui/components/builder/task-node.test.tsx:12:15]
+ 11 | import { TaskNode } from './task-node';
+ 12 | import type { NodeProps } from '@xyflow/react';
+    :               ^^^^|^^^^
+    :                   `-- 'NodeProps' is imported here
+ 13 | import type { WorkflowBuilderNodeData } from '@/lib/types/workflow-builder';
+    `----
+  help: Consider removing this import.
+
+  ! eslint(no-unused-vars): Type 'WorkflowBuilderNodeData' is imported but never used.
+    ,-[src/workflow-ui/components/builder/task-node.test.tsx:13:15]
+ 12 | import type { NodeProps } from '@xyflow/react';
+ 13 | import type { WorkflowBuilderNodeData } from '@/lib/types/workflow-builder';
+    :               ^^^^^^^^^^^|^^^^^^^^^^^
+    :                          `-- 'WorkflowBuilderNodeData' is imported here
+ 14 | 
+    `----
+  help: Consider removing this import.
+
+  ! eslint(no-unused-vars): Variable 'user' is declared but never used. Unused variables should start with a '_'.
+     ,-[src/workflow-ui/components/builder/task-node.test.tsx:297:13]
+ 296 |       mockDeleteNode.mockClear(); // Clear before this specific test
+ 297 |       const user = userEvent.setup();
+     :             ^^|^
+     :               `-- 'user' is declared here
+ 298 |       const selectedProps = { ...mockNodeProps, selected: true };
+     `----
+  help: Consider removing this declaration.
+
+  ! eslint(no-unused-vars): Identifier 'beforeEach' is imported but never used.
+   ,-[src/workflow-ui/lib/api/queries.test.tsx:1:32]
+ 1 | import { describe, it, expect, beforeEach } from 'vitest';
+   :                                ^^^^^|^^^^
+   :                                     `-- 'beforeEach' is imported here
+ 2 | import { renderHook, waitFor } from '@testing-library/react';
+   `----
+  help: Consider removing this import.
+
+  ! eslint(no-unused-vars): Parameter 'schema' is declared but never used. Unused parameters should start with a '_'.
+    ,-[src/workflow-ui/components/workflows/workflow-detail-tabs.test.tsx:33:26]
+ 32 | vi.mock('./execution-input-form', () => ({
+ 33 |   ExecutionInputForm: ({ schema, onSubmit, onTest }: any) => (
+    :                          ^^^|^^
+    :                             `-- 'schema' is declared here
+ 34 |     <div data-testid="execution-input-form">
+    `----
+  help: Consider removing this parameter.
+
+  ! eslint(no-unused-vars): Parameter 'onTest' is declared but never used. Unused parameters should start with a '_'.
+    ,-[src/workflow-ui/components/workflows/workflow-detail-tabs.test.tsx:73:48]
+ 72 | vi.mock('./execute-modal', () => ({
+ 73 |   ExecuteModal: ({ isOpen, onClose, onExecute, onTest, mode }: any) => (
+    :                                                ^^^|^^
+    :                                                   `-- 'onTest' is declared here
+ 74 |     isOpen ? (
+    `----
+  help: Consider removing this parameter.
+
+  ! eslint(no-unused-vars): Parameter 'mode' is declared but never used. Unused parameters should start with a '_'.
+    ,-[src/workflow-ui/components/workflows/workflow-detail-tabs.test.tsx:73:56]
+ 72 | vi.mock('./execute-modal', () => ({
+ 73 |   ExecuteModal: ({ isOpen, onClose, onExecute, onTest, mode }: any) => (
+    :                                                        ^^|^
+    :                                                          `-- 'mode' is declared here
+ 74 |     isOpen ? (
+    `----
+  help: Consider removing this parameter.
+
+  ! eslint(no-unused-vars): Variable 'rerender' is declared but never used. Unused variables should start with a '_'.
+     ,-[src/workflow-ui/components/builder/workflow-canvas.test.tsx:174:15]
+ 173 | 
+ 174 |       const { rerender } = render(<WorkflowCanvas />);
+     :               ^^^^|^^^
+     :                   `-- 'rerender' is declared here
+ 175 | 
+     `----
+  help: Consider removing this declaration.
+
+  ! eslint(no-unused-vars): Identifier 'Timer' is imported but never used.
+   ,-[src/workflow-ui/components/workflows/workflow-detail-tabs.tsx:4:29]
+ 3 | import { useState, useCallback } from 'react';
+ 4 | import { Copy, Check, Code, Timer } from 'lucide-react';
+   :                             ^^|^^
+   :                               `-- 'Timer' is imported here
+ 5 | import { WorkflowDetailHeader } from './workflow-detail-header';
+   `----
+  help: Consider removing this import.
+
+  ! eslint(no-unused-vars): Identifier 'ChevronDown' is imported but never used.
+    ,-[src/workflow-ui/components/builder/task-palette.tsx:17:3]
+ 16 |   Search,
+ 17 |   ChevronDown,
+    :   ^^^^^|^^^^^
+    :        `-- 'ChevronDown' is imported here
+ 18 |   ChevronRight,
+    `----
+  help: Consider removing this import.
+
+  ! eslint(no-unused-vars): Identifier 'ChevronRight' is imported but never used.
+    ,-[src/workflow-ui/components/builder/task-palette.tsx:18:3]
+ 17 |   ChevronDown,
+ 18 |   ChevronRight,
+    :   ^^^^^^|^^^^^
+    :         `-- 'ChevronRight' is imported here
+ 19 |   Database,
+    `----
+  help: Consider removing this import.
+
+  ! eslint(no-unused-vars): Variable 'setIsCollapsed' is declared but never used. Unused variables should start with a '_'.
+    ,-[src/workflow-ui/components/builder/task-palette.tsx:72:23]
+ 71 |   const [draggingTask, setDraggingTask] = useState<string | null>(null);
+ 72 |   const [isCollapsed, setIsCollapsed] = useState(false);
+    :                       ^^^^^^^|^^^^^^
+    :                              `-- 'setIsCollapsed' is declared here
+ 73 | 
+    `----
+  help: Consider removing this declaration.
+
+  ! eslint(no-unused-vars): Parameter 'filters' is declared but never used. Unused parameters should start with a '_'.
+    ,-[src/workflow-ui/components/workflows/workflow-filters.tsx:31:3]
+ 30 |   isLoading = false,
+ 31 |   filters,
+    :   ^^^|^^^
+    :      `-- 'filters' is declared here
+ 32 |   searchInputRef,
+    `----
+  help: Consider removing this parameter.
+
+  ! eslint(no-unused-vars): Identifier 'X' is imported but never used.
+    ,-[src/workflow-ui/components/builder/properties-panel.tsx:16:10]
+ 15 | import { useState, useEffect, useMemo, useCallback } from 'react';
+ 16 | import { X, AlertCircle, CheckCircle, AlertTriangle, Loader2, ArrowRightFromLine, ArrowRightToLine, Settings2 } from 'lucide-react';
+    :          |
+    :          `-- 'X' is imported here
+ 17 | import { cn } from '@/lib/utils';
+    `----
+  help: Consider removing this import.
+
+  ! eslint(no-unused-vars): Type 'PropertyDefinition' is imported but never used.
+    ,-[src/workflow-ui/components/builder/properties-panel.tsx:22:53]
+ 21 | import { getTaskDetail } from '@/lib/api/client';
+ 22 | import type { TaskDetailResponse, SchemaDefinition, PropertyDefinition } from '@/lib/api/types';
+    :                                                     ^^^^^^^^^|^^^^^^^^
+    :                                                              `-- 'PropertyDefinition' is imported here
+ 23 | 
+    `----
+  help: Consider removing this import.
+
+  ! eslint(no-unused-vars): Variable 'handleSuggestionsKeyDown' is declared but never used. Unused variables should start with a '_'.
+     ,-[src/workflow-ui/components/builder/properties-panel.tsx:147:9]
+ 146 |   // Close suggestions on Escape
+ 147 |   const handleSuggestionsKeyDown = useCallback((e: React.KeyboardEvent) => {
+     :         ^^^^^^^^^^^^|^^^^^^^^^^^
+     :                     `-- 'handleSuggestionsKeyDown' is declared here
+ 148 |     if (e.key === 'Escape') {
+     `----
+  help: Consider removing this declaration.
+
+  ! eslint(no-unused-vars): Variable 'level' is declared but never used. Unused variables should start with a '_'.
+     ,-[src/workflow-ui/lib/utils/graph-layout.ts:143:17]
+ 142 |   while (queue.length > 0) {
+ 143 |     const { id, level } = queue.shift()!;
+     :                 ^^|^^
+     :                   `-- 'level' is declared here
+ 144 | 
+     `----
+  help: Consider removing this declaration.
+
+  ! eslint(no-unused-vars): Variable 'name' is declared but never used. Unused variables should start with a '_'.
+     ,-[src/workflow-ui/lib/mocks/handlers.ts:697:13]
+ 696 |     await delay(100);
+ 697 |     const { name } = params;
+     :             ^^|^
+     :               `-- 'name' is declared here
+ 698 | 
+     `----
+  help: Consider removing this declaration.
+
+  ! eslint(no-unused-vars): Identifier 'useEffect' is imported but never used.
+    ,-[src/workflow-ui/components/visualization/neural-network-visualization.tsx:13:17]
+ 12 | 
+ 13 | import React, { useEffect, useCallback } from 'react';
+    :                 ^^^^|^^^^
+    :                     `-- 'useEffect' is imported here
+ 14 | import { NeuralScene } from './neural-scene';
+    `----
+  help: Consider removing this import.
+
+  ! eslint(no-unused-vars): Identifier 'http' is imported but never used.
+   ,-[src/workflow-ui/lib/mocks/handlers.test.ts:2:10]
+ 1 | import { describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest';
+ 2 | import { http, HttpResponse } from 'msw';
+   :          ^^|^
+   :            `-- 'http' is imported here
+ 3 | import { setupServer } from 'msw/node';
+   `----
+  help: Consider removing this import.
+
+  ! eslint(no-unused-vars): Identifier 'HttpResponse' is imported but never used.
+   ,-[src/workflow-ui/lib/mocks/handlers.test.ts:2:16]
+ 1 | import { describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest';
+ 2 | import { http, HttpResponse } from 'msw';
+   :                ^^^^^^|^^^^^
+   :                      `-- 'HttpResponse' is imported here
+ 3 | import { setupServer } from 'msw/node';
+   `----
+  help: Consider removing this import.
+
+  ! File is too long to fit on the screen
+
+  ! File is too long to fit on the screen
+
+  ! File is too long to fit on the screen
+
+Found 3902 warnings and 0 errors.
+Finished in 242ms on 389 files with 89 rules using 16 threads.
+
+> workflow-root@1.0.0 lint
+> turbo run lint
+
+turbo 2.6.1
+
+ WARNING  Unable to calculate transitive closures: Workspace 'packages/workflow-cli' not found in lockfile.
+• Packages in scope: @workflow/api-client, @workflow/cli, @workflow/graph, @workflow/mcp-server, @workflow/types, @workflow/ui-components, @workflow/validation, workflow-ui, workflow-vscode-client, workflow-vscode-server
+• Running lint in 10 packages
+• Remote caching disabled
+@workflow/types:lint: cache miss, executing b7ca4037dfab55f5
+@workflow/validation:lint: cache miss, executing 1b05cbaee166ff35
+@workflow/graph:lint: cache miss, executing f5d029421ad765bd
+@workflow/mcp-server:lint: cache miss, executing b4c6f2d2c8515cd8
+@workflow/ui-components:lint: cache miss, executing 93f65ba97fe8e3fa
+workflow-ui:lint: cache miss, executing e8715e45c00881c2
+@workflow/cli:lint: cache miss, executing fb6a49346d1e9a01
+@workflow/types:lint: 
+@workflow/types:lint: > @workflow/types@0.1.0 lint /Users/darren/dev/workflow/packages/workflow-types
+@workflow/types:lint: > eslint src --ext .ts
+@workflow/types:lint: 
+@workflow/validation:lint: 
+@workflow/validation:lint: > @workflow/validation@0.1.0 lint /Users/darren/dev/workflow/packages/workflow-validation
+@workflow/validation:lint: > eslint src --ext .ts
+@workflow/validation:lint: 
+@workflow/graph:lint: 
+@workflow/graph:lint: > @workflow/graph@0.1.0 lint /Users/darren/dev/workflow/packages/workflow-graph
+@workflow/graph:lint: > eslint src --ext .ts
+@workflow/graph:lint: 
+@workflow/mcp-server:lint: 
+@workflow/mcp-server:lint: > @workflow/mcp-server@0.1.0 lint /Users/darren/dev/workflow/packages/workflow-mcp-server
+@workflow/mcp-server:lint: > eslint src tests --ext .ts
+@workflow/mcp-server:lint: 
+workflow-ui:lint: 
+workflow-ui:lint: > workflow-ui@0.1.0 lint /Users/darren/dev/workflow/src/workflow-ui
+workflow-ui:lint: > eslint
+workflow-ui:lint: 
+@workflow/ui-components:lint: 
+@workflow/ui-components:lint: > @workflow/ui-components@0.1.0 lint /Users/darren/dev/workflow/packages/workflow-ui-components
+@workflow/ui-components:lint: > eslint src --ext .ts,.tsx
+@workflow/ui-components:lint: 
+@workflow/cli:lint: 
+@workflow/cli:lint: > @workflow/cli@0.1.0 lint /Users/darren/dev/workflow/packages/workflow-cli
+@workflow/cli:lint: > eslint src tests
+@workflow/cli:lint: 
+@workflow/graph:lint: 
+@workflow/graph:lint: Oops! Something went wrong! :(
+@workflow/graph:lint: 
+@workflow/graph:lint: ESLint: 9.34.0
+@workflow/graph:lint: 
+@workflow/graph:lint: ESLint couldn't find an eslint.config.(js|mjs|cjs) file.
+@workflow/graph:lint: 
+@workflow/graph:lint: From ESLint v9.0.0, the default configuration file is now eslint.config.js.
+@workflow/graph:lint: If you are using a .eslintrc.* file, please follow the migration guide
+@workflow/graph:lint: to update your configuration file to the new format:
+@workflow/graph:lint: 
+@workflow/graph:lint: https://eslint.org/docs/latest/use/configure/migration-guide
+@workflow/graph:lint: 
+@workflow/graph:lint: If you still have problems after following the migration guide, please stop by
+@workflow/graph:lint: https://eslint.org/chat/help to chat with the team.
+@workflow/graph:lint: 
+@workflow/validation:lint: 
+@workflow/validation:lint: Oops! Something went wrong! :(
+@workflow/validation:lint: 
+@workflow/validation:lint: ESLint: 9.34.0
+@workflow/validation:lint: 
+@workflow/validation:lint: ESLint couldn't find an eslint.config.(js|mjs|cjs) file.
+@workflow/validation:lint: 
+@workflow/validation:lint: From ESLint v9.0.0, the default configuration file is now eslint.config.js.
+@workflow/validation:lint: If you are using a .eslintrc.* file, please follow the migration guide
+@workflow/validation:lint: to update your configuration file to the new format:
+@workflow/validation:lint: 
+@workflow/validation:lint: https://eslint.org/docs/latest/use/configure/migration-guide
+@workflow/validation:lint: 
+@workflow/validation:lint: If you still have problems after following the migration guide, please stop by
+@workflow/validation:lint: https://eslint.org/chat/help to chat with the team.
+@workflow/validation:lint: 
+@workflow/ui-components:lint: 
+@workflow/ui-components:lint: Oops! Something went wrong! :(
+@workflow/ui-components:lint: 
+@workflow/ui-components:lint: ESLint: 9.34.0
+@workflow/ui-components:lint: 
+@workflow/ui-components:lint: ESLint couldn't find an eslint.config.(js|mjs|cjs) file.
+@workflow/ui-components:lint: 
+@workflow/ui-components:lint: From ESLint v9.0.0, the default configuration file is now eslint.config.js.
+@workflow/ui-components:lint: If you are using a .eslintrc.* file, please follow the migration guide
+@workflow/ui-components:lint: to update your configuration file to the new format:
+@workflow/ui-components:lint: 
+@workflow/ui-components:lint: https://eslint.org/docs/latest/use/configure/migration-guide
+@workflow/ui-components:lint: 
+@workflow/ui-components:lint: If you still have problems after following the migration guide, please stop by
+@workflow/ui-components:lint: https://eslint.org/chat/help to chat with the team.
+@workflow/ui-components:lint: 
+@workflow/types:lint: 
+@workflow/types:lint: Oops! Something went wrong! :(
+@workflow/types:lint: 
+@workflow/types:lint: ESLint: 9.34.0
+@workflow/types:lint: 
+@workflow/types:lint: ESLint couldn't find an eslint.config.(js|mjs|cjs) file.
+@workflow/types:lint: 
+@workflow/types:lint: From ESLint v9.0.0, the default configuration file is now eslint.config.js.
+@workflow/types:lint: If you are using a .eslintrc.* file, please follow the migration guide
+@workflow/types:lint: to update your configuration file to the new format:
+@workflow/types:lint: 
+@workflow/types:lint: https://eslint.org/docs/latest/use/configure/migration-guide
+@workflow/types:lint: 
+@workflow/types:lint: If you still have problems after following the migration guide, please stop by
+@workflow/types:lint: https://eslint.org/chat/help to chat with the team.
+@workflow/types:lint: 
+@workflow/types:lint:  ELIFECYCLE  Command failed with exit code 2.
+@workflow/validation:lint:  ELIFECYCLE  Command failed with exit code 2.
+@workflow/graph:lint:  ELIFECYCLE  Command failed with exit code 2.
+@workflow/ui-components:lint:  ELIFECYCLE  Command failed with exit code 2.
+@workflow/graph:lint: ERROR: command finished with error: command (/Users/darren/dev/workflow/packages/workflow-graph) /usr/local/bin/pnpm run lint exited (2)
+workflow-ui:lint:  ELIFECYCLE  Command failed.
+@workflow/mcp-server:lint:  ELIFECYCLE  Command failed.
+@workflow/cli:lint:  ELIFECYCLE  Command failed.
+@workflow/graph#lint: command (/Users/darren/dev/workflow/packages/workflow-graph) /usr/local/bin/pnpm run lint exited (2)
+
+ Tasks:    0 successful, 7 total
+Cached:    0 cached, 7 total
+  Time:    1.379s 
+Failed:    @workflow/graph#lint
+
+ ERROR  run failed: command  exited (2)

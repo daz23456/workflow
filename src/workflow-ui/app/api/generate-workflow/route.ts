@@ -64,8 +64,25 @@ ${taskList}
 ## Rules
 1. Always use the Kubernetes CRD format with apiVersion, kind, metadata, spec
 2. metadata.name is REQUIRED
-3. taskRef must reference one of the available tasks listed above
+3. taskRef MUST reference one of the available tasks listed above - NO EXCEPTIONS
 4. Use descriptive task IDs (e.g., "fetch-iss", "get-joke")
+
+## CRITICAL: Task Availability
+- You can ONLY use tasks from the "Available Tasks" list above
+- DO NOT invent, guess, or approximate task names
+- DO NOT use similar-sounding tasks that don't exist
+- If the user's intent requires tasks that are not available, you MUST refuse
+
+## When Tasks Are Missing
+If the required tasks do not exist in the available list, respond with:
+\`\`\`yaml
+# CANNOT_GENERATE
+\`\`\`
+
+Then explain:
+1. What tasks would be needed to fulfill the intent
+2. Which of those tasks are NOT available
+3. Suggest the user create the missing tasks first
 
 ## Output Format
 Generate valid YAML that can be deployed directly. Always wrap YAML in \`\`\`yaml code blocks.
@@ -162,6 +179,39 @@ Remember to:
     }
 
     const yaml = yamlMatch[1].trim();
+
+    // Check if LLM indicated it cannot generate the workflow
+    if (yaml.includes('CANNOT_GENERATE')) {
+      // Extract the explanation after the yaml block
+      const afterYaml = responseText.split('```')[2]?.trim() || '';
+      return NextResponse.json(
+        {
+          error: 'Cannot generate workflow - required tasks not available',
+          cannotGenerate: true,
+          explanation: afterYaml || 'The requested workflow requires tasks that are not available in the task library.'
+        },
+        { status: 422 }
+      );
+    }
+
+    // Validate that all taskRef values exist in available tasks
+    const availableTaskNames = new Set(tasks.map(t => t.name));
+    const taskRefMatches = yaml.matchAll(/taskRef:\s*([a-z0-9-]+)/g);
+    const usedTaskRefs = [...taskRefMatches].map(m => m[1]);
+    const invalidTasks = usedTaskRefs.filter(ref => !availableTaskNames.has(ref));
+
+    if (invalidTasks.length > 0) {
+      return NextResponse.json(
+        {
+          error: `Generated workflow references tasks that don't exist: ${invalidTasks.join(', ')}`,
+          invalidTasks,
+          availableTasks: tasks.map(t => t.name),
+          suggestion: 'Try rephrasing your intent or create the missing tasks first.'
+        },
+        { status: 422 }
+      );
+    }
+
     const pattern = detectPattern(yaml);
     const taskCount = (yaml.match(/- id:/g) || []).length;
 

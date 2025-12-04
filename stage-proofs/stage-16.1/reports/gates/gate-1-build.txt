@@ -1,0 +1,6 @@
+=== Gate 1: Build ===
+
+> @workflow/cli@0.1.0 build
+> tsc
+
+GATE 1: PASS

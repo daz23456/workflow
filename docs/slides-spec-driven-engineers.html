@@ -447,57 +447,39 @@ Build a production-grade workflow orchestration engine...
 
         <!-- Quality Gates -->
         <section>
-          <h2>8 Mandatory Quality Gates</h2>
-          <table>
-            <tr>
-              <th>Gate</th>
-              <th>Check</th>
-              <th>Fail Condition</th>
-            </tr>
-            <tr>
-              <td>1</td>
-              <td>No Template Files</td>
-              <td class="highlight-red">Class1.cs, UnitTest1.cs found</td>
-            </tr>
-            <tr>
-              <td>2</td>
-              <td>Linting & Style</td>
-              <td class="highlight-red">Any style violations</td>
-            </tr>
-            <tr>
-              <td>3</td>
-              <td>Clean Build</td>
-              <td class="highlight-red">Errors or warnings</td>
-            </tr>
-            <tr>
-              <td>4</td>
-              <td>Type Safety (TS)</td>
-              <td class="highlight-red">TypeScript type errors</td>
-            </tr>
-            <tr>
-              <td>5</td>
-              <td>All Tests Passing</td>
-              <td class="highlight-red">Any failure or skip</td>
-            </tr>
-            <tr>
-              <td>6</td>
-              <td>Coverage ≥90%</td>
-              <td class="highlight-red">Below threshold</td>
-            </tr>
-            <tr>
-              <td>7</td>
-              <td>Zero Vulnerabilities</td>
-              <td class="highlight-red">Any security issue</td>
-            </tr>
-            <tr>
-              <td>8</td>
-              <td>Proof Complete</td>
-              <td class="highlight-red">[TBD] placeholders remain</td>
-            </tr>
-          </table>
-          <p style="text-align: center; margin-top: 0.5em; font-size: 0.55em;">
-            <span class="highlight-red">Fail-fast:</span> First gate failure stops execution.
-            <span class="highlight-yellow">No skipped tests allowed.</span>
+          <h2>Quality Gates: Core + Extended</h2>
+          <div class="two-column">
+            <div>
+              <h3 class="highlight-green">Core Gates (1-8) - All Profiles</h3>
+              <table style="font-size: 0.45em;">
+                <tr><td>1</td><td>No Template Files</td></tr>
+                <tr><td>2</td><td>Linting & Code Style</td></tr>
+                <tr><td>3</td><td>Clean Build (0 errors/warnings)</td></tr>
+                <tr><td>4</td><td>Type Safety (TypeScript)</td></tr>
+                <tr><td>5</td><td>All Tests Passing</td></tr>
+                <tr><td>6</td><td>Coverage ≥90%</td></tr>
+                <tr><td>7</td><td>Zero Vulnerabilities</td></tr>
+                <tr><td>8</td><td>Proof File Complete</td></tr>
+              </table>
+            </div>
+            <div>
+              <h3 class="highlight-blue">Extended Gates - By Profile</h3>
+              <table style="font-size: 0.45em;">
+                <tr><td>9</td><td>Mutation Testing ≥80%</td></tr>
+                <tr><td>11</td><td>Integration Tests</td></tr>
+                <tr><td>12</td><td>Performance Regression</td></tr>
+                <tr><td>13</td><td>API Contract Validation</td></tr>
+                <tr><td>14</td><td>Accessibility (a11y)</td></tr>
+                <tr><td>15</td><td>E2E Testing</td></tr>
+                <tr><td>16</td><td>SAST Security Scan</td></tr>
+                <tr><td>21</td><td>Storybook Stories</td></tr>
+                <tr><td>22</td><td>Screenshot Coverage</td></tr>
+              </table>
+            </div>
+          </div>
+          <p style="text-align: center; margin-top: 0.4em; font-size: 0.5em;">
+            <span class="highlight-red">Fail-fast:</span> First failure stops execution.
+            <span class="highlight-yellow">Profiles select which gates apply.</span>
           </p>
         </section>
 

@@ -501,7 +501,7 @@
           <ul>
             <li><strong>CLAUDE.md:</strong> Single source of truth - AI reads constraints automatically</li>
             <li><strong>Stage Framework:</strong> Structured workflow with clear checkpoints</li>
-            <li><strong>Quality Gates:</strong> 8 automated checks ensure production-grade output</li>
+            <li><strong>Quality Gates:</strong> 17 automated checks tailored by work type ensure production-grade output</li>
             <li><strong>Proof Files:</strong> Objective, measurable completion criteria</li>
           </ul>
         </section>
@@ -519,7 +519,7 @@
           </div>
           <div class="win-item">
             <h4>3. Automated Verification</h4>
-            <p>8 quality gates run automatically: coverage ≥90%, zero vulnerabilities, clean builds, linting. No manual checks needed.</p>
+            <p>Up to 17 quality gates run automatically based on work type: coverage, security, accessibility, E2E, mutation testing. No manual checks needed.</p>
           </div>
           <div class="win-item">
             <h4>4. Provable Completion</h4>
@@ -653,7 +653,43 @@
           </div>
           <div class="win-item">
             <h4>Quality Gates Prevent Late Surprises</h4>
-            <p>8 automated checks catch issues at commit time, not in production. No more "we found a critical bug" the week before launch.</p>
+            <p>17 automated gates catch issues at commit time, not in production. No more "we found a critical bug" the week before launch.</p>
+          </div>
+        </section>
+
+        <!-- Quality Gate Profiles -->
+        <section>
+          <h2>Quality Gates: Tailored by Work Type</h2>
+          <p style="color: #888; font-size: 0.6em; margin-bottom: 0.5em;">Different work needs different verification. Profiles select the right gates automatically.</p>
+          <table>
+            <tr>
+              <th>Profile</th>
+              <th>Gates</th>
+              <th>Use Case</th>
+            </tr>
+            <tr>
+              <td><code>BACKEND_DOTNET</code></td>
+              <td>1-8, 9, 11, 12, 13, 16</td>
+              <td>API services, business logic</td>
+            </tr>
+            <tr>
+              <td><code>FRONTEND_TS</code></td>
+              <td>1-8, 14, 15, 21, 22</td>
+              <td>UI with accessibility & E2E</td>
+            </tr>
+            <tr>
+              <td><code>MINIMAL</code></td>
+              <td>1-8</td>
+              <td>POC, experiments, small fixes</td>
+            </tr>
+          </table>
+          <div style="display: flex; gap: 0.5em; flex-wrap: wrap; margin-top: 0.5em; justify-content: center;">
+            <span class="badge badge-green">Coverage ≥90%</span>
+            <span class="badge badge-blue">Mutation Testing</span>
+            <span class="badge badge-gold">Accessibility</span>
+            <span class="badge badge-green">E2E Tests</span>
+            <span class="badge badge-blue">SAST Security</span>
+            <span class="badge badge-gold">Performance</span>
           </div>
         </section>
 

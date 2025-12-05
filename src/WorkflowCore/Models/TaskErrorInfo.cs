@@ -1,4 +1,5 @@
 using System.Text;
+using WorkflowCore.Services;
 
 namespace WorkflowCore.Models;
 
@@ -167,6 +168,35 @@ public class TaskErrorInfo
     /// Team or owner responsible for this service (for escalation)
     /// </summary>
     public string? ServiceOwner { get; set; }
+
+    #endregion
+
+    #region Error Response Compliance
+
+    /// <summary>
+    /// Compliance level of the error response (RFC 7807)
+    /// </summary>
+    public string? ResponseCompliance { get; set; }
+
+    /// <summary>
+    /// Compliance score (0-100) for the error response format
+    /// </summary>
+    public int? ResponseComplianceScore { get; set; }
+
+    /// <summary>
+    /// Issues found with the error response format
+    /// </summary>
+    public List<string>? ResponseComplianceIssues { get; set; }
+
+    /// <summary>
+    /// Recommendations for improving the error response format
+    /// </summary>
+    public List<string>? ResponseComplianceRecommendations { get; set; }
+
+    /// <summary>
+    /// Brief compliance summary for display
+    /// </summary>
+    public string? ResponseComplianceSummary { get; set; }
 
     #endregion
 
@@ -515,7 +545,35 @@ public class TaskErrorInfo
         // Generate suggestions
         errorInfo.Suggestion = GenerateSuggestion(errorInfo);
 
+        // Analyze error response compliance with RFC 7807 (only for error responses)
+        if (statusCode >= 400)
+        {
+            AnalyzeResponseCompliance(errorInfo, responseBody, statusCode);
+        }
+
         return errorInfo;
+    }
+
+    /// <summary>
+    /// Analyzes the response body for RFC 7807 compliance and populates compliance fields
+    /// </summary>
+    private static void AnalyzeResponseCompliance(TaskErrorInfo errorInfo, string? responseBody, int? statusCode)
+    {
+        try
+        {
+            var analyzer = new ErrorResponseAnalyzer();
+            var complianceResult = analyzer.Analyze(responseBody, statusCode);
+
+            errorInfo.ResponseCompliance = complianceResult.Compliance.ToString();
+            errorInfo.ResponseComplianceScore = complianceResult.Score;
+            errorInfo.ResponseComplianceIssues = complianceResult.Issues;
+            errorInfo.ResponseComplianceRecommendations = complianceResult.Recommendations;
+            errorInfo.ResponseComplianceSummary = complianceResult.Summary;
+        }
+        catch
+        {
+            // If analysis fails, leave compliance fields null - non-critical feature
+        }
     }
 
     private static TaskErrorType ClassifyException(Exception ex)

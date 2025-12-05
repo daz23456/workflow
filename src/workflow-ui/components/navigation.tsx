@@ -52,6 +52,10 @@ export function Navigation() {
             <Link href="/visualization" className={linkClasses('/visualization')}>
               Visualization
             </Link>
+
+            <Link href="/playground" className={linkClasses('/playground')}>
+              Playground
+            </Link>
           </div>
         </div>
       </div>

@@ -1,0 +1,75 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e7] [cursor=pointer]:
+    - img [ref=e8]
+  - alert [ref=e11]
+  - navigation [ref=e12]:
+    - generic [ref=e15]:
+      - link "W Workflow" [ref=e16] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e18]: W
+        - generic [ref=e19]: Workflow
+      - link "Dashboard" [ref=e20] [cursor=pointer]:
+        - /url: /dashboard
+      - link "Workflows" [ref=e21] [cursor=pointer]:
+        - /url: /workflows
+      - link "Templates" [ref=e22] [cursor=pointer]:
+        - /url: /templates
+      - link "Tasks" [ref=e23] [cursor=pointer]:
+        - /url: /tasks
+      - link "Visualization" [ref=e24] [cursor=pointer]:
+        - /url: /visualization
+      - link "Playground" [ref=e25] [cursor=pointer]:
+        - /url: /playground
+  - generic [ref=e26]:
+    - generic [ref=e29]:
+      - generic [ref=e30]:
+        - generic [ref=e31]:
+          - img [ref=e32]
+          - heading "Interactive Playground" [level=1] [ref=e35]
+        - paragraph [ref=e36]: Learn workflow orchestration through hands-on interactive lessons
+      - generic [ref=e38]:
+        - img [ref=e39]
+        - generic [ref=e42]:
+          - generic [ref=e43]: 0/10
+          - generic [ref=e44]: Lessons Completed
+    - generic [ref=e47]:
+      - generic [ref=e48]:
+        - img [ref=e49]
+        - generic [ref=e51]: "Filter by difficulty:"
+      - generic [ref=e52]:
+        - button "All" [ref=e53]
+        - button "Beginner" [active] [ref=e54]
+        - button "Intermediate" [ref=e55]
+        - button "Advanced" [ref=e56]
+      - generic [ref=e57]: 2 lessons
+    - generic [ref=e59]:
+      - 'button "#1 Beginner Hello World: Your First Workflow Create a simple workflow that makes an HTTP request and returns the response. 10 min 4 objectives" [ref=e61] [cursor=pointer]':
+        - generic [ref=e62]:
+          - generic [ref=e63]:
+            - generic [ref=e64]: "#1"
+            - img [ref=e65]
+          - generic [ref=e67]: Beginner
+        - 'heading "Hello World: Your First Workflow" [level=3] [ref=e68]'
+        - paragraph [ref=e69]: Create a simple workflow that makes an HTTP request and returns the response.
+        - generic [ref=e70]:
+          - generic [ref=e71]:
+            - img [ref=e72]
+            - generic [ref=e75]: 10 min
+          - generic [ref=e76]: 4 objectives
+      - 'button "#2 Beginner Task Dependencies: Chaining Tasks Learn how to chain tasks together by referencing outputs from previous tasks. 15 min 4 objectives" [ref=e78] [cursor=pointer]':
+        - generic [ref=e79]:
+          - generic [ref=e80]:
+            - generic [ref=e81]: "#2"
+            - img [ref=e82]
+          - generic [ref=e84]: Beginner
+        - 'heading "Task Dependencies: Chaining Tasks" [level=3] [ref=e85]'
+        - paragraph [ref=e86]: Learn how to chain tasks together by referencing outputs from previous tasks.
+        - generic [ref=e87]:
+          - generic [ref=e88]:
+            - img [ref=e89]
+            - generic [ref=e92]: 15 min
+          - generic [ref=e93]: 4 objectives
+```

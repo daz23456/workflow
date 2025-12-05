@@ -1,0 +1,178 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e7] [cursor=pointer]:
+    - img [ref=e8]
+  - alert [ref=e11]
+  - navigation [ref=e12]:
+    - generic [ref=e15]:
+      - link "W Workflow" [ref=e16] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e18]: W
+        - generic [ref=e19]: Workflow
+      - link "Dashboard" [ref=e20] [cursor=pointer]:
+        - /url: /dashboard
+      - link "Workflows" [ref=e21] [cursor=pointer]:
+        - /url: /workflows
+      - link "Templates" [ref=e22] [cursor=pointer]:
+        - /url: /templates
+      - link "Tasks" [ref=e23] [cursor=pointer]:
+        - /url: /tasks
+      - link "Visualization" [ref=e24] [cursor=pointer]:
+        - /url: /visualization
+      - link "Playground" [ref=e25] [cursor=pointer]:
+        - /url: /playground
+  - generic [ref=e26]:
+    - generic [ref=e29]:
+      - generic [ref=e30]:
+        - generic [ref=e31]:
+          - img [ref=e32]
+          - heading "Interactive Playground" [level=1] [ref=e35]
+        - paragraph [ref=e36]: Learn workflow orchestration through hands-on interactive lessons
+      - generic [ref=e38]:
+        - img [ref=e39]
+        - generic [ref=e42]:
+          - generic [ref=e43]: 0/10
+          - generic [ref=e44]: Lessons Completed
+    - generic [ref=e47]:
+      - generic [ref=e48]:
+        - img [ref=e49]
+        - generic [ref=e51]: "Filter by difficulty:"
+      - generic [ref=e52]:
+        - button "All" [ref=e53]
+        - button "Beginner" [ref=e54]
+        - button "Intermediate" [ref=e55]
+        - button "Advanced" [ref=e56]
+    - generic [ref=e58]:
+      - 'button "#1 Beginner Hello World: Your First Workflow Create a simple workflow that makes an HTTP request and returns the response. 10 min 4 objectives" [ref=e60] [cursor=pointer]':
+        - generic [ref=e61]:
+          - generic [ref=e62]:
+            - generic [ref=e63]: "#1"
+            - img [ref=e64]
+          - generic [ref=e66]: Beginner
+        - 'heading "Hello World: Your First Workflow" [level=3] [ref=e67]'
+        - paragraph [ref=e68]: Create a simple workflow that makes an HTTP request and returns the response.
+        - generic [ref=e69]:
+          - generic [ref=e70]:
+            - img [ref=e71]
+            - generic [ref=e74]: 10 min
+          - generic [ref=e75]: 4 objectives
+      - 'button "#2 Beginner Task Dependencies: Chaining Tasks Learn how to chain tasks together by referencing outputs from previous tasks. 15 min 4 objectives" [ref=e77] [cursor=pointer]':
+        - generic [ref=e78]:
+          - generic [ref=e79]:
+            - generic [ref=e80]: "#2"
+            - img [ref=e81]
+          - generic [ref=e83]: Beginner
+        - 'heading "Task Dependencies: Chaining Tasks" [level=3] [ref=e84]'
+        - paragraph [ref=e85]: Learn how to chain tasks together by referencing outputs from previous tasks.
+        - generic [ref=e86]:
+          - generic [ref=e87]:
+            - img [ref=e88]
+            - generic [ref=e91]: 15 min
+          - generic [ref=e92]: 4 objectives
+      - 'button "#3 Intermediate Parallel Execution: Speed Up Workflows Learn how to run independent tasks in parallel for dramatic performance improvements. 20 min 4 objectives" [ref=e94] [cursor=pointer]':
+        - generic [ref=e95]:
+          - generic [ref=e96]:
+            - generic [ref=e97]: "#3"
+            - img [ref=e98]
+          - generic [ref=e100]: Intermediate
+        - 'heading "Parallel Execution: Speed Up Workflows" [level=3] [ref=e101]'
+        - paragraph [ref=e102]: Learn how to run independent tasks in parallel for dramatic performance improvements.
+        - generic [ref=e103]:
+          - generic [ref=e104]:
+            - img [ref=e105]
+            - generic [ref=e108]: 20 min
+          - generic [ref=e109]: 4 objectives
+      - 'button "#4 Intermediate Template Syntax: Advanced Data Flow Master template expressions for complex data transformations and nested property access. 20 min 4 objectives" [ref=e111] [cursor=pointer]':
+        - generic [ref=e112]:
+          - generic [ref=e113]:
+            - generic [ref=e114]: "#4"
+            - img [ref=e115]
+          - generic [ref=e117]: Intermediate
+        - 'heading "Template Syntax: Advanced Data Flow" [level=3] [ref=e118]'
+        - paragraph [ref=e119]: Master template expressions for complex data transformations and nested property access.
+        - generic [ref=e120]:
+          - generic [ref=e121]:
+            - img [ref=e122]
+            - generic [ref=e125]: 20 min
+          - generic [ref=e126]: 4 objectives
+      - 'button "#5 Advanced Advanced Features: Production-Ready Workflows Learn output mapping, timeouts, and error handling for production-grade workflows. 25 min 4 objectives" [ref=e128] [cursor=pointer]':
+        - generic [ref=e129]:
+          - generic [ref=e130]:
+            - generic [ref=e131]: "#5"
+            - img [ref=e132]
+          - generic [ref=e134]: Advanced
+        - 'heading "Advanced Features: Production-Ready Workflows" [level=3] [ref=e135]'
+        - paragraph [ref=e136]: Learn output mapping, timeouts, and error handling for production-grade workflows.
+        - generic [ref=e137]:
+          - generic [ref=e138]:
+            - img [ref=e139]
+            - generic [ref=e142]: 25 min
+          - generic [ref=e143]: 4 objectives
+      - 'button "#6 Intermediate Control Flow: Conditional Execution Learn how to skip tasks based on conditions using if/else expressions. 15 min 4 objectives" [ref=e145] [cursor=pointer]':
+        - generic [ref=e146]:
+          - generic [ref=e147]:
+            - generic [ref=e148]: "#6"
+            - img [ref=e149]
+          - generic [ref=e151]: Intermediate
+        - 'heading "Control Flow: Conditional Execution" [level=3] [ref=e152]'
+        - paragraph [ref=e153]: Learn how to skip tasks based on conditions using if/else expressions.
+        - generic [ref=e154]:
+          - generic [ref=e155]:
+            - img [ref=e156]
+            - generic [ref=e159]: 15 min
+          - generic [ref=e160]: 4 objectives
+      - 'button "#7 Intermediate Switch/Case: Multi-Branch Routing Route workflow execution to different tasks based on a value using switch/case. 15 min 4 objectives" [ref=e162] [cursor=pointer]':
+        - generic [ref=e163]:
+          - generic [ref=e164]:
+            - generic [ref=e165]: "#7"
+            - img [ref=e166]
+          - generic [ref=e168]: Intermediate
+        - 'heading "Switch/Case: Multi-Branch Routing" [level=3] [ref=e169]'
+        - paragraph [ref=e170]: Route workflow execution to different tasks based on a value using switch/case.
+        - generic [ref=e171]:
+          - generic [ref=e172]:
+            - img [ref=e173]
+            - generic [ref=e176]: 15 min
+          - generic [ref=e177]: 4 objectives
+      - 'button "#8 Advanced forEach Loops: Process Arrays Iterate over arrays and process each item with parallel execution. 20 min 4 objectives" [ref=e179] [cursor=pointer]':
+        - generic [ref=e180]:
+          - generic [ref=e181]:
+            - generic [ref=e182]: "#8"
+            - img [ref=e183]
+          - generic [ref=e185]: Advanced
+        - 'heading "forEach Loops: Process Arrays" [level=3] [ref=e186]'
+        - paragraph [ref=e187]: Iterate over arrays and process each item with parallel execution.
+        - generic [ref=e188]:
+          - generic [ref=e189]:
+            - img [ref=e190]
+            - generic [ref=e193]: 20 min
+          - generic [ref=e194]: 4 objectives
+      - 'button "#9 Advanced Transform DSL: Shape Your Data Transform data between tasks using map, filter, select, and more. 20 min 4 objectives" [ref=e196] [cursor=pointer]':
+        - generic [ref=e197]:
+          - generic [ref=e198]:
+            - generic [ref=e199]: "#9"
+            - img [ref=e200]
+          - generic [ref=e202]: Advanced
+        - 'heading "Transform DSL: Shape Your Data" [level=3] [ref=e203]'
+        - paragraph [ref=e204]: Transform data between tasks using map, filter, select, and more.
+        - generic [ref=e205]:
+          - generic [ref=e206]:
+            - img [ref=e207]
+            - generic [ref=e210]: 20 min
+          - generic [ref=e211]: 4 objectives
+      - 'button "#10 Advanced OpenAPI Import: Auto-Generate Tasks Generate WorkflowTask definitions automatically from OpenAPI/Swagger specs. 15 min 4 objectives" [ref=e213] [cursor=pointer]':
+        - generic [ref=e214]:
+          - generic [ref=e215]:
+            - generic [ref=e216]: "#10"
+            - img [ref=e217]
+          - generic [ref=e219]: Advanced
+        - 'heading "OpenAPI Import: Auto-Generate Tasks" [level=3] [ref=e220]'
+        - paragraph [ref=e221]: Generate WorkflowTask definitions automatically from OpenAPI/Swagger specs.
+        - generic [ref=e222]:
+          - generic [ref=e223]:
+            - img [ref=e224]
+            - generic [ref=e227]: 15 min
+          - generic [ref=e228]: 4 objectives
+```

@@ -181,4 +181,38 @@ public class TaskErrorInfoResponse
     /// </summary>
     [JsonPropertyName("summary")]
     public string? Summary { get; set; }
+
+    #region Error Response Compliance (RFC 7807)
+
+    /// <summary>
+    /// Compliance level of the error response (Compliant, PartiallyCompliant, NonCompliant, Unknown)
+    /// </summary>
+    [JsonPropertyName("responseCompliance")]
+    public string? ResponseCompliance { get; set; }
+
+    /// <summary>
+    /// Compliance score (0-100) for the error response format
+    /// </summary>
+    [JsonPropertyName("responseComplianceScore")]
+    public int? ResponseComplianceScore { get; set; }
+
+    /// <summary>
+    /// Issues found with the error response format
+    /// </summary>
+    [JsonPropertyName("responseComplianceIssues")]
+    public List<string>? ResponseComplianceIssues { get; set; }
+
+    /// <summary>
+    /// Recommendations for improving the error response format
+    /// </summary>
+    [JsonPropertyName("responseComplianceRecommendations")]
+    public List<string>? ResponseComplianceRecommendations { get; set; }
+
+    /// <summary>
+    /// Brief compliance summary for display (e.g., "Compliant (85%) - Follows RFC 7807 ProblemDetails standard")
+    /// </summary>
+    [JsonPropertyName("responseComplianceSummary")]
+    public string? ResponseComplianceSummary { get; set; }
+
+    #endregion
 }

@@ -1,0 +1,150 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e7] [cursor=pointer]:
+    - img [ref=e8]
+  - alert [ref=e11]
+  - navigation [ref=e12]:
+    - generic [ref=e15]:
+      - link "W Workflow" [ref=e16] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e18]: W
+        - generic [ref=e19]: Workflow
+      - link "Dashboard" [ref=e20] [cursor=pointer]:
+        - /url: /dashboard
+      - link "Workflows" [ref=e21] [cursor=pointer]:
+        - /url: /workflows
+      - link "Templates" [ref=e22] [cursor=pointer]:
+        - /url: /templates
+      - link "Tasks" [ref=e23] [cursor=pointer]:
+        - /url: /tasks
+      - link "Visualization" [ref=e24] [cursor=pointer]:
+        - /url: /visualization
+      - link "Playground" [ref=e25] [cursor=pointer]:
+        - /url: /playground
+  - generic [ref=e27]:
+    - generic [ref=e28]:
+      - generic [ref=e29]:
+        - generic [ref=e30]:
+          - 'heading "Hello World: Your First Workflow" [level=1] [ref=e31]'
+          - paragraph [ref=e32]: Create a simple workflow that makes an HTTP request and returns the response.
+        - button "Exit Lesson" [ref=e33]
+      - generic [ref=e37]: Step 1 of 4
+    - generic [ref=e38]:
+      - generic [ref=e40]:
+        - generic [ref=e41]:
+          - img [ref=e42]
+          - heading "Define Workflow Metadata" [level=2] [ref=e44]
+        - paragraph [ref=e45]: "Every workflow starts with basic metadata: name, description, and version."
+        - generic [ref=e46]:
+          - generic [ref=e47]:
+            - img [ref=e48]
+            - heading "Code Example:" [level=3] [ref=e51]
+          - generic [ref=e52]: "apiVersion: workflow.io/v1 kind: Workflow metadata: name: hello-world namespace: default spec: description: My first workflow version: 1.0.0"
+        - button "Show Hints (3)" [ref=e54]:
+          - img [ref=e55]
+          - generic [ref=e57]: Show Hints (3)
+        - generic [ref=e58]:
+          - button "Previous" [disabled] [ref=e59]:
+            - img [ref=e60]
+            - text: Previous
+          - button "Next" [ref=e62]:
+            - text: Next
+            - img [ref=e63]
+      - generic [ref=e65]:
+        - generic [ref=e67]:
+          - heading "Live YAML Editor:" [level=3] [ref=e68]
+          - textbox "Code editor" [ref=e70]:
+            - generic [ref=e72]:
+              - generic [ref=e73]:
+                - generic [ref=e74]:
+                  - generic [ref=e75]: "1"
+                  - generic [ref=e76]: "2"
+                  - generic [ref=e77]: "3"
+                  - generic [ref=e78]: "4"
+                  - generic [ref=e79]: "5"
+                  - generic [ref=e80]: "6"
+                  - generic [ref=e81]: "7"
+                  - generic [ref=e82]: "8"
+                  - generic [ref=e83]: "9"
+                  - generic [ref=e84]: "10"
+                  - generic [ref=e85]: "11"
+                  - generic [ref=e86]: "12"
+                  - generic [ref=e87]: "13"
+                  - generic [ref=e88]: "14"
+                  - generic [ref=e89]: "15"
+                  - generic [ref=e90]: "16"
+                  - generic [ref=e91]: "17"
+                  - generic [ref=e92]: "18"
+                  - generic [ref=e93]: "19"
+                  - generic [ref=e94]: "20"
+                  - generic [ref=e95]: "21"
+                  - generic [ref=e96]: "22"
+                  - generic [ref=e97]: "23"
+                  - generic [ref=e98]: "24"
+                  - generic [ref=e99]: "25"
+                  - generic [ref=e100]: "26"
+                  - generic [ref=e101]: "27"
+                - generic [ref=e102]:
+                  - generic [ref=e104]: ⌄
+                  - generic [ref=e105]: ⌄
+                  - generic [ref=e106]: ⌄
+                  - generic [ref=e107]: ⌄
+                  - generic [ref=e108]: ⌄
+                  - generic [ref=e109]: ⌄
+                  - generic [ref=e110]: ⌄
+                  - generic [ref=e111]: ⌄
+                  - generic [ref=e112]: ⌄
+                  - generic [ref=e113]: ⌄
+              - textbox [ref=e114]:
+                - generic [ref=e115]: "apiVersion: workflow.io/v1"
+                - generic [ref=e116]: "kind: Workflow"
+                - generic [ref=e117]: "metadata:"
+                - generic [ref=e118]: "name: hello-world"
+                - generic [ref=e119]: "namespace: default"
+                - generic [ref=e120]: "spec:"
+                - generic [ref=e121]: "description: My first workflow - fetches user data from API"
+                - generic [ref=e122]: "version: 1.0.0"
+                - generic [ref=e124]: "inputSchema:"
+                - generic [ref=e125]: "type: object"
+                - generic [ref=e126]: "properties:"
+                - generic [ref=e127]: "userId:"
+                - generic [ref=e128]: "type: string"
+                - generic [ref=e129]: "description: The user ID to fetch"
+                - generic [ref=e130]: "required:"
+                - generic [ref=e131]: "- userId"
+                - generic [ref=e133]: "tasks:"
+                - generic [ref=e134]: "- label: fetch-user"
+                - generic [ref=e135]: "taskRef: http-request"
+                - generic [ref=e136]: "description: Fetch user profile from API"
+                - generic [ref=e137]: "input:"
+                - generic [ref=e138]: "method: GET"
+                - generic [ref=e139]: "url: \"https://api.example.com/users/{{input.userId}}\""
+                - generic [ref=e140]: "headers:"
+                - generic [ref=e141]: "Accept: \"application/json\""
+        - generic [ref=e142]:
+          - heading "Success Criteria:" [level=3] [ref=e143]
+          - list [ref=e144]:
+            - listitem [ref=e145]:
+              - button "Toggle Workflow YAML is valid" [ref=e146]:
+                - img [ref=e147]
+              - generic [ref=e149]: Workflow YAML is valid
+            - listitem [ref=e150]:
+              - button "Toggle Input schema accepts userId" [ref=e151]:
+                - img [ref=e152]
+              - generic [ref=e154]: Input schema accepts userId
+            - listitem [ref=e155]:
+              - button "Toggle Task references http-request" [ref=e156]:
+                - img [ref=e157]
+              - generic [ref=e159]: Task references http-request
+            - listitem [ref=e160]:
+              - 'button "Toggle Template expression {{input.userId}} is correct" [ref=e161]':
+                - img [ref=e162]
+              - generic [ref=e164]: "Template expression {{input.userId}} is correct"
+            - listitem [ref=e165]:
+              - button "Toggle Dry-run validation passes" [ref=e166]:
+                - img [ref=e167]
+              - generic [ref=e169]: Dry-run validation passes
+          - button "Complete All Criteria to Continue" [disabled] [ref=e170]
+```

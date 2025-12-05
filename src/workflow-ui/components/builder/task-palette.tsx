@@ -14,11 +14,6 @@
 import { useState, useMemo } from 'react';
 import {
   Search,
-  ChevronDown,
-  ChevronRight,
-  Database,
-  Mail,
-  FileCheck,
   X,
   AlertTriangle,
 } from 'lucide-react';
@@ -26,13 +21,6 @@ import { cn } from '@/lib/utils';
 import { useTasks } from '@/lib/api/queries';
 import { HelpIcon } from '@/components/learning/help-icon';
 import { HELP_TOPICS } from '@/components/learning/help-content-registry';
-
-// Category icon mapping
-const categoryIcons: Record<string, React.ComponentType<{ className?: string }>> = {
-  Data: Database,
-  Notifications: Mail,
-  Validation: FileCheck,
-};
 
 // API response type for tasks
 interface ApiTask {
@@ -145,11 +133,6 @@ export function TaskPalette() {
     setExpandedTask(expandedTask === taskName ? null : taskName);
   };
 
-  // Toggle category filter
-  const toggleCategoryFilter = (category: string) => {
-    setSelectedCategory(selectedCategory === category ? null : category);
-  };
-
   // Loading state
   if (isLoading) {
     return (
@@ -246,27 +229,28 @@ export function TaskPalette() {
             </div>
           )}
 
-          {/* Category Filters */}
-          <div className="px-4 py-2 border-b border-gray-200">
-            <label className="text-xs font-medium text-gray-500 mb-1 block">Category</label>
-            <div className="flex flex-wrap gap-1.5">
-              {categories.map((category) => (
-                <button
-                  key={category}
-                  onClick={() => toggleCategoryFilter(category)}
-                  className={cn(
-                    'px-2 py-0.5 text-xs rounded-full border transition-colors',
-                    selectedCategory === category
-                      ? 'bg-blue-500 text-white border-blue-500'
-                      : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400'
-                  )}
-                  aria-label={`Filter by ${category}`}
-                >
-                  {category}
-                </button>
-              ))}
+          {/* Category Filter - Dropdown for compact display */}
+          {categories.length > 1 && (
+            <div className="px-4 py-2 border-b border-gray-200">
+              <label className="text-xs font-medium text-gray-500 mb-1 block">Category</label>
+              <select
+                value={selectedCategory || ''}
+                onChange={(e) => setSelectedCategory(e.target.value || null)}
+                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                aria-label="Filter by category"
+              >
+                <option value="">All categories ({tasks.length})</option>
+                {categories.map((category) => {
+                  const count = tasks.filter((t) => t.category === category).length;
+                  return (
+                    <option key={category} value={category}>
+                      {category} ({count})
+                    </option>
+                  );
+                })}
+              </select>
             </div>
-          </div>
+          )}
 
           {/* Task List */}
           <div className="flex-1 overflow-y-auto p-4">
@@ -275,9 +259,8 @@ export function TaskPalette() {
                 <p className="text-sm">No tasks found</p>
               </div>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-1">
                 {filteredTasks.map((task: TaskItem) => {
-                  const Icon = categoryIcons[task.category] || Database;
                   const isExpanded = expandedTask === task.name;
                   const isDragging = draggingTask === task.name;
 
@@ -291,9 +274,9 @@ export function TaskPalette() {
                       onClick={() => toggleTaskExpansion(task.name)}
                       data-dragging={isDragging}
                       className={cn(
-                        'p-3 border rounded-lg cursor-move transition-all',
-                        isDragging && 'opacity-50 border-blue-400',
-                        !isDragging && 'border-gray-200 hover:border-blue-400 hover:shadow-md'
+                        'px-2 py-1.5 border rounded cursor-move transition-all text-sm',
+                        isDragging && 'opacity-50 border-blue-400 bg-blue-50',
+                        !isDragging && 'border-gray-200 hover:border-blue-400 hover:bg-blue-50'
                       )}
                       aria-label={`Drag ${task.displayName} to canvas`}
                       tabIndex={0}
@@ -303,41 +286,28 @@ export function TaskPalette() {
                         }
                       }}
                     >
-                      {/* Task Header */}
-                      <div className="flex items-start gap-2">
-                        <div data-testid={`task-icon-${task.name}`}>
-                          <Icon className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="font-semibold text-sm text-gray-900">
-                            {task.displayName}
-                          </div>
-                          <div className="text-xs text-gray-600 mt-1">{task.description}</div>
-                          <div className="mt-2">
-                            <span className="inline-block px-2 py-0.5 text-xs bg-gray-100 text-gray-700 rounded">
-                              {task.category}
-                            </span>
-                          </div>
-                        </div>
+                      {/* Compact Task Display */}
+                      <div className="font-medium text-gray-900 truncate">
+                        {task.displayName}
                       </div>
 
-                      {/* Expanded Details */}
+                      {/* Expanded Details - only show on click */}
                       {isExpanded && (
-                        <div className="mt-3 pt-3 border-t border-gray-200 text-xs">
+                        <div className="mt-2 pt-2 border-t border-gray-200 text-xs">
+                          <p className="text-gray-600 mb-2">{task.description}</p>
                           <div className="space-y-2">
                             <div>
                               <div className="font-semibold text-gray-700">Input:</div>
-                              <pre className="mt-1 p-2 bg-gray-50 rounded overflow-x-auto">
+                              <pre className="mt-1 p-1.5 bg-gray-50 rounded overflow-x-auto text-[10px]">
                                 {JSON.stringify(task.inputSchema, null, 2)}
                               </pre>
                             </div>
                             <div>
                               <div className="font-semibold text-gray-700">Output:</div>
-                              <pre className="mt-1 p-2 bg-gray-50 rounded overflow-x-auto">
+                              <pre className="mt-1 p-1.5 bg-gray-50 rounded overflow-x-auto text-[10px]">
                                 {JSON.stringify(task.outputSchema, null, 2)}
                               </pre>
                             </div>
-                            <div className="text-gray-500 italic">Full schema</div>
                           </div>
                         </div>
                       )}

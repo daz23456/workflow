@@ -700,6 +700,157 @@ tasks:
           </table>
         </section>
 
+        <!-- ==================== OPENAPI CLI ==================== -->
+
+        <!-- OpenAPI CLI Overview -->
+        <section>
+          <h2>OpenAPI CLI: Auto-Generate Tasks</h2>
+          <p style="color: #888">Point at an API spec, get WorkflowTask CRDs instantly</p>
+          <pre><code class="bash"># Import all endpoints from a Swagger spec
+$ workflow-cli import openapi https://api.example.com/swagger.json \
+    --base-url https://api.example.com \
+    --prefix example
+
+# Output:
+# ✓ Parsed OpenAPI 3.0.0 spec
+# ✓ Found 25 endpoints
+# ✓ Generated 25 WorkflowTask CRDs
+# ✓ Saved to ./tasks/example/</code></pre>
+          <div style="display: flex; flex-wrap: wrap; gap: 0.5em; margin-top: 1em">
+            <span class="badge badge-green">OpenAPI 2.0</span>
+            <span class="badge badge-green">OpenAPI 3.x</span>
+            <span class="badge badge-blue">Filter by tags</span>
+            <span class="badge badge-blue">Version tracking</span>
+          </div>
+        </section>
+
+        <!-- OpenAPI CLI Features -->
+        <section>
+          <h2>OpenAPI CLI: Features</h2>
+          <div class="two-column">
+            <div>
+              <h3 class="highlight-blue">Import Options</h3>
+              <ul>
+                <li><code>--tags</code> filter to specific tags</li>
+                <li><code>--exclude-tags</code> remove unwanted</li>
+                <li><code>--group-by-tag</code> organize by tag</li>
+                <li><code>--prefix</code> namespace tasks</li>
+              </ul>
+              <h3 class="highlight-blue">Generated Structure</h3>
+              <ul>
+                <li>Task name from operationId</li>
+                <li>Input schema from parameters</li>
+                <li>Output schema from responses</li>
+              </ul>
+            </div>
+            <div>
+              <h3 class="highlight-blue">Version Management</h3>
+              <ul>
+                <li>SHA256 content-hash label</li>
+                <li>Re-import detects changes</li>
+                <li>Breaking changes flagged</li>
+                <li>Auto-versioning: task-v2</li>
+              </ul>
+              <h3 class="highlight-green">Value</h3>
+              <ul>
+                <li>50-endpoint spec → 50 tasks</li>
+                <li>Under 5 seconds</li>
+                <li>Zero manual YAML writing</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== AI GENERATION ==================== -->
+
+        <!-- AI Generation Overview -->
+        <section>
+          <h2>AI-Powered Workflow Generation</h2>
+          <p style="color: #888">Describe what you want, get a working workflow</p>
+          <pre><code class="text">User: "When a new order comes in, fetch the customer details,
+       check their credit limit, and if approved, send a
+       confirmation email and update inventory"
+
+AI: I'll create a workflow with these tasks:
+    1. fetch-customer (from order.customer_id)
+    2. check-credit-limit
+    3. conditional: if approved → send-confirmation
+    4. update-inventory (depends on confirmation)
+
+    [Shows generated YAML]
+
+    Want me to deploy this or make changes first?</code></pre>
+        </section>
+
+        <!-- AI Generation: MCP Architecture -->
+        <section>
+          <h2>AI Generation: MCP Architecture</h2>
+          <p style="color: #888">Model Context Protocol server for Claude Desktop integration</p>
+          <table>
+            <tr>
+              <th>Tool</th>
+              <th>Purpose</th>
+            </tr>
+            <tr>
+              <td><code class="highlight-blue">list_tasks</code></td>
+              <td>Discover available tasks with schemas</td>
+            </tr>
+            <tr>
+              <td><code class="highlight-green">generate_workflow</code></td>
+              <td>Create YAML from natural language</td>
+            </tr>
+            <tr>
+              <td><code class="highlight-yellow">validate_workflow</code></td>
+              <td>Check for errors with suggestions</td>
+            </tr>
+          </table>
+          <div style="display: flex; flex-wrap: wrap; gap: 0.5em; margin-top: 1em">
+            <span class="badge badge-green">Natural Language</span>
+            <span class="badge badge-blue">Schema-Aware</span>
+            <span class="badge badge-green">Auto-Validation</span>
+            <span class="badge badge-blue">Conversational Refinement</span>
+          </div>
+        </section>
+
+        <!-- ==================== TEST INFRASTRUCTURE ==================== -->
+
+        <!-- Test API Server -->
+        <section>
+          <h2>Test API Server</h2>
+          <p style="color: #888">49+ endpoints for comprehensive testing</p>
+          <div class="two-column">
+            <div>
+              <h3 class="highlight-blue">Structural Endpoints</h3>
+              <ul>
+                <li>Primitives: string, int, bool, guid</li>
+                <li>Arrays: nested, large (10K items)</li>
+                <li>Echo, delay, failure simulation</li>
+              </ul>
+              <h3 class="highlight-blue">Business Domain</h3>
+              <ul>
+                <li>Orders: lifecycle, shipping, invoices</li>
+                <li>Payments: process, refund, auth</li>
+                <li>Users: profiles, auth, preferences</li>
+              </ul>
+            </div>
+            <div>
+              <h3 class="highlight-yellow">Chaos Engineering</h3>
+              <ul>
+                <li>HTTP status code simulation</li>
+                <li>Configurable failure rates</li>
+                <li>Retry scenarios (fail-n-times)</li>
+                <li>Slow responses for timeout testing</li>
+              </ul>
+              <h3 class="highlight-green">Sample Workflows</h3>
+              <ul>
+                <li>Order processing pipeline</li>
+                <li>User onboarding flow</li>
+                <li>Payment retry with fallback</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
         <!-- Testing Pyramid -->
         <section>
           <h2>Why Trust It: Testing Pyramid</h2>

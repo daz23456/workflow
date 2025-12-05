@@ -10,6 +10,11 @@ import {
   LESSON_PARALLEL_EXECUTION,
   LESSON_TEMPLATE_SYNTAX,
   LESSON_ADVANCED_FEATURES,
+  LESSON_CONTROL_FLOW_CONDITIONS,
+  LESSON_SWITCH_CASE,
+  LESSON_FOR_EACH,
+  LESSON_TRANSFORM_DSL,
+  LESSON_OPENAPI_IMPORT,
   getLessonById,
   getLessonsByDifficulty,
   getNextLesson,
@@ -18,8 +23,8 @@ import {
 
 describe('Lessons Registry', () => {
   describe('ALL_LESSONS', () => {
-    it('should contain 5 lessons', () => {
-      expect(ALL_LESSONS).toHaveLength(5);
+    it('should contain 10 lessons', () => {
+      expect(ALL_LESSONS).toHaveLength(10);
     });
 
     it('should contain all defined lessons', () => {
@@ -28,6 +33,11 @@ describe('Lessons Registry', () => {
       expect(ALL_LESSONS).toContain(LESSON_PARALLEL_EXECUTION);
       expect(ALL_LESSONS).toContain(LESSON_TEMPLATE_SYNTAX);
       expect(ALL_LESSONS).toContain(LESSON_ADVANCED_FEATURES);
+      expect(ALL_LESSONS).toContain(LESSON_CONTROL_FLOW_CONDITIONS);
+      expect(ALL_LESSONS).toContain(LESSON_SWITCH_CASE);
+      expect(ALL_LESSONS).toContain(LESSON_FOR_EACH);
+      expect(ALL_LESSONS).toContain(LESSON_TRANSFORM_DSL);
+      expect(ALL_LESSONS).toContain(LESSON_OPENAPI_IMPORT);
     });
 
     it('should have lessons in correct order', () => {
@@ -36,6 +46,11 @@ describe('Lessons Registry', () => {
       expect(ALL_LESSONS[2].id).toBe('parallel-execution');
       expect(ALL_LESSONS[3].id).toBe('template-syntax');
       expect(ALL_LESSONS[4].id).toBe('advanced-features');
+      expect(ALL_LESSONS[5].id).toBe('control-flow-conditions');
+      expect(ALL_LESSONS[6].id).toBe('switch-case');
+      expect(ALL_LESSONS[7].id).toBe('for-each-loops');
+      expect(ALL_LESSONS[8].id).toBe('transform-dsl');
+      expect(ALL_LESSONS[9].id).toBe('openapi-import');
     });
 
     it('should have unique lesson IDs', () => {
@@ -46,7 +61,7 @@ describe('Lessons Registry', () => {
 
     it('should have sequential order values', () => {
       const orders = ALL_LESSONS.map(lesson => lesson.order);
-      expect(orders).toEqual([1, 2, 3, 4, 5]);
+      expect(orders).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
     });
   });
 
@@ -134,13 +149,13 @@ describe('Lessons Registry', () => {
 
     it('should return intermediate lessons', () => {
       const lessons = getLessonsByDifficulty('intermediate');
-      expect(lessons).toHaveLength(2);
+      expect(lessons).toHaveLength(4); // parallel-execution, template-syntax, control-flow-conditions, switch-case
       expect(lessons.every(l => l.difficulty === 'intermediate')).toBe(true);
     });
 
     it('should return advanced lessons', () => {
       const lessons = getLessonsByDifficulty('advanced');
-      expect(lessons).toHaveLength(1);
+      expect(lessons).toHaveLength(4); // advanced-features, for-each-loops, transform-dsl, openapi-import
       expect(lessons.every(l => l.difficulty === 'advanced')).toBe(true);
     });
 
@@ -160,7 +175,7 @@ describe('Lessons Registry', () => {
     });
 
     it('should return undefined for last lesson', () => {
-      const nextLesson = getNextLesson('advanced-features');
+      const nextLesson = getNextLesson('openapi-import');
       expect(nextLesson).toBeUndefined();
     });
 

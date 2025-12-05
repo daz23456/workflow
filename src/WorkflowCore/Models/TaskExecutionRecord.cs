@@ -41,6 +41,12 @@ public class TaskExecutionRecord
     public string? Errors { get; set; }
 
     /// <summary>
+    /// Full structured error information as JSON (includes compliance data).
+    /// Contains TaskErrorInfo serialized with response body preview, compliance score, etc.
+    /// </summary>
+    public string? ErrorInfo { get; set; }
+
+    /// <summary>
     /// Duration of the task execution. Null if still running.
     /// </summary>
     public TimeSpan? Duration { get; set; }

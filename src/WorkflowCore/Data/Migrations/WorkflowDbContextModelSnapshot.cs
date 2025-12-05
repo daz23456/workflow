@@ -72,6 +72,9 @@ namespace WorkflowCore.Data.Migrations
                     b.Property<TimeSpan?>("Duration")
                         .HasColumnType("interval");
 
+                    b.Property<string>("ErrorInfo")
+                        .HasColumnType("text");
+
                     b.Property<string>("Errors")
                         .HasColumnType("text");
 

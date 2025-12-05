@@ -209,6 +209,7 @@ public class WorkflowExecutionService : IWorkflowExecutionService
                 Status = result.Success ? "Succeeded" : "Failed",
                 Output = result.Output != null ? JsonSerializer.Serialize(result.Output) : null,
                 Errors = result.Errors.Any() ? JsonSerializer.Serialize(result.Errors) : null,
+                ErrorInfo = result.ErrorInfo != null ? JsonSerializer.Serialize(result.ErrorInfo) : null,
                 Duration = result.Duration,
                 RetryCount = result.RetryCount,
                 // Use actual timestamps from TaskExecutionResult (set by orchestrator)
@@ -282,7 +283,13 @@ public class WorkflowExecutionService : IWorkflowExecutionService
             DurationUntilErrorMs = errorInfo.DurationUntilErrorMs,
             Suggestion = errorInfo.Suggestion,
             SupportAction = errorInfo.SupportAction,
-            Summary = errorInfo.GetSummary()
+            Summary = errorInfo.GetSummary(),
+            // RFC 7807 Compliance fields
+            ResponseCompliance = errorInfo.ResponseCompliance,
+            ResponseComplianceScore = errorInfo.ResponseComplianceScore,
+            ResponseComplianceIssues = errorInfo.ResponseComplianceIssues,
+            ResponseComplianceRecommendations = errorInfo.ResponseComplianceRecommendations,
+            ResponseComplianceSummary = errorInfo.ResponseComplianceSummary
         };
     }
 

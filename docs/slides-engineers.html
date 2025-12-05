@@ -555,6 +555,151 @@
   - limit: 10</code></pre>
         </section>
 
+        <!-- ==================== CONTROL FLOW ==================== -->
+
+        <!-- Control Flow Overview -->
+        <section>
+          <h2>Control Flow</h2>
+          <p style="color: #888">Powerful branching and iteration for complex workflows</p>
+          <div
+            style="display: flex; flex-wrap: wrap; gap: 0.5em; margin: 1em 0"
+          >
+            <span class="badge badge-green">if/else conditions</span>
+            <span class="badge badge-blue">switch/case routing</span>
+            <span class="badge badge-green">forEach iteration</span>
+            <span class="badge badge-blue">nested control flow</span>
+          </div>
+          <table>
+            <tr>
+              <th>Construct</th>
+              <th>Use Case</th>
+            </tr>
+            <tr>
+              <td><code>condition.if</code></td>
+              <td>Skip tasks based on expressions</td>
+            </tr>
+            <tr>
+              <td><code>switch/case</code></td>
+              <td>Route to different tasks based on value</td>
+            </tr>
+            <tr>
+              <td><code>forEach</code></td>
+              <td>Iterate over arrays with parallel execution</td>
+            </tr>
+          </table>
+        </section>
+
+        <!-- Control Flow: Conditions -->
+        <section>
+          <h2>Control Flow: If/Else Conditions</h2>
+          <p style="color: #888">Skip tasks based on runtime expressions</p>
+          <pre><code class="yaml">tasks:
+  - id: check-credit
+    taskRef: credit-check
+    input:
+      customerId: "{{input.customerId}}"
+
+  - id: process-payment
+    condition:
+      if: "{{tasks.check-credit.output.approved}} == true"
+    taskRef: charge-card
+    dependsOn: [check-credit]
+
+  - id: send-rejection
+    condition:
+      if: "{{tasks.check-credit.output.approved}} == false"
+    taskRef: send-rejection-email
+    dependsOn: [check-credit]</code></pre>
+          <p style="margin-top: 0.5em; font-size: 0.55em">
+            Operators: <code>==</code> <code>!=</code> <code>&gt;</code>
+            <code>&lt;</code> <code>&gt;=</code> <code>&lt;=</code>
+            <code>&&</code> <code>||</code> <code>!</code>
+          </p>
+        </section>
+
+        <!-- Control Flow: Switch -->
+        <section>
+          <h2>Control Flow: Switch/Case</h2>
+          <p style="color: #888">Route to different tasks based on value</p>
+          <pre><code class="yaml">tasks:
+  - id: route-payment
+    switch:
+      value: "{{input.paymentMethod}}"
+      cases:
+        - match: "stripe"
+          taskRef: stripe-charge
+        - match: "paypal"
+          taskRef: paypal-charge
+        - match: "invoice"
+          taskRef: create-invoice
+      default:
+        taskRef: unknown-payment-error</code></pre>
+          <p style="margin-top: 0.5em; font-size: 0.55em">
+            <span class="highlight-green">First match wins</span> •
+            Falls through to <code>default</code> if no match
+          </p>
+        </section>
+
+        <!-- Control Flow: forEach -->
+        <section>
+          <h2>Control Flow: forEach Iteration</h2>
+          <p style="color: #888">Iterate over arrays with parallel execution</p>
+          <pre><code class="yaml">tasks:
+  - id: process-items
+    forEach:
+      items: "{{input.orderIds}}"      # Array to iterate
+      itemVar: "order"                  # Variable name
+      maxParallel: 5                    # Concurrency limit
+    taskRef: process-order
+    input:
+      orderId: "{{forEach.order}}"
+      index: "{{forEach.index}}"
+
+output:
+  results: "{{tasks.process-items.forEach.outputs}}"
+  count: "{{tasks.process-items.forEach.successCount}}"</code></pre>
+          <p style="margin-top: 0.5em; font-size: 0.55em">
+            Templates: <code>{{forEach.order}}</code> <code>{{forEach.index}}</code>
+            <code>{{forEach.outputs}}</code> <code>{{forEach.successCount}}</code>
+          </p>
+        </section>
+
+        <!-- Control Flow: Nesting -->
+        <section>
+          <h2>Control Flow: Nested Patterns</h2>
+          <p style="color: #888">Combine constructs for complex flows</p>
+          <pre><code class="yaml"># Condition inside forEach - filter during iteration
+tasks:
+  - id: process-orders
+    forEach:
+      items: "{{input.orders}}"
+      itemVar: "order"
+      maxParallel: 10
+    condition:
+      if: "{{forEach.order.status}} == 'pending'"
+    taskRef: process-order
+    input:
+      orderId: "{{forEach.order.id}}"</code></pre>
+          <table style="margin-top: 0.5em">
+            <tr>
+              <th>Pattern</th>
+              <th>Use Case</th>
+            </tr>
+            <tr>
+              <td>Condition inside forEach</td>
+              <td>Filter items during iteration</td>
+            </tr>
+            <tr>
+              <td>forEach inside Condition</td>
+              <td>Conditional iteration</td>
+            </tr>
+            <tr>
+              <td>Nested forEach</td>
+              <td>Process arrays of arrays</td>
+            </tr>
+          </table>
+        </section>
+
         <!-- Testing Pyramid -->
         <section>
           <h2>Why Trust It: Testing Pyramid</h2>

@@ -624,6 +624,677 @@ spec:
 };
 
 // ============================================================================
+// LESSON 6: Control Flow - Conditional Execution
+// ============================================================================
+
+export const LESSON_CONTROL_FLOW_CONDITIONS: Lesson = {
+  id: 'control-flow-conditions',
+  title: 'Control Flow: Conditional Execution',
+  description: 'Learn how to skip tasks based on conditions using if/else expressions.',
+  difficulty: 'intermediate',
+  estimatedTime: 15,
+  order: 6,
+  objectives: [
+    'Understand conditional task execution',
+    'Write if/else condition expressions',
+    'Use comparison operators (==, !=, >, <)',
+    'Combine conditions with && and ||',
+  ],
+  content: {
+    introduction: 'Not every task should run every time. With conditions, you can skip tasks based on data from previous tasks or input values. This enables branching logic in your workflows.',
+    steps: [
+      {
+        title: 'Basic If Condition',
+        description: 'Add a condition to skip a task based on a boolean value.',
+        codeExample: `  tasks:
+    - id: check-credit
+      taskRef: credit-check
+      input:
+        customerId: "{{input.customerId}}"
+
+    - id: process-payment
+      condition:
+        if: "{{tasks.check-credit.output.approved}} == true"
+      taskRef: charge-card
+      input:
+        customerId: "{{input.customerId}}"`,
+        tips: [
+          'The condition.if field contains an expression',
+          'If the expression evaluates to false, the task is skipped',
+          'Skipped tasks don\'t affect dependent tasks',
+        ],
+      },
+      {
+        title: 'Comparison Operators',
+        description: 'Use different operators to compare values.',
+        codeExample: `    - id: apply-discount
+      condition:
+        if: "{{tasks.get-order.output.total}} > 100"
+      taskRef: apply-discount
+      input:
+        orderId: "{{input.orderId}}"
+        discountPercent: 10
+
+    - id: premium-shipping
+      condition:
+        if: "{{tasks.get-order.output.tier}} != 'basic'"
+      taskRef: enable-premium-shipping`,
+        tips: [
+          'Operators: == (equal), != (not equal), >, <, >=, <=',
+          'String comparisons use quotes: == \'value\'',
+          'Number comparisons work without quotes: > 100',
+        ],
+      },
+      {
+        title: 'Combining Conditions',
+        description: 'Use logical operators to combine multiple conditions.',
+        codeExample: `    - id: send-vip-email
+      condition:
+        if: "{{tasks.get-user.output.isVip}} == true && {{tasks.get-order.output.total}} > 500"
+      taskRef: send-vip-notification
+
+    - id: fraud-alert
+      condition:
+        if: "{{tasks.check-fraud.output.score}} > 80 || {{tasks.check-fraud.output.flagged}} == true"
+      taskRef: alert-fraud-team`,
+        tips: [
+          '&& means AND - both conditions must be true',
+          '|| means OR - either condition can be true',
+          'Use ! for NOT: !{{tasks.check.output.valid}}',
+        ],
+      },
+    ],
+    summary: 'You\'ve learned conditional task execution! Now you can create workflows that adapt based on data, skipping irrelevant tasks and routing to different branches.',
+  },
+  yaml: `apiVersion: workflow.io/v1
+kind: Workflow
+metadata:
+  name: conditional-order-processing
+  namespace: default
+spec:
+  description: Process orders with conditional logic
+  version: 1.0.0
+
+  inputSchema:
+    type: object
+    properties:
+      customerId:
+        type: string
+      orderId:
+        type: string
+    required:
+      - customerId
+      - orderId
+
+  tasks:
+    # Step 1: Check customer credit
+    - id: check-credit
+      taskRef: credit-check
+      input:
+        customerId: "{{input.customerId}}"
+
+    # Step 2: Only process payment if approved
+    - id: process-payment
+      condition:
+        if: "{{tasks.check-credit.output.approved}} == true"
+      taskRef: charge-card
+      input:
+        customerId: "{{input.customerId}}"
+        orderId: "{{input.orderId}}"
+
+    # Step 3: Only send rejection if NOT approved
+    - id: send-rejection
+      condition:
+        if: "{{tasks.check-credit.output.approved}} == false"
+      taskRef: send-rejection-email
+      input:
+        customerId: "{{input.customerId}}"
+        reason: "{{tasks.check-credit.output.reason}}"`,
+  successCriteria: [
+    'Workflow has condition.if on tasks',
+    'Comparison uses == for equality',
+    'Both true and false branches are handled',
+    'Template expressions reference task outputs',
+    'Workflow validates successfully',
+  ],
+};
+
+// ============================================================================
+// LESSON 7: Switch/Case - Multi-Branch Routing
+// ============================================================================
+
+export const LESSON_SWITCH_CASE: Lesson = {
+  id: 'switch-case',
+  title: 'Switch/Case: Multi-Branch Routing',
+  description: 'Route workflow execution to different tasks based on a value using switch/case.',
+  difficulty: 'intermediate',
+  estimatedTime: 15,
+  order: 7,
+  objectives: [
+    'Understand switch/case routing',
+    'Define multiple case branches',
+    'Handle unknown values with default',
+    'Choose between conditions and switch/case',
+  ],
+  content: {
+    introduction: 'When you need to route to one of many tasks based on a single value, switch/case is cleaner than multiple if conditions. Think of it like a menu selector.',
+    steps: [
+      {
+        title: 'Basic Switch/Case',
+        description: 'Route to different tasks based on a value.',
+        codeExample: `  tasks:
+    - id: route-payment
+      switch:
+        value: "{{input.paymentMethod}}"
+        cases:
+          - match: "stripe"
+            taskRef: stripe-charge
+          - match: "paypal"
+            taskRef: paypal-charge
+          - match: "invoice"
+            taskRef: create-invoice`,
+        tips: [
+          'value is the expression to evaluate',
+          'Each case has a match value and taskRef',
+          'First matching case wins',
+        ],
+      },
+      {
+        title: 'Default Case',
+        description: 'Handle unexpected values with a default case.',
+        codeExample: `    - id: route-payment
+      switch:
+        value: "{{input.paymentMethod}}"
+        cases:
+          - match: "stripe"
+            taskRef: stripe-charge
+          - match: "paypal"
+            taskRef: paypal-charge
+        default:
+          taskRef: unknown-payment-error`,
+        tips: [
+          'default runs if no case matches',
+          'Always include a default for safety',
+          'Error if no match AND no default',
+        ],
+      },
+      {
+        title: 'When to Use Switch vs Conditions',
+        description: 'Choose the right tool for the job.',
+        tips: [
+          'Use switch when routing based on ONE value with MANY options',
+          'Use conditions when logic depends on MULTIPLE values',
+          'Use conditions for range checks (> 100)',
+          'Switch is cleaner for "menu-like" selections',
+        ],
+      },
+    ],
+    summary: 'You\'ve mastered switch/case routing! Use it when you have a single value that determines which of many paths to take. Always include a default case for robustness.',
+  },
+  yaml: `apiVersion: workflow.io/v1
+kind: Workflow
+metadata:
+  name: payment-router
+  namespace: default
+spec:
+  description: Route payments to different processors
+  version: 1.0.0
+
+  inputSchema:
+    type: object
+    properties:
+      paymentMethod:
+        type: string
+        enum: [stripe, paypal, invoice, apple-pay]
+      amount:
+        type: number
+      customerId:
+        type: string
+    required:
+      - paymentMethod
+      - amount
+      - customerId
+
+  tasks:
+    # Route to different payment processors
+    - id: process-payment
+      switch:
+        value: "{{input.paymentMethod}}"
+        cases:
+          - match: "stripe"
+            taskRef: stripe-charge
+            input:
+              amount: "{{input.amount}}"
+              customerId: "{{input.customerId}}"
+          - match: "paypal"
+            taskRef: paypal-charge
+            input:
+              amount: "{{input.amount}}"
+              email: "{{input.customerEmail}}"
+          - match: "invoice"
+            taskRef: create-invoice
+            input:
+              amount: "{{input.amount}}"
+              dueDate: "{{input.invoiceDueDate}}"
+        default:
+          taskRef: unsupported-payment-method
+          input:
+            method: "{{input.paymentMethod}}"
+
+    # Confirmation runs after whichever payment succeeded
+    - id: send-confirmation
+      taskRef: send-receipt
+      input:
+        customerId: "{{input.customerId}}"
+        paymentId: "{{tasks.process-payment.output.paymentId}}"`,
+  successCriteria: [
+    'switch.value references input or task output',
+    'Multiple cases defined with match values',
+    'default case handles unknown values',
+    'Each case has a taskRef',
+    'Workflow validates successfully',
+  ],
+};
+
+// ============================================================================
+// LESSON 8: forEach Loops - Array Iteration
+// ============================================================================
+
+export const LESSON_FOR_EACH: Lesson = {
+  id: 'for-each-loops',
+  title: 'forEach Loops: Process Arrays',
+  description: 'Iterate over arrays and process each item with parallel execution.',
+  difficulty: 'advanced',
+  estimatedTime: 20,
+  order: 8,
+  objectives: [
+    'Iterate over arrays with forEach',
+    'Access current item and index',
+    'Control parallelism with maxParallel',
+    'Aggregate results from all iterations',
+  ],
+  content: {
+    introduction: 'When you have an array of items to process (orders, users, products), forEach lets you run a task for each item. Items can be processed in parallel for massive speedups.',
+    steps: [
+      {
+        title: 'Basic forEach',
+        description: 'Process each item in an array.',
+        codeExample: `  tasks:
+    - id: process-orders
+      forEach:
+        items: "{{input.orderIds}}"
+        itemVar: "order"
+      taskRef: process-order
+      input:
+        orderId: "{{forEach.order}}"`,
+        tips: [
+          'items is the array to iterate over',
+          'itemVar names the current item variable',
+          'Access current item with {{forEach.order}}',
+        ],
+      },
+      {
+        title: 'Access Index and Control Parallelism',
+        description: 'Use the iteration index and limit concurrent executions.',
+        codeExample: `    - id: process-items
+      forEach:
+        items: "{{input.items}}"
+        itemVar: "item"
+        maxParallel: 5
+      taskRef: process-item
+      input:
+        itemId: "{{forEach.item.id}}"
+        index: "{{forEach.index}}"
+        batchLabel: "Item {{forEach.index}} of batch"`,
+        tips: [
+          '{{forEach.index}} is the 0-based iteration index',
+          'maxParallel limits concurrent executions (default: unlimited)',
+          'Use maxParallel to avoid overwhelming APIs',
+        ],
+      },
+      {
+        title: 'Access Aggregated Results',
+        description: 'Get results from all iterations.',
+        codeExample: `  output:
+    results: "{{tasks.process-items.forEach.outputs}}"
+    totalProcessed: "{{tasks.process-items.forEach.successCount}}"
+    failedCount: "{{tasks.process-items.forEach.failureCount}}"`,
+        tips: [
+          'forEach.outputs is an array of all iteration outputs',
+          'forEach.successCount counts successful iterations',
+          'forEach.failureCount counts failed iterations',
+          'forEach.itemCount is the total number of items',
+        ],
+      },
+    ],
+    summary: 'You\'ve mastered forEach loops! Process arrays efficiently with parallel execution. Use maxParallel to control concurrency and access aggregated results for reporting.',
+  },
+  yaml: `apiVersion: workflow.io/v1
+kind: Workflow
+metadata:
+  name: batch-order-processor
+  namespace: default
+spec:
+  description: Process multiple orders in parallel
+  version: 1.0.0
+
+  inputSchema:
+    type: object
+    properties:
+      orderIds:
+        type: array
+        items:
+          type: string
+    required:
+      - orderIds
+
+  tasks:
+    # Process each order in parallel (max 5 at a time)
+    - id: process-orders
+      forEach:
+        items: "{{input.orderIds}}"
+        itemVar: "orderId"
+        maxParallel: 5
+      taskRef: process-order
+      input:
+        orderId: "{{forEach.orderId}}"
+        index: "{{forEach.index}}"
+
+  # Expose aggregated results
+  output:
+    processedOrders: "{{tasks.process-orders.forEach.outputs}}"
+    successCount: "{{tasks.process-orders.forEach.successCount}}"
+    failureCount: "{{tasks.process-orders.forEach.failureCount}}"
+    totalOrders: "{{tasks.process-orders.forEach.itemCount}}"`,
+  successCriteria: [
+    'forEach.items references an array',
+    'forEach.itemVar names the iteration variable',
+    'Task input uses {{forEach.varName}} syntax',
+    'maxParallel is set to control concurrency',
+    'Output uses forEach.outputs for aggregation',
+  ],
+};
+
+// ============================================================================
+// LESSON 9: Transform DSL - Data Transformations
+// ============================================================================
+
+export const LESSON_TRANSFORM_DSL: Lesson = {
+  id: 'transform-dsl',
+  title: 'Transform DSL: Shape Your Data',
+  description: 'Transform data between tasks using map, filter, select, and more.',
+  difficulty: 'advanced',
+  estimatedTime: 20,
+  order: 9,
+  objectives: [
+    'Transform arrays with map and filter',
+    'Select specific fields from objects',
+    'Chain transformations in pipelines',
+    'Handle complex data structures',
+  ],
+  content: {
+    introduction: 'When task outputs don\'t match the next task\'s expected input format, transforms bridge the gap. The Transform DSL provides powerful operations for reshaping data.',
+    steps: [
+      {
+        title: 'Filter and Map',
+        description: 'Filter arrays and transform each element.',
+        codeExample: `  tasks:
+    - id: get-orders
+      taskRef: fetch-orders
+
+    - id: process-high-value
+      taskRef: process-orders
+      input:
+        orders: |
+          {{tasks.get-orders.output.orders
+            | filter: item.total > 100
+            | map: { id: item.id, amount: item.total }
+          }}`,
+        tips: [
+          'filter: keeps items matching the condition',
+          'map: transforms each item to a new shape',
+          'Chain with | (pipe) operator',
+        ],
+      },
+      {
+        title: 'Select Fields',
+        description: 'Extract specific fields from objects.',
+        codeExample: `    - id: send-notification
+      taskRef: send-email
+      input:
+        recipients: |
+          {{tasks.get-users.output.users
+            | select: email, name
+          }}`,
+        tips: [
+          'select: picks specific fields',
+          'Reduces payload size',
+          'Useful for privacy (exclude sensitive fields)',
+        ],
+      },
+      {
+        title: 'Advanced Operations',
+        description: 'Sort, limit, flatten, and more.',
+        codeExample: `    - id: get-top-products
+      taskRef: display-products
+      input:
+        products: |
+          {{tasks.get-catalog.output.products
+            | filter: item.inStock == true
+            | sort: item.rating desc
+            | limit: 10
+            | map: { name: item.name, price: item.price }
+          }}`,
+        tips: [
+          'sort: orders by field (asc or desc)',
+          'limit: N takes first N items',
+          'flatten: unwraps nested arrays',
+          'distinct: removes duplicates',
+        ],
+      },
+    ],
+    summary: 'You\'ve learned the Transform DSL! Use it to reshape data between tasks. Chain operations to build powerful transformation pipelines.',
+  },
+  yaml: `apiVersion: workflow.io/v1
+kind: Workflow
+metadata:
+  name: data-transformation-demo
+  namespace: default
+spec:
+  description: Demonstrates Transform DSL operations
+  version: 1.0.0
+
+  inputSchema:
+    type: object
+    properties:
+      categoryId:
+        type: string
+    required:
+      - categoryId
+
+  tasks:
+    # Fetch raw product data
+    - id: fetch-products
+      taskRef: get-products
+      input:
+        category: "{{input.categoryId}}"
+
+    # Filter, sort, and transform for display
+    - id: prepare-display
+      taskRef: render-product-list
+      input:
+        # Transform pipeline: filter in-stock, sort by rating, take top 10
+        products: |
+          {{tasks.fetch-products.output.products
+            | filter: item.inventory > 0
+            | sort: item.rating desc
+            | limit: 10
+            | map: {
+                id: item.id,
+                name: item.name,
+                price: item.price,
+                rating: item.rating
+              }
+          }}
+
+    # Get unique brands from products
+    - id: get-brands
+      taskRef: render-brand-filter
+      input:
+        brands: |
+          {{tasks.fetch-products.output.products
+            | map: item.brand
+            | distinct
+            | sort: item asc
+          }}
+
+  output:
+    displayProducts: "{{tasks.prepare-display.output}}"
+    availableBrands: "{{tasks.get-brands.output}}"`,
+  successCriteria: [
+    'Transform uses pipe (|) syntax',
+    'filter: operation filters array',
+    'map: operation transforms items',
+    'sort: and limit: operations used',
+    'Workflow validates successfully',
+  ],
+};
+
+// ============================================================================
+// LESSON 10: OpenAPI Import - Auto-Generate Tasks
+// ============================================================================
+
+export const LESSON_OPENAPI_IMPORT: Lesson = {
+  id: 'openapi-import',
+  title: 'OpenAPI Import: Auto-Generate Tasks',
+  description: 'Generate WorkflowTask definitions automatically from OpenAPI/Swagger specs.',
+  difficulty: 'advanced',
+  estimatedTime: 15,
+  order: 10,
+  objectives: [
+    'Understand the workflow-cli tool',
+    'Import tasks from OpenAPI specs',
+    'Customize generated tasks',
+    'Manage task versions',
+  ],
+  content: {
+    introduction: 'Manually creating WorkflowTask CRDs for every API endpoint is tedious. The workflow-cli can auto-generate tasks from OpenAPI/Swagger specifications, saving hours of work.',
+    steps: [
+      {
+        title: 'Import from OpenAPI',
+        description: 'Generate tasks from an OpenAPI specification.',
+        codeExample: `# Import all endpoints from a Swagger spec
+$ workflow-cli import openapi https://api.example.com/swagger.json \\
+    --base-url https://api.example.com \\
+    --prefix example
+
+# Output:
+# ✓ Parsed OpenAPI 3.0.0 spec
+# ✓ Found 25 endpoints
+# ✓ Generated 25 WorkflowTask CRDs
+# ✓ Saved to ./tasks/example/`,
+        tips: [
+          'Works with OpenAPI 2.0 (Swagger) and 3.x',
+          '--prefix adds a namespace to task names',
+          '--base-url sets the API base URL in tasks',
+        ],
+      },
+      {
+        title: 'Filter Endpoints',
+        description: 'Import only specific endpoints.',
+        codeExample: `# Import only endpoints tagged "payments"
+$ workflow-cli import openapi spec.yaml \\
+    --tags payments,orders \\
+    --exclude-tags internal
+
+# Import and group by tag
+$ workflow-cli import openapi spec.yaml \\
+    --group-by-tag`,
+        tips: [
+          '--tags filters to specific API tags',
+          '--exclude-tags removes unwanted endpoints',
+          '--group-by-tag creates folders per tag',
+        ],
+      },
+      {
+        title: 'Generated Task Structure',
+        description: 'Understand what gets generated.',
+        codeExample: `# Generated WorkflowTask CRD
+apiVersion: workflow.io/v1
+kind: WorkflowTask
+metadata:
+  name: example-get-user
+  labels:
+    workflow.io/source: openapi
+    workflow.io/content-hash: "abc123..."
+spec:
+  inputSchema:
+    type: object
+    properties:
+      userId:
+        type: string
+  http:
+    method: GET
+    url: "https://api.example.com/users/{{input.userId}}"`,
+        tips: [
+          'Task names derived from operationId or path',
+          'Input schema from path/query/body parameters',
+          'content-hash label tracks spec changes',
+          'Re-import detects breaking changes',
+        ],
+      },
+    ],
+    summary: 'You\'ve learned to auto-generate tasks from OpenAPI specs! This dramatically speeds up integration work. Use filters to import only what you need.',
+  },
+  yaml: `# This lesson demonstrates CLI usage, not a workflow YAML.
+# Below is an example of a generated WorkflowTask from OpenAPI import.
+
+apiVersion: workflow.io/v1
+kind: WorkflowTask
+metadata:
+  name: petstore-get-pet-by-id
+  namespace: default
+  labels:
+    workflow.io/source: openapi
+    workflow.io/content-hash: "sha256:a1b2c3..."
+spec:
+  description: Find pet by ID (auto-generated from Petstore API)
+
+  inputSchema:
+    type: object
+    properties:
+      petId:
+        type: integer
+        description: ID of pet to return
+    required:
+      - petId
+
+  outputSchema:
+    type: object
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+      status:
+        type: string
+        enum: [available, pending, sold]
+
+  http:
+    method: GET
+    url: "https://petstore.swagger.io/v2/pet/{{input.petId}}"
+    headers:
+      Accept: "application/json"`,
+  successCriteria: [
+    'Understand workflow-cli import command',
+    'Know how to filter by tags',
+    'Understand generated task structure',
+    'Know that content-hash tracks changes',
+    'Can apply generated tasks with kubectl',
+  ],
+};
+
+// ============================================================================
 // LESSONS REGISTRY - Export all lessons
 // ============================================================================
 
@@ -633,6 +1304,11 @@ export const ALL_LESSONS: Lesson[] = [
   LESSON_PARALLEL_EXECUTION,
   LESSON_TEMPLATE_SYNTAX,
   LESSON_ADVANCED_FEATURES,
+  LESSON_CONTROL_FLOW_CONDITIONS,
+  LESSON_SWITCH_CASE,
+  LESSON_FOR_EACH,
+  LESSON_TRANSFORM_DSL,
+  LESSON_OPENAPI_IMPORT,
 ];
 
 /**

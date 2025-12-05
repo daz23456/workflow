@@ -37,7 +37,10 @@ public class TemplateResolver : ITemplateResolver
         if (parts.Length < 2)
         {
             throw new TemplateResolutionException(
-                $"Invalid template expression: {expression}",
+                $"Invalid template expression: '{expression}'. " +
+                "Template expressions must have at least 2 parts separated by dots. " +
+                "Valid formats: 'input.fieldName', 'tasks.taskId.output.fieldName', 'forEach.itemVar.property'. " +
+                $"Got: '{expression}' which has {parts.Length} part(s).",
                 expression);
         }
 
@@ -56,8 +59,15 @@ public class TemplateResolver : ITemplateResolver
 
             if (!context.TaskOutputs.ContainsKey(taskId))
             {
+                var availableTasks = context.TaskOutputs.Keys.Any()
+                    ? string.Join(", ", context.TaskOutputs.Keys.Select(k => $"'{k}'"))
+                    : "(none - no tasks have completed yet)";
                 throw new TemplateResolutionException(
-                    $"Task '{taskId}' output not found in execution context",
+                    $"Task '{taskId}' output not found. " +
+                    $"This task either hasn't run yet, doesn't exist, or failed before producing output. " +
+                    $"Available task outputs: {availableTasks}. " +
+                    $"Check: (1) Task ID spelling matches exactly, (2) Task is listed in dependsOn for proper ordering, " +
+                    "(3) Task completed successfully.",
                     expression);
             }
 
@@ -72,7 +82,10 @@ public class TemplateResolver : ITemplateResolver
         }
 
         throw new TemplateResolutionException(
-            $"Unknown template expression type: {expression}",
+            $"Unknown template expression type: '{expression}'. " +
+            $"Expression starts with '{parts[0]}' which is not recognized. " +
+            "Valid prefixes: 'input' (workflow input), 'tasks' (task outputs), 'forEach' (iteration context). " +
+            "Examples: '{{input.userId}}', '{{tasks.fetch-user.output.name}}', '{{forEach.item.id}}'.",
             expression);
     }
 
@@ -81,7 +94,10 @@ public class TemplateResolver : ITemplateResolver
         if (context.ForEach == null)
         {
             throw new TemplateResolutionException(
-                "forEach template used outside of forEach context",
+                $"forEach template '{originalExpression}' used outside of a forEach loop. " +
+                "The 'forEach' prefix is only valid inside a task that has a 'forEach' block defined. " +
+                "If this task isn't iterating, use 'input.fieldName' or 'tasks.taskId.output.fieldName' instead. " +
+                "If you meant to iterate, add a forEach block to your task: forEach: { items: '{{input.array}}', itemVar: 'item' }",
                 originalExpression);
         }
 
@@ -179,8 +195,12 @@ public class TemplateResolver : ITemplateResolver
         }
 
         // For simple types, we can't navigate further
+        var itemType = item?.GetType().Name ?? "null";
         throw new TemplateResolutionException(
-            $"Cannot navigate path '{path}' on non-object item",
+            $"Cannot navigate path '{path}' on item of type '{itemType}'. " +
+            "Path navigation (using dots) only works on objects/dictionaries. " +
+            $"The current forEach item is a simple value ({itemType}), not an object with properties. " +
+            "If iterating over simple values (strings, numbers), use '{{forEach.item}}' directly without a path.",
             originalExpression);
     }
 
@@ -263,8 +283,13 @@ public class TemplateResolver : ITemplateResolver
             {
                 if (!dict.ContainsKey(part))
                 {
+                    var availableFields = dict.Keys.Any()
+                        ? string.Join(", ", dict.Keys.Take(10).Select(k => $"'{k}'")) + (dict.Keys.Count > 10 ? $"... ({dict.Keys.Count} total)" : "")
+                        : "(empty object)";
                     throw new TemplateResolutionException(
-                        $"Field '{part}' not found in path '{path}'",
+                        $"Field '{part}' not found at path '{path}'. " +
+                        $"Available fields: {availableFields}. " +
+                        "Check spelling and case sensitivity (field names are case-sensitive).",
                         originalExpression);
                 }
                 current = dict[part];
@@ -276,8 +301,16 @@ public class TemplateResolver : ITemplateResolver
                 {
                     if (!jsonElement.TryGetProperty(part, out var property))
                     {
+                        var availableProps = jsonElement.EnumerateObject()
+                            .Take(10)
+                            .Select(p => $"'{p.Name}'");
+                        var propList = string.Join(", ", availableProps);
+                        var totalCount = jsonElement.EnumerateObject().Count();
+                        var suffix = totalCount > 10 ? $"... ({totalCount} total)" : "";
                         throw new TemplateResolutionException(
-                            $"Property '{part}' not found in JSON object at path '{path}'",
+                            $"Property '{part}' not found in JSON object at path '{path}'. " +
+                            $"Available properties: {propList}{suffix}. " +
+                            "Check spelling and case sensitivity.",
                             originalExpression);
                     }
                     current = property;
@@ -285,18 +318,27 @@ public class TemplateResolver : ITemplateResolver
                 else
                 {
                     throw new TemplateResolutionException(
-                        $"Cannot navigate path '{part}' - current value is not an object",
+                        $"Cannot navigate to '{part}' - current value is {jsonElement.ValueKind}, not an object. " +
+                        $"Full path: '{path}'. You may have navigated into a primitive value (string, number, boolean) " +
+                        "instead of an object. Check your path structure.",
                         originalExpression);
                 }
             }
             else
             {
                 // Handle nested objects (anonymous types, POCOs)
-                var property = current?.GetType().GetProperty(part);
+                var currentType = current?.GetType();
+                var property = currentType?.GetProperty(part);
                 if (property == null)
                 {
+                    var availableProps = currentType?.GetProperties()
+                        .Take(10)
+                        .Select(p => $"'{p.Name}'") ?? Enumerable.Empty<string>();
+                    var propList = availableProps.Any() ? string.Join(", ", availableProps) : "(no properties)";
                     throw new TemplateResolutionException(
-                        $"Property '{part}' not found in path '{path}'",
+                        $"Property '{part}' not found on object of type '{currentType?.Name ?? "null"}' at path '{path}'. " +
+                        $"Available properties: {propList}. " +
+                        "Check spelling and case sensitivity.",
                         originalExpression);
                 }
                 current = property.GetValue(current);
@@ -338,8 +380,10 @@ public class TemplateResolver : ITemplateResolver
         {
             if (!dict.ContainsKey(propertyName))
             {
+                var available = dict.Keys.Any() ? string.Join(", ", dict.Keys.Take(10).Select(k => $"'{k}'")) : "(empty)";
                 throw new TemplateResolutionException(
-                    $"Field '{propertyName}' not found in path '{path}'",
+                    $"Field '{propertyName}' not found. Path: '{path}'. Available: {available}. " +
+                    "Check spelling and case sensitivity.",
                     originalExpression);
             }
             return dict[propertyName];
@@ -348,19 +392,25 @@ public class TemplateResolver : ITemplateResolver
         {
             if (!jsonElement.TryGetProperty(propertyName, out var property))
             {
+                var available = string.Join(", ", jsonElement.EnumerateObject().Take(10).Select(p => $"'{p.Name}'"));
                 throw new TemplateResolutionException(
-                    $"Property '{propertyName}' not found in path '{path}'",
+                    $"Property '{propertyName}' not found. Path: '{path}'. Available: {available}. " +
+                    "Check spelling and case sensitivity.",
                     originalExpression);
             }
             return property;
         }
         else
         {
-            var property = current?.GetType().GetProperty(propertyName);
+            var currentType = current?.GetType();
+            var property = currentType?.GetProperty(propertyName);
             if (property == null)
             {
+                var available = currentType?.GetProperties().Take(10).Select(p => $"'{p.Name}'") ?? Enumerable.Empty<string>();
+                var propList = available.Any() ? string.Join(", ", available) : "(no properties)";
                 throw new TemplateResolutionException(
-                    $"Property '{propertyName}' not found in path '{path}'",
+                    $"Property '{propertyName}' not found on type '{currentType?.Name ?? "null"}'. Path: '{path}'. Available: {propList}. " +
+                    "Check spelling and case sensitivity.",
                     originalExpression);
             }
             return property.GetValue(current);
@@ -373,18 +423,25 @@ public class TemplateResolver : ITemplateResolver
         {
             if (index < 0 || index >= list.Count)
             {
+                var validRange = list.Count > 0 ? $"0 to {list.Count - 1}" : "N/A (array is empty)";
                 throw new TemplateResolutionException(
-                    $"Array index {index} is out of bounds (length: {list.Count}) in path '{path}'",
+                    $"Array index [{index}] is out of bounds. Array has {list.Count} element(s), valid indices: {validRange}. " +
+                    $"Path: '{path}'. " +
+                    (index < 0 ? "Negative indices are not supported." : $"Use an index less than {list.Count}."),
                     originalExpression);
             }
             return list[index];
         }
         else if (current is JsonElement jsonElement && jsonElement.ValueKind == JsonValueKind.Array)
         {
-            if (index < 0 || index >= jsonElement.GetArrayLength())
+            var length = jsonElement.GetArrayLength();
+            if (index < 0 || index >= length)
             {
+                var validRange = length > 0 ? $"0 to {length - 1}" : "N/A (array is empty)";
                 throw new TemplateResolutionException(
-                    $"Array index {index} is out of bounds (length: {jsonElement.GetArrayLength()}) in path '{path}'",
+                    $"Array index [{index}] is out of bounds. Array has {length} element(s), valid indices: {validRange}. " +
+                    $"Path: '{path}'. " +
+                    (index < 0 ? "Negative indices are not supported." : $"Use an index less than {length}."),
                     originalExpression);
             }
             return jsonElement[index];
@@ -393,16 +450,22 @@ public class TemplateResolver : ITemplateResolver
         {
             if (index < 0 || index >= nonGenericList.Count)
             {
+                var validRange = nonGenericList.Count > 0 ? $"0 to {nonGenericList.Count - 1}" : "N/A (array is empty)";
                 throw new TemplateResolutionException(
-                    $"Array index {index} is out of bounds (length: {nonGenericList.Count}) in path '{path}'",
+                    $"Array index [{index}] is out of bounds. Array has {nonGenericList.Count} element(s), valid indices: {validRange}. " +
+                    $"Path: '{path}'. " +
+                    (index < 0 ? "Negative indices are not supported." : $"Use an index less than {nonGenericList.Count}."),
                     originalExpression);
             }
             return nonGenericList[index];
         }
         else
         {
+            var actualType = current?.GetType().Name ?? "null";
             throw new TemplateResolutionException(
-                $"Cannot index into non-array value at path '{path}'",
+                $"Cannot use array index syntax on non-array value of type '{actualType}' at path '{path}'. " +
+                "Array indexing (e.g., 'items[0]') only works on arrays/lists. " +
+                "If this should be an array, check the upstream task output or input data.",
                 originalExpression);
         }
     }

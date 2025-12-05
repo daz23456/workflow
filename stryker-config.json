@@ -11,10 +11,9 @@
     },
     "concurrency": 4,
     "mutate": [
-      "**/Models/**/*.cs",
+      "**/Services/**/*.cs",
       "!**/obj/**",
-      "!**/bin/**",
-      "!**/Migrations/**"
+      "!**/bin/**"
     ]
   }
 }

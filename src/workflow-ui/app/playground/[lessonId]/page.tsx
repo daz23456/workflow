@@ -16,7 +16,7 @@ export default function LessonPage() {
   const router = useRouter();
   const lessonId = params.lessonId as string;
 
-  const { completeLesson, lessonProgress } = useLearningStore();
+  const { completeLesson, lessonProgress, _hasHydrated } = useLearningStore();
   const lesson = getLessonById(lessonId);
 
   if (!lesson) {
@@ -55,7 +55,7 @@ export default function LessonPage() {
         lesson={lesson}
         onComplete={handleComplete}
         onExit={handleExit}
-        initialProgress={lessonProgress[lesson.id] || 0}
+        initialProgress={_hasHydrated ? (lessonProgress[lesson.id] || 0) : 0}
       />
     </div>
   );

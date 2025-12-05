@@ -15,6 +15,9 @@ import { persist } from 'zustand/middleware';
 import type { GamificationMode, Achievement } from '@/types/learning';
 
 interface LearningState {
+  // Hydration state (to prevent SSR/client mismatch)
+  _hasHydrated: boolean;
+
   // Progress tracking
   completedLessons: string[];
   lessonProgress: Record<string, number>;
@@ -35,14 +38,16 @@ interface LearningState {
   dismissTour: () => void;
   completeTour: (tourId: string) => void;
   reset: () => void;
+  setHasHydrated: (state: boolean) => void;
 }
 
 const initialState = {
-  completedLessons: [],
-  lessonProgress: {},
-  achievements: [],
+  _hasHydrated: false,
+  completedLessons: [] as string[],
+  lessonProgress: {} as Record<string, number>,
+  achievements: [] as Achievement[],
   tourDismissed: false,
-  toursCompleted: [],
+  toursCompleted: [] as string[],
   gamificationMode: 'basic' as GamificationMode,
 };
 
@@ -211,12 +216,22 @@ export const useLearningStore = create<LearningState>()(
        * Reset all learning progress (useful for testing)
        */
       reset: () => {
-        set(initialState);
+        set({ ...initialState, _hasHydrated: true });
+      },
+
+      /**
+       * Set hydration state (called after rehydration from localStorage)
+       */
+      setHasHydrated: (state: boolean) => {
+        set({ _hasHydrated: state });
       },
     }),
     {
       name: 'learning-storage', // localStorage key
       version: 1,
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
     }
   )
 );

@@ -38,7 +38,7 @@ interface TourProviderProps {
 }
 
 export function TourProvider({ children }: TourProviderProps) {
-  const { toursCompleted, completeTour, tourDismissed, dismissTour } = useLearningStore();
+  const { toursCompleted, completeTour, tourDismissed, dismissTour, _hasHydrated } = useLearningStore();
   const [activeTour, setActiveTour] = useState<TourType | null>(null);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
 
@@ -46,6 +46,9 @@ export function TourProvider({ children }: TourProviderProps) {
    * Auto-start tours for first-time users
    */
   useEffect(() => {
+    // Wait for hydration to complete before auto-starting tours
+    if (!_hasHydrated) return;
+
     // Don't auto-start if tour was dismissed
     if (tourDismissed) return;
 
@@ -60,7 +63,7 @@ export function TourProvider({ children }: TourProviderProps) {
         setCurrentStepIndex(0);
       }, 500);
     }
-  }, [toursCompleted, tourDismissed]);
+  }, [toursCompleted, tourDismissed, _hasHydrated]);
 
   const startTour = (tourId: TourId) => {
     const tour = getTourById(tourId);

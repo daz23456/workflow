@@ -22,11 +22,11 @@ export default function PlaygroundPage() {
   const router = useRouter();
   const [difficultyFilter, setDifficultyFilter] = useState<'all' | 'beginner' | 'intermediate' | 'advanced'>('all');
 
-  const { completedLessons, lessonProgress } = useLearningStore();
+  const { completedLessons, lessonProgress, _hasHydrated } = useLearningStore();
 
-  // Calculate statistics
+  // Calculate statistics (use defaults before hydration to prevent mismatch)
   const totalLessons = ALL_LESSONS.length;
-  const completedCount = completedLessons.length;
+  const completedCount = _hasHydrated ? completedLessons.length : 0;
   const completionPercentage = totalLessons > 0 ? Math.round((completedCount / totalLessons) * 100) : 0;
 
   // Filter lessons by difficulty
@@ -121,8 +121,8 @@ export default function PlaygroundPage() {
               <div key={lesson.id} data-lesson-id={lesson.id}>
                 <LessonCard
                   lesson={lesson}
-                  isCompleted={completedLessons.includes(lesson.id)}
-                  progress={lessonProgress[lesson.id] || 0}
+                  isCompleted={_hasHydrated && completedLessons.includes(lesson.id)}
+                  progress={_hasHydrated ? (lessonProgress[lesson.id] || 0) : 0}
                   onClick={() => handleLessonClick(lesson.id)}
                 />
               </div>

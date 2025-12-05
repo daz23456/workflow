@@ -2007,4 +2007,964 @@ spec:
     }
 
     #endregion
+
+    #region Mutation Testing - NoCoverage Code Paths
+
+    [Fact]
+    public async Task ExecuteAsync_WorkflowWithNullMetadata_UsesUnknownName()
+    {
+        // Line 68: workflow.Metadata?.Name ?? "unknown"
+        var workflow = new WorkflowResource
+        {
+            Metadata = null, // null metadata
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "task-1", TaskRef = "test-task" }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            { "test-task", new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } } }
+        };
+
+        var graph = new ExecutionGraph();
+        graph.AddNode("task-1");
+
+        _graphBuilderMock.Setup(g => g.Build(workflow))
+            .Returns(new ExecutionGraphResult
+            {
+                IsValid = true,
+                Graph = graph
+            });
+
+        _taskExecutorMock.Setup(e => e.ExecuteAsync(
+            It.IsAny<WorkflowTaskSpec>(),
+            It.IsAny<TemplateContext>(),
+            It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new TaskExecutionResult { Success = true, Output = new Dictionary<string, object>() });
+
+        var result = await _orchestrator.ExecuteAsync(
+            workflow,
+            tasks,
+            new Dictionary<string, object>(),
+            CancellationToken.None);
+
+        result.Success.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithConditionEvaluationError_ShouldReturnTaskFailure()
+    {
+        // Lines 208-218: Condition evaluation failure path
+        var conditionEvaluatorMock = new Mock<IConditionEvaluator>();
+        conditionEvaluatorMock.Setup(e => e.EvaluateAsync(It.IsAny<string>(), It.IsAny<TemplateContext>()))
+            .ReturnsAsync(new ConditionResult
+            {
+                Error = "Invalid condition expression"
+            });
+
+        var orchestrator = new WorkflowOrchestrator(
+            _graphBuilderMock.Object,
+            _taskExecutorMock.Object,
+            _templateResolverMock.Object,
+            _responseStorageMock.Object,
+            conditionEvaluator: conditionEvaluatorMock.Object);
+
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep
+                    {
+                        Id = "task-with-condition",
+                        TaskRef = "test-task",
+                        Condition = new ConditionSpec { If = "{{invalid}}" }
+                    }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            { "test-task", new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } } }
+        };
+
+        var graph = new ExecutionGraph();
+        graph.AddNode("task-with-condition");
+
+        _graphBuilderMock.Setup(g => g.Build(workflow))
+            .Returns(new ExecutionGraphResult
+            {
+                IsValid = true,
+                Graph = graph
+            });
+
+        var result = await orchestrator.ExecuteAsync(
+            workflow,
+            tasks,
+            new Dictionary<string, object>(),
+            CancellationToken.None);
+
+        result.Success.Should().BeFalse();
+        result.Errors.Should().Contain(e => e.Contains("Condition evaluation failed"));
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithConditionFalse_ShouldSkipTask()
+    {
+        // Lines 221-234: Condition evaluates to false - task skipped
+        var conditionEvaluatorMock = new Mock<IConditionEvaluator>();
+        conditionEvaluatorMock.Setup(e => e.EvaluateAsync(It.IsAny<string>(), It.IsAny<TemplateContext>()))
+            .ReturnsAsync(new ConditionResult
+            {
+                ShouldExecute = false,
+                EvaluatedExpression = "false == true"
+            });
+
+        var orchestrator = new WorkflowOrchestrator(
+            _graphBuilderMock.Object,
+            _taskExecutorMock.Object,
+            _templateResolverMock.Object,
+            _responseStorageMock.Object,
+            conditionEvaluator: conditionEvaluatorMock.Object);
+
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep
+                    {
+                        Id = "conditional-task",
+                        TaskRef = "test-task",
+                        Condition = new ConditionSpec { If = "{{input.flag}} == true" }
+                    }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            { "test-task", new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } } }
+        };
+
+        var graph = new ExecutionGraph();
+        graph.AddNode("conditional-task");
+
+        _graphBuilderMock.Setup(g => g.Build(workflow))
+            .Returns(new ExecutionGraphResult
+            {
+                IsValid = true,
+                Graph = graph
+            });
+
+        var result = await orchestrator.ExecuteAsync(
+            workflow,
+            tasks,
+            new Dictionary<string, object>(),
+            CancellationToken.None);
+
+        result.Success.Should().BeTrue();
+        result.TaskResults.Should().ContainKey("conditional-task");
+        result.TaskResults["conditional-task"].WasSkipped.Should().BeTrue();
+        result.TaskResults["conditional-task"].SkipReason.Should().Contain("evaluated to false");
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithSwitchEvaluationError_ShouldReturnTaskFailure()
+    {
+        // Lines 243-253: Switch evaluation failure
+        var switchEvaluatorMock = new Mock<ISwitchEvaluator>();
+        switchEvaluatorMock.Setup(e => e.EvaluateAsync(It.IsAny<SwitchSpec>(), It.IsAny<TemplateContext>()))
+            .ReturnsAsync(new SwitchResult
+            {
+                Matched = false,
+                Error = "Invalid switch value expression"
+            });
+
+        var orchestrator = new WorkflowOrchestrator(
+            _graphBuilderMock.Object,
+            _taskExecutorMock.Object,
+            _templateResolverMock.Object,
+            _responseStorageMock.Object,
+            switchEvaluator: switchEvaluatorMock.Object);
+
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep
+                    {
+                        Id = "switch-task",
+                        Switch = new SwitchSpec
+                        {
+                            Value = "{{invalid}}",
+                            Cases = new List<SwitchCase>()
+                        }
+                    }
+                }
+            }
+        };
+
+        var graph = new ExecutionGraph();
+        graph.AddNode("switch-task");
+
+        _graphBuilderMock.Setup(g => g.Build(workflow))
+            .Returns(new ExecutionGraphResult
+            {
+                IsValid = true,
+                Graph = graph
+            });
+
+        var result = await orchestrator.ExecuteAsync(
+            workflow,
+            new Dictionary<string, WorkflowTaskResource>(),
+            new Dictionary<string, object>(),
+            CancellationToken.None);
+
+        result.Success.Should().BeFalse();
+        result.Errors.Should().Contain(e => e.Contains("Switch evaluation failed") || e.Contains("Invalid switch"));
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithSwitchNoMatch_ShouldReturnTaskFailure()
+    {
+        // Lines 256-267: Switch did not match any case (no default)
+        var switchEvaluatorMock = new Mock<ISwitchEvaluator>();
+        switchEvaluatorMock.Setup(e => e.EvaluateAsync(It.IsAny<SwitchSpec>(), It.IsAny<TemplateContext>()))
+            .ReturnsAsync(new SwitchResult
+            {
+                Matched = false,
+                Error = null // No error, just no match
+            });
+
+        var orchestrator = new WorkflowOrchestrator(
+            _graphBuilderMock.Object,
+            _taskExecutorMock.Object,
+            _templateResolverMock.Object,
+            _responseStorageMock.Object,
+            switchEvaluator: switchEvaluatorMock.Object);
+
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep
+                    {
+                        Id = "switch-task",
+                        Switch = new SwitchSpec
+                        {
+                            Value = "{{input.value}}",
+                            Cases = new List<SwitchCase>
+                            {
+                                new SwitchCase { Match = "a", TaskRef = "task-a" }
+                            }
+                        }
+                    }
+                }
+            }
+        };
+
+        var graph = new ExecutionGraph();
+        graph.AddNode("switch-task");
+
+        _graphBuilderMock.Setup(g => g.Build(workflow))
+            .Returns(new ExecutionGraphResult
+            {
+                IsValid = true,
+                Graph = graph
+            });
+
+        var result = await orchestrator.ExecuteAsync(
+            workflow,
+            new Dictionary<string, WorkflowTaskResource>(),
+            new Dictionary<string, object> { { "value", "b" } }, // "b" doesn't match "a"
+            CancellationToken.None);
+
+        result.Success.Should().BeFalse();
+        result.Errors.Should().Contain(e => e.Contains("did not match any case") || e.Contains("Switch"));
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithFailedDependency_ShouldSkipDependentTask()
+    {
+        // Lines 191-200: Task skipped due to failed dependency
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "task-1", TaskRef = "test-task" },
+                    new WorkflowTaskStep
+                    {
+                        Id = "task-2",
+                        TaskRef = "test-task",
+                        DependsOn = new List<string> { "task-1" }
+                    }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            { "test-task", new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } } }
+        };
+
+        var graph = new ExecutionGraph();
+        graph.AddNode("task-1");
+        graph.AddDependency("task-2", "task-1");
+
+        _graphBuilderMock.Setup(g => g.Build(workflow))
+            .Returns(new ExecutionGraphResult
+            {
+                IsValid = true,
+                Graph = graph
+            });
+
+        // First task fails
+        _taskExecutorMock.Setup(e => e.ExecuteAsync(
+            It.IsAny<WorkflowTaskSpec>(),
+            It.IsAny<TemplateContext>(),
+            It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new TaskExecutionResult
+            {
+                Success = false,
+                Errors = new List<string> { "Task failed" }
+            });
+
+        var result = await _orchestrator.ExecuteAsync(
+            workflow,
+            tasks,
+            new Dictionary<string, object>(),
+            CancellationToken.None);
+
+        result.Success.Should().BeFalse();
+        result.TaskResults.Should().ContainKey("task-2");
+        result.TaskResults["task-2"].Errors.Should().Contain(e => e.Contains("skipped due to failed dependency"));
+    }
+
+    #endregion
+
+    #region Mutation Killing Tests - Switch Evaluation
+
+    [Fact]
+    public async Task ExecuteAsync_SwitchEvaluationError_FailsTask()
+    {
+        // Target: Switch evaluation error path (lines 243-254)
+        var switchEvaluatorMock = new Mock<ISwitchEvaluator>();
+        switchEvaluatorMock.Setup(e => e.EvaluateAsync(It.IsAny<SwitchSpec>(), It.IsAny<TemplateContext>()))
+            .ReturnsAsync(new SwitchResult { Error = "Invalid switch expression" });
+
+        var orchestrator = new WorkflowOrchestrator(
+            _graphBuilderMock.Object,
+            _taskExecutorMock.Object,
+            _templateResolverMock.Object,
+            _responseStorageMock.Object,
+            switchEvaluator: switchEvaluatorMock.Object);
+
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep
+                    {
+                        Id = "task-1",
+                        TaskRef = "ref-1",
+                        Switch = new SwitchSpec { Value = "{{input.type}}" }
+                    }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["ref-1"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } }
+        };
+
+        var graph = new ExecutionGraph();
+        graph.AddNode("task-1");
+
+        _graphBuilderMock.Setup(x => x.Build(workflow))
+            .Returns(new ExecutionGraphResult { IsValid = true, Graph = graph });
+
+        var result = await orchestrator.ExecuteAsync(workflow, tasks, new Dictionary<string, object>(), CancellationToken.None);
+
+        result.Success.Should().BeFalse();
+        result.TaskResults["task-1"].Errors.Should().Contain(e => e.Contains("Switch evaluation failed"));
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_SwitchNoMatch_FailsTask()
+    {
+        // Target: Switch no match path (lines 256-267)
+        var switchEvaluatorMock = new Mock<ISwitchEvaluator>();
+        switchEvaluatorMock.Setup(e => e.EvaluateAsync(It.IsAny<SwitchSpec>(), It.IsAny<TemplateContext>()))
+            .ReturnsAsync(new SwitchResult { Matched = false, Error = "No case matched" });
+
+        var orchestrator = new WorkflowOrchestrator(
+            _graphBuilderMock.Object,
+            _taskExecutorMock.Object,
+            _templateResolverMock.Object,
+            _responseStorageMock.Object,
+            switchEvaluator: switchEvaluatorMock.Object);
+
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep
+                    {
+                        Id = "task-1",
+                        TaskRef = "ref-1",
+                        Switch = new SwitchSpec { Value = "{{input.type}}" }
+                    }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["ref-1"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } }
+        };
+
+        var graph = new ExecutionGraph();
+        graph.AddNode("task-1");
+
+        _graphBuilderMock.Setup(x => x.Build(workflow))
+            .Returns(new ExecutionGraphResult { IsValid = true, Graph = graph });
+
+        var result = await orchestrator.ExecuteAsync(workflow, tasks, new Dictionary<string, object>(), CancellationToken.None);
+
+        result.Success.Should().BeFalse();
+        result.TaskResults["task-1"].Errors.Should().Contain(e => e.Contains("No case matched"));
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_SwitchMatched_UsesMatchedTaskRef()
+    {
+        // Target: Switch matched path (lines 269-270)
+        var switchEvaluatorMock = new Mock<ISwitchEvaluator>();
+        switchEvaluatorMock.Setup(e => e.EvaluateAsync(It.IsAny<SwitchSpec>(), It.IsAny<TemplateContext>()))
+            .ReturnsAsync(new SwitchResult { Matched = true, TaskRef = "matched-ref" });
+
+        var orchestrator = new WorkflowOrchestrator(
+            _graphBuilderMock.Object,
+            _taskExecutorMock.Object,
+            _templateResolverMock.Object,
+            _responseStorageMock.Object,
+            switchEvaluator: switchEvaluatorMock.Object);
+
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep
+                    {
+                        Id = "task-1",
+                        TaskRef = "default-ref",
+                        Switch = new SwitchSpec { Value = "{{input.type}}" }
+                    }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["default-ref"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } },
+            ["matched-ref"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } }
+        };
+
+        var graph = new ExecutionGraph();
+        graph.AddNode("task-1");
+
+        _graphBuilderMock.Setup(x => x.Build(workflow))
+            .Returns(new ExecutionGraphResult { IsValid = true, Graph = graph });
+
+        _taskExecutorMock.Setup(e => e.ExecuteAsync(
+            It.IsAny<WorkflowTaskSpec>(),
+            It.IsAny<TemplateContext>(),
+            It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new TaskExecutionResult { Success = true });
+
+        var result = await orchestrator.ExecuteAsync(workflow, tasks, new Dictionary<string, object>(), CancellationToken.None);
+
+        result.Success.Should().BeTrue();
+        // The executor should have been called with the matched-ref task spec
+        _taskExecutorMock.Verify(e => e.ExecuteAsync(
+            It.IsAny<WorkflowTaskSpec>(),
+            It.IsAny<TemplateContext>(),
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    #endregion
+
+    #region Mutation Killing Tests - Transform Tasks
+
+    [Fact]
+    public async Task ExecuteAsync_TransformTaskWithNoExecutor_FailsTask()
+    {
+        // Target: Transform executor null check (lines 300-309)
+        var orchestrator = new WorkflowOrchestrator(
+            _graphBuilderMock.Object,
+            _taskExecutorMock.Object,
+            _templateResolverMock.Object,
+            _responseStorageMock.Object,
+            transformTaskExecutor: null); // No transform executor
+
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "task-1", TaskRef = "transform-ref" }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["transform-ref"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "transform" } }
+        };
+
+        var graph = new ExecutionGraph();
+        graph.AddNode("task-1");
+
+        _graphBuilderMock.Setup(x => x.Build(workflow))
+            .Returns(new ExecutionGraphResult { IsValid = true, Graph = graph });
+
+        var result = await orchestrator.ExecuteAsync(workflow, tasks, new Dictionary<string, object>(), CancellationToken.None);
+
+        result.Success.Should().BeFalse();
+        result.TaskResults["task-1"].Errors.Should().Contain(e => e.Contains("Transform task executor not available"));
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_TransformTaskWithInputResolutionError_FailsTask()
+    {
+        // Target: Transform input resolution error (lines 343-354)
+        var transformExecutorMock = new Mock<ITransformTaskExecutor>();
+
+        var orchestrator = new WorkflowOrchestrator(
+            _graphBuilderMock.Object,
+            _taskExecutorMock.Object,
+            _templateResolverMock.Object,
+            _responseStorageMock.Object,
+            transformTaskExecutor: transformExecutorMock.Object);
+
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep
+                    {
+                        Id = "task-1",
+                        TaskRef = "transform-ref",
+                        Input = new Dictionary<string, string> { ["data"] = "{{invalid.template}}" }
+                    }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["transform-ref"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "transform" } }
+        };
+
+        var graph = new ExecutionGraph();
+        graph.AddNode("task-1");
+
+        _graphBuilderMock.Setup(x => x.Build(workflow))
+            .Returns(new ExecutionGraphResult { IsValid = true, Graph = graph });
+
+        _templateResolverMock.Setup(r => r.ResolveAsync(It.IsAny<string>(), It.IsAny<TemplateContext>()))
+            .ThrowsAsync(new TemplateResolutionException("Invalid template", "{{invalid.template}}"));
+
+        var result = await orchestrator.ExecuteAsync(workflow, tasks, new Dictionary<string, object>(), CancellationToken.None);
+
+        result.Success.Should().BeFalse();
+        result.TaskResults["task-1"].Errors.Should().Contain(e => e.Contains("Failed to resolve input"));
+    }
+
+    #endregion
+
+    #region Mutation Killing Tests - HTTP Tasks with Input
+
+    [Fact]
+    public async Task ExecuteAsync_HttpTaskWithJsonInput_DeserializesInput()
+    {
+        // Target: JSON deserialization path (lines 379-389)
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep
+                    {
+                        Id = "task-1",
+                        TaskRef = "ref-1",
+                        Input = new Dictionary<string, string> { ["data"] = "{{input.jsonData}}" }
+                    }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["ref-1"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } }
+        };
+
+        var graph = new ExecutionGraph();
+        graph.AddNode("task-1");
+
+        _graphBuilderMock.Setup(x => x.Build(workflow))
+            .Returns(new ExecutionGraphResult { IsValid = true, Graph = graph });
+
+        // Return JSON string from template resolution
+        _templateResolverMock.Setup(r => r.ResolveAsync(It.IsAny<string>(), It.IsAny<TemplateContext>()))
+            .ReturnsAsync("{\"key\":\"value\"}");
+
+        _taskExecutorMock.Setup(e => e.ExecuteAsync(
+            It.IsAny<WorkflowTaskSpec>(),
+            It.IsAny<TemplateContext>(),
+            It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new TaskExecutionResult { Success = true });
+
+        var result = await _orchestrator.ExecuteAsync(workflow, tasks, new Dictionary<string, object>(), CancellationToken.None);
+
+        result.Success.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_HttpTaskWithInputResolutionError_FailsTask()
+    {
+        // Target: HTTP input resolution error (lines 396-407)
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep
+                    {
+                        Id = "task-1",
+                        TaskRef = "ref-1",
+                        Input = new Dictionary<string, string> { ["data"] = "{{invalid.path}}" }
+                    }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["ref-1"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } }
+        };
+
+        var graph = new ExecutionGraph();
+        graph.AddNode("task-1");
+
+        _graphBuilderMock.Setup(x => x.Build(workflow))
+            .Returns(new ExecutionGraphResult { IsValid = true, Graph = graph });
+
+        _templateResolverMock.Setup(r => r.ResolveAsync(It.IsAny<string>(), It.IsAny<TemplateContext>()))
+            .ThrowsAsync(new TemplateResolutionException("Not found", "{{invalid.path}}"));
+
+        var result = await _orchestrator.ExecuteAsync(workflow, tasks, new Dictionary<string, object>(), CancellationToken.None);
+
+        result.Success.Should().BeFalse();
+        result.TaskResults["task-1"].Errors.Should().Contain(e => e.Contains("Failed to resolve input"));
+    }
+
+    #endregion
+
+    #region Mutation Killing Tests - Condition Skip
+
+    [Fact]
+    public async Task ExecuteAsync_ConditionEvaluatesToFalse_TaskSkipped()
+    {
+        // Target: Condition skip path (lines 221-234)
+        var conditionEvaluatorMock = new Mock<IConditionEvaluator>();
+        conditionEvaluatorMock.Setup(e => e.EvaluateAsync(It.IsAny<string>(), It.IsAny<TemplateContext>()))
+            .ReturnsAsync(new ConditionResult
+            {
+                ShouldExecute = false,
+                EvaluatedExpression = "input.enabled == true"
+            });
+
+        var orchestrator = new WorkflowOrchestrator(
+            _graphBuilderMock.Object,
+            _taskExecutorMock.Object,
+            _templateResolverMock.Object,
+            _responseStorageMock.Object,
+            conditionEvaluator: conditionEvaluatorMock.Object);
+
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep
+                    {
+                        Id = "task-1",
+                        TaskRef = "ref-1",
+                        Condition = new ConditionSpec { If = "{{input.enabled}} == true" }
+                    }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["ref-1"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } }
+        };
+
+        var graph = new ExecutionGraph();
+        graph.AddNode("task-1");
+
+        _graphBuilderMock.Setup(x => x.Build(workflow))
+            .Returns(new ExecutionGraphResult { IsValid = true, Graph = graph });
+
+        var result = await orchestrator.ExecuteAsync(workflow, tasks, new Dictionary<string, object>(), CancellationToken.None);
+
+        result.Success.Should().BeTrue();
+        result.TaskResults["task-1"].WasSkipped.Should().BeTrue();
+        result.TaskResults["task-1"].SkipReason.Should().Contain("evaluated to false");
+    }
+
+    #endregion
+
+    #region Mutation Killing Tests - Task Reference Not Found
+
+    [Fact]
+    public async Task ExecuteAsync_TaskRefNotFound_FailsTask()
+    {
+        // Target: Task reference not found path (lines 274-285)
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "task-1", TaskRef = "nonexistent-ref" }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            // Note: "nonexistent-ref" is NOT in the available tasks
+            ["some-other-ref"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } }
+        };
+
+        var graph = new ExecutionGraph();
+        graph.AddNode("task-1");
+
+        _graphBuilderMock.Setup(x => x.Build(workflow))
+            .Returns(new ExecutionGraphResult { IsValid = true, Graph = graph });
+
+        var result = await _orchestrator.ExecuteAsync(workflow, tasks, new Dictionary<string, object>(), CancellationToken.None);
+
+        result.Success.Should().BeFalse();
+        result.TaskResults["task-1"].Errors.Should().Contain(e => e.Contains("not found"));
+    }
+
+    #endregion
+
+    #region Mutation Killing Tests - Empty Workflow
+
+    [Fact]
+    public async Task ExecuteAsync_EmptyWorkflow_ReturnsSuccess()
+    {
+        // Target: Empty workflow path (lines 112-121)
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>() // Empty task list
+            }
+        };
+
+        var graph = new ExecutionGraph();
+
+        _graphBuilderMock.Setup(x => x.Build(workflow))
+            .Returns(new ExecutionGraphResult { IsValid = true, Graph = graph });
+
+        var result = await _orchestrator.ExecuteAsync(workflow, new Dictionary<string, WorkflowTaskResource>(), new Dictionary<string, object>(), CancellationToken.None);
+
+        result.Success.Should().BeTrue();
+        result.Output.Should().NotBeNull();
+    }
+
+    #endregion
+
+    #region Mutation Killing Tests - Constructor Validation
+
+    [Fact]
+    public void Constructor_WithZeroMaxConcurrentTasks_ThrowsArgumentException()
+    {
+        // Target: maxConcurrentTasks <= 0 check (lines 49-52)
+        var action = () => new WorkflowOrchestrator(
+            _graphBuilderMock.Object,
+            _taskExecutorMock.Object,
+            _templateResolverMock.Object,
+            _responseStorageMock.Object,
+            maxConcurrentTasks: 0);
+
+        action.Should().Throw<ArgumentException>()
+            .WithMessage("*maxConcurrentTasks*greater than 0*");
+    }
+
+    [Fact]
+    public void Constructor_WithNegativeMaxConcurrentTasks_ThrowsArgumentException()
+    {
+        // Target: maxConcurrentTasks <= 0 check (lines 49-52)
+        var action = () => new WorkflowOrchestrator(
+            _graphBuilderMock.Object,
+            _taskExecutorMock.Object,
+            _templateResolverMock.Object,
+            _responseStorageMock.Object,
+            maxConcurrentTasks: -5);
+
+        action.Should().Throw<ArgumentException>()
+            .WithMessage("*maxConcurrentTasks*greater than 0*");
+    }
+
+    [Fact]
+    public void Constructor_WithNullGraphBuilder_ThrowsArgumentNullException()
+    {
+        // Target: ArgumentNullException for graphBuilder (line 40)
+        var action = () => new WorkflowOrchestrator(
+            null!,
+            _taskExecutorMock.Object,
+            _templateResolverMock.Object,
+            _responseStorageMock.Object);
+
+        action.Should().Throw<ArgumentNullException>()
+            .WithParameterName("graphBuilder");
+    }
+
+    [Fact]
+    public void Constructor_WithNullHttpTaskExecutor_ThrowsArgumentNullException()
+    {
+        // Target: ArgumentNullException for httpTaskExecutor (line 41)
+        var action = () => new WorkflowOrchestrator(
+            _graphBuilderMock.Object,
+            null!,
+            _templateResolverMock.Object,
+            _responseStorageMock.Object);
+
+        action.Should().Throw<ArgumentNullException>()
+            .WithParameterName("httpTaskExecutor");
+    }
+
+    [Fact]
+    public void Constructor_WithNullTemplateResolver_ThrowsArgumentNullException()
+    {
+        // Target: ArgumentNullException for templateResolver (line 42)
+        var action = () => new WorkflowOrchestrator(
+            _graphBuilderMock.Object,
+            _taskExecutorMock.Object,
+            null!,
+            _responseStorageMock.Object);
+
+        action.Should().Throw<ArgumentNullException>()
+            .WithParameterName("templateResolver");
+    }
+
+    [Fact]
+    public void Constructor_WithNullResponseStorage_ThrowsArgumentNullException()
+    {
+        // Target: ArgumentNullException for responseStorage (line 43)
+        var action = () => new WorkflowOrchestrator(
+            _graphBuilderMock.Object,
+            _taskExecutorMock.Object,
+            _templateResolverMock.Object,
+            null!);
+
+        action.Should().Throw<ArgumentNullException>()
+            .WithParameterName("responseStorage");
+    }
+
+    #endregion
+
+    #region Mutation Killing Tests - Graph Build Failures
+
+    [Fact]
+    public async Task ExecuteAsync_GraphBuildInvalid_ReturnsErrors()
+    {
+        // Target: GraphResult invalid path (lines 89-98)
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "task-1", TaskRef = "ref-1" }
+                }
+            }
+        };
+
+        _graphBuilderMock.Setup(x => x.Build(workflow))
+            .Returns(new ExecutionGraphResult
+            {
+                IsValid = false,
+                Errors = new List<ValidationError>
+                {
+                    new ValidationError { Message = "Circular dependency detected" }
+                }
+            });
+
+        var result = await _orchestrator.ExecuteAsync(workflow, new Dictionary<string, WorkflowTaskResource>(), new Dictionary<string, object>(), CancellationToken.None);
+
+        result.Success.Should().BeFalse();
+        result.Errors.Should().Contain("Circular dependency detected");
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_GraphIsNull_ReturnsError()
+    {
+        // Target: Graph null check (lines 100-109)
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "task-1", TaskRef = "ref-1" }
+                }
+            }
+        };
+
+        _graphBuilderMock.Setup(x => x.Build(workflow))
+            .Returns(new ExecutionGraphResult { IsValid = true, Graph = null });
+
+        var result = await _orchestrator.ExecuteAsync(workflow, new Dictionary<string, WorkflowTaskResource>(), new Dictionary<string, object>(), CancellationToken.None);
+
+        result.Success.Should().BeFalse();
+        result.Errors.Should().Contain("Execution graph is null");
+    }
+
+    #endregion
 }

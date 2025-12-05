@@ -788,6 +788,367 @@ public class ConditionEvaluatorTests
 
     #endregion
 
+    #region Additional Mutation Killing Tests
+
+    [Fact]
+    public async Task EvaluateAsync_SbyteType_ShouldBeRecognizedAsNumeric()
+    {
+        // Target: sbyte in IsNumeric line 248
+        var expression = "{{input.a}} == {{input.b}}";
+        var context = CreateContext(new Dictionary<string, object>
+        {
+            ["a"] = (sbyte)42,
+            ["b"] = 42.0
+        });
+        var result = await _evaluator.EvaluateAsync(expression, context);
+        result.ShouldExecute.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_ByteType_ShouldBeRecognizedAsNumeric_Extended()
+    {
+        // Target: byte in IsNumeric line 248
+        var expression = "{{input.a}} == {{input.b}}";
+        var context = CreateContext(new Dictionary<string, object>
+        {
+            ["a"] = (byte)42,
+            ["b"] = 42.0
+        });
+        var result = await _evaluator.EvaluateAsync(expression, context);
+        result.ShouldExecute.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_ShortType_ShouldBeRecognizedAsNumeric()
+    {
+        // Target: short in IsNumeric line 248
+        var expression = "{{input.a}} == {{input.b}}";
+        var context = CreateContext(new Dictionary<string, object>
+        {
+            ["a"] = (short)42,
+            ["b"] = 42.0
+        });
+        var result = await _evaluator.EvaluateAsync(expression, context);
+        result.ShouldExecute.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_UshortType_ShouldBeRecognizedAsNumeric()
+    {
+        // Target: ushort in IsNumeric line 248
+        var expression = "{{input.a}} == {{input.b}}";
+        var context = CreateContext(new Dictionary<string, object>
+        {
+            ["a"] = (ushort)42,
+            ["b"] = 42.0
+        });
+        var result = await _evaluator.EvaluateAsync(expression, context);
+        result.ShouldExecute.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_UintType_ShouldBeRecognizedAsNumeric()
+    {
+        // Target: uint in IsNumeric line 248
+        var expression = "{{input.a}} == {{input.b}}";
+        var context = CreateContext(new Dictionary<string, object>
+        {
+            ["a"] = (uint)42,
+            ["b"] = 42.0
+        });
+        var result = await _evaluator.EvaluateAsync(expression, context);
+        result.ShouldExecute.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_LongType_ShouldBeRecognizedAsNumeric_Extended()
+    {
+        // Target: long in IsNumeric line 248
+        var expression = "{{input.a}} == {{input.b}}";
+        var context = CreateContext(new Dictionary<string, object>
+        {
+            ["a"] = 42L,
+            ["b"] = 42.0
+        });
+        var result = await _evaluator.EvaluateAsync(expression, context);
+        result.ShouldExecute.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_UlongType_ShouldBeRecognizedAsNumeric()
+    {
+        // Target: ulong in IsNumeric line 248
+        var expression = "{{input.a}} == {{input.b}}";
+        var context = CreateContext(new Dictionary<string, object>
+        {
+            ["a"] = (ulong)42,
+            ["b"] = 42.0
+        });
+        var result = await _evaluator.EvaluateAsync(expression, context);
+        result.ShouldExecute.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_NullEqualsNull_ReturnsTrue()
+    {
+        // Target: AreEqual null checks line 212
+        var expression = "null == null";
+        var context = CreateContext(new Dictionary<string, object>());
+        var result = await _evaluator.EvaluateAsync(expression, context);
+        result.ShouldExecute.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_NullEqualsNonNull_ReturnsFalse()
+    {
+        // Target: AreEqual null check line 213
+        var expression = "null == 42";
+        var context = CreateContext(new Dictionary<string, object>());
+        var result = await _evaluator.EvaluateAsync(expression, context);
+        result.ShouldExecute.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_NonNullEqualsNull_ReturnsFalse()
+    {
+        // Target: AreEqual null check line 213 (reverse order)
+        var expression = "42 == null";
+        var context = CreateContext(new Dictionary<string, object>());
+        var result = await _evaluator.EvaluateAsync(expression, context);
+        result.ShouldExecute.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_CompareNullWithOperator_ReturnsFailure()
+    {
+        // Target: CompareNumeric null check line 235-238
+        var expression = "null > 5";
+        var context = CreateContext(new Dictionary<string, object>());
+        var result = await _evaluator.EvaluateAsync(expression, context);
+        result.Error.Should().NotBeNull();
+        result.Error.Should().Contain("compare");
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_NullUppercase_RecognizedAsNull()
+    {
+        // Target: Case insensitive null check line 177
+        var expression = "NULL == null";
+        var context = CreateContext(new Dictionary<string, object>());
+        var result = await _evaluator.EvaluateAsync(expression, context);
+        result.ShouldExecute.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_TrueUppercase_RecognizedAsTrue()
+    {
+        // Target: Case insensitive true check line 183
+        var expression = "TRUE == true";
+        var context = CreateContext(new Dictionary<string, object>());
+        var result = await _evaluator.EvaluateAsync(expression, context);
+        result.ShouldExecute.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_FalseUppercase_RecognizedAsFalse()
+    {
+        // Target: Case insensitive false check line 187
+        var expression = "FALSE == false";
+        var context = CreateContext(new Dictionary<string, object>());
+        var result = await _evaluator.EvaluateAsync(expression, context);
+        result.ShouldExecute.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_DoubleQuotedString_ExtractsValue()
+    {
+        // Target: Double quote handling line 194
+        var expression = "\"hello\" == \"hello\"";
+        var context = CreateContext(new Dictionary<string, object>());
+        var result = await _evaluator.EvaluateAsync(expression, context);
+        result.ShouldExecute.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_SingleQuotedString_ExtractsValue()
+    {
+        // Target: Single quote handling line 193
+        var expression = "'world' == 'world'";
+        var context = CreateContext(new Dictionary<string, object>());
+        var result = await _evaluator.EvaluateAsync(expression, context);
+        result.ShouldExecute.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_NumericEpsilonComparison_HandlesFloatingPoint()
+    {
+        // Target: Epsilon comparison line 220 - 0.0001 threshold
+        var expression = "{{input.a}} == {{input.b}}";
+        var context = CreateContext(new Dictionary<string, object>
+        {
+            ["a"] = 1.00001,
+            ["b"] = 1.00002  // Difference < 0.0001
+        });
+        var result = await _evaluator.EvaluateAsync(expression, context);
+        result.ShouldExecute.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_NumericDifferenceAboveEpsilon_ReturnsFalse()
+    {
+        // Target: Epsilon comparison line 220 - difference > 0.0001
+        var expression = "{{input.a}} == {{input.b}}";
+        var context = CreateContext(new Dictionary<string, object>
+        {
+            ["a"] = 1.0,
+            ["b"] = 1.001  // Difference > 0.0001
+        });
+        var result = await _evaluator.EvaluateAsync(expression, context);
+        result.ShouldExecute.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_BooleanComparisonTrue_ReturnsTrue()
+    {
+        // Target: Boolean comparison line 224-227
+        var expression = "{{input.a}} == {{input.b}}";
+        var context = CreateContext(new Dictionary<string, object>
+        {
+            ["a"] = true,
+            ["b"] = true
+        });
+        var result = await _evaluator.EvaluateAsync(expression, context);
+        result.ShouldExecute.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_BooleanComparisonFalse_ReturnsFalse()
+    {
+        // Target: Boolean comparison line 224-227
+        var expression = "{{input.a}} == {{input.b}}";
+        var context = CreateContext(new Dictionary<string, object>
+        {
+            ["a"] = true,
+            ["b"] = false
+        });
+        var result = await _evaluator.EvaluateAsync(expression, context);
+        result.ShouldExecute.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_StringComparisonCaseSensitive_ReturnsFalse()
+    {
+        // Target: String Ordinal comparison line 230
+        var expression = "'Hello' == 'hello'";
+        var context = CreateContext(new Dictionary<string, object>());
+        var result = await _evaluator.EvaluateAsync(expression, context);
+        result.ShouldExecute.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_GreaterOrEqual_Boundary()
+    {
+        // Target: >= operator line 167 - exactly equal
+        var expression = "5 >= 5";
+        var context = CreateContext(new Dictionary<string, object>());
+        var result = await _evaluator.EvaluateAsync(expression, context);
+        result.ShouldExecute.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_LessOrEqual_Boundary()
+    {
+        // Target: <= operator line 168 - exactly equal
+        var expression = "5 <= 5";
+        var context = CreateContext(new Dictionary<string, object>());
+        var result = await _evaluator.EvaluateAsync(expression, context);
+        result.ShouldExecute.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_GreaterThan_Boundary()
+    {
+        // Target: > operator line 165 - not greater
+        var expression = "5 > 5";
+        var context = CreateContext(new Dictionary<string, object>());
+        var result = await _evaluator.EvaluateAsync(expression, context);
+        result.ShouldExecute.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_LessThan_Boundary()
+    {
+        // Target: < operator line 166 - not less
+        var expression = "5 < 5";
+        var context = CreateContext(new Dictionary<string, object>());
+        var result = await _evaluator.EvaluateAsync(expression, context);
+        result.ShouldExecute.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_InvalidExpression_ReturnsFailure()
+    {
+        // Target: Invalid expression throw line 151
+        var expression = "not_a_boolean_value";
+        var context = CreateContext(new Dictionary<string, object>());
+        var result = await _evaluator.EvaluateAsync(expression, context);
+        result.Error.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_BooleanParseFalse_ReturnsFalse()
+    {
+        // Target: Boolean parse line 146-148
+        var expression = "false";
+        var context = CreateContext(new Dictionary<string, object>());
+        var result = await _evaluator.EvaluateAsync(expression, context);
+        result.ShouldExecute.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_BooleanParseTrue_ReturnsTrue()
+    {
+        // Target: Boolean parse line 146-148
+        var expression = "true";
+        var context = CreateContext(new Dictionary<string, object>());
+        var result = await _evaluator.EvaluateAsync(expression, context);
+        result.ShouldExecute.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_UnresolvedTemplate_ReturnsFailure()
+    {
+        // Target: Template unresolved throw line 85
+        var expression = "{{input.missing}} == 5";
+        var context = CreateContext(new Dictionary<string, object>());
+        var result = await _evaluator.EvaluateAsync(expression, context);
+        result.Error.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_ExpressionResultTrue_IncludesResolvedExpression()
+    {
+        // Target: ConditionResult.Execute with resolved expression line 58
+        var expression = "{{input.x}} == 5";
+        var context = CreateContext(new Dictionary<string, object> { ["x"] = 5 });
+        var result = await _evaluator.EvaluateAsync(expression, context);
+        result.ShouldExecute.Should().BeTrue();
+        result.EvaluatedExpression.Should().Contain("5 == 5");
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_ExpressionResultFalse_IncludesResolvedExpression()
+    {
+        // Target: ConditionResult.Skip with resolved expression line 59
+        var expression = "{{input.x}} == 10";
+        var context = CreateContext(new Dictionary<string, object> { ["x"] = 5 });
+        var result = await _evaluator.EvaluateAsync(expression, context);
+        result.ShouldExecute.Should().BeFalse();
+        result.EvaluatedExpression.Should().Contain("5 == 10");
+    }
+
+    #endregion
+
     #region Helper Methods
 
     private static TemplateContext CreateContext(Dictionary<string, object> input)

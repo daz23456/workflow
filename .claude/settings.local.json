@@ -30,7 +30,9 @@
       "Bash(npx vitest run components/dashboard/slowest-workflows-panel.test.tsx)",
       "Bash(node dist/cli.js import:*)",
       "Bash(/Users/darren/dev/workflow/scripts/generate-screenshot-manifest.sh:*)",
-      "Bash(npx create-next-app:*)"
+      "Bash(npx create-next-app:*)",
+      "Bash(xxd:*)",
+      "Bash(dotnet ef database update:*)"
     ],
     "deny": [],
     "ask": []

@@ -505,6 +505,45 @@ Then: "Read CLAUDE.md and the state file. Continue Stage X.X."`}</CodeBlock>
                 focused on <em>what&apos;s relevant now</em>, while the archive preserves the full history.
               </p>
             </div>
+
+            <div className="bg-gradient-to-r from-cyan-900/20 to-blue-900/20 rounded-xl border border-cyan-700/30 p-4">
+              <h4 className="font-semibold text-cyan-400 mb-2">💡 Separate Stage Plans for Complex Work</h4>
+              <p className="text-gray-400 text-sm mb-3">
+                Not everything has to live in CLAUDE.md! For complex stages, create a separate stage plan file
+                that Claude can reference. This keeps your main spec clean while providing deep detail when needed.
+              </p>
+              <CodeBlock title="Example: stage-plans/STAGE_5_PLAN.md">{`# Stage 5: Authentication System - Detailed Plan
+
+## Overview
+This stage implements OAuth2 + JWT authentication.
+
+## Technical Design
+[Detailed architecture decisions, diagrams, etc.]
+
+## Implementation Steps
+1. Token service with refresh handling
+2. OAuth2 provider integration (Google, GitHub)
+3. Session management
+4. Rate limiting on auth endpoints
+
+## Test Scenarios
+- Happy path flows
+- Token expiry handling
+- Concurrent session limits
+- Attack vectors to test against
+
+## Open Questions
+- Redis vs in-memory for session store?
+- Token expiry: 15min or 1hr?`}</CodeBlock>
+              <p className="text-gray-400 text-sm mt-3">
+                <strong className="text-white">When to use:</strong> Stages with complex architecture decisions,
+                multiple sub-tasks, or when you want to preserve detailed planning notes that would clutter CLAUDE.md.
+              </p>
+              <p className="text-gray-400 text-sm mt-2">
+                <strong className="text-cyan-400">Reference it:</strong> In CLAUDE.md, just add{' '}
+                <code className="bg-gray-800 px-1 rounded">See stage-plans/STAGE_5_PLAN.md for detailed design</code>
+              </p>
+            </div>
           </div>
         </Section>
 

@@ -286,7 +286,7 @@ THE WORKFLOW:
     ],
     tips: [
       'Setup takes 5-10 min - this is a ONE-TIME cost for any project',
-      'If gates fail, FIX THE ISSUES - don\'t skip gates',
+      'If gates fail, ask Claude to fix the issues - don\'t skip gates',
       'The proof file and git tag ARE the evidence of completion',
       'Notice: Claude follows the CLAUDE.md constraints without you repeating them',
       'NEXT STEP: For real projects, create your own CLAUDE.md with your tech stack, constraints, and stage roadmap',

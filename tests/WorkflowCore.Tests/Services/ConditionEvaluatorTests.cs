@@ -533,6 +533,261 @@ public class ConditionEvaluatorTests
 
     #endregion
 
+    #region Mutation Testing - Kill Surviving Mutants
+
+    [Fact]
+    public async Task EvaluateAsync_InvalidExpression_ErrorShouldContainExpression()
+    {
+        // Arrange - Kill mutant: line 151 string mutation (empty error message)
+        var expression = "some_invalid_expression_without_operators";
+        var context = CreateContext(new Dictionary<string, object>());
+
+        // Act
+        var result = await _evaluator.EvaluateAsync(expression, context);
+
+        // Assert - error message must contain the invalid expression
+        result.Error.Should().Contain("some_invalid_expression_without_operators");
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_LessThan_WhenEqual_ShouldReturnFalse()
+    {
+        // Arrange - Kill mutant: line 165 equality mutation (< 0 changed to <= 0)
+        var expression = "{{input.amount}} < 100";
+        var context = CreateContext(new Dictionary<string, object> { ["amount"] = 100 });
+
+        // Act
+        var result = await _evaluator.EvaluateAsync(expression, context);
+
+        // Assert - equal values should return FALSE for less-than
+        result.ShouldExecute.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_ExplicitNullLiteral_ShouldBeRecognized()
+    {
+        // Arrange - Kill mutant: line 177 string mutation ("null" to "")
+        var expression = "null == null";
+        var context = CreateContext(new Dictionary<string, object>());
+
+        // Act
+        var result = await _evaluator.EvaluateAsync(expression, context);
+
+        // Assert - both nulls should be equal
+        result.ShouldExecute.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_ExplicitFalseLiteral_ShouldBeRecognized()
+    {
+        // Arrange - Kill mutant: line 187 string mutation ("false" to "")
+        var expression = "false == false";
+        var context = CreateContext(new Dictionary<string, object>());
+
+        // Act
+        var result = await _evaluator.EvaluateAsync(expression, context);
+
+        // Assert - false == false should be true
+        result.ShouldExecute.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_MismatchedSingleQuotes_ShouldNotBeStripped()
+    {
+        // Arrange - Kill mutant: line 193 logical mutation (&& to ||) for single quotes
+        // A string starting with ' but not ending with ' should NOT have quotes stripped
+        var expression = "{{input.value}} == \"'hello\"";
+        var context = CreateContext(new Dictionary<string, object> { ["value"] = "'hello" });
+
+        // Act
+        var result = await _evaluator.EvaluateAsync(expression, context);
+
+        // Assert - should match with the quote included
+        result.ShouldExecute.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_MismatchedDoubleQuotes_ShouldNotBeStripped()
+    {
+        // Arrange - Kill mutant: line 194 logical mutation (&& to ||) for double quotes
+        // Value starts with " but doesn't end with " - quotes should NOT be stripped
+        var expression = "{{input.value}} == '\"hello'";
+        var context = CreateContext(new Dictionary<string, object> { ["value"] = "\"hello" });
+
+        // Act
+        var result = await _evaluator.EvaluateAsync(expression, context);
+
+        // Assert - should match with the quote included
+        result.ShouldExecute.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_NumericWithStringComparison_ShouldUseStringComparison()
+    {
+        // Arrange - Kill mutant: line 216 logical mutation (&& to ||)
+        // One value is numeric, the other is string - should fall through to string comparison
+        var expression = "{{input.num}} == {{input.str}}";
+        var context = CreateContext(new Dictionary<string, object>
+        {
+            ["num"] = 42,
+            ["str"] = "42"
+        });
+
+        // Act
+        var result = await _evaluator.EvaluateAsync(expression, context);
+
+        // Assert - numeric 42 and string "42" should compare as equal via string comparison
+        result.ShouldExecute.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_NumbersExactlyEpsilonApart_ShouldBeEqual()
+    {
+        // Arrange - Kill mutant: line 220 equality mutation (< 0.0001 to <= 0.0001)
+        // Two numbers exactly 0.0001 apart should be considered equal
+        var expression = "{{input.a}} == {{input.b}}";
+        var context = CreateContext(new Dictionary<string, object>
+        {
+            ["a"] = 1.0000,
+            ["b"] = 1.00009 // Just under epsilon apart
+        });
+
+        // Act
+        var result = await _evaluator.EvaluateAsync(expression, context);
+
+        // Assert - should be equal (within epsilon)
+        result.ShouldExecute.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_NumbersJustOverEpsilonApart_ShouldNotBeEqual()
+    {
+        // Arrange - Kill mutant: line 220 - verify boundary
+        var expression = "{{input.a}} == {{input.b}}";
+        var context = CreateContext(new Dictionary<string, object>
+        {
+            ["a"] = 1.0,
+            ["b"] = 1.0002 // Clearly over epsilon apart
+        });
+
+        // Act
+        var result = await _evaluator.EvaluateAsync(expression, context);
+
+        // Assert - should NOT be equal (beyond epsilon)
+        result.ShouldExecute.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_OneNullOneNotNull_ShouldNotBeEqual()
+    {
+        // Arrange - Kill mutant: line 235 logical mutation (|| to &&)
+        var expression = "{{input.a}} == {{input.b}}";
+        var context = CreateContext(new Dictionary<string, object>
+        {
+            ["a"] = null!,
+            ["b"] = "not null"
+        });
+
+        // Act
+        var result = await _evaluator.EvaluateAsync(expression, context);
+
+        // Assert - null != "not null"
+        result.ShouldExecute.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_IntegerTypes_ShouldBeRecognizedAsNumeric()
+    {
+        // Arrange - Kill mutants: line 248 IsNumeric type checks
+        // Test various integer types to ensure they're recognized as numeric
+        var expression = "{{input.a}} == {{input.b}}";
+        var context = CreateContext(new Dictionary<string, object>
+        {
+            ["a"] = (short)42,
+            ["b"] = 42.0
+        });
+
+        // Act
+        var result = await _evaluator.EvaluateAsync(expression, context);
+
+        // Assert - short 42 should equal double 42.0
+        result.ShouldExecute.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_ByteType_ShouldBeRecognizedAsNumeric()
+    {
+        // Arrange - Kill mutants: line 248 byte type check
+        var expression = "{{input.a}} == {{input.b}}";
+        var context = CreateContext(new Dictionary<string, object>
+        {
+            ["a"] = (byte)42,
+            ["b"] = 42.0
+        });
+
+        // Act
+        var result = await _evaluator.EvaluateAsync(expression, context);
+
+        // Assert
+        result.ShouldExecute.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_LongType_ShouldBeRecognizedAsNumeric()
+    {
+        // Arrange - Kill mutants: line 248 long type check
+        var expression = "{{input.a}} == {{input.b}}";
+        var context = CreateContext(new Dictionary<string, object>
+        {
+            ["a"] = 42L,
+            ["b"] = 42.0
+        });
+
+        // Act
+        var result = await _evaluator.EvaluateAsync(expression, context);
+
+        // Assert
+        result.ShouldExecute.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_FloatType_ShouldBeRecognizedAsNumeric()
+    {
+        // Arrange - Kill mutants: line 248 float type check
+        var expression = "{{input.a}} == {{input.b}}";
+        var context = CreateContext(new Dictionary<string, object>
+        {
+            ["a"] = 42.0f,
+            ["b"] = 42.0
+        });
+
+        // Act
+        var result = await _evaluator.EvaluateAsync(expression, context);
+
+        // Assert
+        result.ShouldExecute.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_DecimalType_ShouldBeRecognizedAsNumeric()
+    {
+        // Arrange - Kill mutants: line 248 decimal type check
+        var expression = "{{input.a}} == {{input.b}}";
+        var context = CreateContext(new Dictionary<string, object>
+        {
+            ["a"] = 42m,
+            ["b"] = 42.0
+        });
+
+        // Act
+        var result = await _evaluator.EvaluateAsync(expression, context);
+
+        // Assert
+        result.ShouldExecute.Should().BeTrue();
+    }
+
+    #endregion
+
     #region Helper Methods
 
     private static TemplateContext CreateContext(Dictionary<string, object> input)

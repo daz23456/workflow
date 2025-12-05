@@ -596,4 +596,266 @@ public class TemplateResolverTests
     }
 
     #endregion
+
+    #region Mutation Testing - Kill Surviving Mutants
+
+    [Fact]
+    public async Task ResolveAsync_InvalidExpression_ErrorContainsExpression()
+    {
+        // Line 39-43: String mutations in error message - verify content
+        var template = "{{singlepart}}";
+        var context = new TemplateContext();
+
+        var ex = await Assert.ThrowsAsync<TemplateResolutionException>(
+            async () => await _resolver.ResolveAsync(template, context));
+
+        ex.Message.Should().Contain("singlepart");
+        ex.Message.Should().Contain("Invalid template expression");
+        ex.Message.Should().Contain("2 parts");
+    }
+
+    [Fact]
+    public async Task ResolveAsync_InputPath_JoinsPartsCorrectly()
+    {
+        // Line 50: string.Join mutation - verify nested path works
+        var template = "{{input.level1.level2.level3}}";
+        var context = new TemplateContext
+        {
+            Input = new Dictionary<string, object>
+            {
+                ["level1"] = new Dictionary<string, object>
+                {
+                    ["level2"] = new Dictionary<string, object>
+                    {
+                        ["level3"] = "deep-value"
+                    }
+                }
+            }
+        };
+
+        var result = await _resolver.ResolveAsync(template, context);
+        result.Should().Be("deep-value");
+    }
+
+    [Fact]
+    public async Task ResolveAsync_TasksWithInvalidFormat_RequiresOutputKeyword()
+    {
+        // Line 55: Logical mutation (length >= 3 && parts[2] == "output")
+        // Template "tasks.taskId.notOutput.field" should fail
+        var template = "{{tasks.myTask.notOutput.field}}";
+        var context = new TemplateContext();
+
+        var ex = await Assert.ThrowsAsync<TemplateResolutionException>(
+            async () => await _resolver.ResolveAsync(template, context));
+
+        ex.Message.Should().Contain("Unknown template expression type");
+    }
+
+    [Fact]
+    public async Task ResolveAsync_TasksWithOnlyTwoParts_ShouldFail()
+    {
+        // Line 55: parts.Length >= 3 check
+        var template = "{{tasks.myTask}}";
+        var context = new TemplateContext();
+
+        var ex = await Assert.ThrowsAsync<TemplateResolutionException>(
+            async () => await _resolver.ResolveAsync(template, context));
+
+        ex.Message.Should().Contain("Unknown template expression type");
+    }
+
+    [Fact]
+    public async Task ResolveAsync_TaskNotFound_ErrorContainsTaskId()
+    {
+        // Line 62-70: String mutations in task not found error
+        var template = "{{tasks.missing-task.output.value}}";
+        var context = new TemplateContext();
+        context.TaskOutputs["other-task"] = new Dictionary<string, object> { ["x"] = 1 };
+
+        var ex = await Assert.ThrowsAsync<TemplateResolutionException>(
+            async () => await _resolver.ResolveAsync(template, context));
+
+        ex.Message.Should().Contain("missing-task");
+        ex.Message.Should().Contain("not found");
+        ex.Message.Should().Contain("other-task"); // Available tasks mentioned
+    }
+
+    [Fact]
+    public async Task ResolveAsync_TaskNotFound_NoAvailableTasks_SaysNone()
+    {
+        // Line 64: When no tasks available, should say "none"
+        var template = "{{tasks.missing.output.value}}";
+        var context = new TemplateContext();
+
+        var ex = await Assert.ThrowsAsync<TemplateResolutionException>(
+            async () => await _resolver.ResolveAsync(template, context));
+
+        ex.Message.Should().Contain("none");
+    }
+
+    [Fact]
+    public async Task ResolveAsync_UnknownPrefix_ErrorContainsValidPrefixes()
+    {
+        // Line 85-88: String mutations in unknown type error
+        var template = "{{unknown.something.value}}";
+        var context = new TemplateContext();
+
+        var ex = await Assert.ThrowsAsync<TemplateResolutionException>(
+            async () => await _resolver.ResolveAsync(template, context));
+
+        ex.Message.Should().Contain("unknown");
+        ex.Message.Should().Contain("input");
+        ex.Message.Should().Contain("tasks");
+        ex.Message.Should().Contain("forEach");
+    }
+
+    [Fact]
+    public async Task ResolveAsync_ForEachParentOutsideNested_ErrorMentionsParent()
+    {
+        // Line 119-120: $parent error message
+        var template = "{{forEach.$parent.item}}";
+        var context = new TemplateContext
+        {
+            ForEach = new ForEachContext
+            {
+                ItemVar = "item",
+                CurrentItem = "value",
+                Index = 0,
+                Parent = null // No parent
+            }
+        };
+
+        var ex = await Assert.ThrowsAsync<TemplateResolutionException>(
+            async () => await _resolver.ResolveAsync(template, context));
+
+        ex.Message.Should().Contain("$parent");
+        ex.Message.Should().Contain("nested");
+    }
+
+    [Fact]
+    public async Task ResolveAsync_ForEachRootNavigation_Works()
+    {
+        // Line 141: $root navigation
+        var template = "{{forEach.$root.item}}";
+        var rootContext = new ForEachContext
+        {
+            ItemVar = "item",
+            CurrentItem = "root-value",
+            Index = 0,
+            Parent = null
+        };
+        var nestedContext = new ForEachContext
+        {
+            ItemVar = "nested",
+            CurrentItem = "nested-value",
+            Index = 0,
+            Parent = rootContext
+        };
+        var context = new TemplateContext { ForEach = nestedContext };
+
+        var result = await _resolver.ResolveAsync(template, context);
+        result.Should().Be("root-value");
+    }
+
+    [Fact]
+    public async Task ResolveAsync_ForEachItemPath_JoinsCorrectly()
+    {
+        // Line 161: string.Join for item path
+        var template = "{{forEach.order.customer.name}}";
+        var context = new TemplateContext
+        {
+            ForEach = new ForEachContext
+            {
+                ItemVar = "order",
+                CurrentItem = new Dictionary<string, object>
+                {
+                    ["customer"] = new Dictionary<string, object>
+                    {
+                        ["name"] = "John"
+                    }
+                },
+                Index = 0
+            }
+        };
+
+        var result = await _resolver.ResolveAsync(template, context);
+        result.Should().Be("John");
+    }
+
+    [Fact]
+    public async Task ResolveAsync_FieldNotFound_ErrorContainsFieldName()
+    {
+        // Line 286-292: Field not found error messages
+        var template = "{{input.missing}}";
+        var context = new TemplateContext
+        {
+            Input = new Dictionary<string, object>
+            {
+                ["existing"] = "value"
+            }
+        };
+
+        var ex = await Assert.ThrowsAsync<TemplateResolutionException>(
+            async () => await _resolver.ResolveAsync(template, context));
+
+        ex.Message.Should().Contain("missing");
+        ex.Message.Should().Contain("existing"); // Available field
+    }
+
+    [Fact]
+    public async Task ResolveAsync_FieldNotFound_EmptyObject_SaysEmpty()
+    {
+        // Line 288: empty object case
+        var template = "{{input.anything}}";
+        var context = new TemplateContext
+        {
+            Input = new Dictionary<string, object>()
+        };
+
+        var ex = await Assert.ThrowsAsync<TemplateResolutionException>(
+            async () => await _resolver.ResolveAsync(template, context));
+
+        ex.Message.Should().Contain("empty");
+    }
+
+    [Fact]
+    public async Task ResolveAsync_UnknownForEachProperty_ErrorContainsItemVar()
+    {
+        // Line 166-170: Unknown forEach property error
+        var template = "{{forEach.wrongVar.something}}";
+        var context = new TemplateContext
+        {
+            ForEach = new ForEachContext
+            {
+                ItemVar = "correctVar",
+                CurrentItem = "value",
+                Index = 0
+            }
+        };
+
+        var ex = await Assert.ThrowsAsync<TemplateResolutionException>(
+            async () => await _resolver.ResolveAsync(template, context));
+
+        ex.Message.Should().Contain("wrongVar");
+        ex.Message.Should().Contain("correctVar"); // Suggestion
+        ex.Message.Should().Contain("index");
+        ex.Message.Should().Contain("$parent");
+        ex.Message.Should().Contain("$root");
+    }
+
+    [Fact]
+    public async Task ResolveAsync_ForEachOutsideLoop_ErrorMentionsForEach()
+    {
+        // Line 97-101: forEach used outside loop
+        var template = "{{forEach.item}}";
+        var context = new TemplateContext { ForEach = null };
+
+        var ex = await Assert.ThrowsAsync<TemplateResolutionException>(
+            async () => await _resolver.ResolveAsync(template, context));
+
+        ex.Message.Should().Contain("forEach");
+        ex.Message.Should().Contain("outside");
+    }
+
+    #endregion
 }

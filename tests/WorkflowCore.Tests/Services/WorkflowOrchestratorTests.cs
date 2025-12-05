@@ -1918,4 +1918,93 @@ spec:
             $"First ({taskFirstId}) completed at {firstResult.CompletedAt:HH:mm:ss.ffffff}, " +
             $"but second ({taskSecondId}) started at {secondResult.StartedAt:HH:mm:ss.ffffff}");
     }
+
+    #region Mutation Testing - Kill Surviving Mutants
+
+    [Fact]
+    public void Constructor_NullGraphBuilder_ShouldThrow()
+    {
+        // Line 40: null coalescing mutation
+        var act = () => new WorkflowOrchestrator(
+            null!, // graphBuilder
+            _taskExecutorMock.Object,
+            _templateResolverMock.Object,
+            _responseStorageMock.Object);
+
+        act.Should().Throw<ArgumentNullException>()
+            .Which.ParamName.Should().Be("graphBuilder");
+    }
+
+    [Fact]
+    public void Constructor_NullHttpTaskExecutor_ShouldThrow()
+    {
+        // Line 41: null coalescing mutation
+        var act = () => new WorkflowOrchestrator(
+            _graphBuilderMock.Object,
+            null!, // httpTaskExecutor
+            _templateResolverMock.Object,
+            _responseStorageMock.Object);
+
+        act.Should().Throw<ArgumentNullException>()
+            .Which.ParamName.Should().Be("httpTaskExecutor");
+    }
+
+    [Fact]
+    public void Constructor_NullTemplateResolver_ShouldThrow()
+    {
+        // Line 42: null coalescing mutation
+        var act = () => new WorkflowOrchestrator(
+            _graphBuilderMock.Object,
+            _taskExecutorMock.Object,
+            null!, // templateResolver
+            _responseStorageMock.Object);
+
+        act.Should().Throw<ArgumentNullException>()
+            .Which.ParamName.Should().Be("templateResolver");
+    }
+
+    [Fact]
+    public void Constructor_NullResponseStorage_ShouldThrow()
+    {
+        // Line 43: null coalescing mutation
+        var act = () => new WorkflowOrchestrator(
+            _graphBuilderMock.Object,
+            _taskExecutorMock.Object,
+            _templateResolverMock.Object,
+            null!); // responseStorage
+
+        act.Should().Throw<ArgumentNullException>()
+            .Which.ParamName.Should().Be("responseStorage");
+    }
+
+    [Fact]
+    public void Constructor_ZeroMaxConcurrentTasks_ShouldThrow()
+    {
+        // Line 49: maxConcurrentTasks validation
+        var act = () => new WorkflowOrchestrator(
+            _graphBuilderMock.Object,
+            _taskExecutorMock.Object,
+            _templateResolverMock.Object,
+            _responseStorageMock.Object,
+            maxConcurrentTasks: 0);
+
+        act.Should().Throw<ArgumentException>()
+            .Which.ParamName.Should().Be("maxConcurrentTasks");
+    }
+
+    [Fact]
+    public void Constructor_NegativeMaxConcurrentTasks_ShouldThrow()
+    {
+        var act = () => new WorkflowOrchestrator(
+            _graphBuilderMock.Object,
+            _taskExecutorMock.Object,
+            _templateResolverMock.Object,
+            _responseStorageMock.Object,
+            maxConcurrentTasks: -1);
+
+        act.Should().Throw<ArgumentException>()
+            .Which.ParamName.Should().Be("maxConcurrentTasks");
+    }
+
+    #endregion
 }

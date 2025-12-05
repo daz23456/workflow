@@ -11,7 +11,12 @@
     },
     "concurrency": 4,
     "mutate": [
-      "**/Services/**/*.cs",
+      "**/Services/WorkflowOrchestrator.cs",
+      "**/Services/TemplateResolver.cs",
+      "**/Services/WorkflowValidator.cs",
+      "**/Services/ConditionEvaluator.cs",
+      "**/Services/SwitchEvaluator.cs",
+      "**/Services/ForEachExecutor.cs",
       "!**/obj/**",
       "!**/bin/**"
     ]

@@ -663,6 +663,225 @@ public class ForEachExecutorTests
 
     #endregion
 
+    #region Mutation Testing - Kill Surviving Mutants
+
+    [Fact]
+    public void Constructor_NullTemplateResolver_ShouldThrow()
+    {
+        // Arrange & Act
+        var act = () => new ForEachExecutor(null!);
+
+        // Assert - Line 17: null coalescing mutation
+        act.Should().Throw<ArgumentNullException>()
+            .Which.ParamName.Should().Be("templateResolver");
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_TasksAreActuallyAwaited_OutputsCollectedAfterAll()
+    {
+        // This test kills Line 85: removing Task.WhenAll
+        // If Task.WhenAll is removed, outputs won't be collected properly
+        var forEachSpec = new ForEachSpec
+        {
+            Items = "{{input.items}}",
+            ItemVar = "item"
+        };
+        var context = new TemplateContext
+        {
+            Input = new Dictionary<string, object>
+            {
+                ["items"] = new List<object> { 1, 2, 3, 4, 5 }
+            }
+        };
+
+        _mockTemplateResolver.Setup(r => r.ResolveAsync("{{input.items}}", context))
+            .ReturnsAsync("[1,2,3,4,5]");
+
+        var result = await _executor.ExecuteAsync(forEachSpec, context, async (itemContext, item, index) =>
+        {
+            await Task.Delay(50); // Simulate async work
+            return new TaskExecutionResult
+            {
+                Success = true,
+                Output = new Dictionary<string, object> { ["value"] = index }
+            };
+        });
+
+        // All 5 outputs must be collected - if Task.WhenAll is removed, this won't work
+        result.ItemCount.Should().Be(5);
+        result.Outputs.Should().HaveCount(5);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_FailedTaskWithOutput_OutputNotIncludedInOutputsList()
+    {
+        // This test kills Line 90: logical mutation && to ||
+        // A failed task should NOT have its output in Outputs even if Output is not null
+        var forEachSpec = new ForEachSpec
+        {
+            Items = "{{input.items}}",
+            ItemVar = "item"
+        };
+        var context = new TemplateContext
+        {
+            Input = new Dictionary<string, object>
+            {
+                ["items"] = new List<object> { 1, 2, 3 }
+            }
+        };
+
+        _mockTemplateResolver.Setup(r => r.ResolveAsync("{{input.items}}", context))
+            .ReturnsAsync("[1,2,3]");
+
+        var result = await _executor.ExecuteAsync(forEachSpec, context, async (itemContext, item, index) =>
+        {
+            return new TaskExecutionResult
+            {
+                Success = index != 1, // Second item fails
+                Output = new Dictionary<string, object> { ["index"] = index } // All have output
+            };
+        });
+
+        // Only successful tasks should have outputs in Outputs list
+        result.Outputs.Should().HaveCount(2); // indices 0 and 2, not 1
+        result.Outputs.Should().AllSatisfy(o =>
+        {
+            var idx = Convert.ToInt32(o["index"]);
+            idx.Should().NotBe(1, "failed task's output should not be included");
+        });
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ItemResultsHaveNonZeroDurationMs()
+    {
+        // This test kills Line 151: stopwatch.Stop() removal
+        var forEachSpec = new ForEachSpec
+        {
+            Items = "{{input.items}}",
+            ItemVar = "item"
+        };
+        var context = new TemplateContext
+        {
+            Input = new Dictionary<string, object>
+            {
+                ["items"] = new List<object> { 1 }
+            }
+        };
+
+        _mockTemplateResolver.Setup(r => r.ResolveAsync("{{input.items}}", context))
+            .ReturnsAsync("[1]");
+
+        var result = await _executor.ExecuteAsync(forEachSpec, context, async (itemContext, item, index) =>
+        {
+            await Task.Delay(20); // Ensure measurable duration
+            return new TaskExecutionResult { Success = true };
+        });
+
+        // DurationMs must be recorded
+        result.ItemResults.Should().HaveCount(1);
+        result.ItemResults[0].DurationMs.Should().BeGreaterThan(0,
+            "stopwatch must be stopped and duration recorded");
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_MultipleErrors_AreJoinedWithSemicolon()
+    {
+        // This test kills Line 155: string mutation to empty string
+        var forEachSpec = new ForEachSpec
+        {
+            Items = "{{input.items}}",
+            ItemVar = "item"
+        };
+        var context = new TemplateContext
+        {
+            Input = new Dictionary<string, object>
+            {
+                ["items"] = new List<object> { 1 }
+            }
+        };
+
+        _mockTemplateResolver.Setup(r => r.ResolveAsync("{{input.items}}", context))
+            .ReturnsAsync("[1]");
+
+        var result = await _executor.ExecuteAsync(forEachSpec, context, async (itemContext, item, index) =>
+        {
+            return new TaskExecutionResult
+            {
+                Success = false,
+                Errors = new List<string> { "Error A", "Error B", "Error C" }
+            };
+        });
+
+        // Error message should contain all errors joined with semicolon
+        result.ItemResults.Should().HaveCount(1);
+        result.ItemResults[0].Error.Should().Be("Error A; Error B; Error C");
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_SuccessfulTaskWithNullOutput_NotIncludedInOutputs()
+    {
+        // This ensures both conditions (Success AND Output != null) are verified
+        var forEachSpec = new ForEachSpec
+        {
+            Items = "{{input.items}}",
+            ItemVar = "item"
+        };
+        var context = new TemplateContext
+        {
+            Input = new Dictionary<string, object>
+            {
+                ["items"] = new List<object> { 1, 2 }
+            }
+        };
+
+        _mockTemplateResolver.Setup(r => r.ResolveAsync("{{input.items}}", context))
+            .ReturnsAsync("[1,2]");
+
+        var result = await _executor.ExecuteAsync(forEachSpec, context, async (itemContext, item, index) =>
+        {
+            return new TaskExecutionResult
+            {
+                Success = true,
+                Output = index == 0 ? new Dictionary<string, object> { ["data"] = "value" } : null
+            };
+        });
+
+        // Only the task with non-null output should be in Outputs
+        result.Outputs.Should().HaveCount(1);
+        result.SuccessCount.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_TaskThrowsException_CapturesErrorMessage()
+    {
+        // This tests the catch block around task execution
+        var forEachSpec = new ForEachSpec
+        {
+            Items = "{{input.items}}",
+            ItemVar = "item"
+        };
+        var context = new TemplateContext
+        {
+            Input = new Dictionary<string, object>
+            {
+                ["items"] = new List<object> { 1 }
+            }
+        };
+
+        _mockTemplateResolver.Setup(r => r.ResolveAsync("{{input.items}}", context))
+            .ReturnsAsync("[1]");
+
+        var result = await _executor.ExecuteAsync(forEachSpec, context, async (itemContext, item, index) =>
+        {
+            throw new InvalidOperationException("Task exploded!");
+        });
+
+        result.Success.Should().BeFalse();
+        result.ItemResults[0].Error.Should().Contain("Task exploded!");
+    }
+
+    #endregion
+
     // Helper method for simple test cases
     private Task<TaskExecutionResult> ExecuteTask(TemplateContext context, object? item, int index)
     {

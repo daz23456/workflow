@@ -403,6 +403,187 @@ public class SwitchEvaluatorTests
 
     #endregion
 
+    #region Mutation Testing - Kill Surviving Mutants
+
+    [Fact]
+    public void Constructor_NullTemplateResolver_ShouldThrow()
+    {
+        // Arrange & Act & Assert - Kill mutant: constructor null check
+        var act = () => new SwitchEvaluator(null!);
+        act.Should().Throw<ArgumentNullException>()
+            .Which.ParamName.Should().Be("templateResolver");
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_EmptyValueExpression_ShouldReturnSpecificError()
+    {
+        // Arrange - Kill mutant: line 30 string mutation for empty value error
+        var switchSpec = new SwitchSpec
+        {
+            Value = "   ", // Empty/whitespace
+            Cases = new List<SwitchCase>
+            {
+                new() { Match = "value", TaskRef = "handler" }
+            }
+        };
+        var context = CreateContext(new Dictionary<string, object>());
+
+        // Act
+        var result = await _evaluator.EvaluateAsync(switchSpec, context);
+
+        // Assert - error should mention "empty" or "value"
+        result.Matched.Should().BeFalse();
+        result.Error.Should().Contain("empty");
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_NoCases_ShouldReturnSpecificError()
+    {
+        // Arrange - Kill mutant: line 35 string mutation for no cases error
+        var switchSpec = new SwitchSpec
+        {
+            Value = "{{input.type}}",
+            Cases = null
+        };
+        var context = CreateContext(new Dictionary<string, object> { ["type"] = "value" });
+
+        // Act
+        var result = await _evaluator.EvaluateAsync(switchSpec, context);
+
+        // Assert - error should mention "cases"
+        result.Matched.Should().BeFalse();
+        result.Error.Should().Contain("cases");
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_NullSpec_ErrorShouldMentionNull()
+    {
+        // Arrange - Kill mutant: line 25 string mutation for null spec error
+        SwitchSpec? switchSpec = null;
+        var context = CreateContext(new Dictionary<string, object>());
+
+        // Act
+        var result = await _evaluator.EvaluateAsync(switchSpec, context);
+
+        // Assert
+        result.Error.Should().Contain("null");
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_LiteralValue_WithoutTemplate_ShouldWork()
+    {
+        // Arrange - Kill mutant: line 85 - test literal value (no template)
+        var switchSpec = new SwitchSpec
+        {
+            Value = "stripe", // No template, just literal value
+            Cases = new List<SwitchCase>
+            {
+                new() { Match = "stripe", TaskRef = "stripe-handler" },
+                new() { Match = "paypal", TaskRef = "paypal-handler" }
+            }
+        };
+        var context = CreateContext(new Dictionary<string, object>());
+
+        // Act
+        var result = await _evaluator.EvaluateAsync(switchSpec, context);
+
+        // Assert
+        result.Matched.Should().BeTrue();
+        result.TaskRef.Should().Be("stripe-handler");
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_EmptyEvaluatedValue_WithNonNullCase_ShouldNotMatch()
+    {
+        // Arrange - Kill mutant: line 98-100 null/empty value handling
+        var switchSpec = new SwitchSpec
+        {
+            Value = "{{input.emptyValue}}",
+            Cases = new List<SwitchCase>
+            {
+                new() { Match = "something", TaskRef = "handler" }
+            }
+        };
+        var context = CreateContext(new Dictionary<string, object> { ["emptyValue"] = "" });
+
+        // Act
+        var result = await _evaluator.EvaluateAsync(switchSpec, context);
+
+        // Assert - empty string should NOT match non-null case
+        result.Matched.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_EmptyString_MatchesNullCase()
+    {
+        // Arrange - Kill mutant: line 93 || operator for null case matching
+        var switchSpec = new SwitchSpec
+        {
+            Value = "{{input.emptyValue}}",
+            Cases = new List<SwitchCase>
+            {
+                new() { Match = "null", TaskRef = "null-handler" },
+                new() { Match = "value", TaskRef = "value-handler" }
+            }
+        };
+        var context = CreateContext(new Dictionary<string, object> { ["emptyValue"] = "" });
+
+        // Act
+        var result = await _evaluator.EvaluateAsync(switchSpec, context);
+
+        // Assert - empty string should match null case
+        result.Matched.Should().BeTrue();
+        result.TaskRef.Should().Be("null-handler");
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_NullLiteralStringValue_MatchesNullCase()
+    {
+        // Arrange - Kill mutant: line 94 for string "null" matching
+        var switchSpec = new SwitchSpec
+        {
+            Value = "{{input.nullString}}",
+            Cases = new List<SwitchCase>
+            {
+                new() { Match = "null", TaskRef = "null-handler" },
+                new() { Match = "value", TaskRef = "value-handler" }
+            }
+        };
+        var context = CreateContext(new Dictionary<string, object> { ["nullString"] = "null" });
+
+        // Act
+        var result = await _evaluator.EvaluateAsync(switchSpec, context);
+
+        // Assert - string "null" should match null case
+        result.Matched.Should().BeTrue();
+        result.TaskRef.Should().Be("null-handler");
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_Default_IncludesEvaluatedValue()
+    {
+        // Arrange - Kill mutant: line 55 for default evaluated value
+        var switchSpec = new SwitchSpec
+        {
+            Value = "{{input.method}}",
+            Cases = new List<SwitchCase>
+            {
+                new() { Match = "stripe", TaskRef = "stripe-handler" }
+            },
+            Default = new SwitchDefault { TaskRef = "default-handler" }
+        };
+        var context = CreateContext(new Dictionary<string, object> { ["method"] = "unknown_method" });
+
+        // Act
+        var result = await _evaluator.EvaluateAsync(switchSpec, context);
+
+        // Assert
+        result.IsDefault.Should().BeTrue();
+        result.EvaluatedValue.Should().Be("unknown_method");
+    }
+
+    #endregion
+
     #region Helper Methods
 
     private static TemplateContext CreateContext(Dictionary<string, object> input)

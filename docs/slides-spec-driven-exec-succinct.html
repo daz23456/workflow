@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Spec-Driven Development - Executive Summary (Brief)</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reset.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/black.css" />
+    <style>
+      :root {
+        --r-background-color: #0a0a0f;
+        --r-main-font: system-ui, -apple-system, sans-serif;
+        --r-heading-font: system-ui, -apple-system, sans-serif;
+        --r-main-color: #e0e0e0;
+        --r-heading-color: #fff;
+      }
+      .reveal .slides { text-align: left; }
+      .reveal .slides section { padding: 20px 40px; }
+      .reveal h1 { font-size: 1.8em; text-transform: none; font-weight: 600; }
+      .reveal h2 { font-size: 1.3em; text-transform: none; font-weight: 600; margin-bottom: 0.4em; }
+      .reveal p { font-size: 0.7em; margin: 0.3em 0; }
+      .reveal li { font-size: 0.65em; margin: 0.2em 0; }
+      .reveal section.center { text-align: center; }
+      .highlight-green { color: #51cf66; }
+      .highlight-red { color: #ff6b6b; }
+      .highlight-yellow { color: #ffd43b; }
+      .highlight-blue { color: #4dabf7; }
+      .metric-row {
+        display: flex;
+        justify-content: center;
+        gap: 1.2em;
+        margin: 0.8em 0;
+        flex-wrap: wrap;
+      }
+      .metric-card {
+        background: linear-gradient(135deg, #1a1a2e, #16213e);
+        border-radius: 12px;
+        padding: 0.8em 1.2em;
+        text-align: center;
+        min-width: 130px;
+      }
+      .metric-card.green { border: 2px solid #51cf66; }
+      .metric-card.red { border: 2px solid #ff6b6b; }
+      .metric-card.blue { border: 2px solid #4dabf7; }
+      .metric-number { font-size: 1.8em; font-weight: 700; }
+      .metric-number.green { color: #51cf66; }
+      .metric-number.red { color: #ff6b6b; }
+      .metric-number.blue { color: #4dabf7; }
+      .metric-label { font-size: 0.5em; color: #888; margin-top: 0.2em; }
+      .comparison-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1em;
+        margin: 0.5em 0;
+      }
+      .comparison-box {
+        padding: 0.6em;
+        border-radius: 8px;
+      }
+      .comparison-box h3 { font-size: 0.8em; margin: 0 0 0.3em 0; text-transform: none; }
+      .comparison-box ul { margin: 0.2em 0; padding-left: 1em; }
+      .comparison-box li { font-size: 0.55em; }
+      .before-box { background: rgba(255,107,107,0.15); border: 2px solid #ff6b6b; }
+      .before-box h3 { color: #ff6b6b; }
+      .after-box { background: rgba(81,207,102,0.15); border: 2px solid #51cf66; }
+      .after-box h3 { color: #51cf66; }
+      .pillar-row {
+        display: flex;
+        justify-content: center;
+        gap: 1em;
+        margin: 0.8em 0;
+      }
+      .pillar {
+        background: linear-gradient(135deg, #1a1a2e, #2d3748);
+        border-radius: 10px;
+        padding: 0.8em;
+        text-align: center;
+        min-width: 180px;
+        border-top: 4px solid;
+      }
+      .pillar h4 { font-size: 0.75em; margin: 0 0 0.3em 0; text-transform: none; }
+      .pillar p { font-size: 0.5em; color: #888; margin: 0; }
+      .pillar.blue { border-color: #4dabf7; }
+      .pillar.blue h4 { color: #4dabf7; }
+      .pillar.yellow { border-color: #ffd43b; }
+      .pillar.yellow h4 { color: #ffd43b; }
+      .pillar.green { border-color: #51cf66; }
+      .pillar.green h4 { color: #51cf66; }
+      .badge {
+        display: inline-block;
+        padding: 0.3em 0.7em;
+        border-radius: 20px;
+        font-size: 0.55em;
+        font-weight: 500;
+        margin: 0.2em;
+      }
+      .badge-green { background: #51cf66; color: #000; }
+      .badge-blue { background: #4dabf7; color: #000; }
+      .badge-purple { background: #b197fc; color: #000; }
+      .badge-yellow { background: #ffd43b; color: #000; }
+      .workflow-visual {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.5em;
+        margin: 0.8em 0;
+      }
+      .workflow-step {
+        background: linear-gradient(135deg, #1a1a2e, #16213e);
+        border-radius: 8px;
+        padding: 0.5em 1em;
+        text-align: center;
+      }
+      .workflow-step.blue { border: 2px solid #4dabf7; }
+      .workflow-step.yellow { border: 2px solid #ffd43b; }
+      .workflow-step.green { border: 2px solid #51cf66; }
+      .workflow-step h5 { font-size: 0.6em; margin: 0; }
+      .workflow-step p { font-size: 0.45em; color: #888; margin: 0.2em 0 0 0; }
+      .arrow { font-size: 1.5em; color: #666; }
+    </style>
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <!-- SLIDE 1: Title -->
+        <section class="center" data-background-gradient="linear-gradient(135deg, #0a0a0f, #1a1a2e)">
+          <h1>Spec-Driven Development<br/><span style="color: #4dabf7;">with Claude Code</span></h1>
+          <p style="font-size: 0.9em; color: #888; margin-top: 0.8em;">
+            5-Minute Executive Summary
+          </p>
+        </section>
+
+        <!-- SLIDE 2: The Problem -->
+        <section>
+          <h2>The Problem with AI Coding Today</h2>
+          <div class="comparison-grid">
+            <div class="comparison-box before-box">
+              <h3>Without Structure</h3>
+              <ul>
+                <li>"Almost done" for weeks</li>
+                <li>AI generates random solutions</li>
+                <li>No tests, no quality checks</li>
+                <li>Context lost on every session</li>
+                <li>No clear definition of "done"</li>
+              </ul>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: center;">
+              <div style="text-align: center;">
+                <p style="font-size: 0.7em; color: #888;">AI is powerful but needs</p>
+                <p style="font-size: 1em; color: #ffd43b; font-weight: bold;">constraints & context</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- SLIDE 3: The Solution -->
+        <section>
+          <h2>The Solution: Three Pillars</h2>
+          <div class="pillar-row">
+            <div class="pillar blue">
+              <h4>CLAUDE.md</h4>
+              <p>Single source of truth.<br/>AI reads constraints automatically.</p>
+            </div>
+            <div class="pillar yellow">
+              <h4>Stage Framework</h4>
+              <p>Structured workflow.<br/>BEFORE → DURING → AFTER</p>
+            </div>
+            <div class="pillar green">
+              <h4>Quality Gates</h4>
+              <p>8 mandatory checks.<br/>90%+ coverage enforced.</p>
+            </div>
+          </div>
+          <p style="text-align: center; margin-top: 0.8em; font-size: 0.7em; color: #888;">
+            Claude Code follows the spec. Quality is <span class="highlight-green">proven</span>, not assumed.
+          </p>
+        </section>
+
+        <!-- SLIDE 4: How It Works -->
+        <section>
+          <h2>How It Works</h2>
+          <div class="workflow-visual">
+            <div class="workflow-step blue">
+              <h5 style="color: #4dabf7;">BEFORE</h5>
+              <p>Initialize stage</p>
+            </div>
+            <span class="arrow">→</span>
+            <div class="workflow-step yellow">
+              <h5 style="color: #ffd43b;">DURING</h5>
+              <p>TDD with Claude</p>
+            </div>
+            <span class="arrow">→</span>
+            <div class="workflow-step green">
+              <h5 style="color: #51cf66;">AFTER</h5>
+              <p>Gates + Proof</p>
+            </div>
+          </div>
+          <div class="comparison-grid" style="margin-top: 0.8em;">
+            <div style="text-align: center;">
+              <p style="font-size: 0.6em; color: #4dabf7; margin-bottom: 0.3em;">Claude reads CLAUDE.md</p>
+              <p style="font-size: 0.55em; color: #888;">Knows your tech stack, constraints, current stage</p>
+            </div>
+            <div style="text-align: center;">
+              <p style="font-size: 0.6em; color: #ffd43b; margin-bottom: 0.3em;">Claude writes tests first</p>
+              <p style="font-size: 0.55em; color: #888;">RED → GREEN → REFACTOR cycle</p>
+            </div>
+          </div>
+          <p style="text-align: center; margin-top: 0.5em; font-size: 0.6em;">
+            <span class="highlight-green">Context recovers instantly</span> via state files when sessions restart
+          </p>
+        </section>
+
+        <!-- SLIDE 5: Results -->
+        <section class="center">
+          <h2>Proven Results</h2>
+          <div class="metric-row" style="gap: 0.8em;">
+            <div class="metric-card green" style="padding: 0.5em 0.8em; min-width: 100px;">
+              <div class="metric-number green" style="font-size: 1.4em;">22</div>
+              <div class="metric-label">Stages</div>
+            </div>
+            <div class="metric-card green" style="padding: 0.5em 0.8em; min-width: 100px;">
+              <div class="metric-number green" style="font-size: 1.4em;">3,900+</div>
+              <div class="metric-label">Tests</div>
+            </div>
+            <div class="metric-card green" style="padding: 0.5em 0.8em; min-width: 100px;">
+              <div class="metric-number green" style="font-size: 1.4em;">90%+</div>
+              <div class="metric-label">Coverage</div>
+            </div>
+            <div class="metric-card blue" style="padding: 0.5em 0.8em; min-width: 100px;">
+              <div class="metric-number blue" style="font-size: 1.4em;">~30s</div>
+              <div class="metric-label">Recovery</div>
+            </div>
+            <div class="metric-card blue" style="padding: 0.5em 0.8em; min-width: 100px;">
+              <div class="metric-number blue" style="font-size: 1.4em;">0</div>
+              <div class="metric-label">Regressions</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- SLIDE 6: The Transformation -->
+        <section>
+          <h2>The Transformation</h2>
+          <div class="comparison-grid">
+            <div class="comparison-box before-box">
+              <h3>Without Framework</h3>
+              <ul>
+                <li>"Almost done" (weeks)</li>
+                <li>AI generates random code</li>
+                <li>Tests written after (maybe)</li>
+                <li>Context lost on restart</li>
+                <li>"Is it done?" is subjective</li>
+              </ul>
+            </div>
+            <div class="comparison-box after-box">
+              <h3>With Spec-Driven</h3>
+              <ul>
+                <li>Proof file shows exact status</li>
+                <li>AI follows CLAUDE.md constraints</li>
+                <li>Tests written first (enforced)</li>
+                <li>State file = instant recovery</li>
+                <li>Gates prove completion</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- SLIDE 7: Summary -->
+        <section class="center" data-background-gradient="linear-gradient(135deg, #0a0a0f, #1a1a2e)">
+          <h2>Summary</h2>
+          <p style="font-size: 0.85em; margin: 0.6em 0;">
+            Transform AI-assisted development from<br/>
+            <span class="highlight-red">chaotic code generation</span> to
+            <span class="highlight-green">spec-driven engineering</span>
+          </p>
+          <div style="margin: 1em 0;">
+            <span class="badge badge-blue">CLAUDE.md Spec</span>
+            <span class="badge badge-yellow">Stage Framework</span>
+            <span class="badge badge-green">Quality Gates</span>
+            <span class="badge badge-purple">Context Recovery</span>
+          </div>
+          <p style="color: #888; font-size: 0.7em; margin-top: 1em;">
+            Claude Code becomes your <span class="highlight-green">engineering partner</span>,<br/>
+            not a random code generator.
+          </p>
+        </section>
+
+        <!-- SLIDE 8: Questions -->
+        <section class="center" data-background-gradient="linear-gradient(135deg, #1a1a2e, #16213e)">
+          <h1>Questions?</h1>
+          <p style="margin-top: 1em; color: #4dabf7; font-size: 0.8em;">
+            Ready to discuss adoption
+          </p>
+        </section>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+    <script>
+      Reveal.initialize({
+        hash: true,
+        slideNumber: true,
+        transition: 'slide',
+        width: 960,
+        height: 700,
+        margin: 0.04,
+        center: true,
+      });
+    </script>
+  </body>
+</html>

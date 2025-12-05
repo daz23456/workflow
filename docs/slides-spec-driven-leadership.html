@@ -329,6 +329,57 @@
         color: #666;
         font-size: 13px;
       }
+      .training-screenshot {
+        position: relative;
+      }
+      .training-screenshot img {
+        cursor: zoom-in;
+      }
+      .speech-bubble {
+        position: absolute;
+        background: #1a1a2e;
+        color: white;
+        padding: 0.3em 0.5em;
+        border-radius: 8px;
+        font-size: 0.4em;
+        font-weight: 500;
+        white-space: nowrap;
+        z-index: 10;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      }
+      .speech-bubble::after {
+        content: '';
+        position: absolute;
+        border: 6px solid transparent;
+      }
+      .speech-bubble.bottom::after {
+        top: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        border-top-color: #1a1a2e;
+      }
+      .speech-bubble.top::after {
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        border-bottom-color: #1a1a2e;
+      }
+      .speech-bubble.left::after {
+        top: 50%;
+        right: 100%;
+        transform: translateY(-50%);
+        border-right-color: #1a1a2e;
+      }
+      .speech-bubble.highlight {
+        background: #37b24d;
+      }
+      .speech-bubble.highlight::after {
+        border-top-color: #37b24d;
+      }
+      .speech-bubble.highlight.left::after {
+        border-right-color: #37b24d;
+        border-top-color: transparent;
+      }
     </style>
   </head>
   <body>
@@ -831,36 +882,78 @@
           </table>
         </section>
 
-        <!-- Training Program -->
+        <!-- Training Program - Vertical slides -->
         <section>
-          <h2>Training Program: Ready to Deploy</h2>
-          <p style="font-size: 0.65em; color: #666; margin-bottom: 0.5em;">
-            Interactive web-based training with hands-on exercises - engineers prove the value to themselves
-          </p>
-          <div style="display: flex; gap: 0.8em; justify-content: center; margin: 0.5em 0;">
-            <div style="flex: 1; max-width: 280px;">
-              <img src="screenshots/training-app/01-home.png" alt="Training Home" style="width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); cursor: pointer;" onclick="this.parentElement.querySelector('img').requestFullscreen ? this.requestFullscreen() : null" />
-              <p style="font-size: 0.45em; text-align: center; color: #666; margin-top: 0.3em;">3 hands-on exercises</p>
+          <section>
+            <h2>Training Program: Ready to Deploy</h2>
+            <p style="font-size: 0.65em; color: #666; margin-bottom: 0.5em;">
+              Interactive web-based training with hands-on exercises - engineers prove the value to themselves
+            </p>
+            <div style="display: flex; gap: 0.8em; justify-content: center; margin: 0.5em 0;">
+              <!-- Screenshot 1: Home -->
+              <div class="training-screenshot" style="flex: 1; max-width: 280px;">
+                <img src="screenshots/training-app/01-home.png" alt="Training Home" class="zoomable-img" style="width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" />
+                <div class="speech-bubble bottom fragment" style="top: -35px; left: 50%; transform: translateX(-50%);">
+                  🎯 Build same feature twice
+                </div>
+                <div class="speech-bubble highlight left fragment" style="top: 30%; right: -10px;">
+                  Compare results!
+                </div>
+                <p style="font-size: 0.45em; text-align: center; color: #666; margin-top: 0.3em;">3 hands-on exercises</p>
+              </div>
+              <!-- Screenshot 2: Results -->
+              <div class="training-screenshot" style="flex: 1; max-width: 280px;">
+                <img src="screenshots/training-app/05-results.png" alt="Results Comparison" class="zoomable-img" style="width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" />
+                <div class="speech-bubble bottom fragment" style="top: -35px; left: 50%; transform: translateX(-50%);">
+                  📊 Their own metrics
+                </div>
+                <div class="speech-bubble highlight left fragment" style="top: 25%; right: -10px;">
+                  94% faster recovery!
+                </div>
+                <div class="speech-bubble left fragment" style="top: 55%; right: -10px;">
+                  +49% coverage
+                </div>
+                <p style="font-size: 0.45em; text-align: center; color: #666; margin-top: 0.3em;">Side-by-side comparison</p>
+              </div>
+              <!-- Screenshot 3: Certificate -->
+              <div class="training-screenshot" style="flex: 1; max-width: 280px;">
+                <img src="screenshots/training-app/06-certificate.png" alt="Certificate" class="zoomable-img" style="width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" />
+                <div class="speech-bubble bottom fragment" style="top: -35px; left: 50%; transform: translateX(-50%);">
+                  🏆 Shareable proof
+                </div>
+                <div class="speech-bubble highlight left fragment" style="top: 40%; right: -10px;">
+                  Next steps guidance
+                </div>
+                <p style="font-size: 0.45em; text-align: center; color: #666; margin-top: 0.3em;">Completion certificate</p>
+              </div>
             </div>
-            <div style="flex: 1; max-width: 280px;">
-              <img src="screenshots/training-app/05-results.png" alt="Results Comparison" style="width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" />
-              <p style="font-size: 0.45em; text-align: center; color: #666; margin-top: 0.3em;">Side-by-side comparison</p>
+            <p style="font-size: 0.5em; color: #888; text-align: center; margin-top: 0.5em;">
+              Press ↓ for training details
+            </p>
+          </section>
+          <section>
+            <h2>Training: Why It Works</h2>
+            <div style="display: flex; gap: 1.5em; justify-content: center; margin-top: 1em;">
+              <div class="win-item" style="flex: 1; max-width: 380px;">
+                <h4>🎓 Self-Paced Learning</h4>
+                <p>~2 hours total across 3 exercises. Engineers work at their own pace and see their own metrics improve in real-time.</p>
+              </div>
+              <div class="win-item" style="flex: 1; max-width: 380px;">
+                <h4>🤔 Skeptic-Friendly Design</h4>
+                <p>No preaching. Engineers do a baseline exercise first, then the same task with the framework. Their own data proves the value.</p>
+              </div>
             </div>
-            <div style="flex: 1; max-width: 280px;">
-              <img src="screenshots/training-app/06-certificate.png" alt="Certificate" style="width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" />
-              <p style="font-size: 0.45em; text-align: center; color: #666; margin-top: 0.3em;">Completion certificate</p>
+            <div style="display: flex; gap: 1.5em; justify-content: center; margin-top: 1em;">
+              <div class="win-item" style="flex: 1; max-width: 380px;">
+                <h4>📊 Measurable Outcomes</h4>
+                <p>Context recovery time, test coverage, re-explanations needed - all tracked and compared side-by-side.</p>
+              </div>
+              <div class="win-item" style="flex: 1; max-width: 380px;">
+                <h4>🏆 Completion Certificate</h4>
+                <p>Shareable proof of completion with next steps guidance. Engineers know exactly how to apply the framework to real projects.</p>
+              </div>
             </div>
-          </div>
-          <div style="display: flex; gap: 1em; justify-content: center; margin-top: 0.5em;">
-            <div class="win-item" style="flex: 1; max-width: 300px;">
-              <h4>Self-Paced Learning</h4>
-              <p>~2 hours total, engineers see their own metrics improve</p>
-            </div>
-            <div class="win-item" style="flex: 1; max-width: 300px;">
-              <h4>Skeptic-Friendly</h4>
-              <p>Baseline comparison proves value with engineer's own data</p>
-            </div>
-          </div>
+          </section>
         </section>
 
         <!-- Final Summary -->
@@ -920,7 +1013,7 @@
       const lightbox = document.getElementById("lightbox");
       const lightboxImg = lightbox.querySelector("img");
 
-      document.querySelectorAll(".mermaid-container img").forEach((img) => {
+      document.querySelectorAll(".mermaid-container img, .zoomable-img").forEach((img) => {
         img.addEventListener("click", (e) => {
           e.stopPropagation();
           lightboxImg.src = img.src;

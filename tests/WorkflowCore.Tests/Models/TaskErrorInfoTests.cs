@@ -155,7 +155,10 @@ public class TaskErrorInfoTests
         summary.Should().Contain("fetch-user");
         summary.Should().Contain("HttpError");
         summary.Should().Contain("503");
-        summary.Should().Contain("user-service");
+        // Service name is uppercased for visibility in the new format: [USER-SERVICE]
+        summary.Should().ContainEquivalentOf("user-service");
+        // Verify service leads the message (for routing purposes)
+        summary.Should().StartWith("[USER-SERVICE]");
     }
 
     [Fact]

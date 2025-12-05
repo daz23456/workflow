@@ -50,6 +50,32 @@ public enum TaskErrorType
 }
 
 /// <summary>
+/// Categorizes the type of service for routing and escalation purposes.
+/// </summary>
+public enum ServiceCategory
+{
+    /// <summary>
+    /// Service category is not known
+    /// </summary>
+    Unknown,
+
+    /// <summary>
+    /// Internal microservice owned by the organization
+    /// </summary>
+    Internal,
+
+    /// <summary>
+    /// External third-party API (Stripe, Twilio, etc.)
+    /// </summary>
+    ThirdParty,
+
+    /// <summary>
+    /// Infrastructure service (database, cache, queue)
+    /// </summary>
+    Infrastructure
+}
+
+/// <summary>
 /// Structured error information for a task execution failure.
 /// Provides comprehensive context for debugging and support.
 /// </summary>
@@ -102,8 +128,15 @@ public class TaskErrorInfo
 
     /// <summary>
     /// Name of the external service that was being called (e.g., "user-service")
+    /// Extracted from URL hostname or can be set explicitly from task metadata
     /// </summary>
     public string? ServiceName { get; set; }
+
+    /// <summary>
+    /// Human-readable display name for the service (e.g., "User Profile Service")
+    /// Used in error messages for clarity
+    /// </summary>
+    public string? ServiceDisplayName { get; set; }
 
     /// <summary>
     /// Full URL that was being called
@@ -124,6 +157,16 @@ public class TaskErrorInfo
     /// Response body snippet for debugging (truncated if large)
     /// </summary>
     public string? ResponseBodyPreview { get; set; }
+
+    /// <summary>
+    /// Category of service for routing (Internal, External, ThirdParty)
+    /// </summary>
+    public ServiceCategory ServiceCategory { get; set; } = ServiceCategory.Unknown;
+
+    /// <summary>
+    /// Team or owner responsible for this service (for escalation)
+    /// </summary>
+    public string? ServiceOwner { get; set; }
 
     #endregion
 
@@ -192,21 +235,26 @@ public class TaskErrorInfo
     #region Helper Methods
 
     /// <summary>
-    /// Generates a concise summary of the error for logs and alerts
+    /// Generates a concise summary of the error for logs and alerts.
+    /// FORMAT: [SERVICE] Task 'X' failed: ErrorType (HTTP Status) - Message
+    /// Leading with service ensures support staff immediately know where to route.
     /// </summary>
     public string GetSummary()
     {
         var sb = new StringBuilder();
+
+        // LEAD WITH SERVICE - this is what support needs to see first for routing
+        var serviceName = GetEffectiveServiceName();
+        if (!string.IsNullOrEmpty(serviceName))
+        {
+            sb.Append($"[{serviceName.ToUpperInvariant()}] ");
+        }
+
         sb.Append($"Task '{TaskId}' failed: {ErrorType}");
 
         if (HttpStatusCode.HasValue)
         {
             sb.Append($" (HTTP {HttpStatusCode})");
-        }
-
-        if (!string.IsNullOrEmpty(ServiceName))
-        {
-            sb.Append($" calling {ServiceName}");
         }
 
         if (!string.IsNullOrEmpty(ErrorMessage))
@@ -218,65 +266,148 @@ public class TaskErrorInfo
     }
 
     /// <summary>
-    /// Generates a detailed description for support staff
+    /// Gets the most descriptive service name available.
+    /// Prefers ServiceDisplayName over ServiceName over hostname extraction.
+    /// </summary>
+    public string? GetEffectiveServiceName()
+    {
+        if (!string.IsNullOrEmpty(ServiceDisplayName))
+            return ServiceDisplayName;
+
+        if (!string.IsNullOrEmpty(ServiceName))
+            return ServiceName;
+
+        return null;
+    }
+
+    /// <summary>
+    /// Generates a detailed description for support staff.
+    /// Starts with ESCALATION INFO so support knows immediately where to route.
     /// </summary>
     public string GetSupportDescription()
     {
         var sb = new StringBuilder();
 
-        // Task identification
-        sb.AppendLine("=== Task Error Report ===");
-        sb.AppendLine($"Task ID: {TaskId}");
-        if (!string.IsNullOrEmpty(TaskName))
-            sb.AppendLine($"Task Name: {TaskName}");
-        if (!string.IsNullOrEmpty(TaskDescription))
-            sb.AppendLine($"Description: {TaskDescription}");
-
+        // ESCALATION INFO FIRST - support needs this immediately
+        sb.AppendLine("╔══════════════════════════════════════════════════════════════╗");
+        sb.AppendLine("║                    TASK ERROR REPORT                          ║");
+        sb.AppendLine("╚══════════════════════════════════════════════════════════════╝");
         sb.AppendLine();
 
-        // Error details
-        sb.AppendLine("--- Error Details ---");
-        sb.AppendLine($"Type: {ErrorType}");
-        sb.AppendLine($"Message: {ErrorMessage}");
-        if (!string.IsNullOrEmpty(ErrorCode))
-            sb.AppendLine($"Code: {ErrorCode}");
-
+        // Who to contact - THE MOST IMPORTANT INFO FOR ROUTING
+        sb.AppendLine("┌─── ESCALATION TARGET ───────────────────────────────────────┐");
+        var escalationInfo = GetEscalationInfo();
+        sb.AppendLine($"│ Route To: {escalationInfo.RouteToTeam,-50} │");
+        sb.AppendLine($"│ Category: {escalationInfo.Category,-50} │");
+        if (!string.IsNullOrEmpty(ServiceOwner))
+            sb.AppendLine($"│ Owner:    {ServiceOwner,-50} │");
+        sb.AppendLine("└─────────────────────────────────────────────────────────────┘");
         sb.AppendLine();
 
-        // Service details
-        if (!string.IsNullOrEmpty(ServiceName) || !string.IsNullOrEmpty(ServiceUrl))
+        // Service details (WHAT service had the problem)
+        sb.AppendLine("┌─── SERVICE DETAILS ─────────────────────────────────────────┐");
+        var effectiveName = GetEffectiveServiceName() ?? "(unknown service)";
+        sb.AppendLine($"│ Service:     {effectiveName,-47} │");
+        if (!string.IsNullOrEmpty(HttpMethod))
+            sb.AppendLine($"│ Method:      {HttpMethod,-47} │");
+        if (!string.IsNullOrEmpty(ServiceUrl))
         {
-            sb.AppendLine("--- Service Details ---");
-            if (!string.IsNullOrEmpty(ServiceName))
-                sb.AppendLine($"Service: {ServiceName}");
-            if (!string.IsNullOrEmpty(HttpMethod))
-                sb.AppendLine($"Method: {HttpMethod}");
-            if (!string.IsNullOrEmpty(ServiceUrl))
-                sb.AppendLine($"URL: {ServiceUrl}");
-            if (HttpStatusCode.HasValue)
-                sb.AppendLine($"Status Code: {HttpStatusCode}");
-            sb.AppendLine();
+            var urlDisplay = ServiceUrl.Length > 47 ? ServiceUrl.Substring(0, 44) + "..." : ServiceUrl;
+            sb.AppendLine($"│ URL:         {urlDisplay,-47} │");
         }
+        if (HttpStatusCode.HasValue)
+            sb.AppendLine($"│ HTTP Status: {HttpStatusCode,-47} │");
+        sb.AppendLine("└─────────────────────────────────────────────────────────────┘");
+        sb.AppendLine();
+
+        // Error details (WHAT went wrong)
+        sb.AppendLine("┌─── ERROR DETAILS ───────────────────────────────────────────┐");
+        sb.AppendLine($"│ Type:    {ErrorType,-51} │");
+        var msgDisplay = ErrorMessage.Length > 51 ? ErrorMessage.Substring(0, 48) + "..." : ErrorMessage;
+        sb.AppendLine($"│ Message: {msgDisplay,-51} │");
+        if (!string.IsNullOrEmpty(ErrorCode))
+            sb.AppendLine($"│ Code:    {ErrorCode,-51} │");
+        sb.AppendLine("└─────────────────────────────────────────────────────────────┘");
+        sb.AppendLine();
+
+        // Task identification
+        sb.AppendLine("┌─── TASK INFO ───────────────────────────────────────────────┐");
+        sb.AppendLine($"│ Task ID:   {TaskId,-49} │");
+        if (!string.IsNullOrEmpty(TaskName))
+            sb.AppendLine($"│ Task Name: {TaskName,-49} │");
+        sb.AppendLine("└─────────────────────────────────────────────────────────────┘");
+        sb.AppendLine();
 
         // Timing
-        sb.AppendLine("--- Timing ---");
-        sb.AppendLine($"Duration until error: {DurationUntilErrorMs}ms");
-        sb.AppendLine($"Retry attempts: {RetryAttempts}");
-        if (MaxRetries > 0)
-            sb.AppendLine($"Max retries: {MaxRetries}");
+        sb.AppendLine("┌─── TIMING ──────────────────────────────────────────────────┐");
+        sb.AppendLine($"│ Duration until error: {DurationUntilErrorMs}ms");
+        sb.AppendLine($"│ Retry attempts:       {RetryAttempts}/{(MaxRetries > 0 ? MaxRetries.ToString() : "∞")}");
+        sb.AppendLine($"│ Error occurred at:    {OccurredAt:yyyy-MM-dd HH:mm:ss} UTC");
+        sb.AppendLine("└─────────────────────────────────────────────────────────────┘");
+        sb.AppendLine();
 
-        // Guidance
-        if (!string.IsNullOrEmpty(Suggestion) || !string.IsNullOrEmpty(SupportAction))
-        {
-            sb.AppendLine();
-            sb.AppendLine("--- Recommended Action ---");
-            if (!string.IsNullOrEmpty(Suggestion))
-                sb.AppendLine(Suggestion);
-            if (!string.IsNullOrEmpty(SupportAction))
-                sb.AppendLine(SupportAction);
-        }
+        // Recommended action
+        sb.AppendLine("┌─── RECOMMENDED ACTION ──────────────────────────────────────┐");
+        if (!string.IsNullOrEmpty(Suggestion))
+            sb.AppendLine($"│ {Suggestion}");
+        if (!string.IsNullOrEmpty(SupportAction))
+            sb.AppendLine($"│ Support: {SupportAction}");
+        sb.AppendLine("└─────────────────────────────────────────────────────────────┘");
 
         return sb.ToString();
+    }
+
+    /// <summary>
+    /// Gets escalation routing information based on error type and service category.
+    /// Helps support staff immediately know who to contact.
+    /// </summary>
+    public (string RouteToTeam, string Category, string Urgency) GetEscalationInfo()
+    {
+        // If explicit owner is set, use that
+        if (!string.IsNullOrEmpty(ServiceOwner))
+        {
+            return (ServiceOwner, ServiceCategory.ToString(), GetUrgencyLevel());
+        }
+
+        // Route based on service category and error type
+        var routeTo = (ServiceCategory, ErrorType) switch
+        {
+            // Infrastructure issues - route to platform/ops
+            (ServiceCategory.Infrastructure, _) => "Platform/Infrastructure Team",
+
+            // Third-party API issues
+            (ServiceCategory.ThirdParty, TaskErrorType.RateLimitError) => $"Check {GetEffectiveServiceName() ?? "third-party"} rate limits - may need account upgrade",
+            (ServiceCategory.ThirdParty, TaskErrorType.AuthenticationError) => $"Check API credentials for {GetEffectiveServiceName() ?? "third-party service"}",
+            (ServiceCategory.ThirdParty, _) => $"{GetEffectiveServiceName() ?? "Third-party"} vendor support",
+
+            // Internal service issues based on error type
+            (_, TaskErrorType.Timeout) => $"Service team for {GetEffectiveServiceName() ?? "target service"} - check performance",
+            (_, TaskErrorType.NetworkError) => $"Network/Platform team - cannot reach {GetEffectiveServiceName() ?? "service"}",
+            (_, TaskErrorType.AuthenticationError) => $"Security team - auth failure for {GetEffectiveServiceName() ?? "service"}",
+            (_, TaskErrorType.RateLimitError) => $"Service team for {GetEffectiveServiceName() ?? "service"} - increase limits",
+            (_, TaskErrorType.HttpError) when HttpStatusCode >= 500 => $"Service team for {GetEffectiveServiceName() ?? "service"} - server error",
+            (_, TaskErrorType.HttpError) when HttpStatusCode >= 400 => $"Workflow team - check request to {GetEffectiveServiceName() ?? "service"}",
+            (_, TaskErrorType.ValidationError) => "Workflow team - schema mismatch",
+            (_, TaskErrorType.ConfigurationError) => "Workflow team - task configuration issue",
+
+            _ => $"Service team for {GetEffectiveServiceName() ?? "unknown service"}"
+        };
+
+        return (routeTo, ServiceCategory.ToString(), GetUrgencyLevel());
+    }
+
+    private string GetUrgencyLevel()
+    {
+        return ErrorType switch
+        {
+            TaskErrorType.NetworkError => "HIGH - Service unreachable",
+            TaskErrorType.Timeout => "MEDIUM - Performance issue",
+            TaskErrorType.AuthenticationError => "HIGH - Access blocked",
+            TaskErrorType.RateLimitError => "MEDIUM - Throttled",
+            TaskErrorType.HttpError when HttpStatusCode >= 500 => "HIGH - Server error",
+            TaskErrorType.HttpError when HttpStatusCode >= 400 => "LOW - Client error",
+            _ => "MEDIUM"
+        };
     }
 
     /// <summary>
@@ -459,41 +590,82 @@ public class TaskErrorInfo
 
     private static string GenerateSuggestion(TaskErrorInfo error)
     {
+        var serviceName = error.GetEffectiveServiceName() ?? "the service";
+        var serviceNameUpper = serviceName.ToUpperInvariant();
+
         return error.ErrorType switch
         {
             TaskErrorType.Timeout =>
-                $"The request to {error.ServiceName ?? "the service"} timed out. " +
-                "Consider increasing the timeout or checking if the service is under heavy load.",
+                $"[{serviceNameUpper}] Request timed out. " +
+                $"SELF-SERVICE: (1) Check if {serviceName} is under heavy load via its monitoring dashboard, " +
+                $"(2) Increase the task timeout in workflow definition if needed, " +
+                $"(3) Check recent deployments to {serviceName} that may have introduced latency. " +
+                $"ESCALATE TO: {serviceName} service team if issue persists.",
 
             TaskErrorType.NetworkError =>
-                $"Could not connect to {error.ServiceName ?? "the service"}. " +
-                "Verify the service is running and accessible from the workflow engine.",
+                $"[{serviceNameUpper}] Network unreachable. " +
+                $"SELF-SERVICE: (1) Verify {serviceName} is deployed and running (check kubernetes/container status), " +
+                $"(2) Check DNS resolution for the service URL, " +
+                $"(3) Verify network policies/firewall rules allow traffic from workflow engine. " +
+                $"ESCALATE TO: Platform/Network team if service is confirmed running but unreachable.",
 
             TaskErrorType.AuthenticationError =>
-                $"Authentication failed for {error.ServiceName ?? "the service"}. " +
-                "Check that the credentials/API key are valid and have not expired.",
+                $"[{serviceNameUpper}] Authentication failed ({(error.HttpStatusCode == 401 ? "credentials invalid/expired" : "access forbidden")}). " +
+                $"SELF-SERVICE: (1) Check if API key/token for {serviceName} has expired, " +
+                $"(2) Verify the credentials in your secrets management are correct, " +
+                $"(3) Check if the service account has required permissions. " +
+                $"ESCALATE TO: Security team if credentials are valid but access is denied.",
 
             TaskErrorType.RateLimitError =>
-                $"Rate limit exceeded for {error.ServiceName ?? "the service"}. " +
-                "Reduce request frequency or contact the service owner to increase limits.",
+                $"[{serviceNameUpper}] Rate limit exceeded (HTTP 429). " +
+                $"SELF-SERVICE: (1) Reduce workflow concurrency or add delays between requests, " +
+                $"(2) Check {serviceName} rate limit documentation for current limits, " +
+                $"(3) Review if multiple workflows are hitting the same endpoint. " +
+                $"ESCALATE TO: {serviceName} service team to request rate limit increase if needed.",
 
             TaskErrorType.ValidationError =>
-                "The request or response did not match the expected schema. " +
-                "Verify the task configuration and API contract.",
+                $"Schema validation failed. " +
+                $"SELF-SERVICE: (1) Compare your request payload against the task's input schema, " +
+                $"(2) Check if {serviceName} API contract has changed recently, " +
+                $"(3) Verify all required fields are present and have correct types. " +
+                $"ESCALATE TO: Workflow team if schema mismatch is due to API contract change.",
 
             TaskErrorType.ConfigurationError =>
-                "The task is misconfigured. " +
-                "Check the task definition for missing or invalid properties.",
+                $"Task configuration error. " +
+                $"SELF-SERVICE: (1) Check the task definition YAML for syntax errors, " +
+                $"(2) Verify all required properties (url, method, etc.) are set, " +
+                $"(3) Ensure template expressions ({{{{...}}}}) are valid. " +
+                $"ESCALATE TO: Workflow team for help with complex configurations.",
 
             TaskErrorType.HttpError when error.HttpStatusCode >= 500 =>
-                $"The {error.ServiceName ?? "service"} returned a server error ({error.HttpStatusCode}). " +
-                "Check the service logs or contact the service team.",
+                $"[{serviceNameUpper}] Server error (HTTP {error.HttpStatusCode}). " +
+                $"The problem is ON THE SERVICE SIDE, not the workflow. " +
+                $"SELF-SERVICE: (1) Check {serviceName} logs for the error details, " +
+                $"(2) Check {serviceName} monitoring for error rate spikes, " +
+                $"(3) Check recent deployments to {serviceName}. " +
+                $"ESCALATE TO: {serviceName} service team immediately for 500 errors.",
+
+            TaskErrorType.HttpError when error.HttpStatusCode == 404 =>
+                $"[{serviceNameUpper}] Resource not found (HTTP 404). " +
+                $"SELF-SERVICE: (1) Verify the URL path is correct: {error.ServiceUrl}, " +
+                $"(2) Check if the resource ID in the request exists, " +
+                $"(3) Ensure {serviceName} hasn't deprecated this endpoint. " +
+                $"ESCALATE TO: Workflow team if URL is correct but endpoint doesn't exist.",
 
             TaskErrorType.HttpError when error.HttpStatusCode >= 400 =>
-                $"The request to {error.ServiceName ?? "the service"} was rejected ({error.HttpStatusCode}). " +
-                "Verify the request parameters and API contract.",
+                $"[{serviceNameUpper}] Client error (HTTP {error.HttpStatusCode}). " +
+                $"The request was REJECTED by {serviceName}. " +
+                $"SELF-SERVICE: (1) Check the response body for specific error details, " +
+                $"(2) Verify request parameters match the API contract, " +
+                $"(3) Ensure input data is valid (no nulls where required, correct formats). " +
+                $"ESCALATE TO: Workflow team for help interpreting the error.",
 
-            _ => "An unexpected error occurred. Check the logs for more details."
+            _ =>
+                $"Unexpected error calling {serviceName}. " +
+                $"SELF-SERVICE: (1) Check the full error message and stack trace, " +
+                $"(2) Review recent workflow or service changes, " +
+                $"(3) Check if this is a transient issue by retrying. " +
+                $"ESCALATE TO: Workflow team with full error details."
         };
     }
 

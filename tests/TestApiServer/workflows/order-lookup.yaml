@@ -6,12 +6,9 @@ metadata:
 spec:
   description: Look up order details with invoice and total calculation
   input:
-    type: object
-    properties:
-      orderId:
-        type: string
-    required:
-      - orderId
+    orderId:
+      type: string
+      required: true
   tasks:
     - id: get-order
       taskRef: getorder

@@ -31,6 +31,7 @@
 #   15 - E2E Testing
 #   16 - SAST (Static Application Security Testing)
 #   21 - Storybook Stories (TypeScript UI only)
+#   22 - Screenshot Coverage (validates all required screenshots captured)
 #
 # Exit Codes:
 #   0 - All gates passed
@@ -185,6 +186,7 @@ GATES:
       15 - E2E Testing
       16 - SAST (Static Application Security Testing)
       21 - Storybook Stories (TypeScript UI only)
+      22 - Screenshot Coverage (validates required screenshots captured)
 
 EXAMPLES:
     ./scripts/run-quality-gates.sh --stage 5
@@ -641,6 +643,116 @@ run_gate_21() {
         cat "$output_file"
         GATES_FAILED+=("21")
         return 1
+    fi
+}
+
+run_gate_22() {
+    print_gate_header 22 "Screenshot Coverage"
+    local output_file="$OUTPUT_DIR/gate-22-screenshots.txt"
+
+    echo "=== Gate 22: Screenshot Coverage ===" > "$output_file"
+
+    local manifest_file="$STAGE_DIR/screenshots-required.txt"
+    local screenshot_dir="$STAGE_DIR/screenshots"
+
+    # Check if manifest exists
+    if [[ ! -f "$manifest_file" ]]; then
+        echo "No screenshot manifest found" >> "$output_file"
+        echo "" >> "$output_file"
+
+        # Check .stage-state.yaml for affected_ui_pages
+        local state_file="$STAGE_DIR/.stage-state.yaml"
+        if [[ -f "$state_file" ]]; then
+            local affected_pages=$(grep "affected_ui_pages:" "$state_file" | sed 's/affected_ui_pages:\s*//' | tr -d '[]' || true)
+            if [[ -z "$affected_pages" || "$affected_pages" == "none" ]]; then
+                print_info "No UI pages affected by this stage (declared as 'none')"
+                echo "Stage declared no UI pages affected" >> "$output_file"
+                GATES_PASSED+=("22")
+                return 0
+            else
+                echo "UI pages declared: $affected_pages" >> "$output_file"
+                echo "" >> "$output_file"
+                print_warning "UI pages declared but no manifest generated"
+                print_info "Run: ./scripts/generate-screenshot-manifest.sh --stage $STAGE_NUM"
+                echo "ACTION: Generate manifest with: ./scripts/generate-screenshot-manifest.sh --stage $STAGE_NUM" >> "$output_file"
+                GATES_FAILED+=("22")
+                return 1
+            fi
+        else
+            print_info "No stage state file found - assuming no screenshots required"
+            echo "No .stage-state.yaml found" >> "$output_file"
+            GATES_PASSED+=("22")
+            return 0
+        fi
+    fi
+
+    # Count required screenshots (excluding comments)
+    local required_count=$(grep -v "^#" "$manifest_file" | grep -v "^$" | wc -l | tr -d ' ')
+    echo "Required screenshots: $required_count" >> "$output_file"
+    echo "" >> "$output_file"
+
+    if [[ $required_count -eq 0 ]]; then
+        print_info "No screenshots required (empty manifest)"
+        GATES_PASSED+=("22")
+        return 0
+    fi
+
+    # Check screenshot directory exists
+    if [[ ! -d "$screenshot_dir" ]]; then
+        print_error "Screenshot directory not found: $screenshot_dir"
+        echo "Screenshot directory missing: $screenshot_dir" >> "$output_file"
+        echo "" >> "$output_file"
+        echo "ACTION: Capture screenshots with:" >> "$output_file"
+        echo "  cd src/workflow-ui && npx ts-node scripts/take-screenshots.ts --stage $STAGE_NUM" >> "$output_file"
+        GATES_FAILED+=("22")
+        return 1
+    fi
+
+    # Check each required screenshot
+    local missing=0
+    local found=0
+    echo "Checking screenshots:" >> "$output_file"
+
+    while IFS= read -r screenshot; do
+        # Skip comments and empty lines
+        [[ "$screenshot" =~ ^# ]] && continue
+        [[ -z "$screenshot" ]] && continue
+
+        if [[ -f "$screenshot_dir/$screenshot" ]]; then
+            echo "  [OK] $screenshot" >> "$output_file"
+            found=$((found + 1))
+        else
+            echo "  [MISSING] $screenshot" >> "$output_file"
+            missing=$((missing + 1))
+        fi
+    done < "$manifest_file"
+
+    echo "" >> "$output_file"
+    echo "Summary: $found found, $missing missing" >> "$output_file"
+
+    # Update .stage-state.yaml with counts
+    local state_file="$STAGE_DIR/.stage-state.yaml"
+    if [[ -f "$state_file" ]]; then
+        # Update screenshots_required and screenshots_captured
+        if grep -q "screenshots_required:" "$state_file"; then
+            sed -i '' "s/screenshots_required:.*/screenshots_required: $required_count/" "$state_file"
+        fi
+        if grep -q "screenshots_captured:" "$state_file"; then
+            sed -i '' "s/screenshots_captured:.*/screenshots_captured: $found/" "$state_file"
+        fi
+    fi
+
+    if [[ $missing -gt 0 ]]; then
+        print_error "Missing $missing screenshots (see $output_file for details)"
+        echo "" >> "$output_file"
+        echo "ACTION: Capture missing screenshots with:" >> "$output_file"
+        echo "  cd src/workflow-ui && npx ts-node scripts/take-screenshots.ts --stage $STAGE_NUM" >> "$output_file"
+        GATES_FAILED+=("22")
+        return 1
+    else
+        print_success "All $found screenshots captured"
+        GATES_PASSED+=("22")
+        return 0
     fi
 }
 

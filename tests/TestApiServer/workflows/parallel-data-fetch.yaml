@@ -6,12 +6,9 @@ metadata:
 spec:
   description: Fetch data from multiple endpoints in parallel
   input:
-    type: object
-    properties:
-      productId:
-        type: string
-    required:
-      - productId
+    productId:
+      type: string
+      required: true
   tasks:
     - id: get-strings
       taskRef: getstrings

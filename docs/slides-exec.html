@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Workflow Orchestration - Executive Summary</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reset.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/white.css"
+    />
+    <style>
+      :root {
+        --r-background-color: #ffffff;
+        --r-main-font: system-ui, -apple-system, sans-serif;
+        --r-heading-font: system-ui, -apple-system, sans-serif;
+        --r-main-color: #333;
+        --r-heading-color: #1a1a2e;
+        --r-link-color: #4dabf7;
+      }
+      .reveal .slides {
+        text-align: left;
+      }
+      .reveal .slides section {
+        padding: 10px 20px;
+      }
+      .reveal h1,
+      .reveal h2,
+      .reveal h3 {
+        text-transform: none;
+        font-weight: 600;
+        margin-bottom: 0.2em;
+      }
+      .reveal h1 {
+        font-size: 1.5em;
+        color: #1a1a2e;
+      }
+      .reveal h2 {
+        font-size: 1.1em;
+        color: #1a1a2e;
+      }
+      .reveal h3 {
+        font-size: 0.8em;
+      }
+      .reveal p {
+        margin: 0.2em 0;
+        font-size: 0.6em;
+      }
+      .reveal section {
+        text-align: left;
+      }
+      .reveal section.center {
+        text-align: center;
+      }
+      .reveal ul,
+      .reveal ol {
+        margin: 0.2em 0 0.2em 0.8em;
+      }
+      .reveal li {
+        margin: 0.15em 0;
+        font-size: 0.55em;
+      }
+      .reveal table {
+        margin: 0.3em auto;
+        font-size: 0.5em;
+      }
+      .reveal th,
+      .reveal td {
+        padding: 0.2em 0.4em;
+        border: 1px solid #ddd;
+      }
+      .reveal th {
+        background: #f8f9fa;
+        color: #1a1a2e;
+      }
+      .highlight-green {
+        color: #37b24d;
+      }
+      .highlight-blue {
+        color: #1c7ed6;
+      }
+      .highlight-red {
+        color: #e03131;
+      }
+      .highlight-gold {
+        color: #f59f00;
+      }
+      .mermaid-container {
+        background: #f8f9fa;
+        border-radius: 6px;
+        padding: 10px;
+        margin: 8px auto;
+        max-width: 80%;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      }
+      .mermaid-container img {
+        max-width: 100%;
+        max-height: 200px;
+        height: auto;
+      }
+      .roi-card {
+        background: linear-gradient(135deg, #f8f9fa, #fff);
+        border-radius: 10px;
+        padding: 0.6em;
+        text-align: center;
+        margin: 0.2em;
+        border: 2px solid #37b24d;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      }
+      .roi-number {
+        font-size: 1.8em;
+        font-weight: 700;
+        color: #37b24d;
+      }
+      .roi-label {
+        font-size: 0.5em;
+        color: #666;
+        margin-top: 0.1em;
+      }
+      .cost-card {
+        background: linear-gradient(135deg, #fff5f5, #fff);
+        border-radius: 10px;
+        padding: 0.6em;
+        text-align: center;
+        margin: 0.2em;
+        border: 2px solid #e03131;
+      }
+      .cost-number {
+        font-size: 1.8em;
+        font-weight: 700;
+        color: #e03131;
+      }
+      .cost-label {
+        font-size: 0.5em;
+        color: #666;
+        margin-top: 0.1em;
+      }
+      .quote {
+        font-style: italic;
+        font-size: 0.6em;
+        color: #495057;
+        border-left: 3px solid #4dabf7;
+        padding-left: 0.6em;
+        margin: 0.3em 0;
+      }
+      .badge {
+        display: inline-block;
+        padding: 0.2em 0.5em;
+        border-radius: 16px;
+        font-size: 0.5em;
+        margin: 0.15em;
+        font-weight: 500;
+      }
+      .badge-green {
+        background: #d3f9d8;
+        color: #2b8a3e;
+      }
+      .badge-blue {
+        background: #d0ebff;
+        color: #1864ab;
+      }
+      .badge-gold {
+        background: #fff3bf;
+        color: #e67700;
+      }
+      .comparison-box {
+        display: flex;
+        gap: 0.6em;
+        margin: 0.3em 0;
+      }
+      .comparison-box > div {
+        flex: 1;
+        padding: 0.4em;
+        border-radius: 6px;
+      }
+      .comparison-box h3 {
+        font-size: 0.7em;
+        margin-bottom: 0.2em;
+      }
+      .comparison-box ul {
+        margin: 0.15em 0;
+      }
+      .comparison-box li {
+        font-size: 0.5em;
+        margin: 0.1em 0;
+      }
+      .comparison-box p {
+        font-size: 0.55em;
+        margin: 0.2em 0;
+      }
+      .before-box {
+        background: #fff5f5;
+        border: 2px solid #ffc9c9;
+      }
+      .after-box {
+        background: #ebfbee;
+        border: 2px solid #b2f2bb;
+      }
+      .executive-summary {
+        background: linear-gradient(135deg, #1a1a2e, #2d3748);
+        color: white;
+        padding: 1em;
+        border-radius: 10px;
+        margin: 0.5em 0;
+      }
+      .executive-summary h3 {
+        color: #4dabf7;
+        margin-bottom: 0.3em;
+      }
+      .executive-summary p {
+        color: #e0e0e0;
+      }
+      .win-item {
+        background: #f8f9fa;
+        border-left: 4px solid #37b24d;
+        padding: 0.5em;
+        margin: 0.3em 0;
+        border-radius: 0 6px 6px 0;
+      }
+      .win-item h4 {
+        font-size: 0.65em;
+        color: #1a1a2e;
+        margin: 0;
+      }
+      .win-item p {
+        font-size: 0.5em;
+        color: #666;
+        margin: 0.2em 0 0 0;
+      }
+      .risk-item {
+        background: #fff5f5;
+        border-left: 4px solid #e03131;
+        padding: 0.5em;
+        margin: 0.3em 0;
+        border-radius: 0 6px 6px 0;
+      }
+      .risk-item h4 {
+        font-size: 0.65em;
+        color: #c92a2a;
+        margin: 0;
+      }
+      .risk-item p {
+        font-size: 0.5em;
+        color: #666;
+        margin: 0.2em 0 0 0;
+      }
+      .timeline-item {
+        display: flex;
+        align-items: flex-start;
+        margin: 0.4em 0;
+      }
+      .timeline-marker {
+        width: 30px;
+        height: 30px;
+        background: #4dabf7;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 0.5em;
+        flex-shrink: 0;
+      }
+      .timeline-content {
+        margin-left: 0.5em;
+      }
+      .timeline-content h4 {
+        font-size: 0.6em;
+        margin: 0;
+        color: #1a1a2e;
+      }
+      .timeline-content p {
+        font-size: 0.45em;
+        margin: 0.1em 0 0 0;
+        color: #666;
+      }
+      .mermaid-container img {
+        cursor: zoom-in;
+      }
+      .lightbox {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.95);
+        z-index: 9999;
+        justify-content: center;
+        align-items: center;
+        cursor: zoom-out;
+      }
+      .lightbox.active {
+        display: flex;
+      }
+      .lightbox img {
+        width: auto;
+        height: auto;
+        min-width: 80vw;
+        min-height: 60vh;
+        max-width: 98vw;
+        max-height: 92vh;
+        object-fit: contain;
+        border-radius: 8px;
+        background: #fff;
+        padding: 20px;
+      }
+      .lightbox-hint {
+        position: absolute;
+        bottom: 15px;
+        color: #666;
+        font-size: 13px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <!-- ==================== TITLE ==================== -->
+        <section class="center" data-background-color="#1a1a2e">
+          <h1 style="color: #fff">Workflow Orchestration Engine</h1>
+          <p style="font-size: 1em; color: #4dabf7; margin-top: 0.3em">
+            ROI & Strategic Impact
+          </p>
+          <p style="color: #888; margin-top: 1em; font-size: 0.7em">
+            Executive Summary
+          </p>
+        </section>
+
+        <!-- ==================== THE OPPORTUNITY ==================== -->
+
+        <!-- Executive Summary -->
+        <section>
+          <h2>Executive Summary</h2>
+          <div class="executive-summary">
+            <h3>The Opportunity</h3>
+            <p style="font-size: 0.7em; line-height: 1.4">
+              Transform how engineering teams build integrations. Replace weeks of
+              custom code with minutes of configuration. Reduce integration bugs
+              by 50%+. Free engineering capacity for revenue-generating work.
+            </p>
+          </div>
+          <div
+            style="
+              display: flex;
+              justify-content: center;
+              flex-wrap: wrap;
+              gap: 0.8em;
+              margin-top: 0.8em;
+            "
+          >
+            <div class="roi-card" style="min-width: 140px">
+              <div class="roi-number">95%</div>
+              <div class="roi-label">Faster Integration Delivery</div>
+            </div>
+            <div class="roi-card" style="min-width: 140px">
+              <div class="roi-number">50%+</div>
+              <div class="roi-label">Fewer Integration Bugs</div>
+            </div>
+            <div class="roi-card" style="min-width: 140px">
+              <div class="roi-number">30x</div>
+              <div class="roi-label">Less Coordination Overhead</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- The Cost of Current State -->
+        <section>
+          <h2>The Cost of the Current State</h2>
+          <div class="comparison-box">
+            <div class="before-box" style="flex: 1">
+              <h3 style="color: #c92a2a">Hidden Costs Today</h3>
+              <ul>
+                <li><strong>8 days</strong> average time per new integration</li>
+                <li><strong>30+ PRs</strong> to update one shared dependency</li>
+                <li><strong>2-3 hours</strong> average debugging time per incident</li>
+                <li><strong>Copy-paste</strong> of integration code across 30+ services</li>
+                <li><strong>Inconsistent</strong> error handling and retry logic</li>
+              </ul>
+            </div>
+          </div>
+          <p style="text-align: center; margin-top: 0.5em; font-size: 0.6em; color: #666;">
+            Every engineer spends <span class="highlight-red">~20% of their time</span> on integration plumbing instead of features.
+          </p>
+        </section>
+
+        <!-- Cost Quantification -->
+        <section class="center">
+          <h2>Quantifying the Problem</h2>
+          <p style="font-size: 0.7em; color: #666; margin-bottom: 0.8em">
+            For a team of 50 engineers at $150K average fully-loaded cost
+          </p>
+          <div
+            style="
+              display: flex;
+              justify-content: center;
+              flex-wrap: wrap;
+              gap: 1em;
+            "
+          >
+            <div class="cost-card" style="min-width: 160px">
+              <div class="cost-number">$1.5M</div>
+              <div class="cost-label">Annual integration overhead<br/>(20% of eng time)</div>
+            </div>
+            <div class="cost-card" style="min-width: 160px">
+              <div class="cost-number">$300K</div>
+              <div class="cost-label">Annual debugging cost<br/>(integration incidents)</div>
+            </div>
+            <div class="cost-card" style="min-width: 160px">
+              <div class="cost-number">$500K</div>
+              <div class="cost-label">Opportunity cost<br/>(delayed features)</div>
+            </div>
+          </div>
+          <p style="margin-top: 1em; font-size: 0.8em;">
+            Total annual cost: <span class="highlight-red" style="font-size: 1.3em; font-weight: bold;">$2.3M+</span>
+          </p>
+        </section>
+
+        <!-- ==================== THE SOLUTION ==================== -->
+
+        <!-- The Solution -->
+        <section>
+          <h2>The Solution: Workflow Orchestration</h2>
+          <div class="mermaid-container">
+            <img
+              src="https://mermaid.ink/img/Z3JhcGggTFIKICAgIHN1YmdyYXBoICJCZWZvcmU6IEV2ZXJ5IFRlYW0gQnVpbGRzIgogICAgICAgIFQxW1RlYW0gQV0gLS0+IFMxW1N0cmlwZSBDbGllbnRdCiAgICAgICAgVDJbVGVhbSBCXSAtLT4gUzJbU3RyaXBlIENsaWVudF0KICAgICAgICBUM1tUZWFtIENdIC0tPiBTM1tTdHJpcGUgQ2xpZW50XQogICAgZW5kCgogICAgc3ViZ3JhcGggIkFmdGVyOiBCdWlsZCBPbmNlLCBSZXVzZSIKICAgICAgICBUQVNLW2NoYXJnZS1wYXltZW50PGJyPlNoYXJlZCBUYXNrXQogICAgICAgIFcxW1dvcmtmbG93IDFdIC0tPiBUQVNLCiAgICAgICAgVzJbV29ya2Zsb3cgMl0gLS0+IFRBU0sKICAgICAgICBXM1tXb3JrZmxvdyAzXSAtLT4gVEFTSwogICAgZW5kCgogICAgc3R5bGUgUzEgZmlsbDojZmY2YjZiCiAgICBzdHlsZSBTMiBmaWxsOiNmZjZiNmIKICAgIHN0eWxlIFMzIGZpbGw6I2ZmNmI2YgogICAgc3R5bGUgVEFTSyBmaWxsOiM1MWNmNjY="
+              alt="Before and After"
+              loading="eager"
+            />
+          </div>
+          <ul>
+            <li><strong>Reusable task library:</strong> Build once, all teams benefit</li>
+            <li><strong>Visual workflow builder:</strong> Non-engineers can compose workflows</li>
+            <li><strong>Fail-fast validation:</strong> Errors caught before deployment, not in production</li>
+            <li><strong>Built-in observability:</strong> Execution traces, not log diving</li>
+          </ul>
+        </section>
+
+        <!-- ==================== ROI ==================== -->
+
+        <!-- ROI: Time Savings -->
+        <section>
+          <h2>ROI: Time Savings</h2>
+          <table>
+            <tr>
+              <th>Activity</th>
+              <th>Before</th>
+              <th>After</th>
+              <th>Savings</th>
+            </tr>
+            <tr>
+              <td>New integration</td>
+              <td class="highlight-red">8 days</td>
+              <td class="highlight-green">40 minutes</td>
+              <td class="highlight-gold">95%</td>
+            </tr>
+            <tr>
+              <td>Provider upgrade</td>
+              <td class="highlight-red">30 PRs, 2 weeks</td>
+              <td class="highlight-green">1 task, 1 day</td>
+              <td class="highlight-gold">90%</td>
+            </tr>
+            <tr>
+              <td>Incident debugging</td>
+              <td class="highlight-red">2-3 hours</td>
+              <td class="highlight-green">5-10 minutes</td>
+              <td class="highlight-gold">80%</td>
+            </tr>
+            <tr>
+              <td>Developer onboarding</td>
+              <td class="highlight-red">Days to understand</td>
+              <td class="highlight-green">Hours to first workflow</td>
+              <td class="highlight-gold">70%</td>
+            </tr>
+          </table>
+          <p style="text-align: center; margin-top: 0.5em; font-size: 0.6em;">
+            Estimated annual savings: <span class="highlight-green" style="font-weight: bold;">$1M+ in engineering time</span>
+          </p>
+        </section>
+
+        <!-- ROI: Risk Reduction -->
+        <section>
+          <h2>ROI: Risk Reduction</h2>
+          <div class="comparison-box">
+            <div class="before-box">
+              <h3 style="color: #c92a2a">Current Risks</h3>
+              <ul>
+                <li>Schema mismatches found in production</li>
+                <li>Circular dependencies cause deadlocks</li>
+                <li>Inconsistent retry logic across services</li>
+                <li>Breaking changes discovered post-deploy</li>
+                <li>No visibility into integration health</li>
+              </ul>
+            </div>
+            <div class="after-box">
+              <h3 style="color: #2b8a3e">Risks Eliminated</h3>
+              <ul>
+                <li>Schema validated at design time</li>
+                <li>Circular dependencies blocked at deploy</li>
+                <li>Central retry policy, one source of truth</li>
+                <li>Breaking changes detected before merge</li>
+                <li>Real-time execution traces and dashboards</li>
+              </ul>
+            </div>
+          </div>
+          <p style="text-align: center; margin-top: 0.5em; font-size: 0.65em; color: #666;">
+            <strong>Key principle:</strong> If it deploys, it works. Guaranteed.
+          </p>
+        </section>
+
+        <!-- ROI: Capacity Unlocked -->
+        <section>
+          <h2>ROI: Engineering Capacity Unlocked</h2>
+          <div class="comparison-box">
+            <div class="before-box">
+              <h3 style="color: #c92a2a">Low-Value Work (Eliminated)</h3>
+              <ul>
+                <li>Copy-pasting API clients</li>
+                <li>Writing retry logic (again)</li>
+                <li>Debugging race conditions</li>
+                <li>Coordinating 30 PRs for one change</li>
+                <li>Log diving for hours</li>
+              </ul>
+            </div>
+            <div class="after-box">
+              <h3 style="color: #2b8a3e">High-Value Work (Enabled)</h3>
+              <ul>
+                <li>New product features</li>
+                <li>Revenue-generating capabilities</li>
+                <li>Performance optimization</li>
+                <li>AI/ML integrations</li>
+                <li>Platform innovation</li>
+              </ul>
+            </div>
+          </div>
+          <p style="text-align: center; margin-top: 0.5em; font-size: 0.65em;">
+            <span class="highlight-green">20% of engineering capacity</span> redirected from plumbing to features.
+          </p>
+        </section>
+
+        <!-- ==================== STRATEGIC WINS ==================== -->
+
+        <!-- Strategic Win 1 -->
+        <section>
+          <h2>Strategic Win: Velocity at Scale</h2>
+          <div class="win-item">
+            <h4>The Flywheel Effect</h4>
+            <p>Each reusable task accelerates every team that uses it. 50 tasks serving 30 teams = 1,500 integration points standardized.</p>
+          </div>
+          <div class="win-item">
+            <h4>Non-Linear Scaling</h4>
+            <p>Traditional: Velocity stays flat as you add engineers. With orchestration: Velocity increases as the task library grows.</p>
+          </div>
+          <div class="win-item">
+            <h4>Self-Service Capability</h4>
+            <p>Product teams can compose workflows without waiting for platform team. Reduced bottlenecks, faster time-to-market.</p>
+          </div>
+          <div class="mermaid-container" style="max-width: 60%; margin-top: 0.5em;">
+            <img
+              src="https://mermaid.ink/img/Z3JhcGggTFIKICAgIFRBU0tTWzUwIFRhc2tzXSAtLT4gV09SS0ZMT1dTWzEwMCsgV29ya2Zsb3dzXQogICAgV09SS0ZMT1dTIC0tPiBURUFNU1szMCBUZWFtc10KICAgIFRFQU1TIC0tPiBWQUxVRVtCdXNpbmVzcyBWYWx1ZV0KCiAgICBzdHlsZSBUQVNLUyBmaWxsOiM0ZGFiZjcKICAgIHN0eWxlIFdPUktGTE9XUyBmaWxsOiM1MWNmNjYKICAgIHN0eWxlIFZBTFVFIGZpbGw6I2ZmZDQzYg=="
+              alt="Flywheel"
+              loading="eager"
+            />
+          </div>
+        </section>
+
+        <!-- Strategic Win 2 -->
+        <section>
+          <h2>Strategic Win: Quality as a Competitive Advantage</h2>
+          <div
+            style="
+              display: flex;
+              justify-content: center;
+              flex-wrap: wrap;
+              gap: 0.8em;
+              margin: 0.5em 0;
+            "
+          >
+            <div class="roi-card" style="min-width: 120px">
+              <div class="roi-number">90%+</div>
+              <div class="roi-label">Code Coverage</div>
+            </div>
+            <div class="roi-card" style="min-width: 120px">
+              <div class="roi-number">3,900+</div>
+              <div class="roi-label">Automated Tests</div>
+            </div>
+            <div class="roi-card" style="min-width: 120px">
+              <div class="roi-number">0</div>
+              <div class="roi-label">Known Vulnerabilities</div>
+            </div>
+          </div>
+          <div class="win-item">
+            <h4>Non-Negotiable Quality Gates</h4>
+            <p>Every component passes 8 mandatory quality gates before deployment. No exceptions, no shortcuts.</p>
+          </div>
+          <div class="win-item">
+            <h4>Fail-Fast Architecture</h4>
+            <p>Errors caught at design time are 10x cheaper than production incidents. Kubernetes admission webhooks reject invalid workflows before they reach the cluster.</p>
+          </div>
+        </section>
+
+        <!-- Strategic Win 3 -->
+        <section>
+          <h2>Strategic Win: Reduced Organizational Risk</h2>
+          <div class="risk-item">
+            <h4>Knowledge Silos Eliminated</h4>
+            <p>Integration patterns encoded in reusable tasks, not locked in individual engineers' heads. Team members can leave without taking critical knowledge with them.</p>
+          </div>
+          <div class="risk-item">
+            <h4>Audit Trail & Compliance</h4>
+            <p>Every workflow execution is traced. Versioning tracks all changes. Complete visibility for auditors and compliance.</p>
+          </div>
+          <div class="risk-item">
+            <h4>Incident Response Time</h4>
+            <p>Time-travel debugging and execution traces reduce MTTR from hours to minutes. Real-time visibility instead of log diving.</p>
+          </div>
+        </section>
+
+        <!-- ==================== INVESTMENT ==================== -->
+
+        <!-- Investment Required -->
+        <section>
+          <h2>Investment Required</h2>
+          <table>
+            <tr>
+              <th>Phase</th>
+              <th>Duration</th>
+              <th>Effort</th>
+              <th>Outcome</th>
+            </tr>
+            <tr>
+              <td>Foundation</td>
+              <td>2 weeks</td>
+              <td>2 engineers</td>
+              <td>Core platform deployed, first 5 tasks</td>
+            </tr>
+            <tr>
+              <td>Task Library</td>
+              <td>4 weeks</td>
+              <td>2 engineers</td>
+              <td>20+ production-ready tasks</td>
+            </tr>
+            <tr>
+              <td>Team Rollout</td>
+              <td>4 weeks</td>
+              <td>Training time</td>
+              <td>First 3 teams using platform</td>
+            </tr>
+            <tr>
+              <td>Scale</td>
+              <td>Ongoing</td>
+              <td>0.5 engineer</td>
+              <td>Maintenance & task expansion</td>
+            </tr>
+          </table>
+          <p style="text-align: center; margin-top: 0.5em; font-size: 0.6em;">
+            <strong>Total initial investment:</strong> ~2-3 engineer-months
+          </p>
+          <p style="text-align: center; font-size: 0.55em; color: #666;">
+            Payback period: 3-4 months based on time savings alone
+          </p>
+        </section>
+
+        <!-- ROI Summary -->
+        <section class="center">
+          <h2>ROI Summary (Annual)</h2>
+          <div
+            style="
+              display: flex;
+              justify-content: center;
+              flex-wrap: wrap;
+              gap: 1em;
+              margin: 0.8em 0;
+            "
+          >
+            <div class="cost-card" style="min-width: 180px">
+              <div class="cost-number">$2.3M</div>
+              <div class="cost-label">Current Hidden Costs</div>
+            </div>
+            <div style="display: flex; align-items: center; font-size: 2em; color: #666;">-</div>
+            <div class="roi-card" style="min-width: 180px">
+              <div class="roi-number">$150K</div>
+              <div class="roi-label">Investment (Year 1)</div>
+            </div>
+            <div style="display: flex; align-items: center; font-size: 2em; color: #666;">=</div>
+            <div class="roi-card" style="min-width: 180px; border-color: #f59f00;">
+              <div class="roi-number" style="color: #f59f00;">$1.5M+</div>
+              <div class="roi-label">Net Benefit (Year 1)</div>
+            </div>
+          </div>
+          <p style="font-size: 0.7em; color: #666; margin-top: 0.5em;">
+            ROI improves each year as task library grows and more teams adopt.
+          </p>
+        </section>
+
+        <!-- ==================== COMPETITIVE CONTEXT ==================== -->
+
+        <!-- Why Not Alternatives -->
+        <section>
+          <h2>Why Not Existing Solutions?</h2>
+          <table>
+            <tr>
+              <th>Solution</th>
+              <th>Limitation</th>
+              <th>Our Advantage</th>
+            </tr>
+            <tr>
+              <td>Airflow / Prefect</td>
+              <td>Async, batch-oriented</td>
+              <td class="highlight-green">Synchronous, user-facing APIs</td>
+            </tr>
+            <tr>
+              <td>Temporal</td>
+              <td>Complex, steep learning curve</td>
+              <td class="highlight-green">YAML-based, visual builder</td>
+            </tr>
+            <tr>
+              <td>Custom code</td>
+              <td>Copy-paste, inconsistent</td>
+              <td class="highlight-green">Reusable, validated tasks</td>
+            </tr>
+            <tr>
+              <td>API Gateways</td>
+              <td>Routing only, no orchestration</td>
+              <td class="highlight-green">Full workflow composition</td>
+            </tr>
+          </table>
+          <p style="text-align: center; margin-top: 0.5em; font-size: 0.55em; color: #666;">
+            Purpose-built for <strong>synchronous microservice orchestration</strong> with &lt;30s execution.
+          </p>
+        </section>
+
+        <!-- ==================== PROOF ==================== -->
+
+        <!-- Current Maturity -->
+        <section>
+          <h2>Platform Maturity</h2>
+          <div
+            style="
+              display: flex;
+              justify-content: center;
+              flex-wrap: wrap;
+              gap: 0.8em;
+              margin: 0.5em 0;
+            "
+          >
+            <div class="roi-card" style="min-width: 100px">
+              <div class="roi-number">60%</div>
+              <div class="roi-label">Complete</div>
+            </div>
+            <div class="roi-card" style="min-width: 100px">
+              <div class="roi-number">22</div>
+              <div class="roi-label">Stages Done</div>
+            </div>
+            <div class="roi-card" style="min-width: 100px">
+              <div class="roi-number">3,900+</div>
+              <div class="roi-label">Tests</div>
+            </div>
+          </div>
+          <table style="margin-top: 0.5em;">
+            <tr>
+              <th>Capability</th>
+              <th>Status</th>
+            </tr>
+            <tr>
+              <td>Core Execution Engine</td>
+              <td><span class="badge badge-green">Production Ready</span></td>
+            </tr>
+            <tr>
+              <td>Visual Workflow Builder</td>
+              <td><span class="badge badge-green">Production Ready</span></td>
+            </tr>
+            <tr>
+              <td>Real-Time Monitoring</td>
+              <td><span class="badge badge-green">Production Ready</span></td>
+            </tr>
+            <tr>
+              <td>AI Workflow Generation</td>
+              <td><span class="badge badge-green">Production Ready</span></td>
+            </tr>
+            <tr>
+              <td>Optimization Engine</td>
+              <td><span class="badge badge-blue">In Development</span></td>
+            </tr>
+          </table>
+        </section>
+
+        <!-- ==================== RECOMMENDATION ==================== -->
+
+        <!-- Recommendation -->
+        <section>
+          <h2>Recommendation</h2>
+          <div class="executive-summary">
+            <h3>Proceed with Adoption</h3>
+            <p style="font-size: 0.7em; line-height: 1.4">
+              The workflow orchestration engine represents a strategic investment
+              with clear, measurable returns. The platform is production-ready for
+              core use cases with a proven quality track record.
+            </p>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-marker">1</div>
+            <div class="timeline-content">
+              <h4>Month 1: Pilot</h4>
+              <p>Deploy platform, build initial tasks, one team adopts</p>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-marker">2</div>
+            <div class="timeline-content">
+              <h4>Month 2-3: Expand</h4>
+              <p>Grow task library, onboard 3-5 teams, measure results</p>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-marker">3</div>
+            <div class="timeline-content">
+              <h4>Month 4+: Scale</h4>
+              <p>Organization-wide rollout, continuous improvement</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Key Metrics to Track -->
+        <section>
+          <h2>Success Metrics</h2>
+          <table>
+            <tr>
+              <th>Metric</th>
+              <th>Baseline</th>
+              <th>Target (6 months)</th>
+            </tr>
+            <tr>
+              <td>Integration delivery time</td>
+              <td>8 days</td>
+              <td class="highlight-green">&lt;1 day</td>
+            </tr>
+            <tr>
+              <td>Integration-related incidents</td>
+              <td>X per month</td>
+              <td class="highlight-green">50% reduction</td>
+            </tr>
+            <tr>
+              <td>Time to debug incidents</td>
+              <td>2-3 hours</td>
+              <td class="highlight-green">&lt;30 minutes</td>
+            </tr>
+            <tr>
+              <td>Tasks in shared library</td>
+              <td>0</td>
+              <td class="highlight-green">30+</td>
+            </tr>
+            <tr>
+              <td>Teams using platform</td>
+              <td>0</td>
+              <td class="highlight-green">10+</td>
+            </tr>
+            <tr>
+              <td>Workflows in production</td>
+              <td>0</td>
+              <td class="highlight-green">50+</td>
+            </tr>
+          </table>
+        </section>
+
+        <!-- Final Summary -->
+        <section class="center" data-background-color="#f8f9fa">
+          <h2>Summary</h2>
+          <div
+            style="
+              display: flex;
+              flex-wrap: wrap;
+              justify-content: center;
+              gap: 0.5em;
+              margin: 0.8em 0;
+            "
+          >
+            <span class="badge badge-gold">$1.5M+ Annual Savings</span>
+            <span class="badge badge-green">95% Faster Integrations</span>
+            <span class="badge badge-green">50% Fewer Bugs</span>
+            <span class="badge badge-blue">20% Capacity Unlocked</span>
+          </div>
+          <p style="font-size: 0.8em; color: #495057; margin-top: 0.8em;">
+            Transform integration development from a <span class="highlight-red">cost center</span>
+            to a <span class="highlight-green">competitive advantage</span>.
+          </p>
+          <p style="font-size: 0.65em; color: #888; margin-top: 1em;">
+            Production-grade platform. Proven quality. Clear ROI.
+          </p>
+        </section>
+
+        <!-- Questions -->
+        <section class="center" data-background-color="#1a1a2e">
+          <h1 style="color: #fff">Questions?</h1>
+          <p style="margin-top: 1em; color: #4dabf7; font-size: 0.8em">
+            Ready to discuss next steps
+          </p>
+        </section>
+      </div>
+    </div>
+
+    <!-- Lightbox for fullscreen images -->
+    <div class="lightbox" id="lightbox">
+      <img src="" alt="Fullscreen diagram" />
+      <div class="lightbox-hint">Click anywhere or press Escape to close</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+    <script>
+      Reveal.initialize({
+        hash: true,
+        slideNumber: true,
+        transition: "slide",
+        width: 960,
+        height: 700,
+        margin: 0.04,
+        center: true,
+      });
+
+      // Lightbox functionality
+      const lightbox = document.getElementById("lightbox");
+      const lightboxImg = lightbox.querySelector("img");
+
+      document.querySelectorAll(".mermaid-container img").forEach((img) => {
+        img.addEventListener("click", (e) => {
+          e.stopPropagation();
+          lightboxImg.src = img.src;
+          lightbox.classList.add("active");
+        });
+      });
+
+      lightbox.addEventListener("click", () => {
+        lightbox.classList.remove("active");
+      });
+
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") lightbox.classList.remove("active");
+      });
+    </script>
+  </body>
+</html>

@@ -63,7 +63,7 @@ var workflowConfig = builder.Configuration.GetSection("Workflow");
 var executionTimeout = workflowConfig.GetValue<int>("ExecutionTimeoutSeconds", 30);
 var watcherInterval = workflowConfig.GetValue<int>("WatcherIntervalSeconds", 30);
 var discoveryCacheTTL = workflowConfig.GetValue<int>("DiscoveryCacheTTLSeconds", 30);
-var kubernetesNamespaces = workflowConfig.GetSection("Kubernetes:Namespaces").Get<string[]>() ?? new[] { "default" };
+// Note: Namespaces are now auto-discovered using cluster-wide queries - no configuration needed
 
 // Register database services
 var connectionString = builder.Configuration.GetConnectionString("WorkflowDatabase");
@@ -162,8 +162,7 @@ builder.Services.AddSingleton<IKubernetesWorkflowClient, KubernetesWorkflowClien
 builder.Services.AddSingleton<IWorkflowDiscoveryService>(sp =>
     new WorkflowDiscoveryService(
         sp.GetRequiredService<IKubernetesWorkflowClient>(),
-        discoveryCacheTTL,
-        kubernetesNamespaces));
+        discoveryCacheTTL));
 builder.Services.AddSingleton<ITemplateDiscoveryService, TemplateDiscoveryService>();
 builder.Services.AddSingleton<IDynamicEndpointService, DynamicEndpointService>();
 builder.Services.AddScoped<IInputValidationService, InputValidationService>();

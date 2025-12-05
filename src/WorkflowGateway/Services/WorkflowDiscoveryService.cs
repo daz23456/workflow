@@ -16,23 +16,21 @@ public class WorkflowDiscoveryService : IWorkflowDiscoveryService
 {
     private readonly IKubernetesWorkflowClient _kubernetesClient;
     private readonly int _cacheTTLSeconds;
-    private readonly string[] _configuredNamespaces;
     private readonly ConcurrentDictionary<string, CacheEntry<List<WorkflowResource>>> _workflowCache = new();
     private readonly ConcurrentDictionary<string, CacheEntry<List<WorkflowTaskResource>>> _taskCache = new();
     private readonly object _eventLock = new();
 
     public event EventHandler<WorkflowChangedEventArgs>? WorkflowsChanged;
 
-    public WorkflowDiscoveryService(IKubernetesWorkflowClient kubernetesClient, int cacheTTLSeconds = 30, string[]? namespaces = null)
+    public WorkflowDiscoveryService(IKubernetesWorkflowClient kubernetesClient, int cacheTTLSeconds = 30)
     {
         _kubernetesClient = kubernetesClient ?? throw new ArgumentNullException(nameof(kubernetesClient));
         _cacheTTLSeconds = cacheTTLSeconds;
-        _configuredNamespaces = namespaces ?? new[] { "default" };
     }
 
     public async Task<List<WorkflowResource>> DiscoverWorkflowsAsync(string? @namespace = null)
     {
-        // If no namespace specified, query all configured namespaces
+        // If no namespace specified, use cluster-wide query to get all workflows
         if (@namespace == null)
         {
             var cacheKey = "workflows:all";
@@ -46,8 +44,8 @@ public class WorkflowDiscoveryService : IWorkflowDiscoveryService
                 }
             }
 
-            // Query all configured namespaces in parallel
-            var workflows = await _kubernetesClient.ListWorkflowsFromNamespacesAsync(_configuredNamespaces);
+            // Use cluster-wide query - auto-discovers all namespaces
+            var workflows = await _kubernetesClient.ListAllWorkflowsAsync();
 
             // Update cache
             var previousWorkflows = cached?.Data ?? new List<WorkflowResource>();
@@ -101,7 +99,7 @@ public class WorkflowDiscoveryService : IWorkflowDiscoveryService
 
     public async Task<List<WorkflowTaskResource>> DiscoverTasksAsync(string? @namespace = null)
     {
-        // If no namespace specified, query all configured namespaces
+        // If no namespace specified, use cluster-wide query to get all tasks
         if (@namespace == null)
         {
             var cacheKey = "tasks:all";
@@ -115,8 +113,8 @@ public class WorkflowDiscoveryService : IWorkflowDiscoveryService
                 }
             }
 
-            // Query all configured namespaces in parallel
-            var tasks = await _kubernetesClient.ListTasksFromNamespacesAsync(_configuredNamespaces);
+            // Use cluster-wide query - auto-discovers all namespaces
+            var tasks = await _kubernetesClient.ListAllTasksAsync();
 
             // Update cache
             _taskCache[cacheKey] = new CacheEntry<List<WorkflowTaskResource>>

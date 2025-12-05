@@ -1,0 +1,1 @@
+Mutation testing skipped (BACKEND_DOTNET)

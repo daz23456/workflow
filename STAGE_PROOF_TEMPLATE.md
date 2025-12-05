@@ -316,37 +316,61 @@ ls -la ./reports/test-results/test-results.xml
 
 ---
 
-## 📸 UI Screenshots (FRONTEND_TS only)
+## 📸 UI Screenshots
 
-**Required for stages with UI components:**
+**Required for stages that affect UI pages.**
 
-**Source: Storybook Stories (Recommended)**
+### Screenshot Workflow
+
 ```bash
-# Automated capture from all Storybook stories
-npx storycap http://localhost:6006 --outDir ./stage-proofs/stage-X/screenshots
+# 1. Generate manifest (based on changed UI files + declared pages)
+./scripts/generate-screenshot-manifest.sh --stage X
+
+# 2. Capture screenshots (5 states per page: default, loading, empty, error, feature)
+cd src/workflow-ui && npx ts-node scripts/take-screenshots.ts --stage X
+
+# 3. Validate with Gate 22
+./scripts/run-quality-gates.sh --stage X 22
 ```
 
-| Screenshot | Source | Path |
-|------------|--------|------|
-| [Component]--default | Storybook (storycap) | `./screenshots/component--default.png` |
-| [Component]--loading | Storybook (storycap) | `./screenshots/component--loading.png` |
-| [Component]--error | Storybook (storycap) | `./screenshots/component--error.png` |
-| [Component]--empty | Storybook (storycap) | `./screenshots/component--empty.png` |
-| [Page] - Integration | Manual/Playwright | `./screenshots/page-integration.png` |
+### Affected UI Pages
 
-**Verification:**
-- [ ] `npx storycap` run to capture all Storybook stories
-- [ ] Every component with a `.stories.tsx` file has corresponding screenshots
-- [ ] Integration screenshots captured for new pages (manual)
-- [ ] Screenshots are committed to `stage-proofs/stage-X/screenshots/`
+**Declared during init-stage.sh:** [list routes or "none"]
 
-**Completeness Check:**
-```bash
-# Gate 22 cross-references stories → screenshots
-# If Gate 21 passes (all components have stories) AND
-# Gate 22 passes (all stories have screenshots) THEN
-# All components have screenshots ✅
-```
+### Screenshots Captured
+
+**Summary:** [N/N] screenshots captured
+
+| Page | State | Screenshot |
+|------|-------|------------|
+| [/route] | default | `./screenshots/route--default.png` |
+| [/route] | loading | `./screenshots/route--loading.png` |
+| [/route] | empty | `./screenshots/route--empty.png` |
+| [/route] | error | `./screenshots/route--error.png` |
+| [/route] | feature | `./screenshots/route--feature.png` |
+
+### Preview
+
+<details>
+<summary>Click to expand screenshots</summary>
+
+#### [Page Name] - Default State
+![route--default](./screenshots/route--default.png)
+
+#### [Page Name] - Feature Highlight
+![route--feature](./screenshots/route--feature.png)
+
+</details>
+
+### Verification
+
+- [ ] `./scripts/generate-screenshot-manifest.sh --stage X` run
+- [ ] Manifest generated: `./screenshots-required.txt`
+- [ ] Screenshots captured: `./screenshots/*.png`
+- [ ] Gate 22 passed (all required screenshots present)
+- [ ] Screenshots committed to `stage-proofs/stage-X/screenshots/`
+
+**Gate 22 Result:** [✅ PASS / ❌ FAIL / ⏭️ N/A (no UI changes)]
 
 ---
 

@@ -18,6 +18,9 @@ public class WorkflowValidator : IWorkflowValidator
     // Valid identifier pattern: starts with letter or underscore, followed by alphanumeric or underscore
     private static readonly Regex IdentifierRegex = new(@"^[a-zA-Z_][a-zA-Z0-9_]*$", RegexOptions.Compiled);
 
+    // Maximum nesting depth for forEach (default: 3)
+    private const int MaxForEachNestingDepth = 3;
+
     public WorkflowValidator(
         ITemplateParser templateParser,
         ITypeCompatibilityChecker typeChecker)
@@ -146,6 +149,9 @@ public class WorkflowValidator : IWorkflowValidator
                 }
             }
         }
+
+        // Validate forEach nesting depth
+        ValidateForEachNestingDepth(workflow, errors);
 
         return Task.FromResult(new ValidationResult
         {
@@ -420,5 +426,82 @@ public class WorkflowValidator : IWorkflowValidator
         }
 
         return current;
+    }
+
+    /// <summary>
+    /// Validates that forEach nesting depth does not exceed the maximum allowed.
+    /// Nesting is determined by DependsOn relationships between forEach tasks.
+    /// </summary>
+    private void ValidateForEachNestingDepth(WorkflowResource workflow, List<ValidationError> errors)
+    {
+        // Build a map of task ID to task for quick lookup
+        var taskMap = workflow.Spec.Tasks.ToDictionary(t => t.Id);
+
+        // Find all tasks with forEach
+        var forEachTasks = workflow.Spec.Tasks.Where(t => t.ForEach != null).ToList();
+        if (forEachTasks.Count == 0)
+        {
+            return;
+        }
+
+        // Calculate nesting depth for each forEach task by following DependsOn chain
+        foreach (var task in forEachTasks)
+        {
+            var depth = CalculateForEachNestingDepth(task, taskMap, new HashSet<string>());
+            if (depth > MaxForEachNestingDepth)
+            {
+                errors.Add(new ValidationError
+                {
+                    TaskId = task.Id,
+                    Field = "forEach",
+                    Message = $"ForEach nesting depth of {depth} exceeds maximum allowed depth of {MaxForEachNestingDepth}",
+                    SuggestedFix = $"Reduce nesting by restructuring the workflow. Maximum allowed nesting depth is {MaxForEachNestingDepth}."
+                });
+            }
+        }
+    }
+
+    /// <summary>
+    /// Calculates the nesting depth for a forEach task by following DependsOn chain.
+    /// </summary>
+    private int CalculateForEachNestingDepth(
+        WorkflowTaskStep task,
+        Dictionary<string, WorkflowTaskStep> taskMap,
+        HashSet<string> visited)
+    {
+        // Prevent infinite recursion from circular dependencies
+        if (!visited.Add(task.Id))
+        {
+            return 0;
+        }
+
+        // If no forEach, this task doesn't contribute to nesting
+        if (task.ForEach == null)
+        {
+            return 0;
+        }
+
+        // If no dependencies, this is the root level
+        if (task.DependsOn == null || task.DependsOn.Count == 0)
+        {
+            return 1;
+        }
+
+        // Find the maximum depth of parent forEach tasks
+        int maxParentDepth = 0;
+        foreach (var depId in task.DependsOn)
+        {
+            if (taskMap.TryGetValue(depId, out var parentTask))
+            {
+                // Only count if parent has forEach (we're counting forEach nesting, not all dependencies)
+                if (parentTask.ForEach != null)
+                {
+                    var parentDepth = CalculateForEachNestingDepth(parentTask, taskMap, visited);
+                    maxParentDepth = Math.Max(maxParentDepth, parentDepth);
+                }
+            }
+        }
+
+        return maxParentDepth + 1;
     }
 }

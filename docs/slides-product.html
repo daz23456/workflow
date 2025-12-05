@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Workflow Orchestration - For Product Teams</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reset.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/white.css"
+    />
+    <style>
+      :root {
+        --r-background-color: #ffffff;
+        --r-main-font: system-ui, -apple-system, sans-serif;
+        --r-heading-font: system-ui, -apple-system, sans-serif;
+        --r-main-color: #333;
+        --r-heading-color: #1a1a2e;
+        --r-link-color: #4dabf7;
+      }
+      .reveal .slides {
+        text-align: left;
+      }
+      .reveal .slides section {
+        padding: 10px 20px;
+      }
+      .reveal h1,
+      .reveal h2,
+      .reveal h3 {
+        text-transform: none;
+        font-weight: 600;
+        margin-bottom: 0.2em;
+      }
+      .reveal h1 {
+        font-size: 1.5em;
+        color: #1a1a2e;
+      }
+      .reveal h2 {
+        font-size: 1.1em;
+        color: #1a1a2e;
+      }
+      .reveal h3 {
+        font-size: 0.8em;
+      }
+      .reveal p {
+        margin: 0.2em 0;
+        font-size: 0.6em;
+      }
+      .reveal section {
+        text-align: left;
+      }
+      .reveal section.center {
+        text-align: center;
+      }
+      .reveal ul,
+      .reveal ol {
+        margin: 0.2em 0 0.2em 0.8em;
+      }
+      .reveal li {
+        margin: 0.15em 0;
+        font-size: 0.55em;
+      }
+      .reveal table {
+        margin: 0.3em auto;
+        font-size: 0.5em;
+      }
+      .reveal th,
+      .reveal td {
+        padding: 0.2em 0.4em;
+        border: 1px solid #ddd;
+      }
+      .reveal th {
+        background: #f8f9fa;
+        color: #1a1a2e;
+      }
+      .highlight-green {
+        color: #37b24d;
+      }
+      .highlight-blue {
+        color: #1c7ed6;
+      }
+      .highlight-red {
+        color: #e03131;
+      }
+      .mermaid-container {
+        background: #f8f9fa;
+        border-radius: 6px;
+        padding: 10px;
+        margin: 8px auto;
+        max-width: 80%;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      }
+      .mermaid-container img {
+        max-width: 100%;
+        max-height: 200px;
+        height: auto;
+      }
+      .benefit-card {
+        background: linear-gradient(135deg, #f8f9fa, #fff);
+        border-radius: 10px;
+        padding: 0.5em;
+        text-align: center;
+        margin: 0.2em;
+        border: 1px solid #e9ecef;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      }
+      .benefit-number {
+        font-size: 1.5em;
+        font-weight: 700;
+        color: #37b24d;
+      }
+      .benefit-label {
+        font-size: 0.5em;
+        color: #666;
+        margin-top: 0.1em;
+      }
+      .emoji {
+        font-size: 0.9em;
+        margin-right: 0.15em;
+      }
+      .quote {
+        font-style: italic;
+        font-size: 0.6em;
+        color: #495057;
+        border-left: 3px solid #4dabf7;
+        padding-left: 0.6em;
+        margin: 0.3em 0;
+      }
+      .badge {
+        display: inline-block;
+        padding: 0.2em 0.5em;
+        border-radius: 16px;
+        font-size: 0.5em;
+        margin: 0.15em;
+        font-weight: 500;
+      }
+      .badge-green {
+        background: #d3f9d8;
+        color: #2b8a3e;
+      }
+      .badge-blue {
+        background: #d0ebff;
+        color: #1864ab;
+      }
+      .comparison-box {
+        display: flex;
+        gap: 0.6em;
+        margin: 0.3em 0;
+      }
+      .comparison-box > div {
+        flex: 1;
+        padding: 0.4em;
+        border-radius: 6px;
+      }
+      .comparison-box h3 {
+        font-size: 0.7em;
+        margin-bottom: 0.2em;
+      }
+      .comparison-box ul {
+        margin: 0.15em 0;
+      }
+      .comparison-box li {
+        font-size: 0.5em;
+        margin: 0.1em 0;
+      }
+      .comparison-box p {
+        font-size: 0.55em;
+        margin: 0.2em 0;
+      }
+      .before-box {
+        background: #fff5f5;
+        border: 2px solid #ffc9c9;
+      }
+      .after-box {
+        background: #ebfbee;
+        border: 2px solid #b2f2bb;
+      }
+      .mermaid-container img {
+        cursor: zoom-in;
+      }
+      .lightbox {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.95);
+        z-index: 9999;
+        justify-content: center;
+        align-items: center;
+        cursor: zoom-out;
+      }
+      .lightbox.active {
+        display: flex;
+      }
+      .lightbox img {
+        width: auto;
+        height: auto;
+        min-width: 80vw;
+        min-height: 60vh;
+        max-width: 98vw;
+        max-height: 92vh;
+        object-fit: contain;
+        border-radius: 8px;
+        background: #fff;
+        padding: 20px;
+      }
+      .lightbox-hint {
+        position: absolute;
+        bottom: 15px;
+        color: #666;
+        font-size: 13px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <!-- ==================== TITLE ==================== -->
+        <section class="center" data-background-color="#f8f9fa">
+          <h1 style="color: #1a1a2e">Workflow Orchestration</h1>
+          <p style="font-size: 1em; color: #4dabf7; margin-top: 0.3em">
+            Build Integrations in Minutes, Not Weeks
+          </p>
+          <p style="color: #888; margin-top: 1em; font-size: 0.7em">
+            A Guide for Product Teams
+          </p>
+        </section>
+
+        <!-- ==================== SECTION 1: THE PROBLEM ==================== -->
+
+        <!-- The Problem You Face -->
+        <section>
+          <h2>Today: The Problem You Face</h2>
+          <div class="quote">
+            "We need to integrate with three APIs. Engineering says it'll take 6
+            weeks."
+          </div>
+          <ul>
+            <li>
+              <span class="emoji">😓</span> Every integration starts from
+              scratch
+            </li>
+            <li>
+              <span class="emoji">🐛</span> Debugging means waiting for
+              engineers to "dive into logs"
+            </li>
+            <li>
+              <span class="emoji">⏳</span> Simple changes take days of
+              back-and-forth
+            </li>
+            <li>
+              <span class="emoji">🔒</span> You're blocked by engineering
+              capacity
+            </li>
+          </ul>
+        </section>
+
+        <!-- Today's Integration Reality -->
+        <section>
+          <h2>Today: Integration Reality</h2>
+          <div class="comparison-box">
+            <div class="before-box" style="flex: 1">
+              <h3 style="color: #c92a2a">What You Experience</h3>
+              <ul>
+                <li>Write Jira ticket, wait for sprint</li>
+                <li>2+ weeks of engineering work</li>
+                <li>QA, staging, production rollout</li>
+                <li>Add monitoring as afterthought</li>
+                <li>Hope nothing breaks</li>
+              </ul>
+              <p style="text-align: center; font-weight: bold; color: #c92a2a">
+                6 weeks total
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Today's Debugging Reality -->
+        <section>
+          <h2>Today: Debugging Reality</h2>
+          <div class="comparison-box">
+            <div class="before-box" style="flex: 1">
+              <h3 style="color: #c92a2a">What You Experience</h3>
+              <ul>
+                <li>Ask engineering to check logs</li>
+                <li>Wait 2-3 days for response</li>
+                <li>No end-to-end visibility</li>
+                <li>Metrics scattered per service</li>
+                <li>Can't see bottlenecks</li>
+                <li>"We're looking into it..."</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== SECTION 2: THE SOLUTION ==================== -->
+
+        <!-- What If -->
+        <section class="center">
+          <h2>What If You Could...</h2>
+          <div
+            style="
+              display: flex;
+              justify-content: center;
+              flex-wrap: wrap;
+              gap: 0.8em;
+              margin-top: 1em;
+            "
+          >
+            <div class="benefit-card" style="min-width: 160px">
+              <div class="benefit-number">5 min</div>
+              <div class="benefit-label">Build your first workflow</div>
+            </div>
+            <div class="benefit-card" style="min-width: 160px">
+              <div class="benefit-number">0</div>
+              <div class="benefit-label">Lines of code to write</div>
+            </div>
+            <div class="benefit-card" style="min-width: 160px">
+              <div class="benefit-number">70%</div>
+              <div class="benefit-label">Start from templates</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- The Task Library (Building Blocks) -->
+        <section>
+          <h2><span class="emoji">🧱</span> Solution: The Task Library</h2>
+          <p>Pre-built, tested, ready-to-use building blocks.</p>
+          <div class="mermaid-container">
+            <img
+              src="https://mermaid.ink/img/Z3JhcGggVEIKICAgIHN1YmdyYXBoICJUYXNrIExpYnJhcnkiCiAgICAgICAgVDFbY2hhcmdlLXBheW1lbnRdCiAgICAgICAgVDJbc2VuZC1lbWFpbF0KICAgICAgICBUM1tjaGVjay1pbnZlbnRvcnldCiAgICAgICAgVDRbY3JlYXRlLXNoaXBtZW50XQogICAgZW5kCgogICAgVDEgLS0+IFcxW1lvdXIgV29ya2Zsb3ddCiAgICBUMiAtLT4gVzEKICAgIFQzIC0tPiBXMQogICAgVDQgLS0+IFcxCgogICAgc3R5bGUgVDEgZmlsbDojZDBlYmZmCiAgICBzdHlsZSBUMiBmaWxsOiNkMGViZmYKICAgIHN0eWxlIFQzIGZpbGw6I2QwZWJmZgogICAgc3R5bGUgVDQgZmlsbDojZDBlYmZmCiAgICBzdHlsZSBXMSBmaWxsOiNkM2Y5ZDg="
+              alt="Task Library"
+              loading="eager"
+            />
+          </div>
+          <ul>
+            <li>Engineering team maintains the tasks</li>
+            <li>You can pick and combine them</li>
+            <li>Already tested, already reliable</li>
+          </ul>
+        </section>
+
+        <!-- Visual Workflow Builder -->
+        <section>
+          <h2><span class="emoji">🎨</span> Solution: Visual Builder</h2>
+          <p>Drag, drop, connect. No code required.</p>
+          <div class="mermaid-container">
+            <img
+              src="https://mermaid.ink/img/Z3JhcGggTFIKICAgIEFbR2V0IE9yZGVyXSAtLT4gQltDaGVjayBJbnZlbnRvcnldCiAgICBBIC0tPiBDW0dldCBDdXN0b21lcl0KICAgIEIgLS0+IERbQ2hhcmdlIFBheW1lbnRdCiAgICBDIC0tPiBECiAgICBEIC0tPiBFW1NlbmQgQ29uZmlybWF0aW9uXQoKICAgIHN0eWxlIEEgZmlsbDojZDBlYmZmCiAgICBzdHlsZSBCIGZpbGw6I2QwZWJmZgogICAgc3R5bGUgQyBmaWxsOiNkMGViZmYKICAgIHN0eWxlIEQgZmlsbDojZDNmOWQ4CiAgICBzdHlsZSBFIGZpbGw6I2ZmZjNiZg=="
+              alt="Visual Workflow"
+              loading="eager"
+            />
+          </div>
+          <ul>
+            <li>
+              <span class="highlight-green">Click</span> to add tasks from the
+              library
+            </li>
+            <li>
+              <span class="highlight-green">Drag</span> to connect them in order
+            </li>
+            <li>
+              <span class="highlight-green">Test</span> immediately with sample
+              data
+            </li>
+          </ul>
+        </section>
+
+        <!-- Template Library -->
+        <section>
+          <h2><span class="emoji">📚</span> Solution: Templates</h2>
+          <p>Don't reinvent the wheel. Pick a template and customize.</p>
+          <div
+            style="display: flex; flex-wrap: wrap; gap: 0.4em; margin: 0.8em 0"
+          >
+            <span class="badge badge-blue">Order Checkout</span>
+            <span class="badge badge-blue">Payment Processing</span>
+            <span class="badge badge-blue">User Registration</span>
+            <span class="badge badge-blue">Notification Pipeline</span>
+            <span class="badge badge-blue">Data Sync</span>
+            <span class="badge badge-green">Subscription Renewal</span>
+            <span class="badge badge-green">Refund Flow</span>
+            <span class="badge badge-green">Inventory Check</span>
+          </div>
+          <div class="quote">
+            "70% of our workflows started from a template and were live in under
+            10 minutes."
+          </div>
+        </section>
+
+        <!-- AI-Powered Generation -->
+        <section>
+          <h2><span class="emoji">🤖</span> Solution: AI Generation</h2>
+          <p>Describe what you need in plain English.</p>
+          <div
+            style="
+              background: #f8f9fa;
+              border-radius: 8px;
+              padding: 0.8em;
+              margin: 0.6em 0;
+              font-family: monospace;
+              font-size: 0.65em;
+            "
+          >
+            <p style="color: #666; margin-bottom: 0.3em">You:</p>
+            <p style="color: #1a1a2e">
+              "When a new order comes in, check inventory, charge the customer,
+              and send a confirmation email"
+            </p>
+            <p style="color: #666; margin: 0.5em 0 0.3em">AI:</p>
+            <p style="color: #2b8a3e">
+              "I've created a workflow with 4 tasks. Want me to add error
+              handling for failed payments?"
+            </p>
+          </div>
+          <p>
+            <span class="highlight-green">30 seconds</span> from idea to working
+            workflow.
+          </p>
+        </section>
+
+        <!-- ==================== SECTION 3: THE TRANSFORMATION ==================== -->
+
+        <!-- Before/After: Integration Time -->
+        <section>
+          <h2>The Transformation: Integration</h2>
+          <div class="comparison-box">
+            <div class="before-box">
+              <h3 style="color: #c92a2a">Before</h3>
+              <ul>
+                <li>Write Jira ticket, wait for sprint</li>
+                <li>2+ weeks of engineering</li>
+                <li>QA, staging, production rollout</li>
+                <li>Add monitoring separately</li>
+                <li>Hope nothing breaks</li>
+              </ul>
+              <p style="text-align: center; font-weight: bold; color: #c92a2a">
+                6 weeks
+              </p>
+            </div>
+            <div class="after-box">
+              <h3 style="color: #2b8a3e">After</h3>
+              <ul>
+                <li>Pick a template</li>
+                <li>Customize in visual builder</li>
+                <li>Test with dry-run mode</li>
+                <li>Observability built-in</li>
+                <li>Deploy with one click</li>
+              </ul>
+              <p style="text-align: center; font-weight: bold; color: #2b8a3e">
+                5 minutes
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Before/After: Debugging -->
+        <section>
+          <h2>The Transformation: Debugging</h2>
+          <div class="comparison-box">
+            <div class="before-box">
+              <h3 style="color: #c92a2a">Before</h3>
+              <ul>
+                <li>Ask engineering to check logs</li>
+                <li>Wait 2-3 days for response</li>
+                <li>No end-to-end visibility</li>
+                <li>Metrics scattered per service</li>
+                <li>Can't see bottlenecks</li>
+              </ul>
+            </div>
+            <div class="after-box">
+              <h3 style="color: #2b8a3e">After</h3>
+              <ul>
+                <li>Click on failed workflow</li>
+                <li>See exact step that failed</li>
+                <li>Full execution traces</li>
+                <li>Unified metrics dashboard</li>
+                <li>Identify bottlenecks instantly</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- Real-Time Visibility -->
+        <section>
+          <h2><span class="emoji">👁️</span> Real-Time Visibility</h2>
+          <p>See exactly what's happening, as it happens.</p>
+          <div class="mermaid-container">
+            <img
+              src="https://mermaid.ink/img/c2VxdWVuY2VEaWFncmFtCiAgICBwYXJ0aWNpcGFudCBZb3UKICAgIHBhcnRpY2lwYW50IFdvcmtmbG93CiAgICBwYXJ0aWNpcGFudCBUYXNrcwoKICAgIFlvdS0+PldvcmtmbG93OiBDbGljayAiUnVuIgogICAgV29ya2Zsb3ctPj5UYXNrczogVGFzayAxIHN0YXJ0cwogICAgVGFza3MtLT4+WW91OiDinIUgVGFzayAxIGNvbXBsZXRlICgwLjJzKQogICAgV29ya2Zsb3ctPj5UYXNrczogVGFzayAyIHN0YXJ0cwogICAgVGFza3MtLT4+WW91OiDinIUgVGFzayAyIGNvbXBsZXRlICgwLjNzKQogICAgV29ya2Zsb3ctLT4+WW91OiDwn46JIFdvcmtmbG93IGRvbmUhICgwLjVzKQ=="
+              alt="Real-time execution"
+              loading="eager"
+            />
+          </div>
+          <ul>
+            <li>Live updates as each step completes</li>
+            <li>Instant error notifications with clear messages</li>
+            <li>Execution history for every run</li>
+          </ul>
+        </section>
+
+        <!-- Time-Travel Debugging -->
+        <section>
+          <h2><span class="emoji">⏱️</span> Time-Travel Debugging</h2>
+          <p>Scrub through any past execution like a video timeline.</p>
+          <ul>
+            <li>
+              <span class="highlight-blue">Replay</span> - Watch the workflow
+              run step by step
+            </li>
+            <li>
+              <span class="highlight-blue">Inspect</span> - See input/output at
+              each step
+            </li>
+            <li>
+              <span class="highlight-blue">Compare</span> - Side-by-side with a
+              working run
+            </li>
+            <li>
+              <span class="highlight-blue">Pinpoint</span> - Find exactly where
+              things went wrong
+            </li>
+          </ul>
+          <div class="quote">
+            "What used to take our engineers 2 hours to debug, I can now figure
+            out in 5 minutes."
+          </div>
+        </section>
+
+        <!-- ==================== SECTION 4: THE RESULTS ==================== -->
+
+        <!-- Self-Service -->
+        <section class="center">
+          <h2><span class="emoji">🚀</span> Self-Service Power</h2>
+          <p style="font-size: 0.8em; margin: 0.5em 0">
+            You don't need to wait for engineering anymore.
+          </p>
+          <div
+            style="
+              display: flex;
+              justify-content: center;
+              flex-wrap: wrap;
+              gap: 0.6em;
+              margin-top: 0.8em;
+            "
+          >
+            <div class="benefit-card" style="min-width: 120px">
+              <div style="font-size: 1.5em">📝</div>
+              <div class="benefit-label">Create workflows yourself</div>
+            </div>
+            <div class="benefit-card" style="min-width: 120px">
+              <div style="font-size: 1.5em">🧪</div>
+              <div class="benefit-label">Test before deploying</div>
+            </div>
+            <div class="benefit-card" style="min-width: 120px">
+              <div style="font-size: 1.5em">🔍</div>
+              <div class="benefit-label">Debug issues directly</div>
+            </div>
+            <div class="benefit-card" style="min-width: 120px">
+              <div style="font-size: 1.5em">📊</div>
+              <div class="benefit-label">Monitor performance</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- What Your Engineers Can Do Now -->
+        <section>
+          <h2><span class="emoji">💡</span> What Your Engineers Can Do Now</h2>
+          <div class="comparison-box">
+            <div class="before-box">
+              <h3 style="color: #c92a2a">Before: Busy Work</h3>
+              <ul>
+                <li>Copy-pasting API clients</li>
+                <li>Writing retry logic (again)</li>
+                <li>Debugging race conditions</li>
+                <li>Coordinating 30 PRs for one change</li>
+                <li>Log diving for hours</li>
+              </ul>
+            </div>
+            <div class="after-box">
+              <h3 style="color: #2b8a3e">After: Revenue Work</h3>
+              <ul>
+                <li>Building new product features</li>
+                <li>Improving core business logic</li>
+                <li>Performance optimization</li>
+                <li>AI/ML integrations</li>
+                <li>Architecture & innovation</li>
+              </ul>
+            </div>
+          </div>
+          <p
+            style="
+              text-align: center;
+              margin-top: 0.5em;
+              font-size: 0.6em;
+              color: #666;
+            "
+          >
+            Your team's skills are
+            <span class="highlight-green">too valuable</span> for integration
+            plumbing.
+          </p>
+          <p
+            style="
+              text-align: center;
+              margin-top: 0.5em;
+              font-size: 0.6em;
+              color: #666;
+            "
+          >
+            Lets unlock some new
+            <span class="highlight-green">Revenue opportunities</span>
+          </p>
+        </section>
+
+        <!-- What You Can Build -->
+        <section>
+          <h2>What You Can Build</h2>
+          <table>
+            <tr>
+              <th>Use Case</th>
+              <th>Example</th>
+            </tr>
+            <tr>
+              <td>dunnhumby</td>
+              <td>Check Permission → Fetch → Science → Persist</td>
+            </tr>
+            <tr>
+              <td>Order Processing</td>
+              <td>Validate → Charge → Fulfill → Notify</td>
+            </tr>
+            <tr>
+              <td>User Onboarding</td>
+              <td>Create Account → Send Welcome → Setup Preferences</td>
+            </tr>
+            <tr>
+              <td>Payment Flows</td>
+              <td>Check Balance → Process Payment → Update Ledger</td>
+            </tr>
+            <tr>
+              <td>Notification Pipelines</td>
+              <td>Event → Format → Send Email/SMS/Push</td>
+            </tr>
+            <tr>
+              <td>Data Sync</td>
+              <td>Fetch → Transform → Push to External System</td>
+            </tr>
+          </table>
+        </section>
+
+        <!-- Velocity Metrics -->
+        <section class="center">
+          <h2>Your New Velocity</h2>
+          <div
+            style="
+              display: flex;
+              justify-content: center;
+              flex-wrap: wrap;
+              gap: 1em;
+              margin-top: 1em;
+            "
+          >
+            <div class="benefit-card" style="min-width: 150px">
+              <div class="benefit-number">5x</div>
+              <div class="benefit-label">Faster debugging</div>
+            </div>
+            <div class="benefit-card" style="min-width: 150px">
+              <div class="benefit-number">10x</div>
+              <div class="benefit-label">Faster integration</div>
+            </div>
+            <div class="benefit-card" style="min-width: 150px">
+              <div class="benefit-number">100%</div>
+              <div class="benefit-label">Self-service capability</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== SECTION 5: NEXT STEPS ==================== -->
+
+        <!-- Getting Started -->
+        <section>
+          <h2><span class="emoji">🎯</span> Getting Started</h2>
+          <ol style="font-size: 0.75em">
+            <li style="margin: 0.4em 0">
+              <strong>Open the Workflow Builder</strong> -
+              <span style="color: #666">Navigate to the visual builder</span>
+            </li>
+            <li style="margin: 0.4em 0">
+              <strong>Pick a Template</strong> -
+              <span style="color: #666"
+                >Start with Order Checkout or Notification</span
+              >
+            </li>
+            <li style="margin: 0.4em 0">
+              <strong>Customize</strong> -
+              <span style="color: #666"
+                >Add/remove tasks, configure settings</span
+              >
+            </li>
+            <li style="margin: 0.4em 0">
+              <strong>Test with Dry-Run</strong> -
+              <span style="color: #666">Validate before going live</span>
+            </li>
+            <li style="margin: 0.4em 0">
+              <strong>Deploy</strong> -
+              <span style="color: #666">One click to production</span>
+            </li>
+          </ol>
+        </section>
+
+        <!-- Summary -->
+        <section class="center" data-background-color="#f8f9fa">
+          <h2>You Now Have</h2>
+          <div
+            style="
+              display: flex;
+              flex-wrap: wrap;
+              justify-content: center;
+              gap: 0.4em;
+              margin: 1em 0;
+            "
+          >
+            <span class="badge badge-green">Visual Builder</span>
+            <span class="badge badge-green">Template Library</span>
+            <span class="badge badge-green">Real-Time Monitoring</span>
+            <span class="badge badge-green">Time-Travel Debugging</span>
+            <span class="badge badge-green">AI Generation</span>
+            <span class="badge badge-green">Self-Service Power</span>
+          </div>
+          <p style="font-size: 0.9em; color: #495057; margin-top: 1em">
+            Build integrations in <span class="highlight-green">minutes</span>,
+            not weeks.
+          </p>
+        </section>
+
+        <!-- Questions -->
+        <section class="center" data-background-color="#1a1a2e">
+          <h1 style="color: #fff">Questions?</h1>
+          <p style="margin-top: 1em; color: #4dabf7; font-size: 0.8em">
+            Let's build your first workflow together
+          </p>
+        </section>
+      </div>
+    </div>
+
+    <!-- Lightbox for fullscreen images -->
+    <div class="lightbox" id="lightbox">
+      <img src="" alt="Fullscreen diagram" />
+      <div class="lightbox-hint">Click anywhere or press Escape to close</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+    <script>
+      Reveal.initialize({
+        hash: true,
+        slideNumber: true,
+        transition: "slide",
+        width: 960,
+        height: 700,
+        margin: 0.04,
+        center: true,
+      });
+
+      // Lightbox functionality
+      const lightbox = document.getElementById("lightbox");
+      const lightboxImg = lightbox.querySelector("img");
+
+      document.querySelectorAll(".mermaid-container img").forEach((img) => {
+        img.addEventListener("click", (e) => {
+          e.stopPropagation();
+          lightboxImg.src = img.src;
+          lightbox.classList.add("active");
+        });
+      });
+
+      lightbox.addEventListener("click", () => {
+        lightbox.classList.remove("active");
+      });
+
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") lightbox.classList.remove("active");
+      });
+    </script>
+  </body>
+</html>

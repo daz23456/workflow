@@ -1,0 +1,1304 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Workflow Orchestration Engine - For Engineers</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reset.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/black.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css"
+    />
+    <style>
+      :root {
+        --r-background-color: #0a0a0f;
+        --r-main-font: system-ui, -apple-system, sans-serif;
+        --r-heading-font: system-ui, -apple-system, sans-serif;
+        --r-main-color: #e0e0e0;
+        --r-heading-color: #fff;
+        --r-link-color: #4dabf7;
+      }
+      .reveal .slides section {
+        padding: 10px 20px;
+      }
+      .reveal h1,
+      .reveal h2,
+      .reveal h3 {
+        text-transform: none;
+        margin-bottom: 0.2em;
+      }
+      .reveal h1 {
+        font-size: 1.5em;
+      }
+      .reveal h2 {
+        font-size: 1.1em;
+      }
+      .reveal h3 {
+        font-size: 0.75em;
+      }
+      .reveal p {
+        font-size: 0.6em;
+        margin: 0.2em 0;
+      }
+      .reveal section {
+        text-align: left;
+      }
+      .reveal section.center {
+        text-align: center;
+      }
+      .reveal ul,
+      .reveal ol {
+        margin: 0.2em 0 0.2em 0.8em;
+      }
+      .reveal li {
+        margin: 0.15em 0;
+        font-size: 0.55em;
+      }
+      .reveal table {
+        margin: 0.3em auto;
+        font-size: 0.5em;
+      }
+      .reveal th,
+      .reveal td {
+        padding: 0.2em 0.4em;
+        border: 1px solid #444;
+      }
+      .reveal th {
+        background: #1a1a2e;
+      }
+      .reveal pre {
+        width: 100%;
+        font-size: 0.4em;
+        margin: 0.3em 0;
+      }
+      .reveal code {
+        font-family: "Fira Code", monospace;
+      }
+      .highlight-green {
+        color: #51cf66;
+      }
+      .highlight-blue {
+        color: #4dabf7;
+      }
+      .highlight-red {
+        color: #ff6b6b;
+      }
+      .highlight-yellow {
+        color: #ffd43b;
+      }
+      .mermaid-container {
+        background: #fff;
+        border-radius: 6px;
+        padding: 10px;
+        margin: 8px auto;
+        max-width: 85%;
+      }
+      .mermaid-container img {
+        max-width: 100%;
+        max-height: 220px;
+        height: auto;
+        display: block;
+        margin: 0 auto;
+      }
+      .two-column {
+        display: flex;
+        gap: 1em;
+      }
+      .two-column > div {
+        flex: 1;
+      }
+      .two-column h3 {
+        font-size: 0.7em;
+        margin-bottom: 0.15em;
+      }
+      .two-column li {
+        font-size: 0.5em;
+      }
+      .stat-box {
+        background: linear-gradient(135deg, #1a1a2e, #16213e);
+        border-radius: 8px;
+        padding: 0.5em;
+        text-align: center;
+        margin: 0.2em;
+      }
+      .stat-number {
+        font-size: 1.5em;
+        font-weight: bold;
+        color: #51cf66;
+      }
+      .stat-label {
+        font-size: 0.5em;
+        color: #888;
+      }
+      .badge {
+        display: inline-block;
+        padding: 0.15em 0.5em;
+        border-radius: 12px;
+        font-size: 0.5em;
+        margin: 0.1em;
+      }
+      .badge-green {
+        background: #51cf66;
+        color: #000;
+      }
+      .badge-blue {
+        background: #4dabf7;
+        color: #000;
+      }
+      .badge-red {
+        background: #ff6b6b;
+        color: #000;
+      }
+      .mermaid-container img {
+        cursor: zoom-in;
+      }
+      .lightbox {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.95);
+        z-index: 9999;
+        justify-content: center;
+        align-items: center;
+        cursor: zoom-out;
+      }
+      .lightbox.active {
+        display: flex;
+      }
+      .lightbox img {
+        width: auto;
+        height: auto;
+        min-width: 80vw;
+        min-height: 60vh;
+        max-width: 98vw;
+        max-height: 92vh;
+        object-fit: contain;
+        border-radius: 8px;
+        background: #fff;
+        padding: 20px;
+      }
+      .lightbox-hint {
+        position: absolute;
+        bottom: 15px;
+        color: #666;
+        font-size: 13px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <!-- Title Slide -->
+        <section
+          class="center"
+          data-background-gradient="linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 100%)"
+        >
+          <h1>Kubernetes-Native<br />Workflow Orchestration</h1>
+          <p style="font-size: 0.9em; color: #4dabf7">
+            From Mudball to Hub-and-Spoke
+          </p>
+          <p style="color: #888; margin-top: 1em; font-size: 0.7em">
+            Technical Deep-Dive for Engineers
+          </p>
+        </section>
+
+        <!-- THE PROBLEM: SECTION 1 -->
+
+        <!-- The Problem -->
+        <section>
+          <h2>Today: Integration Mudball</h2>
+          <div class="mermaid-container">
+            <img
+              loading="eager"
+              src="https://mermaid.ink/img/Z3JhcGggTFIKICAgIHN1YmdyYXBoICJCZWZvcmU6IE11ZGJhbGwiCiAgICAgICAgQTFbU2VydmljZSBBXSA8LS0+IEIxW1NlcnZpY2UgQl0KICAgICAgICBCMSA8LS0+IEMxW1NlcnZpY2UgQ10KICAgICAgICBBMSA8LS0+IEMxCiAgICAgICAgQTEgPC0tPiBEMVtTZXJ2aWNlIERdCiAgICAgICAgQjEgPC0tPiBEMQogICAgICAgIEMxIDwtLT4gRDEKICAgIGVuZAoKICAgIHN0eWxlIEExIGZpbGw6I2ZmNmI2YgogICAgc3R5bGUgQjEgZmlsbDojZmY2YjZiCiAgICBzdHlsZSBDMSBmaWxsOiNmZjZiNmIKICAgIHN0eWxlIEQxIGZpbGw6I2ZmNmI2Yg=="
+              alt="Mudball Architecture"
+            />
+          </div>
+          <ul>
+            <li><span class="highlight-red">N×N</span> integration points</li>
+            <li>
+              Retry logic duplicated in
+              <span class="highlight-red">every service</span>
+            </li>
+            <li>One change = <span class="highlight-red">30 PRs</span></li>
+          </ul>
+        </section>
+
+        <!-- Copy-Paste Hell -->
+        <section>
+          <h2>Today: Copy-Paste Hell</h2>
+          <div class="mermaid-container">
+            <img
+              loading="eager"
+              src="https://mermaid.ink/img/Z3JhcGggVEIKICAgIHN1YmdyYXBoICJCZWZvcmU6IENvcHktUGFzdGUgSGVsbCIKICAgICAgICBkaXJlY3Rpb24gVEIKICAgICAgICBTMVtTZXJ2aWNlIEFdIC0tPnxjb3B5LXBhc3RlfCBTVFJJUEUxW1N0cmlwZSBDbGllbnRdCiAgICAgICAgUzJbU2VydmljZSBCXSAtLT58Y29weS1wYXN0ZXwgU1RSSVBFMltTdHJpcGUgQ2xpZW50XQogICAgICAgIFMzW1NlcnZpY2UgQ10gLS0+fGNvcHktcGFzdGV8IFNUUklQRTNbU3RyaXBlIENsaWVudF0KICAgICAgICBTNFtTZXJ2aWNlIERdIC0tPnxjb3B5LXBhc3RlfCBTVFJJUEU0W1N0cmlwZSBDbGllbnRdCiAgICBlbmQKCiAgICBzdHlsZSBTVFJJUEUxIGZpbGw6I2ZmNmI2YgogICAgc3R5bGUgU1RSSVBFMiBmaWxsOiNmZjZiNmIKICAgIHN0eWxlIFNUUklQRTMgZmlsbDojZmY2YjZiCiAgICBzdHlsZSBTVFJJUEU0IGZpbGw6I2ZmNmI2Yg=="
+              alt="Copy-Paste Hell"
+            />
+          </div>
+          <ul>
+            <li>4 services = 4 copies of the same API client code</li>
+            <li>
+              Provider change = touching
+              <span class="highlight-red">30+ codebases</span>
+            </li>
+            <li>Bug fix in one = manual copy to all others</li>
+          </ul>
+        </section>
+
+        <!-- Before/After Comparison -->
+        <section>
+          <h2>Today's Pain Points</h2>
+          <table>
+            <tr>
+              <th>Current State</th>
+              <th>Impact</th>
+            </tr>
+            <tr>
+              <td>N×N integration points</td>
+              <td class="highlight-red">Exponential complexity</td>
+            </tr>
+            <tr>
+              <td>Retry logic in every service</td>
+              <td class="highlight-red">Inconsistent error handling</td>
+            </tr>
+            <tr>
+              <td>One change = 30 PRs</td>
+              <td class="highlight-red">Slow, error-prone releases</td>
+            </tr>
+            <tr>
+              <td>"Works on my machine"</td>
+              <td class="highlight-red">Runtime surprises</td>
+            </tr>
+            <tr>
+              <td>Debug via log diving</td>
+              <td class="highlight-red">Hours to find root cause</td>
+            </tr>
+            <tr>
+              <td>Distributed race conditions</td>
+              <td class="highlight-red">Non-reproducible bugs</td>
+            </tr>
+          </table>
+        </section>
+
+        <!-- THE SOLUTION: SECTION 2 -->
+
+        <!-- The Solution -->
+        <section>
+          <h2>Solution: Hub-and-Spoke</h2>
+          <div class="mermaid-container">
+            <img
+              loading="eager"
+              src="https://mermaid.ink/img/Z3JhcGggTFIKICAgIHN1YmdyYXBoICJBZnRlcjogSHViICYgU3Bva2UiCiAgICAgICAgSFVCW1dvcmtmbG93PE9yY2hlc3RyYXRvcl0KICAgICAgICBBMltTZXJ2aWNlIEFdIC0tPiBIVUIKICAgICAgICBCMltTZXJ2aWNlIEJdIC0tPiBIVUIKICAgICAgICBDMltTZXJ2aWNlIENdIC0tPiBIVUIKICAgICAgICBEMltTZXJ2aWNlIERdIC0tPiBIVUIKICAgIGVuZAoKICAgIHN0eWxlIEhVQiBmaWxsOiM1MWNmNjYKICAgIHN0eWxlIEEyIGZpbGw6IzRkYWJmNwogICAgc3R5bGUgQjIgZmlsbDojNGRhYmY3CiAgICBzdHlsZSBDMiBmaWxsOiM0ZGFiZjcKICAgIHN0eWxlIEQyIGZpbGw6IzRkYWJmNw=="
+              alt="Hub and Spoke Architecture"
+            />
+          </div>
+          <ul>
+            <li>
+              <span class="highlight-green">N+1</span> connections instead of
+              N×N
+            </li>
+            <li>
+              <span class="highlight-green">Central</span> retry policy, one
+              place to fix
+            </li>
+            <li>
+              One change = <span class="highlight-green">1 task update</span>
+            </li>
+          </ul>
+        </section>
+
+        <!-- Composable Task Library -->
+        <section>
+          <h2>Solution: Composable Tasks</h2>
+          <div class="mermaid-container">
+            <img
+              loading="eager"
+              src="https://mermaid.ink/img/Z3JhcGggVEIKICAgIHN1YmdyYXBoICJBZnRlcjogQ29tcG9zYWJsZSBUYXNrIExpYnJhcnkiCiAgICAgICAgZGlyZWN0aW9uIFRCCiAgICAgICAgVEFTS1tjaGFyZ2UtcGF5bWVudDxicj5Xb3JrZmxvd1Rhc2sgQ1JEXQoKICAgICAgICBXMVtvcmRlci1jaGVja291dF0gLS0+IFRBU0sKICAgICAgICBXMltzdWJzY3JpcHRpb24tcmVuZXdhbF0gLS0+IFRBU0sKICAgICAgICBXM1tyZWZ1bmQtcHJvY2Vzc2luZ10gLS0+IFRBU0sKICAgICAgICBXNFtkb25hdGlvbi1mbG93XSAtLT4gVEFTSwogICAgZW5kCgogICAgc3R5bGUgVEFTSyBmaWxsOiM1MWNmNjY="
+              alt="Composable Task Library"
+            />
+          </div>
+          <ul>
+            <li>
+              Platform team builds <code>send-notification</code> task
+              <span class="highlight-green">ONCE</span>
+            </li>
+            <li>4 workflows reuse it instantly</li>
+            <li>
+              Provider migration =
+              <span class="highlight-green">1 task, 1 test, 1 PR</span>
+            </li>
+          </ul>
+        </section>
+
+        <!-- Before/After Summary -->
+        <section>
+          <h2>The Transformation</h2>
+          <table>
+            <tr>
+              <th>Before</th>
+              <th>After</th>
+            </tr>
+            <tr>
+              <td class="highlight-red">N×N integration points</td>
+              <td class="highlight-green">N+1 connections</td>
+            </tr>
+            <tr>
+              <td class="highlight-red">Retry logic everywhere</td>
+              <td class="highlight-green">Central retry policy</td>
+            </tr>
+            <tr>
+              <td class="highlight-red">One change = 30 PRs</td>
+              <td class="highlight-green">One change = 1 task</td>
+            </tr>
+            <tr>
+              <td class="highlight-red">"Works on my machine"</td>
+              <td class="highlight-green">Schema-validated at deploy</td>
+            </tr>
+            <tr>
+              <td class="highlight-red">Debug via log diving</td>
+              <td class="highlight-green">Execution traces + time-travel</td>
+            </tr>
+            <tr>
+              <td class="highlight-red">Race condition mysteries</td>
+              <td class="highlight-green">Deterministic execution order</td>
+            </tr>
+          </table>
+        </section>
+
+        <!-- What This Means For You -->
+        <section>
+          <h2>What This Means For You</h2>
+          <div class="two-column">
+            <div>
+              <h3 class="highlight-red">What Goes Away</h3>
+              <ul>
+                <li>Supporting the same "problem" across multiple teams</li>
+                <li>Debugging retry logic in 30 services</li>
+                <li>Writing the same HTTP wrapper again</li>
+                <li>Coordinating 30 PRs for one change</li>
+                <li>Log diving to find root cause</li>
+                <li>
+                  <span class="highlight-yellow">Race condition mysteries</span>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h3 class="highlight-green">What You Get To Do Instead</h3>
+              <ul>
+                <li>
+                  Build <span class="highlight-blue">new revenue features</span>
+                </li>
+                <li>Design system architecture</li>
+                <li>Solve complex domain problems</li>
+                <li>Optimize critical performance paths</li>
+                <li>Build internal tools & platforms</li>
+                <li>Work on ML/AI integrations</li>
+              </ul>
+            </div>
+          </div>
+          <p
+            style="
+              text-align: center;
+              margin-top: 0.5em;
+              color: #888;
+              font-size: 0.55em;
+            "
+          >
+            Less glue code. More
+            <span class="highlight-green"
+              >challenging, impactful, profit building work</span
+            >.
+          </p>
+        </section>
+
+        <!-- The Opportunity -->
+        <section>
+          <h2>The Real Opportunity</h2>
+          <table>
+            <tr>
+              <th>Tedious Work (Automated)</th>
+              <th>High-Value Work (Your Focus)</th>
+            </tr>
+            <tr>
+              <td class="highlight-red">API integration boilerplate</td>
+              <td class="highlight-green">Design new product capabilities</td>
+            </tr>
+            <tr>
+              <td class="highlight-red">Retry & error handling copy-paste</td>
+              <td class="highlight-green">Build core business logic</td>
+            </tr>
+            <tr>
+              <td class="highlight-red">Cross-service coordination</td>
+              <td class="highlight-green">Performance optimization</td>
+            </tr>
+            <tr>
+              <td class="highlight-red">Manual debugging sessions</td>
+              <td class="highlight-green">Platform tooling & DX</td>
+            </tr>
+            <tr>
+              <td class="highlight-red">Provider migration busywork</td>
+              <td class="highlight-green">Architecture & system design</td>
+            </tr>
+          </table>
+          <p style="text-align: center; margin-top: 0.5em; font-size: 0.6em">
+            Your skills are
+            <span class="highlight-yellow">too valuable</span> for integration
+            plumbing.
+          </p>
+        </section>
+
+        <!-- WHY TRUST IT: SECTION 3 -->
+
+        <!-- Quality Metrics -->
+        <section class="center">
+          <h2>Why Trust It: Quality Metrics</h2>
+          <div
+            style="
+              display: flex;
+              justify-content: center;
+              flex-wrap: wrap;
+              gap: 1em;
+            "
+          >
+            <div class="stat-box">
+              <div class="stat-number">3,900+</div>
+              <div class="stat-label">Tests Passing</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-number">90%+</div>
+              <div class="stat-label">Code Coverage</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-number">80%+</div>
+              <div class="stat-label">Mutation Score</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-number">0</div>
+              <div class="stat-label">Vulnerabilities</div>
+            </div>
+          </div>
+          <p style="text-align: center; margin-top: 1em; color: #888">
+            22/37 Stages Complete (60%)
+          </p>
+        </section>
+
+        <!-- Core Capabilities -->
+        <section>
+          <h2>Core Capabilities</h2>
+          <div class="two-column">
+            <div>
+              <h3 class="highlight-blue">Schema Validation</h3>
+              <ul>
+                <li>JsonSchema.Net 5.x integration</li>
+                <li>Recursive type compatibility</li>
+                <li>Design-time validation</li>
+              </ul>
+              <h3 class="highlight-blue">Template Expressions</h3>
+              <ul>
+                <li><code>{{input.x}}</code></li>
+                <li><code>{{tasks.id.output.field}}</code></li>
+                <li>Array indexing: <code>{{items[0].name}}</code></li>
+              </ul>
+            </div>
+            <div>
+              <h3 class="highlight-blue">Parallel Execution</h3>
+              <ul>
+                <li>Automatic dependency detection</li>
+                <li>Cycle detection</li>
+                <li>2x+ speedup</li>
+              </ul>
+              <h3 class="highlight-blue">HTTP Task Executor</h3>
+              <ul>
+                <li>Exponential backoff (100ms → 30s)</li>
+                <li>Per-task timeouts</li>
+                <li>Structured error classification</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- Transform DSL -->
+        <section>
+          <h2>Transform DSL</h2>
+          <p style="color: #888">40+ operations for data transformation</p>
+          <div
+            style="display: flex; flex-wrap: wrap; gap: 0.5em; margin: 1em 0"
+          >
+            <span class="badge badge-blue">map</span>
+            <span class="badge badge-blue">filter</span>
+            <span class="badge badge-blue">select</span>
+            <span class="badge badge-blue">flatten</span>
+            <span class="badge badge-blue">sort</span>
+            <span class="badge badge-blue">limit</span>
+            <span class="badge badge-blue">distinct</span>
+            <span class="badge badge-blue">groupBy</span>
+            <span class="badge badge-blue">join</span>
+            <span class="badge badge-blue">aggregate</span>
+          </div>
+          <pre><code class="yaml">transforms:
+  - select: ["id", "name", "status"]
+  - filter: "status == 'active'"
+  - sort: { field: "name", order: "asc" }
+  - limit: 10</code></pre>
+        </section>
+
+        <!-- Testing Pyramid -->
+        <section>
+          <h2>Why Trust It: Testing Pyramid</h2>
+          <div class="mermaid-container">
+            <img
+              loading="eager"
+              src="https://mermaid.ink/img/Z3JhcGggVEIKICAgIHN1YmdyYXBoICJUZXN0aW5nIFB5cmFtaWQiCiAgICAgICAgRTJFW0UyRSBUZXN0czxicj4xMDArIFBsYXl3cmlnaHRdCiAgICAgICAgSU5UW0ludGVncmF0aW9uIFRlc3RzPGJyPjUwMCtdCiAgICAgICAgVU5JVFtVbml0IFRlc3RzPGJyPjMsMzAwK10KICAgIGVuZAoKICAgIHN0eWxlIFVOSVQgZmlsbDojNTFjZjY2CiAgICBzdHlsZSBJTlQgZmlsbDojNGRhYmY3CiAgICBzdHlsZSBFMkUgZmlsbDojOTc3NWZh"
+              alt="Testing Pyramid"
+            />
+          </div>
+          <table>
+            <tr>
+              <th>Gate</th>
+              <th>Enforcement</th>
+            </tr>
+            <tr>
+              <td>Code Coverage</td>
+              <td class="highlight-green">≥90% (CI blocks)</td>
+            </tr>
+            <tr>
+              <td>Mutation Score</td>
+              <td class="highlight-green">≥80% (Stryker.NET)</td>
+            </tr>
+            <tr>
+              <td>Security Scan</td>
+              <td class="highlight-green">0 vulnerabilities</td>
+            </tr>
+            <tr>
+              <td>Build Warnings</td>
+              <td class="highlight-green">0 warnings</td>
+            </tr>
+          </table>
+        </section>
+
+        <!-- Performance Results -->
+        <section>
+          <h2>Why Trust It: Performance</h2>
+          <p style="color: #888">
+            BenchmarkDotNet results - orchestration overhead is
+            <span class="highlight-green">negligible</span>
+          </p>
+          <table>
+            <tr>
+              <th>Component</th>
+              <th>Target</th>
+              <th>Actual</th>
+              <th>Result</th>
+            </tr>
+            <tr>
+              <td>End-to-End (10 tasks)</td>
+              <td>&lt;10ms</td>
+              <td class="highlight-green">0.226ms</td>
+              <td class="highlight-yellow">45x better</td>
+            </tr>
+            <tr>
+              <td>Graph Building</td>
+              <td>&lt;1ms</td>
+              <td class="highlight-green">9.3μs</td>
+              <td class="highlight-yellow">107x better</td>
+            </tr>
+            <tr>
+              <td>Template Resolution</td>
+              <td>&lt;1ms</td>
+              <td class="highlight-green">7.9μs</td>
+              <td class="highlight-yellow">126x better</td>
+            </tr>
+            <tr>
+              <td>Execution Scheduling</td>
+              <td>&lt;2ms</td>
+              <td class="highlight-green">7.9μs</td>
+              <td class="highlight-yellow">253x better</td>
+            </tr>
+          </table>
+          <p style="text-align: center; margin-top: 0.5em; font-size: 0.55em">
+            Framework overhead: <span class="highlight-green">0.011%</span> of
+            total execution time
+          </p>
+        </section>
+
+        <!-- Performance Scalability -->
+        <section>
+          <h2>Performance: Scalability</h2>
+          <div class="two-column">
+            <div>
+              <h3 class="highlight-blue">Sub-Linear Scaling</h3>
+              <ul>
+                <li>10 tasks → 50 tasks (5x more)</li>
+                <li>Overhead: 226μs → 475μs (2.1x)</li>
+                <li><span class="highlight-green">Better than O(n)</span></li>
+              </ul>
+              <h3 class="highlight-blue">Memory Efficient</h3>
+              <ul>
+                <li>~6.5 KB per task</li>
+                <li>10 tasks: 99 KB allocated</li>
+                <li>50 tasks: 325 KB allocated</li>
+              </ul>
+            </div>
+            <div>
+              <h3 class="highlight-blue">Real-World Impact</h3>
+              <ul>
+                <li>10 HTTP tasks @ 200ms each = 2000ms</li>
+                <li>Framework overhead = 0.226ms</li>
+                <li>
+                  <span class="highlight-green">99.989% on actual work</span>
+                </li>
+              </ul>
+              <h3 class="highlight-blue">Conclusion</h3>
+              <ul>
+                <li>
+                  Generic orchestration is
+                  <span class="highlight-green">"free"</span>
+                </li>
+                <li>No performance trade-off</li>
+                <li>Flexibility without penalty</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- TDD Cycle -->
+        <section>
+          <h2>TDD is Non-Negotiable</h2>
+          <div class="mermaid-container">
+            <img
+              loading="eager"
+              src="https://mermaid.ink/img/Zmxvd2NoYXJ0IExSCiAgICBSRURbV3JpdGUgRmFpbGluZyBUZXN0XSAtLT4gR1JFRU5bTWluaW1hbCBDb2RlIHRvIFBhc3NdCiAgICBHUkVFTiAtLT4gUkVGQUNUT1JbSW1wcm92ZSBXaGlsZSBHcmVlbl0KICAgIFJFRkFDVE9SIC0tPiBDT01NSVRbQ29tbWl0IHdpdGggUHJvb2ZdCiAgICBDT01NSVQgLS0+IFJFRAoKICAgIHN0eWxlIFJFRCBmaWxsOiNmZjZiNmIKICAgIHN0eWxlIEdSRUVOIGZpbGw6IzUxY2Y2NgogICAgc3R5bGUgUkVGQUNUT1IgZmlsbDojNGRhYmY3CiAgICBzdHlsZSBDT01NSVQgZmlsbDojOTc3NWZh"
+              alt="TDD Cycle"
+            />
+          </div>
+          <p style="text-align: center; font-size: 0.85em; margin-top: 0.5em">
+            <span class="highlight-red">RED</span> →
+            <span class="highlight-green">GREEN</span> →
+            <span class="highlight-blue">REFACTOR</span> → COMMIT
+          </p>
+          <p style="text-align: center; color: #888; font-size: 0.65em">
+            Every feature has tests written FIRST
+          </p>
+        </section>
+
+        <!-- Fail-Fast Validation - Vertical Slide Stack -->
+        <section>
+          <!-- Title Slide -->
+          <section>
+            <h2>Fail-Fast Validation</h2>
+            <p style="color: #888; margin-bottom: 2em">
+              Every error caught at design time is a production incident prevented
+            </p>
+            <p style="font-size: 0.8em; color: #666;">
+              ↓ Navigate down through 5 validation layers
+            </p>
+          </section>
+
+          <!-- 1. Schema Validation -->
+          <section>
+            <h3 style="color: #60a5fa;">1. Schema Validation</h3>
+            <p style="color: #888;">JSON Schema validates all inputs and outputs at definition time</p>
+            <pre><code class="yaml">input:
+  type: object
+  properties:
+    userId: { type: string }  # ← Enforced!
+    amount: { type: integer }
+  required: [userId, amount]</code></pre>
+            <div style="background: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444; padding: 1em; border-radius: 0 8px 8px 0; margin-top: 1em;">
+              <code style="color: #f87171;">✗ Input "userId" expected string, got number</code>
+            </div>
+          </section>
+
+          <!-- 2. Type Compatibility -->
+          <section>
+            <h3 style="color: #4ade80;">2. Type Compatibility</h3>
+            <p style="color: #888;">Task outputs must match downstream input types - checked before deployment</p>
+            <pre><code class="yaml">tasks:
+  - id: fetch-user
+    taskRef: get-user        # outputs: { email: string }
+  - id: notify
+    taskRef: send-email
+    input:
+      recipient: "{{ tasks.fetch-user.output.email }}"</code></pre>
+            <div style="background: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444; padding: 1em; border-radius: 0 8px 8px 0; margin-top: 1em;">
+              <code style="color: #f87171;">✗ "fetch-user" output.email (string) incompatible with "send-sms" input.phone (integer)</code>
+            </div>
+          </section>
+
+          <!-- 3. Template Expression Validation -->
+          <section>
+            <h3 style="color: #facc15;">3. Template Expression Validation</h3>
+            <p style="color: #888;">All template references verified - no runtime "undefined" surprises</p>
+            <pre><code class="yaml">tasks:
+  - id: notify
+    input:
+      message: "Hello {{ tasks.fetch-user.output.emial }}"
+      #                                         ↑ TYPO!</code></pre>
+            <div style="background: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444; padding: 1em; border-radius: 0 8px 8px 0; margin-top: 1em;">
+              <code style="color: #f87171;">✗ Template "{{tasks.fetch-user.output.emial}}" - did you mean "email"?</code>
+            </div>
+          </section>
+
+          <!-- 4. Dependency Graph Validation -->
+          <section>
+            <h3 style="color: #c084fc;">4. Dependency Graph Validation</h3>
+            <p style="color: #888;">Circular dependencies and missing references caught immediately</p>
+            <pre><code class="yaml">tasks:
+  - id: task-a
+    dependsOn: [task-b]   # ← task-a waits for task-b
+  - id: task-b
+    dependsOn: [task-a]   # ← task-b waits for task-a → DEADLOCK!</code></pre>
+            <div style="background: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444; padding: 1em; border-radius: 0 8px 8px 0; margin-top: 1em;">
+              <code style="color: #f87171;">✗ Circular dependency detected: task-a → task-b → task-a</code>
+            </div>
+          </section>
+
+          <!-- 5. Kubernetes Admission Webhooks -->
+          <section>
+            <h3 style="color: #f87171;">5. Kubernetes Admission Webhooks</h3>
+            <p style="color: #888;">Invalid workflows rejected at kubectl apply - never reaches the cluster</p>
+            <pre><code class="bash">$ kubectl apply -f my-workflow.yaml
+Error from server: admission webhook "workflow.validate" denied the request:
+  - Schema validation failed for task "process-order"
+  - Circular dependency: task-a → task-b → task-a</code></pre>
+            <div style="background: rgba(34, 197, 94, 0.2); color: #4ade80; padding: 1em; border-radius: 8px; margin-top: 1.5em; text-align: center;">
+              <strong>✓ If it deploys, it works. Guaranteed.</strong>
+            </div>
+          </section>
+        </section>
+
+        <!-- Architecture -->
+        <section>
+          <h2>Architecture Overview</h2>
+          <div class="mermaid-container" style="max-width: 100%">
+            <img
+              loading="eager"
+              src="https://mermaid.ink/img/Z3JhcGggVEIKICAgIHN1YmdyYXBoICJEZXZlbG9wZXIgRXhwZXJpZW5jZSIKICAgICAgICBVSVt3b3JrZmxvdy11aTxicj5SZWFjdCArIFR5cGVTY3JpcHRdCiAgICAgICAgVkJbVmlzdWFsIEJ1aWxkZXI8YnI+UmVhY3QgRmxvd10KICAgIGVuZAoKICAgIHN1YmdyYXBoICJBUEkgTGF5ZXIiCiAgICAgICAgR1dbV29ya2Zsb3dHYXRld2F5PGJyPkFTUC5ORVQgQ29yZV0KICAgICAgICBXU1tTaWduYWxSIEh1Yjxicj5SZWFsLXRpbWUgRXZlbnRzXQogICAgZW5kCgogICAgc3ViZ3JhcGggIkNvcmUgRW5naW5lIgogICAgICAgIE9SQ0hbV29ya2Zsb3dPcmNoZXN0cmF0b3JdCiAgICAgICAgR1JBUEhbRXhlY3V0aW9uR3JhcGhCdWlsZGVyXQogICAgICAgIFNDSEVNQVtTY2hlbWFWYWxpZGF0b3JdCiAgICBlbmQKCiAgICBzdWJncmFwaCAiS3ViZXJuZXRlcyIKICAgICAgICBPUFtXb3JrZmxvd09wZXJhdG9yPGJyPkt1YmVPcHMgOC54XQogICAgICAgIFdFQkhPT0tbQWRtaXNzaW9uIFdlYmhvb2tzXQogICAgZW5kCgogICAgVUkgLS0+IEdXCiAgICBWQiAtLT4gR1cKICAgIEdXIC0tPiBPUkNICiAgICBHVyAtLT4gV1MKICAgIE9SQ0ggLS0+IEdSQVBICiAgICBHUkFQSCAtLT4gU0NIRU1BCiAgICBPUCAtLT4gV0VCSE9PSw=="
+              alt="Architecture"
+            />
+          </div>
+        </section>
+
+        <!-- WorkflowTask CRD -->
+        <section>
+          <h2>WorkflowTask CRD</h2>
+          <p style="color: #888">
+            Define reusable, validated integration tasks
+          </p>
+          <pre><code class="yaml">apiVersion: workflow.io/v1
+kind: WorkflowTask
+metadata:
+  name: send-notification
+spec:
+  http:
+    method: POST
+    url: https://api.notifications.internal/send
+    headers:
+      Authorization: "Bearer {{secrets.api_key}}"
+  input:
+    type: object
+    properties:
+      user_id: { type: string }
+      message: { type: string }
+      channel: { type: string }
+    required: [user_id, message]
+  output:
+    type: object
+    properties:
+      notification_id: { type: string }
+      status: { type: string }</code></pre>
+        </section>
+
+        <!-- Workflow CRD -->
+        <section>
+          <h2>Workflow CRD</h2>
+          <p style="color: #888">
+            Compose tasks with dependencies and data flow
+          </p>
+          <pre><code class="yaml">apiVersion: workflow.io/v1
+kind: Workflow
+metadata:
+  name: user-onboarding
+spec:
+  input:
+    type: object
+    properties:
+      user_id: { type: string }
+  tasks:
+    - id: get-user
+      taskRef: fetch-user
+      input: { user_id: "{{input.user_id}}" }
+    - id: validate
+      taskRef: validate-data
+      dependsOn: [get-user]
+      input:
+        email: "{{tasks.get-user.output.email}}"
+        profile: "{{tasks.get-user.output.profile}}"
+    - id: notify
+      taskRef: send-notification
+      dependsOn: [validate]</code></pre>
+        </section>
+
+        <!-- Execution Sequence -->
+        <section>
+          <h2>Execution Flow</h2>
+          <div class="mermaid-container">
+            <img
+              loading="eager"
+              src="https://mermaid.ink/img/c2VxdWVuY2VEaWFncmFtCiAgICBwYXJ0aWNpcGFudCBDbGllbnQKICAgIHBhcnRpY2lwYW50IEdhdGV3YXkKICAgIHBhcnRpY2lwYW50IE9yY2hlc3RyYXRvcgogICAgcGFydGljaXBhbnQgRXhlY3V0b3IKICAgIHBhcnRpY2lwYW50IFNpZ25hbFIKCiAgICBDbGllbnQtPj5HYXRld2F5OiBQT1NUIC93b3JrZmxvd3Mve25hbWV9L2V4ZWN1dGUKICAgIEdhdGV3YXktPj5HYXRld2F5OiBWYWxpZGF0ZSBpbnB1dCBzY2hlbWEKICAgIEdhdGV3YXktPj5PcmNoZXN0cmF0b3I6IEV4ZWN1dGVBc3luYygpCiAgICBPcmNoZXN0cmF0b3ItPj5TaWduYWxSOiBXb3JrZmxvd1N0YXJ0ZWQKICAgIAogICAgbG9vcCBGb3IgZWFjaCBwYXJhbGxlbCBncm91cAogICAgICAgIHBhciBFeGVjdXRlIGluZGVwZW5kZW50IHRhc2tzCiAgICAgICAgICAgIE9yY2hlc3RyYXRvci0+PkV4ZWN1dG9yOiBUYXNrIEEKICAgICAgICAgICAgT3JjaGVzdHJhdG9yLT4+RXhlY3V0b3I6IFRhc2sgQgogICAgICAgIGVuZAogICAgICAgIEV4ZWN1dG9yLS0+Pk9yY2hlc3RyYXRvcjogUmVzdWx0cwogICAgICAgIE9yY2hlc3RyYXRvci0+PlNpZ25hbFI6IFRhc2tDb21wbGV0ZWQKICAgIGVuZAogICAgCiAgICBPcmNoZXN0cmF0b3ItPj5TaWduYWxSOiBXb3JrZmxvd0NvbXBsZXRlZAogICAgT3JjaGVzdHJhdG9yLS0+PkdhdGV3YXk6IFJlc3VsdAogICAgR2F0ZXdheS0tPj5DbGllbnQ6IEpTT04gcmVzcG9uc2U="
+              alt="Execution Sequence"
+            />
+          </div>
+        </section>
+
+        <!-- API Endpoints -->
+        <section>
+          <h2>API Endpoints</h2>
+          <table style="font-size: 0.65em">
+            <tr>
+              <th>Endpoint</th>
+              <th>Description</th>
+            </tr>
+            <tr>
+              <td>
+                <code class="highlight-blue">POST</code>
+                /api/v1/workflows/{name}/execute
+              </td>
+              <td>Execute workflow synchronously</td>
+            </tr>
+            <tr>
+              <td>
+                <code class="highlight-yellow">POST</code>
+                /api/v1/workflows/{name}/test
+              </td>
+              <td>Dry-run with sample data</td>
+            </tr>
+            <tr>
+              <td>
+                <code class="highlight-green">GET</code> /api/v1/workflows
+              </td>
+              <td>List all workflows</td>
+            </tr>
+            <tr>
+              <td>
+                <code class="highlight-green">GET</code>
+                /api/v1/workflows/{name}/executions
+              </td>
+              <td>Execution history</td>
+            </tr>
+            <tr>
+              <td>
+                <code class="highlight-green">GET</code>
+                /api/v1/executions/{id}/trace
+              </td>
+              <td>Execution trace with timing</td>
+            </tr>
+            <tr>
+              <td>
+                <code class="highlight-green">GET</code>
+                /api/v1/workflows/{name}/versions
+              </td>
+              <td>Version history (SHA256)</td>
+            </tr>
+            <tr>
+              <td><code class="highlight-green">GET</code> /api/v1/tasks</td>
+              <td>List all tasks</td>
+            </tr>
+          </table>
+          <p style="margin-top: 1em; color: #888">
+            SignalR hub at <code>/hubs/workflow</code> for real-time events
+          </p>
+        </section>
+
+        <!-- Error Classification -->
+        <section>
+          <h2>Structured Error Handling</h2>
+          <table>
+            <tr>
+              <th>Error Type</th>
+              <th>Retry?</th>
+              <th>Example</th>
+            </tr>
+            <tr>
+              <td><code class="highlight-red">SchemaValidationError</code></td>
+              <td>No</td>
+              <td>Invalid input format</td>
+            </tr>
+            <tr>
+              <td>
+                <code class="highlight-red">CircularDependencyError</code>
+              </td>
+              <td>No</td>
+              <td>task-a → task-b → task-a</td>
+            </tr>
+            <tr>
+              <td><code class="highlight-yellow">TimeoutError</code></td>
+              <td>Yes</td>
+              <td>Task exceeded 30s limit</td>
+            </tr>
+            <tr>
+              <td><code class="highlight-yellow">NetworkError</code></td>
+              <td>Yes</td>
+              <td>Connection refused</td>
+            </tr>
+            <tr>
+              <td><code class="highlight-yellow">RateLimitError</code></td>
+              <td>Yes</td>
+              <td>429 Too Many Requests</td>
+            </tr>
+            <tr>
+              <td><code class="highlight-red">AuthenticationError</code></td>
+              <td>No</td>
+              <td>401/403 responses</td>
+            </tr>
+          </table>
+          <p style="margin-top: 1em">
+            Retry policy: exponential backoff
+            <code>100ms → 200ms → 400ms → ... → 30s cap</code>
+          </p>
+        </section>
+
+        <!-- Platform Team Benefits -->
+        <section>
+          <h2>For Platform Teams</h2>
+          <table>
+            <tr>
+              <th>Before</th>
+              <th>After</th>
+            </tr>
+            <tr>
+              <td>Build HTTP client for every team</td>
+              <td class="highlight-green">
+                Build task library once, 50+ teams reuse
+              </td>
+            </tr>
+            <tr>
+              <td>Debug retry logic in each service</td>
+              <td class="highlight-green">
+                Central retry policy, one place to fix
+              </td>
+            </tr>
+            <tr>
+              <td>Provider migration = 30+ PRs</td>
+              <td class="highlight-green">
+                Update one task, test once, deploy once
+              </td>
+            </tr>
+            <tr>
+              <td>"Works on my machine" issues</td>
+              <td class="highlight-green">
+                Schema validation catches at design time
+              </td>
+            </tr>
+          </table>
+        </section>
+
+        <!-- Product Team Benefits -->
+        <section>
+          <h2>For Product Teams</h2>
+          <table>
+            <tr>
+              <th>Before</th>
+              <th>After</th>
+            </tr>
+            <tr>
+              <td>2 weeks to integrate new API</td>
+              <td class="highlight-green">5 minutes to compose workflow</td>
+            </tr>
+            <tr>
+              <td>Write YAML from scratch</td>
+              <td class="highlight-green">Start from template library</td>
+            </tr>
+            <tr>
+              <td>Debug via log diving</td>
+              <td class="highlight-green">Time-travel UI, execution traces</td>
+            </tr>
+            <tr>
+              <td>"Why is this slow?" guessing</td>
+              <td class="highlight-green">
+                Execution trace shows exact bottleneck
+              </td>
+            </tr>
+          </table>
+        </section>
+
+        <!-- Velocity -->
+        <section class="center">
+          <h2>Velocity Improvements</h2>
+          <div
+            style="
+              display: flex;
+              justify-content: center;
+              flex-wrap: wrap;
+              gap: 1em;
+            "
+          >
+            <div class="stat-box">
+              <div class="stat-number">&lt;5 min</div>
+              <div class="stat-label">First Workflow</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-number">70%+</div>
+              <div class="stat-label">Start from Templates</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-number">5x</div>
+              <div class="stat-label">Faster Debugging</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Reusability Multiplier -->
+        <section>
+          <h2>The Reusability Multiplier</h2>
+          <div class="mermaid-container">
+            <img
+              loading="eager"
+              src="https://mermaid.ink/img/Z3JhcGggTFIKICAgIHN1YmdyYXBoICJQbGF0Zm9ybSBUZWFtIEJ1aWxkcyBPbmNlIgogICAgICAgIFQxW2NoYXJnZS1wYXltZW50XQogICAgICAgIFQyW3NlbmQtZW1haWxdCiAgICAgICAgVDNbY2hlY2staW52ZW50b3J5XQogICAgICAgIFQ0W2NyZWF0ZS1zaGlwbWVudF0KICAgIGVuZAoKICAgIHN1YmdyYXBoICJQcm9kdWN0IFRlYW1zIENvbXBvc2UiCiAgICAgICAgVzFbb3JkZXItY2hlY2tvdXRdCiAgICAgICAgVzJbc3Vic2NyaXB0aW9uLXJlbmV3YWxdCiAgICAgICAgVzNbcmVmdW5kLXByb2Nlc3NpbmddCiAgICAgICAgVzRbYWJhbmRvbmVkLWNhcnRdCiAgICBlbmQKCiAgICBUMSAtLT4gVzEKICAgIFQxIC0tPiBXMgogICAgVDEgLS0+IFczCiAgICBUMiAtLT4gVzEKICAgIFQyIC0tPiBXNAogICAgVDMgLS0+IFcxCiAgICBUNCAtLT4gVzEKCiAgICBzdHlsZSBUMSBmaWxsOiM0ZGFiZjcKICAgIHN0eWxlIFQyIGZpbGw6IzRkYWJmNwogICAgc3R5bGUgVDMgZmlsbDojNGRhYmY3CiAgICBzdHlsZSBUNCBmaWxsOiM0ZGFiZjc="
+              alt="Reusability Multiplier"
+            />
+          </div>
+          <p style="text-align: center; font-size: 1.3em; margin-top: 1em">
+            <span class="highlight-blue">4 tasks</span> →
+            <span class="highlight-green">4+ workflows</span>
+          </p>
+          <p style="text-align: center; color: #888">
+            Build once, compose many
+          </p>
+        </section>
+
+        <!-- Tech Stack -->
+        <section>
+          <h2>Technology Stack</h2>
+          <div class="two-column">
+            <div>
+              <h3 class="highlight-blue">Backend</h3>
+              <ul>
+                <li>.NET 8, ASP.NET Core</li>
+                <li>KubeOps 8.x</li>
+                <li>JsonSchema.Net 5.x</li>
+                <li>PostgreSQL 15</li>
+                <li>SignalR (WebSocket)</li>
+              </ul>
+            </div>
+            <div>
+              <h3 class="highlight-blue">Frontend</h3>
+              <ul>
+                <li>React 18, TypeScript</li>
+                <li>React Flow</li>
+                <li>Three.js (3D viz)</li>
+                <li>TanStack Query</li>
+              </ul>
+              <h3 class="highlight-blue">Testing</h3>
+              <ul>
+                <li>xUnit, FluentAssertions</li>
+                <li>Stryker.NET</li>
+                <li>Playwright</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- What This Is NOT -->
+        <section>
+          <h2>What This Is NOT</h2>
+          <ul>
+            <li>
+              <span class="highlight-red">NOT</span> for long-running jobs (max
+              30 seconds)
+            </li>
+            <li>
+              <span class="highlight-red">NOT</span> async/pause-resume
+              (synchronous only)
+            </li>
+            <li>
+              <span class="highlight-red">NOT</span> a replacement for
+              Airflow/Prefect/Temporal
+            </li>
+            <li>
+              <span class="highlight-red">NOT</span> infrastructure
+              orchestration (not Terraform)
+            </li>
+          </ul>
+          <h3 style="margin-top: 1em">This IS for:</h3>
+          <ul>
+            <li>
+              <span class="highlight-green">Microservice composition</span>
+            </li>
+            <li>
+              <span class="highlight-green">Real-time API orchestration</span>
+            </li>
+            <li>
+              <span class="highlight-green"
+                >User-facing synchronous workflows</span
+              >
+            </li>
+            <li>
+              <span class="highlight-green"
+                >Payment/notification/integration pipelines</span
+              >
+            </li>
+          </ul>
+        </section>
+
+        <!-- Adoption Path -->
+        <section>
+          <h2>Adoption Path</h2>
+          <h3>Week 1: Minimal Viable Adoption</h3>
+          <ol>
+            <li>Deploy operator to existing K8s cluster</li>
+            <li>Create 3-5 WorkflowTask CRDs for common APIs</li>
+            <li>Compose first workflow</li>
+            <li>Execute via REST API</li>
+          </ol>
+          <h3>Week 2-3: Team Onboarding</h3>
+          <ol>
+            <li>Deploy workflow-ui for visual building</li>
+            <li>Train product teams on template library</li>
+            <li>Set up execution history dashboards</li>
+          </ol>
+          <h3>Month 2+: Platform Maturity</h3>
+          <ol>
+            <li>Build comprehensive task library</li>
+            <li>Enable AI-powered workflow generation</li>
+            <li>Set up performance monitoring</li>
+          </ol>
+        </section>
+
+        <!-- Current Status -->
+        <section class="center">
+          <h2>Current Status</h2>
+          <p style="font-size: 1.5em; margin-bottom: 1em">
+            <span class="highlight-green">60%</span> Complete (22/37 stages)
+          </p>
+          <table style="font-size: 0.8em">
+            <tr>
+              <th>Category</th>
+              <th>Status</th>
+            </tr>
+            <tr>
+              <td>Core Engine (1-7.9)</td>
+              <td><span class="badge badge-green">Complete</span></td>
+            </tr>
+            <tr>
+              <td>Developer Experience (9.1-9.6.1)</td>
+              <td><span class="badge badge-green">Complete</span></td>
+            </tr>
+            <tr>
+              <td>Performance (10.1-10.2)</td>
+              <td><span class="badge badge-green">Complete</span></td>
+            </tr>
+            <tr>
+              <td>Visualizations (12.1-12.5)</td>
+              <td><span class="badge badge-green">Complete</span></td>
+            </tr>
+            <tr>
+              <td>AI Generation (13)</td>
+              <td><span class="badge badge-green">Complete</span></td>
+            </tr>
+            <tr>
+              <td>Optimization Engine (14)</td>
+              <td><span class="badge badge-blue">Planned</span></td>
+            </tr>
+          </table>
+        </section>
+
+        <!-- Summary -->
+        <section
+          class="center"
+          data-background-gradient="linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 100%)"
+        >
+          <h2>Summary</h2>
+          <p style="font-size: 0.85em; margin: 0.6em 0">
+            Transform your integration architecture from<br />
+            <span class="highlight-red">mudball</span> to
+            <span class="highlight-green">hub-and-spoke</span>
+          </p>
+          <div
+            style="
+              display: flex;
+              justify-content: center;
+              gap: 0.5em;
+              flex-wrap: wrap;
+              margin: 1em 0;
+            "
+          >
+            <span class="badge badge-green">3,900+ Tests</span>
+            <span class="badge badge-green">90%+ Coverage</span>
+            <span class="badge badge-green">Fail-Fast Validation</span>
+            <span class="badge badge-green">Visual Builder</span>
+            <span class="badge badge-green">3D Visualization</span>
+          </div>
+          <p style="color: #888; font-size: 0.7em">
+            Production-grade quality. Non-negotiable TDD.
+          </p>
+        </section>
+
+        <!-- Q&A -->
+        <section
+          class="center"
+          data-background-gradient="linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)"
+        >
+          <h1>Questions?</h1>
+          <p style="margin-top: 1em; color: #4dabf7; font-size: 0.75em">
+            Explore the codebase at /docs
+          </p>
+        </section>
+      </div>
+    </div>
+
+    <!-- Lightbox for fullscreen images -->
+    <div class="lightbox" id="lightbox">
+      <img src="" alt="Fullscreen diagram" />
+      <div class="lightbox-hint">Click anywhere or press Escape to close</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+    <script>
+      Reveal.initialize({
+        hash: true,
+        slideNumber: true,
+        transition: "slide",
+        width: 960,
+        height: 700,
+        margin: 0.04,
+        center: true,
+        plugins: [RevealHighlight],
+      });
+
+      // Lightbox functionality
+      const lightbox = document.getElementById("lightbox");
+      const lightboxImg = lightbox.querySelector("img");
+
+      document.querySelectorAll(".mermaid-container img").forEach((img) => {
+        img.addEventListener("click", (e) => {
+          e.stopPropagation();
+          lightboxImg.src = img.src;
+          lightbox.classList.add("active");
+        });
+      });
+
+      lightbox.addEventListener("click", () => {
+        lightbox.classList.remove("active");
+      });
+
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") lightbox.classList.remove("active");
+      });
+    </script>
+  </body>
+</html>

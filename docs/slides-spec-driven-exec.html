@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Spec-Driven Development with AI - Executive Summary</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reset.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/white.css"
+    />
+    <style>
+      :root {
+        --r-background-color: #ffffff;
+        --r-main-font: system-ui, -apple-system, sans-serif;
+        --r-heading-font: system-ui, -apple-system, sans-serif;
+        --r-main-color: #333;
+        --r-heading-color: #1a1a2e;
+        --r-link-color: #4dabf7;
+      }
+      .reveal .slides {
+        text-align: left;
+      }
+      .reveal .slides section {
+        padding: 10px 20px;
+      }
+      .reveal h1,
+      .reveal h2,
+      .reveal h3 {
+        text-transform: none;
+        font-weight: 600;
+        margin-bottom: 0.2em;
+      }
+      .reveal h1 {
+        font-size: 1.5em;
+        color: #1a1a2e;
+      }
+      .reveal h2 {
+        font-size: 1.1em;
+        color: #1a1a2e;
+      }
+      .reveal h3 {
+        font-size: 0.8em;
+      }
+      .reveal p {
+        margin: 0.2em 0;
+        font-size: 0.6em;
+      }
+      .reveal section {
+        text-align: left;
+      }
+      .reveal section.center {
+        text-align: center;
+      }
+      .reveal ul,
+      .reveal ol {
+        margin: 0.2em 0 0.2em 0.8em;
+      }
+      .reveal li {
+        margin: 0.15em 0;
+        font-size: 0.55em;
+      }
+      .reveal table {
+        margin: 0.3em auto;
+        font-size: 0.5em;
+      }
+      .reveal th,
+      .reveal td {
+        padding: 0.2em 0.4em;
+        border: 1px solid #ddd;
+      }
+      .reveal th {
+        background: #f8f9fa;
+        color: #1a1a2e;
+      }
+      .highlight-green {
+        color: #37b24d;
+      }
+      .highlight-blue {
+        color: #1c7ed6;
+      }
+      .highlight-red {
+        color: #e03131;
+      }
+      .highlight-gold {
+        color: #f59f00;
+      }
+      .mermaid-container {
+        background: #f8f9fa;
+        border-radius: 6px;
+        padding: 10px;
+        margin: 8px auto;
+        max-width: 80%;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      }
+      .mermaid-container img {
+        max-width: 100%;
+        max-height: 200px;
+        height: auto;
+      }
+      .roi-card {
+        background: linear-gradient(135deg, #f8f9fa, #fff);
+        border-radius: 10px;
+        padding: 0.6em;
+        text-align: center;
+        margin: 0.2em;
+        border: 2px solid #37b24d;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      }
+      .roi-number {
+        font-size: 1.8em;
+        font-weight: 700;
+        color: #37b24d;
+      }
+      .roi-label {
+        font-size: 0.5em;
+        color: #666;
+        margin-top: 0.1em;
+      }
+      .cost-card {
+        background: linear-gradient(135deg, #fff5f5, #fff);
+        border-radius: 10px;
+        padding: 0.6em;
+        text-align: center;
+        margin: 0.2em;
+        border: 2px solid #e03131;
+      }
+      .cost-number {
+        font-size: 1.8em;
+        font-weight: 700;
+        color: #e03131;
+      }
+      .cost-label {
+        font-size: 0.5em;
+        color: #666;
+        margin-top: 0.1em;
+      }
+      .ai-card {
+        background: linear-gradient(135deg, #e7f5ff, #fff);
+        border-radius: 10px;
+        padding: 0.6em;
+        text-align: center;
+        margin: 0.2em;
+        border: 2px solid #1c7ed6;
+      }
+      .ai-number {
+        font-size: 1.8em;
+        font-weight: 700;
+        color: #1c7ed6;
+      }
+      .ai-label {
+        font-size: 0.5em;
+        color: #666;
+        margin-top: 0.1em;
+      }
+      .quote {
+        font-style: italic;
+        font-size: 0.6em;
+        color: #495057;
+        border-left: 3px solid #4dabf7;
+        padding-left: 0.6em;
+        margin: 0.3em 0;
+      }
+      .badge {
+        display: inline-block;
+        padding: 0.2em 0.5em;
+        border-radius: 16px;
+        font-size: 0.5em;
+        margin: 0.15em;
+        font-weight: 500;
+      }
+      .badge-green {
+        background: #d3f9d8;
+        color: #2b8a3e;
+      }
+      .badge-blue {
+        background: #d0ebff;
+        color: #1864ab;
+      }
+      .badge-gold {
+        background: #fff3bf;
+        color: #e67700;
+      }
+      .comparison-box {
+        display: flex;
+        gap: 0.6em;
+        margin: 0.3em 0;
+      }
+      .comparison-box > div {
+        flex: 1;
+        padding: 0.4em;
+        border-radius: 6px;
+      }
+      .comparison-box h3 {
+        font-size: 0.7em;
+        margin-bottom: 0.2em;
+      }
+      .comparison-box ul {
+        margin: 0.15em 0;
+      }
+      .comparison-box li {
+        font-size: 0.5em;
+        margin: 0.1em 0;
+      }
+      .before-box {
+        background: #fff5f5;
+        border: 2px solid #ffc9c9;
+      }
+      .after-box {
+        background: #ebfbee;
+        border: 2px solid #b2f2bb;
+      }
+      .executive-summary {
+        background: linear-gradient(135deg, #1a1a2e, #2d3748);
+        color: white;
+        padding: 1em;
+        border-radius: 10px;
+        margin: 0.5em 0;
+      }
+      .executive-summary h3 {
+        color: #4dabf7;
+        margin-bottom: 0.3em;
+      }
+      .executive-summary p {
+        color: #e0e0e0;
+      }
+      .win-item {
+        background: #f8f9fa;
+        border-left: 4px solid #37b24d;
+        padding: 0.5em;
+        margin: 0.3em 0;
+        border-radius: 0 6px 6px 0;
+      }
+      .win-item h4 {
+        font-size: 0.65em;
+        color: #1a1a2e;
+        margin: 0;
+      }
+      .win-item p {
+        font-size: 0.5em;
+        color: #666;
+        margin: 0.2em 0 0 0;
+      }
+      .risk-item {
+        background: #fff5f5;
+        border-left: 4px solid #e03131;
+        padding: 0.5em;
+        margin: 0.3em 0;
+        border-radius: 0 6px 6px 0;
+      }
+      .risk-item h4 {
+        font-size: 0.65em;
+        color: #c92a2a;
+        margin: 0;
+      }
+      .risk-item p {
+        font-size: 0.5em;
+        color: #666;
+        margin: 0.2em 0 0 0;
+      }
+      .timeline-item {
+        display: flex;
+        align-items: flex-start;
+        margin: 0.4em 0;
+      }
+      .timeline-marker {
+        width: 30px;
+        height: 30px;
+        background: #4dabf7;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 0.5em;
+        flex-shrink: 0;
+      }
+      .timeline-content {
+        margin-left: 0.5em;
+      }
+      .timeline-content h4 {
+        font-size: 0.6em;
+        margin: 0;
+        color: #1a1a2e;
+      }
+      .timeline-content p {
+        font-size: 0.45em;
+        margin: 0.1em 0 0 0;
+        color: #666;
+      }
+      .mermaid-container img {
+        cursor: zoom-in;
+      }
+      .lightbox {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.95);
+        z-index: 9999;
+        justify-content: center;
+        align-items: center;
+        cursor: zoom-out;
+      }
+      .lightbox.active {
+        display: flex;
+      }
+      .lightbox img {
+        max-width: 98vw;
+        max-height: 92vh;
+        object-fit: contain;
+        border-radius: 8px;
+        background: #fff;
+        padding: 20px;
+      }
+      .lightbox-hint {
+        position: absolute;
+        bottom: 15px;
+        color: #666;
+        font-size: 13px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <!-- ==================== TITLE ==================== -->
+        <section class="center" data-background-color="#1a1a2e">
+          <h1 style="color: #fff">Spec-Driven Development<br/>with AI Assistance</h1>
+          <p style="font-size: 1em; color: #4dabf7; margin-top: 0.3em">
+            Transforming Engineering Productivity
+          </p>
+          <p style="color: #888; margin-top: 1em; font-size: 0.7em">
+            Executive Summary & Sponsorship Request
+          </p>
+        </section>
+
+        <!-- ==================== THE OPPORTUNITY ==================== -->
+
+        <!-- Executive Summary -->
+        <section>
+          <h2>Executive Summary</h2>
+          <div class="executive-summary">
+            <h3>The Opportunity</h3>
+            <p style="font-size: 0.7em; line-height: 1.4">
+              Combine a structured specification framework with AI coding assistants (Claude Code)
+              to transform how engineers deliver software. Move from unpredictable "almost done"
+              cycles to measurable, quality-assured delivery with AI acceleration.
+            </p>
+          </div>
+          <div
+            style="
+              display: flex;
+              justify-content: center;
+              flex-wrap: wrap;
+              gap: 0.8em;
+              margin-top: 0.8em;
+            "
+          >
+            <div class="roi-card" style="min-width: 140px">
+              <div class="roi-number">2-3x</div>
+              <div class="roi-label">Developer Productivity</div>
+            </div>
+            <div class="ai-card" style="min-width: 140px">
+              <div class="ai-number">90%+</div>
+              <div class="ai-label">Quality Maintained</div>
+            </div>
+            <div class="roi-card" style="min-width: 140px">
+              <div class="roi-number">50%</div>
+              <div class="roi-label">Fewer Defects</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- The Problem -->
+        <section>
+          <h2>The Problem: AI Without Guardrails</h2>
+          <div class="comparison-box">
+            <div class="before-box" style="flex: 1">
+              <h3 style="color: #c92a2a">Current State</h3>
+              <ul>
+                <li>Engineers use AI tools ad-hoc, inconsistent results</li>
+                <li>AI generates code without understanding constraints</li>
+                <li>No quality verification - "it compiled, ship it"</li>
+                <li>"Almost done" status reports for weeks</li>
+                <li>Knowledge locked in individuals, not systems</li>
+                <li>Context lost between sessions and handoffs</li>
+              </ul>
+            </div>
+          </div>
+          <div class="quote" style="margin-top: 0.5em;">
+            "AI coding tools are powerful but unguided. Like giving someone a Ferrari with no roads - lots of speed, no direction."
+          </div>
+        </section>
+
+        <!-- Cost Quantification -->
+        <section class="center">
+          <h2>The Cost of Unstructured Development</h2>
+          <p style="font-size: 0.7em; color: #666; margin-bottom: 0.8em">
+            For a team of 20 engineers (typical mid-size team)
+          </p>
+          <div
+            style="
+              display: flex;
+              justify-content: center;
+              flex-wrap: wrap;
+              gap: 1em;
+            "
+          >
+            <div class="cost-card" style="min-width: 160px">
+              <div class="cost-number">30%</div>
+              <div class="cost-label">Time on rework<br/>(misunderstood requirements)</div>
+            </div>
+            <div class="cost-card" style="min-width: 160px">
+              <div class="cost-number">25%</div>
+              <div class="cost-label">Time debugging<br/>(untested code paths)</div>
+            </div>
+            <div class="cost-card" style="min-width: 160px">
+              <div class="cost-number">20%</div>
+              <div class="cost-label">Context switching<br/>(lost progress recovery)</div>
+            </div>
+          </div>
+          <p style="margin-top: 1em; font-size: 0.7em;">
+            ~<span class="highlight-red" style="font-size: 1.3em; font-weight: bold;">75% of capacity</span> consumed by preventable waste
+          </p>
+        </section>
+
+        <!-- ==================== THE SOLUTION ==================== -->
+
+        <!-- The Solution -->
+        <section>
+          <h2>The Solution: Spec-Driven AI Development</h2>
+          <div class="mermaid-container">
+            <img
+              src="https://mermaid.ink/img/Z3JhcGggTFIKICAgIHN1YmdyYXBoICJUaGUgRnJhbWV3b3JrIgogICAgICAgIFNQRUNbQ0xBVURFLm1kPGJyPlByb2plY3QgU3BlY10gLS0+IEFJWyJDbGF1ZGUgQ29kZTxicj4oQUkgQXNzaXN0YW50KSJdCiAgICAgICAgQUkgLS0+IFNUQUdFW1N0YWdlIEZyYW1ld29yazxicj5CRUZPUkUg4oaSIERVUklORyDihpIgQUZURVJdCiAgICAgICAgU1RBR0UgLS0+IEdBVEVTW1F1YWxpdHkgR2F0ZXM8YnI+OCBBdXRvbWF0ZWQgQ2hlY2tzXQogICAgICAgIEdBVEVTIC0tPiBQUk9PRltQcm9vZiBGaWxlPGJyPk9iamVjdGl2ZSBDb21wbGV0aW9uXQogICAgZW5kCgogICAgc3R5bGUgU1BFQyBmaWxsOiM0ZGFiZjcKICAgIHN0eWxlIEFJIGZpbGw6I2IxOTdmYwogICAgc3R5bGUgU1RBR0UgZmlsbDojZmZkNDNiLGNvbG9yOiMwMDAKICAgIHN0eWxlIEdBVEVTIGZpbGw6IzUxY2Y2NgogICAgc3R5bGUgUFJPT0YgZmlsbDojNTFjZjY2"
+              alt="Solution Overview"
+              loading="eager"
+            />
+          </div>
+          <ul>
+            <li><strong>CLAUDE.md:</strong> Single source of truth - AI reads constraints automatically</li>
+            <li><strong>Stage Framework:</strong> Structured workflow with clear checkpoints</li>
+            <li><strong>Quality Gates:</strong> 8 automated checks ensure production-grade output</li>
+            <li><strong>Proof Files:</strong> Objective, measurable completion criteria</li>
+          </ul>
+        </section>
+
+        <!-- How It Works -->
+        <section>
+          <h2>How It Works</h2>
+          <div class="win-item">
+            <h4>1. Specification First</h4>
+            <p>Project constraints, tech stack, and quality standards defined in CLAUDE.md. AI reads this on every session.</p>
+          </div>
+          <div class="win-item">
+            <h4>2. AI-Assisted TDD</h4>
+            <p>Claude Code writes tests first (RED), implements to pass (GREEN), refactors (REFACTOR). Human reviews and guides.</p>
+          </div>
+          <div class="win-item">
+            <h4>3. Automated Verification</h4>
+            <p>8 quality gates run automatically: coverage ≥90%, zero vulnerabilities, clean builds, linting. No manual checks needed.</p>
+          </div>
+          <div class="win-item">
+            <h4>4. Provable Completion</h4>
+            <p>Proof files document metrics: "90/90 tests passing, 93.37% coverage, 0 vulnerabilities." No more "I think it's done."</p>
+          </div>
+        </section>
+
+        <!-- ==================== ROI ==================== -->
+
+        <!-- ROI: Productivity -->
+        <section>
+          <h2>ROI: Productivity Gains</h2>
+          <table>
+            <tr>
+              <th>Activity</th>
+              <th>Without Framework</th>
+              <th>With Framework + AI</th>
+              <th>Improvement</th>
+            </tr>
+            <tr>
+              <td>Requirements clarification</td>
+              <td class="highlight-red">Ongoing throughout</td>
+              <td class="highlight-green">Upfront in spec</td>
+              <td class="highlight-gold">80% less rework</td>
+            </tr>
+            <tr>
+              <td>Code generation</td>
+              <td class="highlight-red">Manual typing</td>
+              <td class="highlight-green">AI-assisted</td>
+              <td class="highlight-gold">2-3x faster</td>
+            </tr>
+            <tr>
+              <td>Test writing</td>
+              <td class="highlight-red">After (if at all)</td>
+              <td class="highlight-green">First (TDD)</td>
+              <td class="highlight-gold">50% fewer bugs</td>
+            </tr>
+            <tr>
+              <td>Status reporting</td>
+              <td class="highlight-red">"Almost done"</td>
+              <td class="highlight-green">Proof file metrics</td>
+              <td class="highlight-gold">100% clarity</td>
+            </tr>
+            <tr>
+              <td>Context recovery</td>
+              <td class="highlight-red">Hours to ramp up</td>
+              <td class="highlight-green">State file → instant</td>
+              <td class="highlight-gold">90% faster</td>
+            </tr>
+          </table>
+        </section>
+
+        <!-- ROI: Quality -->
+        <section>
+          <h2>ROI: Quality Improvements</h2>
+          <div class="comparison-box">
+            <div class="before-box">
+              <h3 style="color: #c92a2a">Traditional AI Coding</h3>
+              <ul>
+                <li>No test coverage requirements</li>
+                <li>Security vulnerabilities undetected</li>
+                <li>Code style inconsistent</li>
+                <li>"It works on my machine"</li>
+                <li>Defects found in production</li>
+              </ul>
+            </div>
+            <div class="after-box">
+              <h3 style="color: #2b8a3e">Spec-Driven AI Coding</h3>
+              <ul>
+                <li>90%+ coverage enforced</li>
+                <li>Security scans every build</li>
+                <li>Linting gates block bad style</li>
+                <li>Tests prove it works</li>
+                <li>Defects caught at commit</li>
+              </ul>
+            </div>
+          </div>
+          <p style="text-align: center; margin-top: 0.5em; font-size: 0.65em;">
+            <strong>Key metric:</strong> Quality maintained while velocity increases.
+          </p>
+        </section>
+
+        <!-- Proven Results -->
+        <section class="center">
+          <h2>Proven Results</h2>
+          <p style="font-size: 0.7em; color: #666; margin-bottom: 0.8em">
+            Real metrics from production use of this framework
+          </p>
+          <div
+            style="
+              display: flex;
+              justify-content: center;
+              flex-wrap: wrap;
+              gap: 0.8em;
+            "
+          >
+            <div class="roi-card" style="min-width: 120px">
+              <div class="roi-number">3,900+</div>
+              <div class="roi-label">Tests Written</div>
+            </div>
+            <div class="roi-card" style="min-width: 120px">
+              <div class="roi-number">90%+</div>
+              <div class="roi-label">Coverage</div>
+            </div>
+            <div class="roi-card" style="min-width: 120px">
+              <div class="roi-number">22</div>
+              <div class="roi-label">Stages Completed</div>
+            </div>
+            <div class="roi-card" style="min-width: 120px">
+              <div class="roi-number">0</div>
+              <div class="roi-label">Vulnerabilities</div>
+            </div>
+          </div>
+          <p style="margin-top: 0.8em; font-size: 0.6em; color: #666;">
+            60% of a complex project completed with consistent quality.
+          </p>
+        </section>
+
+        <!-- ==================== STRATEGIC WINS ==================== -->
+
+        <!-- Strategic Win 1 -->
+        <section>
+          <h2>Strategic Win: Predictable Delivery</h2>
+          <div class="win-item">
+            <h4>From "Almost Done" to Measured Progress</h4>
+            <p>Each stage produces a proof file with objective metrics. No more guessing - you know exactly what's complete.</p>
+          </div>
+          <div class="win-item">
+            <h4>Stage-Based Planning</h4>
+            <p>Work decomposed into 1-2 week stages with clear deliverables. Stakeholders see progress at every checkpoint.</p>
+          </div>
+          <div class="win-item">
+            <h4>Quality Gates Prevent Late Surprises</h4>
+            <p>8 automated checks catch issues at commit time, not in production. No more "we found a critical bug" the week before launch.</p>
+          </div>
+        </section>
+
+        <!-- Strategic Win 2 -->
+        <section>
+          <h2>Strategic Win: AI Effectiveness Multiplied</h2>
+          <div
+            style="
+              display: flex;
+              justify-content: center;
+              flex-wrap: wrap;
+              gap: 0.8em;
+              margin: 0.5em 0;
+            "
+          >
+            <div class="ai-card" style="min-width: 180px">
+              <div class="ai-number">Constrained</div>
+              <div class="ai-label">AI follows CLAUDE.md spec</div>
+            </div>
+            <div class="ai-card" style="min-width: 180px">
+              <div class="ai-number">Verified</div>
+              <div class="ai-label">Quality gates catch AI errors</div>
+            </div>
+            <div class="ai-card" style="min-width: 180px">
+              <div class="ai-number">Recoverable</div>
+              <div class="ai-label">State files preserve context</div>
+            </div>
+          </div>
+          <div class="quote" style="margin-top: 0.5em;">
+            "AI coding assistants are 10x more effective when they understand the constraints. CLAUDE.md gives them that understanding."
+          </div>
+        </section>
+
+        <!-- Strategic Win 3 -->
+        <section>
+          <h2>Strategic Win: Knowledge Capture</h2>
+          <div class="risk-item">
+            <h4>Risk Mitigated: Key Person Dependency</h4>
+            <p>Without framework: "Ask Dave, he knows how this works." With framework: specs and proof files document everything.</p>
+          </div>
+          <div class="win-item">
+            <h4>Onboarding Accelerated</h4>
+            <p>New engineers read CLAUDE.md, understand the project in hours not weeks. AI assists with context from day one.</p>
+          </div>
+          <div class="win-item">
+            <h4>Institutional Memory</h4>
+            <p>Proof files create an audit trail: what was built, when, to what quality. Decisions are documented, not forgotten.</p>
+          </div>
+        </section>
+
+        <!-- ==================== INVESTMENT ==================== -->
+
+        <!-- Investment Required -->
+        <section>
+          <h2>Investment Required</h2>
+          <table>
+            <tr>
+              <th>Component</th>
+              <th>Effort</th>
+              <th>Timeline</th>
+            </tr>
+            <tr>
+              <td>Create CLAUDE.md template</td>
+              <td>1-2 days</td>
+              <td>Week 1</td>
+            </tr>
+            <tr>
+              <td>Adapt stage scripts to project</td>
+              <td>1-2 days</td>
+              <td>Week 1</td>
+            </tr>
+            <tr>
+              <td>Team training on framework</td>
+              <td>Half day workshop</td>
+              <td>Week 1</td>
+            </tr>
+            <tr>
+              <td>Claude Code licenses</td>
+              <td>Per-seat cost</td>
+              <td>Ongoing</td>
+            </tr>
+            <tr>
+              <td>First pilot stage</td>
+              <td>1-2 weeks</td>
+              <td>Week 2-3</td>
+            </tr>
+          </table>
+          <p style="text-align: center; margin-top: 0.5em; font-size: 0.6em;">
+            <strong>Total ramp-up:</strong> ~3 weeks to first measurable results
+          </p>
+        </section>
+
+        <!-- ROI Summary -->
+        <section class="center">
+          <h2>ROI Summary</h2>
+          <div
+            style="
+              display: flex;
+              justify-content: center;
+              flex-wrap: wrap;
+              gap: 1em;
+              margin: 0.8em 0;
+            "
+          >
+            <div class="cost-card" style="min-width: 180px">
+              <div class="cost-number">75%</div>
+              <div class="cost-label">Current waste<br/>(rework, debugging, context)</div>
+            </div>
+            <div style="display: flex; align-items: center; font-size: 2em; color: #666;">→</div>
+            <div class="roi-card" style="min-width: 180px">
+              <div class="roi-number">50%+</div>
+              <div class="roi-label">Waste eliminated<br/>(with framework)</div>
+            </div>
+          </div>
+          <p style="font-size: 0.7em; color: #666; margin-top: 0.5em;">
+            For a 20-engineer team: equivalent to adding <span class="highlight-green" style="font-weight: bold;">7-10 engineers</span> in effective capacity.
+          </p>
+        </section>
+
+        <!-- ==================== ASK ==================== -->
+
+        <!-- The Ask -->
+        <section>
+          <h2>The Ask: Pilot Program Sponsorship</h2>
+          <div class="executive-summary">
+            <h3>Pilot Proposal</h3>
+            <p style="font-size: 0.65em; line-height: 1.4">
+              Fund a 6-week pilot with one team (5-7 engineers) to validate the framework
+              on a real project. Measure productivity, quality, and developer satisfaction.
+              Use results to inform broader rollout decision.
+            </p>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-marker">1</div>
+            <div class="timeline-content">
+              <h4>Week 1-2: Setup</h4>
+              <p>Create project spec, adapt scripts, train team, set up Claude Code</p>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-marker">2</div>
+            <div class="timeline-content">
+              <h4>Week 3-5: Execution</h4>
+              <p>Complete 2-3 stages using full framework, collect metrics</p>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-marker">3</div>
+            <div class="timeline-content">
+              <h4>Week 6: Assessment</h4>
+              <p>Analyze results, document learnings, recommend next steps</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Success Metrics -->
+        <section>
+          <h2>Pilot Success Metrics</h2>
+          <table>
+            <tr>
+              <th>Metric</th>
+              <th>Baseline (Estimate)</th>
+              <th>Target</th>
+            </tr>
+            <tr>
+              <td>Code with tests</td>
+              <td>~60% coverage</td>
+              <td class="highlight-green">90%+ coverage</td>
+            </tr>
+            <tr>
+              <td>Rework rate</td>
+              <td>~30% of time</td>
+              <td class="highlight-green">&lt;10% of time</td>
+            </tr>
+            <tr>
+              <td>Status visibility</td>
+              <td>Subjective</td>
+              <td class="highlight-green">Objective proof files</td>
+            </tr>
+            <tr>
+              <td>Context recovery time</td>
+              <td>Hours</td>
+              <td class="highlight-green">&lt;15 minutes</td>
+            </tr>
+            <tr>
+              <td>Developer satisfaction</td>
+              <td>TBD (survey)</td>
+              <td class="highlight-green">Positive trend</td>
+            </tr>
+            <tr>
+              <td>Defects in review</td>
+              <td>TBD (baseline)</td>
+              <td class="highlight-green">50% reduction</td>
+            </tr>
+          </table>
+        </section>
+
+        <!-- Risk Mitigation -->
+        <section>
+          <h2>Risk Mitigation</h2>
+          <table>
+            <tr>
+              <th>Risk</th>
+              <th>Mitigation</th>
+            </tr>
+            <tr>
+              <td>Team resists new process</td>
+              <td class="highlight-green">Start with volunteers, demonstrate wins</td>
+            </tr>
+            <tr>
+              <td>AI generates poor code</td>
+              <td class="highlight-green">Quality gates catch all issues</td>
+            </tr>
+            <tr>
+              <td>Framework overhead too high</td>
+              <td class="highlight-green">Scripts automate 90% of process</td>
+            </tr>
+            <tr>
+              <td>Doesn't fit our tech stack</td>
+              <td class="highlight-green">Framework is generic (.NET, TS, any)</td>
+            </tr>
+            <tr>
+              <td>AI tool costs too high</td>
+              <td class="highlight-green">ROI from productivity offsets cost</td>
+            </tr>
+          </table>
+        </section>
+
+        <!-- Final Summary -->
+        <section class="center" data-background-color="#f8f9fa">
+          <h2>Summary</h2>
+          <div
+            style="
+              display: flex;
+              flex-wrap: wrap;
+              justify-content: center;
+              gap: 0.5em;
+              margin: 0.8em 0;
+            "
+          >
+            <span class="badge badge-gold">2-3x Developer Productivity</span>
+            <span class="badge badge-green">90%+ Quality Maintained</span>
+            <span class="badge badge-blue">AI Effectiveness Multiplied</span>
+            <span class="badge badge-green">Predictable Delivery</span>
+          </div>
+          <p style="font-size: 0.8em; color: #495057; margin-top: 0.8em;">
+            Transform AI coding from <span class="highlight-red">chaotic acceleration</span>
+            to <span class="highlight-green">structured excellence</span>.
+          </p>
+          <p style="font-size: 0.65em; color: #888; margin-top: 1em;">
+            Low risk (6-week pilot) • High reward (50%+ capacity gain) • Proven framework
+          </p>
+        </section>
+
+        <!-- Questions -->
+        <section class="center" data-background-color="#1a1a2e">
+          <h1 style="color: #fff">Questions?</h1>
+          <p style="margin-top: 1em; color: #4dabf7; font-size: 0.8em">
+            Ready to discuss pilot team and timeline
+          </p>
+        </section>
+      </div>
+    </div>
+
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox">
+      <img src="" alt="Fullscreen diagram" />
+      <div class="lightbox-hint">Click anywhere or press Escape to close</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+    <script>
+      Reveal.initialize({
+        hash: true,
+        slideNumber: true,
+        transition: "slide",
+        width: 960,
+        height: 700,
+        margin: 0.04,
+        center: true,
+      });
+
+      const lightbox = document.getElementById("lightbox");
+      const lightboxImg = lightbox.querySelector("img");
+
+      document.querySelectorAll(".mermaid-container img").forEach((img) => {
+        img.addEventListener("click", (e) => {
+          e.stopPropagation();
+          lightboxImg.src = img.src;
+          lightbox.classList.add("active");
+        });
+      });
+
+      lightbox.addEventListener("click", () => {
+        lightbox.classList.remove("active");
+      });
+
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") lightbox.classList.remove("active");
+      });
+    </script>
+  </body>
+</html>

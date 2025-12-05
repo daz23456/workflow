@@ -93,6 +93,43 @@ public class TemplateResolver : ITemplateResolver
             return forEachContext.Index.ToString();
         }
 
+        // Handle {{forEach.$parent.xxx}} - navigate to parent context
+        if (parts[1] == "$parent")
+        {
+            if (forEachContext.Parent == null)
+            {
+                throw new TemplateResolutionException(
+                    "forEach.$parent used but there is no parent forEach context",
+                    originalExpression);
+            }
+
+            // Resolve the rest of the expression in parent context
+            var parentParts = new[] { "forEach" }.Concat(parts.Skip(2)).ToArray();
+            var parentTemplateContext = new TemplateContext
+            {
+                Input = context.Input,
+                TaskOutputs = context.TaskOutputs,
+                ForEach = forEachContext.Parent
+            };
+            return ResolveForEachExpression(parentParts, parentTemplateContext, originalExpression);
+        }
+
+        // Handle {{forEach.$root.xxx}} - navigate to root context
+        if (parts[1] == "$root")
+        {
+            var rootContext = forEachContext.GetRoot();
+
+            // Resolve the rest of the expression in root context
+            var rootParts = new[] { "forEach" }.Concat(parts.Skip(2)).ToArray();
+            var rootTemplateContext = new TemplateContext
+            {
+                Input = context.Input,
+                TaskOutputs = context.TaskOutputs,
+                ForEach = rootContext
+            };
+            return ResolveForEachExpression(rootParts, rootTemplateContext, originalExpression);
+        }
+
         // Handle {{forEach.{itemVar}}} or {{forEach.{itemVar}.property}}
         if (parts[1] == forEachContext.ItemVar)
         {
@@ -108,7 +145,7 @@ public class TemplateResolver : ITemplateResolver
         }
 
         throw new TemplateResolutionException(
-            $"Unknown forEach property: {parts[1]}. Expected 'index' or '{forEachContext.ItemVar}'",
+            $"Unknown forEach property: {parts[1]}. Expected 'index', '$parent', '$root', or '{forEachContext.ItemVar}'",
             originalExpression);
     }
 

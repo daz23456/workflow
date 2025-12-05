@@ -6,12 +6,9 @@ metadata:
 spec:
   description: Simple workflow - get user then get their orders
   input:
-    type: object
-    properties:
-      userId:
-        type: string
-    required:
-      - userId
+    userId:
+      type: string
+      required: true
   tasks:
     - id: get-user
       taskRef: getuser

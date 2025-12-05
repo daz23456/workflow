@@ -42,7 +42,8 @@ export function VisualizationSettings() {
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="p-2 rounded-lg bg-black/50 border border-white/20 hover:bg-black/70 transition-colors"
+        className="p-2 rounded-lg bg-black/50 border border-white/20 hover:bg-black/70 transition-colors relative"
+        style={{ zIndex: 10000 }}
         data-testid="settings-toggle"
         title="Visualization Settings"
       >
@@ -64,7 +65,8 @@ export function VisualizationSettings() {
 
   return (
     <div
-      className="p-4 rounded-lg bg-black/80 border border-white/20 backdrop-blur-sm"
+      className="p-4 rounded-lg bg-black/80 border border-white/20 backdrop-blur-sm relative"
+      style={{ zIndex: 10000 }}
       data-testid="settings-panel"
     >
       <div className="flex items-center justify-between mb-4">

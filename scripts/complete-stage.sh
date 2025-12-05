@@ -140,6 +140,53 @@ fi
 print_success "All mandatory gate outputs found"
 
 ###############################################################################
+# Step 1.5: Validate screenshots captured (if required)
+###############################################################################
+print_info "Step 1.5: Validating screenshot coverage..."
+
+SCREENSHOT_DIR="$STAGE_DIR/screenshots"
+MANIFEST_FILE="$STAGE_DIR/screenshots-required.txt"
+SCREENSHOTS_CAPTURED=0
+SCREENSHOTS_REQUIRED=0
+
+# Check if UI pages were declared
+AFFECTED_UI_PAGES=""
+if [[ -f "$STATE_FILE" ]]; then
+    AFFECTED_UI_PAGES=$(grep "affected_ui_pages:" "$STATE_FILE" | sed 's/affected_ui_pages:\s*//' | tr -d '[]' || true)
+fi
+
+if [[ -z "$AFFECTED_UI_PAGES" || "$AFFECTED_UI_PAGES" == "none" ]]; then
+    print_info "No UI pages declared - screenshots not required"
+else
+    # UI pages declared, check manifest and screenshots
+    if [[ ! -f "$MANIFEST_FILE" ]]; then
+        print_error "UI pages declared but manifest not generated"
+        print_error "Run: ./scripts/generate-screenshot-manifest.sh --stage $STAGE_NUM"
+        exit 1
+    fi
+
+    # Count required screenshots
+    SCREENSHOTS_REQUIRED=$(grep -v "^#" "$MANIFEST_FILE" | grep -v "^$" | wc -l | tr -d ' ')
+
+    if [[ ! -d "$SCREENSHOT_DIR" ]]; then
+        print_error "Screenshot directory not found: $SCREENSHOT_DIR"
+        print_error "Run: cd src/workflow-ui && npx ts-node scripts/take-screenshots.ts --stage $STAGE_NUM"
+        exit 1
+    fi
+
+    # Count captured screenshots
+    SCREENSHOTS_CAPTURED=$(ls -1 "$SCREENSHOT_DIR"/*.png 2>/dev/null | wc -l | tr -d ' ')
+
+    if [[ "$SCREENSHOTS_CAPTURED" -lt "$SCREENSHOTS_REQUIRED" ]]; then
+        print_error "Missing screenshots: $SCREENSHOTS_CAPTURED/$SCREENSHOTS_REQUIRED captured"
+        print_error "Run: cd src/workflow-ui && npx ts-node scripts/take-screenshots.ts --stage $STAGE_NUM"
+        exit 1
+    fi
+
+    print_success "Screenshots validated: $SCREENSHOTS_CAPTURED/$SCREENSHOTS_REQUIRED"
+fi
+
+###############################################################################
 # Step 2: Extract metrics from gate outputs
 ###############################################################################
 print_info "Step 2: Extracting metrics from gate outputs..."
@@ -345,6 +392,82 @@ if [[ "$DRY_RUN" == false ]]; then
 fi
 
 ###############################################################################
+# Step 10: Generate MR/PR description with screenshots
+###############################################################################
+print_info "Step 10: Generating MR description..."
+
+MR_FILE="$STAGE_DIR/MR_DESCRIPTION.md"
+COMMIT_HASH_FINAL=$(git log -1 --format=%h)
+
+if [[ "$DRY_RUN" == true ]]; then
+    print_warning "[DRY-RUN] Would generate MR description"
+else
+    cat > "$MR_FILE" << EOF
+## Stage $STAGE_NUM: $STAGE_NAME
+
+### Summary
+Completes Stage $STAGE_NUM implementation with full TDD coverage.
+
+### Metrics
+| Metric | Value |
+|--------|-------|
+| Tests | $TESTS_PASSED passing |
+| Coverage | $COVERAGE% |
+| Vulnerabilities | 0 |
+| Commit | \`$COMMIT_HASH_FINAL\` |
+
+### Deliverables
+EOF
+
+    # Extract deliverables from proof file if available
+    if [[ -f "$PROOF_FILE" ]]; then
+        echo "" >> "$MR_FILE"
+        grep -A 20 "## Deliverables" "$PROOF_FILE" | grep "^\- \[" | head -10 >> "$MR_FILE" 2>/dev/null || echo "- See proof file for details" >> "$MR_FILE"
+    fi
+
+    # Add screenshots section if screenshots were captured
+    if [[ "$SCREENSHOTS_CAPTURED" -gt 0 ]]; then
+        echo "" >> "$MR_FILE"
+        echo "### Screenshots" >> "$MR_FILE"
+        echo "" >> "$MR_FILE"
+        echo "<details>" >> "$MR_FILE"
+        echo "<summary>Click to expand ($SCREENSHOTS_CAPTURED screenshots)</summary>" >> "$MR_FILE"
+        echo "" >> "$MR_FILE"
+
+        # List all screenshots with preview
+        for screenshot in "$SCREENSHOT_DIR"/*.png; do
+            if [[ -f "$screenshot" ]]; then
+                filename=$(basename "$screenshot")
+                # Remove extension and convert dashes to spaces for description
+                description=$(echo "${filename%.png}" | tr '-' ' ' | sed 's/  / - /')
+                echo "#### $description" >> "$MR_FILE"
+                echo "![${filename}](./screenshots/${filename})" >> "$MR_FILE"
+                echo "" >> "$MR_FILE"
+            fi
+        done
+
+        echo "</details>" >> "$MR_FILE"
+    fi
+
+    # Add proof link
+    echo "" >> "$MR_FILE"
+    echo "### Proof of Completion" >> "$MR_FILE"
+    echo "See [\`STAGE_${STAGE_NUM}_PROOF.md\`](./STAGE_${STAGE_NUM}_PROOF.md) for detailed completion evidence." >> "$MR_FILE"
+    echo "" >> "$MR_FILE"
+    echo "---" >> "$MR_FILE"
+    echo "" >> "$MR_FILE"
+    echo "🤖 Generated with [Claude Code](https://claude.com/claude-code)" >> "$MR_FILE"
+
+    print_success "MR description generated: $MR_FILE"
+
+    # Also copy to clipboard if pbcopy available (macOS)
+    if command -v pbcopy &>/dev/null; then
+        cat "$MR_FILE" | pbcopy
+        print_info "MR description copied to clipboard!"
+    fi
+fi
+
+###############################################################################
 # Summary
 ###############################################################################
 print_header "✅ Stage $STAGE_NUM Complete!"
@@ -353,6 +476,7 @@ echo -e "${BOLD}Summary:${NC}"
 echo "  Stage: $STAGE_NUM - $STAGE_NAME"
 echo "  Tests: $TESTS_PASSED passing"
 echo "  Coverage: $COVERAGE%"
+echo "  Screenshots: $SCREENSHOTS_CAPTURED captured"
 echo "  Commit: $(git log -1 --format=%h)"
 echo "  Tag: $TAG_NAME"
 echo ""
@@ -360,9 +484,19 @@ echo -e "${BOLD}Artifacts:${NC}"
 echo "  Proof: $PROOF_FILE"
 echo "  State: $STATE_FILE"
 echo "  Gates: $GATES_DIR/"
+echo "  MR Description: $MR_FILE"
+if [[ "$SCREENSHOTS_CAPTURED" -gt 0 ]]; then
+    echo "  Screenshots: $SCREENSHOT_DIR/ ($SCREENSHOTS_CAPTURED files)"
+fi
 echo ""
 
 if [[ "$DRY_RUN" == true ]]; then
     print_warning "This was a dry run. No changes were made."
     echo "Run without --dry-run to execute."
 fi
+
+echo -e "${BOLD}Next Steps:${NC}"
+echo "  1. Review MR description: cat $MR_FILE"
+echo "  2. Create MR/PR using the generated description"
+echo "  3. Push to remote: git push origin HEAD --tags"
+echo ""

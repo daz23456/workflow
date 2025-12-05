@@ -231,6 +231,55 @@ EOF
 print_success "Created: $STATE_FILE"
 
 ###############################################################################
+# Step 4.5: Prompt for affected UI pages (for screenshot tracking)
+###############################################################################
+print_info "Step 4.5: Screenshot tracking setup..."
+
+# Get available UI routes
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+UI_ROUTES=$("$SCRIPT_DIR/get-ui-routes.sh" --routes 2>/dev/null || echo "")
+
+if [[ -n "$UI_ROUTES" ]]; then
+    echo ""
+    echo -e "${YELLOW}Which UI pages does this stage affect? (for screenshot coverage)${NC}"
+    echo -e "Available routes:"
+    echo "$UI_ROUTES" | while read route; do
+        echo "  $route"
+    done
+    echo ""
+    echo "Enter comma-separated routes (e.g., /dashboard, /workflows/new)"
+    echo "Or press Enter for 'none' (backend-only stages):"
+    read -p "> " AFFECTED_PAGES
+
+    # Clean up input
+    AFFECTED_PAGES=$(echo "$AFFECTED_PAGES" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+
+    # Default to none if empty
+    if [[ -z "$AFFECTED_PAGES" ]]; then
+        AFFECTED_PAGES="none"
+    fi
+
+    # Append to state file
+    echo "" >> "$STATE_FILE"
+    echo "# Screenshot tracking" >> "$STATE_FILE"
+    echo "affected_ui_pages: [$AFFECTED_PAGES]" >> "$STATE_FILE"
+    echo "screenshots_required: 0  # Updated by generate-screenshot-manifest.sh" >> "$STATE_FILE"
+    echo "screenshots_captured: 0" >> "$STATE_FILE"
+
+    if [[ "$AFFECTED_PAGES" != "none" ]]; then
+        print_success "UI pages tracked: $AFFECTED_PAGES"
+        print_info "Run './scripts/generate-screenshot-manifest.sh --stage $STAGE_NUM' before completing"
+    else
+        print_success "No UI pages declared (backend-only stage)"
+    fi
+else
+    echo "" >> "$STATE_FILE"
+    echo "# Screenshot tracking (no UI routes found)" >> "$STATE_FILE"
+    echo "affected_ui_pages: [none]" >> "$STATE_FILE"
+    print_info "No UI routes found in project"
+fi
+
+###############################################################################
 # Step 5: Create stage brief (single-file reference)
 ###############################################################################
 print_info "Step 5: Creating stage brief..."
@@ -249,6 +298,12 @@ cat > "$BRIEF_FILE" << EOF
 \`\`\`bash
 # Run quality gates
 ./scripts/run-quality-gates.sh --stage $STAGE_NUM $GATES
+
+# Generate screenshot manifest (if UI changes)
+./scripts/generate-screenshot-manifest.sh --stage $STAGE_NUM
+
+# Capture screenshots
+cd src/workflow-ui && npx ts-node scripts/take-screenshots.ts --stage $STAGE_NUM
 
 # Complete stage (after gates pass)
 ./scripts/complete-stage.sh --stage $STAGE_NUM --name "$STAGE_NAME"
@@ -274,6 +329,8 @@ cat $STATE_FILE
 - [ ] Coverage ≥90%
 
 ### AFTER (completion)
+- [ ] Generate screenshot manifest: \`./scripts/generate-screenshot-manifest.sh --stage $STAGE_NUM\`
+- [ ] Capture screenshots (if UI affected): \`cd src/workflow-ui && npx ts-node scripts/take-screenshots.ts --stage $STAGE_NUM\`
 - [ ] Run: \`./scripts/run-quality-gates.sh --stage $STAGE_NUM $GATES\`
 - [ ] All gates pass
 - [ ] Run: \`./scripts/complete-stage.sh --stage $STAGE_NUM --name "$STAGE_NAME"\`

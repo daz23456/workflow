@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Spec-Driven Development with Claude Code - For Engineers</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reset.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/black.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css"
+    />
+    <style>
+      :root {
+        --r-background-color: #0a0a0f;
+        --r-main-font: system-ui, -apple-system, sans-serif;
+        --r-heading-font: system-ui, -apple-system, sans-serif;
+        --r-main-color: #e0e0e0;
+        --r-heading-color: #fff;
+        --r-link-color: #4dabf7;
+      }
+      .reveal .slides section {
+        padding: 10px 20px;
+      }
+      .reveal h1,
+      .reveal h2,
+      .reveal h3 {
+        text-transform: none;
+        margin-bottom: 0.2em;
+      }
+      .reveal h1 {
+        font-size: 1.5em;
+      }
+      .reveal h2 {
+        font-size: 1.1em;
+      }
+      .reveal h3 {
+        font-size: 0.75em;
+      }
+      .reveal p {
+        font-size: 0.6em;
+        margin: 0.2em 0;
+      }
+      .reveal section {
+        text-align: left;
+      }
+      .reveal section.center {
+        text-align: center;
+      }
+      .reveal ul,
+      .reveal ol {
+        margin: 0.2em 0 0.2em 0.8em;
+      }
+      .reveal li {
+        margin: 0.15em 0;
+        font-size: 0.55em;
+      }
+      .reveal table {
+        margin: 0.3em auto;
+        font-size: 0.5em;
+      }
+      .reveal th,
+      .reveal td {
+        padding: 0.2em 0.4em;
+        border: 1px solid #444;
+      }
+      .reveal th {
+        background: #1a1a2e;
+      }
+      .reveal pre {
+        width: 100%;
+        font-size: 0.4em;
+        margin: 0.3em 0;
+      }
+      .reveal code {
+        font-family: "Fira Code", monospace;
+      }
+      .highlight-green {
+        color: #51cf66;
+      }
+      .highlight-blue {
+        color: #4dabf7;
+      }
+      .highlight-red {
+        color: #ff6b6b;
+      }
+      .highlight-yellow {
+        color: #ffd43b;
+      }
+      .highlight-purple {
+        color: #b197fc;
+      }
+      .mermaid-container {
+        background: #fff;
+        border-radius: 6px;
+        padding: 10px;
+        margin: 8px auto;
+        max-width: 85%;
+      }
+      .mermaid-container img {
+        max-width: 100%;
+        max-height: 220px;
+        height: auto;
+        display: block;
+        margin: 0 auto;
+      }
+      .two-column {
+        display: flex;
+        gap: 1em;
+      }
+      .two-column > div {
+        flex: 1;
+      }
+      .two-column h3 {
+        font-size: 0.7em;
+        margin-bottom: 0.15em;
+      }
+      .two-column li {
+        font-size: 0.5em;
+      }
+      .stat-box {
+        background: linear-gradient(135deg, #1a1a2e, #16213e);
+        border-radius: 8px;
+        padding: 0.5em;
+        text-align: center;
+        margin: 0.2em;
+      }
+      .stat-number {
+        font-size: 1.5em;
+        font-weight: bold;
+        color: #51cf66;
+      }
+      .stat-label {
+        font-size: 0.5em;
+        color: #888;
+      }
+      .badge {
+        display: inline-block;
+        padding: 0.15em 0.5em;
+        border-radius: 12px;
+        font-size: 0.5em;
+        margin: 0.1em;
+      }
+      .badge-green {
+        background: #51cf66;
+        color: #000;
+      }
+      .badge-blue {
+        background: #4dabf7;
+        color: #000;
+      }
+      .badge-red {
+        background: #ff6b6b;
+        color: #000;
+      }
+      .badge-purple {
+        background: #b197fc;
+        color: #000;
+      }
+      .workflow-box {
+        background: linear-gradient(135deg, #1a1a2e, #2d3748);
+        border: 2px solid #4dabf7;
+        border-radius: 8px;
+        padding: 0.6em;
+        margin: 0.3em 0;
+      }
+      .workflow-box h4 {
+        color: #4dabf7;
+        font-size: 0.7em;
+        margin: 0 0 0.3em 0;
+      }
+      .workflow-box p {
+        color: #e0e0e0;
+        font-size: 0.5em;
+        margin: 0.2em 0;
+      }
+      .phase-indicator {
+        display: inline-block;
+        padding: 0.2em 0.6em;
+        border-radius: 4px;
+        font-size: 0.6em;
+        font-weight: bold;
+        margin-right: 0.3em;
+      }
+      .phase-before {
+        background: #4dabf7;
+        color: #000;
+      }
+      .phase-during {
+        background: #ffd43b;
+        color: #000;
+      }
+      .phase-after {
+        background: #51cf66;
+        color: #000;
+      }
+      .lightbox {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.95);
+        z-index: 9999;
+        justify-content: center;
+        align-items: center;
+        cursor: zoom-out;
+      }
+      .lightbox.active {
+        display: flex;
+      }
+      .lightbox img {
+        max-width: 98vw;
+        max-height: 92vh;
+        object-fit: contain;
+        border-radius: 8px;
+        background: #fff;
+        padding: 20px;
+      }
+      .lightbox-hint {
+        position: absolute;
+        bottom: 15px;
+        color: #666;
+        font-size: 13px;
+      }
+      .mermaid-container img {
+        cursor: zoom-in;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <!-- Title Slide -->
+        <section
+          class="center"
+          data-background-gradient="linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 100%)"
+        >
+          <h1>Spec-Driven Development<br/>with Claude Code</h1>
+          <p style="font-size: 0.9em; color: #4dabf7">
+            Stage Execution Framework + AI-Assisted Engineering
+          </p>
+          <p style="color: #888; margin-top: 1em; font-size: 0.7em">
+            Technical Deep-Dive for Engineers
+          </p>
+        </section>
+
+        <!-- ==================== THE PROBLEM ==================== -->
+
+        <!-- The Problem -->
+        <section>
+          <h2>Today: The Chaos of "Just Code It"</h2>
+          <div class="two-column">
+            <div>
+              <h3 class="highlight-red">What Goes Wrong</h3>
+              <ul>
+                <li>"What's the status?" - "Almost done" (for 3 weeks)</li>
+                <li>Scope creep - features grow mid-development</li>
+                <li>Forgotten edge cases discovered in production</li>
+                <li>Context lost when switching between tasks</li>
+                <li>No clear definition of "done"</li>
+                <li>AI generates code without understanding constraints</li>
+              </ul>
+            </div>
+            <div>
+              <h3 class="highlight-yellow">The Hidden Costs</h3>
+              <ul>
+                <li>Rework due to misunderstood requirements</li>
+                <li>Debug sessions from untested paths</li>
+                <li>Code reviews that catch what tests should</li>
+                <li>Onboarding friction - "ask Dave, he knows"</li>
+                <li>AI "hallucinations" without spec guardrails</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- AI Without Constraints -->
+        <section>
+          <h2>AI Coding Without Spec = Chaos</h2>
+          <div class="workflow-box">
+            <h4>Common Claude Code Frustrations</h4>
+            <p>"Write me a user authentication system"</p>
+            <p style="color: #ff6b6b;">→ AI generates OAuth, JWT, sessions, LDAP... which one did you want?</p>
+            <p style="color: #ff6b6b;">→ No tests, no validation, no error handling</p>
+            <p style="color: #ff6b6b;">→ 500 lines of code you need to debug</p>
+          </div>
+          <p style="text-align: center; margin-top: 0.8em; font-size: 0.7em;">
+            <span class="highlight-yellow">AI is a powerful tool</span> but it needs <span class="highlight-green">constraints and context</span>.
+          </p>
+        </section>
+
+        <!-- ==================== THE SOLUTION ==================== -->
+
+        <!-- The Solution -->
+        <section class="center">
+          <h2>The Solution: Spec-Driven Development</h2>
+          <p style="font-size: 0.8em; margin: 0.5em 0;">
+            A structured framework that gives Claude Code (and you) <span class="highlight-green">guardrails</span>.
+          </p>
+          <div
+            style="
+              display: flex;
+              justify-content: center;
+              flex-wrap: wrap;
+              gap: 0.8em;
+              margin-top: 1em;
+            "
+          >
+            <div class="stat-box" style="min-width: 140px">
+              <div class="stat-number">CLAUDE.md</div>
+              <div class="stat-label">Single source of truth</div>
+            </div>
+            <div class="stat-box" style="min-width: 140px">
+              <div class="stat-number">Stages</div>
+              <div class="stat-label">Decomposed deliverables</div>
+            </div>
+            <div class="stat-box" style="min-width: 140px">
+              <div class="stat-number">Gates</div>
+              <div class="stat-label">Quality enforcement</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Three Pillars -->
+        <section>
+          <h2>Three Pillars of Spec-Driven Development</h2>
+          <div class="mermaid-container">
+            <img
+              loading="eager"
+              src="https://mermaid.ink/img/Z3JhcGggTFIKICAgIHN1YmdyYXBoICIxLiBTcGVjaWZpY2F0aW9uIgogICAgICAgIFNQRUNbQ0xBVURFLm1kPGJyPlByb2plY3QgU3BlY10KICAgIGVuZAoKICAgIHN1YmdyYXBoICIyLiBFeGVjdXRpb24iCiAgICAgICAgU1RBR0VTW1N0YWdlIEZyYW1ld29yazxicj5CRUZPUkUg4oaSIERVUklORyDihpIgQUZURVJdCiAgICBlbmQKCiAgICBzdWJncmFwaCAiMy4gVmVyaWZpY2F0aW9uIgogICAgICAgIEdBVEVTW1F1YWxpdHkgR2F0ZXM8YnI+OCBNYW5kYXRvcnkgQ2hlY2tzXQogICAgZW5kCgogICAgU1BFQyAtLT4gU1RBR0VTCiAgICBTVEFHRVMgLS0+IEdBVEVTCiAgICBHQVRFUyAtLT58UHJvb2YgRmlsZXwgU1BFQwoKICAgIHN0eWxlIFNQRUMgZmlsbDojNGRhYmY3CiAgICBzdHlsZSBTVEFHRVMgZmlsbDojZmZkNDNiLGNvbG9yOiMwMDAKICAgIHN0eWxlIEdBVEVTIGZpbGw6IzUxY2Y2Ng=="
+              alt="Three Pillars"
+            />
+          </div>
+          <table>
+            <tr>
+              <th>Pillar</th>
+              <th>Purpose</th>
+              <th>Artifact</th>
+            </tr>
+            <tr>
+              <td><span class="highlight-blue">Specification</span></td>
+              <td>Define what to build, constraints, success criteria</td>
+              <td>CLAUDE.md</td>
+            </tr>
+            <tr>
+              <td><span class="highlight-yellow">Execution</span></td>
+              <td>Structured workflow with checkpoints</td>
+              <td>Stage Framework</td>
+            </tr>
+            <tr>
+              <td><span class="highlight-green">Verification</span></td>
+              <td>Prove quality at every step</td>
+              <td>Quality Gates</td>
+            </tr>
+          </table>
+        </section>
+
+        <!-- CLAUDE.md -->
+        <section>
+          <h2>CLAUDE.md: The Master Spec</h2>
+          <p style="color: #888;">The single source of truth that Claude Code reads on every session.</p>
+          <pre><code class="markdown"># CLAUDE.md - Project Specification
+
+## Project Overview
+Build a production-grade workflow orchestration engine...
+
+## Technology Stack
+- .NET 8 with ASP.NET Core
+- System.Text.Json (single serializer)
+- PostgreSQL 15 for storage
+
+## Non-Negotiable Requirements
+- ✅ Test-first development (RED-GREEN-REFACTOR)
+- ✅ >90% code coverage enforced
+- ✅ Zero tolerance for test failures
+
+## Stage Roadmap
+### Stage 1: Foundation ✅
+### Stage 2: Schema Validation ✅
+### Stage 3: Template Parsing (CURRENT)
+...</code></pre>
+          <p style="text-align: center; margin-top: 0.5em; font-size: 0.6em;">
+            Claude Code reads this <span class="highlight-green">automatically</span> and follows the constraints.
+          </p>
+        </section>
+
+        <!-- Stage Execution -->
+        <section>
+          <h2>Stage Execution Framework</h2>
+          <p style="color: #888;">Every feature follows the same 3-phase workflow.</p>
+          <div class="mermaid-container">
+            <img
+              loading="eager"
+              src="https://mermaid.ink/img/Zmxvd2NoYXJ0IExSCiAgICBCRUZPUkVbQkVGT1JFPGJyPkluaXRpYWxpemVdIC0tPiBEVVJJTkdbRFVSSU5HPGJyPlRERCBDeWNsZV0KICAgIERVUklORyAtLT4gQUZURVJbQUZURVI8YnI+VmVyaWZ5XQogICAgQUZURVIgLS0+IENPTU1JVFtDb21taXQgKyBUYWddCgogICAgc3R5bGUgQkVGT1JFIGZpbGw6IzRkYWJmNwogICAgc3R5bGUgRFVSSU5HIGZpbGw6I2ZmZDQzYixjb2xvcjojMDAwCiAgICBzdHlsZSBBRlRFUiBmaWxsOiM1MWNmNjYKICAgIHN0eWxlIENPTU1JVCBmaWxsOiNiMTk3ZmM="
+              alt="Stage Workflow"
+            />
+          </div>
+          <div class="two-column">
+            <div>
+              <p><span class="phase-indicator phase-before">BEFORE</span></p>
+              <ul>
+                <li>Run <code>init-stage.sh</code></li>
+                <li>Creates proof template</li>
+                <li>Sets up state tracking</li>
+              </ul>
+            </div>
+            <div>
+              <p><span class="phase-indicator phase-during">DURING</span></p>
+              <ul>
+                <li>RED → GREEN → REFACTOR</li>
+                <li>Claude Code assists with TDD</li>
+                <li>Continuous test execution</li>
+              </ul>
+            </div>
+          </div>
+          <p><span class="phase-indicator phase-after">AFTER</span> Run quality gates, fill proof file, commit + tag</p>
+        </section>
+
+        <!-- The 3 Commands -->
+        <section>
+          <h2>Every Stage: 3 Commands</h2>
+          <pre><code class="bash"># 1. BEFORE: Initialize stage (creates all files in correct locations)
+./scripts/init-stage.sh --stage 9.7 --name "Transform DSL" --profile BACKEND_DOTNET
+
+# 2. DURING: Implement with TDD (Claude Code assists here!)
+# RED → GREEN → REFACTOR cycle
+
+# 3. AFTER: Run gates then complete
+./scripts/run-quality-gates.sh --stage 9.7 1 2 3 4 5 6 7 8
+./scripts/complete-stage.sh --stage 9.7 --name "Transform DSL"</code></pre>
+          <p style="text-align: center; margin-top: 0.5em; font-size: 0.6em;">
+            Scripts handle: directory structure, proof templates, CHANGELOG, git tags.
+          </p>
+        </section>
+
+        <!-- Quality Gates -->
+        <section>
+          <h2>8 Mandatory Quality Gates</h2>
+          <table>
+            <tr>
+              <th>Gate</th>
+              <th>Check</th>
+              <th>Fail Condition</th>
+            </tr>
+            <tr>
+              <td>1</td>
+              <td>No Template Files</td>
+              <td class="highlight-red">Class1.cs, UnitTest1.cs found</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>Linting & Style</td>
+              <td class="highlight-red">Any style violations</td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td>Clean Build</td>
+              <td class="highlight-red">Errors or warnings</td>
+            </tr>
+            <tr>
+              <td>4</td>
+              <td>Type Safety (TS)</td>
+              <td class="highlight-red">TypeScript type errors</td>
+            </tr>
+            <tr>
+              <td>5</td>
+              <td>All Tests Passing</td>
+              <td class="highlight-red">Any failure or skip</td>
+            </tr>
+            <tr>
+              <td>6</td>
+              <td>Coverage ≥90%</td>
+              <td class="highlight-red">Below threshold</td>
+            </tr>
+            <tr>
+              <td>7</td>
+              <td>Zero Vulnerabilities</td>
+              <td class="highlight-red">Any security issue</td>
+            </tr>
+            <tr>
+              <td>8</td>
+              <td>Proof Complete</td>
+              <td class="highlight-red">[TBD] placeholders remain</td>
+            </tr>
+          </table>
+          <p style="text-align: center; margin-top: 0.5em; font-size: 0.55em;">
+            <span class="highlight-red">Fail-fast:</span> First gate failure stops execution.
+            <span class="highlight-yellow">No skipped tests allowed.</span>
+          </p>
+        </section>
+
+        <!-- ==================== CLAUDE CODE INTEGRATION ==================== -->
+
+        <!-- Claude Code Integration -->
+        <section class="center">
+          <h2>Claude Code + Spec = Superpowers</h2>
+          <p style="font-size: 0.8em; margin: 0.5em 0;">
+            AI-assisted development with <span class="highlight-green">guardrails</span>.
+          </p>
+          <div
+            style="
+              display: flex;
+              justify-content: center;
+              flex-wrap: wrap;
+              gap: 0.8em;
+              margin-top: 0.8em;
+            "
+          >
+            <div class="stat-box" style="min-width: 120px">
+              <div class="stat-number" style="font-size: 1.2em;">Context</div>
+              <div class="stat-label">CLAUDE.md provides constraints</div>
+            </div>
+            <div class="stat-box" style="min-width: 120px">
+              <div class="stat-number" style="font-size: 1.2em;">TDD</div>
+              <div class="stat-label">Claude writes tests first</div>
+            </div>
+            <div class="stat-box" style="min-width: 120px">
+              <div class="stat-number" style="font-size: 1.2em;">Quality</div>
+              <div class="stat-label">Gates catch AI mistakes</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- How Claude Reads Spec -->
+        <section>
+          <h2>How Claude Code Uses the Spec</h2>
+          <div class="workflow-box">
+            <h4>1. CLAUDE.md loaded automatically</h4>
+            <p>Claude reads project constraints, tech stack, and current stage on every session.</p>
+          </div>
+          <div class="workflow-box">
+            <h4>2. Stage context from proof files</h4>
+            <p>Claude knows: what's done, what's in progress, what's next.</p>
+          </div>
+          <div class="workflow-box">
+            <h4>3. Quality gates as guardrails</h4>
+            <p>Claude knows: 90% coverage required, no skipped tests, must pass linting.</p>
+          </div>
+          <p style="text-align: center; margin-top: 0.5em; font-size: 0.65em;">
+            Result: Claude generates code that <span class="highlight-green">fits the spec</span>, not random solutions.
+          </p>
+        </section>
+
+        <!-- TDD with Claude -->
+        <section>
+          <h2>TDD Workflow with Claude Code</h2>
+          <pre><code class="markdown">You: "Implement the SchemaValidator for Stage 2"
+
+Claude: "I'll follow TDD. First, let me write failing tests..."
+        [Creates SchemaValidatorTests.cs with 5 test cases]
+        "Now running tests - they should fail (RED)..."
+        ✅ Tests fail as expected
+
+Claude: "Now implementing minimal code to pass..."
+        [Creates SchemaValidator.cs]
+        "Running tests again..."
+        ✅ All 5 tests pass (GREEN)
+
+Claude: "Now let me refactor while keeping tests green..."
+        [Improves code structure]
+        ✅ Tests still pass (REFACTOR)
+
+Claude: "Running coverage check - 94.2% ✅
+        Ready for quality gates."</code></pre>
+        </section>
+
+        <!-- Context Recovery -->
+        <section>
+          <h2>Context Recovery: Never Lose Progress</h2>
+          <p style="color: #888;">Session lost? Context reset? Recover in seconds.</p>
+          <pre><code class="bash"># Check stage state
+cat stage-proofs/stage-9.7/.stage-state.yaml</code></pre>
+          <pre><code class="yaml"># .stage-state.yaml
+stage: "9.7"
+name: "Transform DSL"
+phase: "DURING"
+profile: "BACKEND_DOTNET"
+started_at: "2025-12-04T10:30:00Z"
+current_task: "Implementing filter operation"
+deliverables:
+  - name: "Parser"
+    status: "complete"
+  - name: "Evaluator"
+    status: "in_progress"
+  - name: "Tests"
+    status: "pending"</code></pre>
+          <p style="text-align: center; margin-top: 0.3em; font-size: 0.6em;">
+            Claude reads this and continues exactly where you left off.
+          </p>
+        </section>
+
+        <!-- Proof Files -->
+        <section>
+          <h2>Proof Files: Objective "Done"</h2>
+          <pre><code class="markdown"># Stage 13 Completion Proof: AI-Powered Workflow Generation
+
+## TL;DR
+> Implemented MCP server enabling AI-powered workflow generation.
+
+## Key Metrics
+- **Tests:** 90/90 passing (100%)
+- **Coverage:** 93.37% statements, 87.7% branches
+- **Vulnerabilities:** 0 production
+- **Deliverables:** 4/4 complete
+
+## Quality Gates
+| Gate | Result |
+|------|--------|
+| 1-8  | ✅ PASS |
+
+**Status:** ✅ READY FOR NEXT STAGE</code></pre>
+          <p style="text-align: center; margin-top: 0.3em; font-size: 0.6em;">
+            No more "I think it's done" - <span class="highlight-green">metrics prove completion</span>.
+          </p>
+        </section>
+
+        <!-- ==================== PRACTICAL WORKFLOW ==================== -->
+
+        <!-- Daily Workflow -->
+        <section>
+          <h2>Your Daily Workflow</h2>
+          <div class="two-column">
+            <div>
+              <h3 class="highlight-blue">Starting a Stage</h3>
+              <ol style="font-size: 0.5em;">
+                <li>Run <code>./scripts/init-stage.sh</code></li>
+                <li>Open Claude Code</li>
+                <li>Say: "We're starting Stage X, read CLAUDE.md"</li>
+                <li>Claude loads context automatically</li>
+              </ol>
+            </div>
+            <div>
+              <h3 class="highlight-yellow">During Development</h3>
+              <ol style="font-size: 0.5em;">
+                <li>Claude writes failing test</li>
+                <li>Claude implements to pass</li>
+                <li>Claude refactors</li>
+                <li>You review and guide</li>
+              </ol>
+            </div>
+          </div>
+          <div class="workflow-box" style="margin-top: 0.5em;">
+            <h4 class="highlight-green">Completing a Stage</h4>
+            <p>1. Run quality gates → 2. Fill proof file → 3. <code>complete-stage.sh</code> → 4. Commit + tag</p>
+          </div>
+        </section>
+
+        <!-- Parallel Execution -->
+        <section>
+          <h2>Advanced: Parallel Stage Execution</h2>
+          <p style="color: #888;">Work on multiple stages simultaneously with Git worktrees.</p>
+          <pre><code class="bash"># Create worktrees for parallel stages
+git worktree add ../project-stage-9.1 -b stage-9.1
+git worktree add ../project-stage-9.2 -b stage-9.2
+git worktree add ../project-stage-9.3 -b stage-9.3
+
+# Each worktree = separate Claude Code session
+# Artifacts isolated: stage-proofs/stage-9.1/, stage-proofs/stage-9.2/, etc.
+
+# Merge in dependency order (not completion order!)
+git checkout main
+git merge stage-9.1 --no-ff
+git merge stage-9.2 --no-ff
+git merge stage-9.3 --no-ff</code></pre>
+          <p style="text-align: center; margin-top: 0.3em; font-size: 0.55em;">
+            <span class="highlight-green">60% faster delivery</span> when stages are independent.
+          </p>
+        </section>
+
+        <!-- Gate Profiles -->
+        <section>
+          <h2>Gate Profiles: Right Gates for Right Work</h2>
+          <table>
+            <tr>
+              <th>Profile</th>
+              <th>Gates</th>
+              <th>Use For</th>
+            </tr>
+            <tr>
+              <td><code>BACKEND_DOTNET</code></td>
+              <td>1-8</td>
+              <td>.NET API/service stages</td>
+            </tr>
+            <tr>
+              <td><code>FRONTEND_TS</code></td>
+              <td>1-8, 14, 15, 21</td>
+              <td>TypeScript UI + accessibility + E2E + Storybook</td>
+            </tr>
+            <tr>
+              <td><code>MINIMAL</code></td>
+              <td>1-8</td>
+              <td>POC, small fixes, experiments</td>
+            </tr>
+          </table>
+          <pre><code class="bash"># Use the right profile for your work
+./scripts/init-stage.sh --stage 9.1 --name "Visual Builder" --profile FRONTEND_TS
+./scripts/init-stage.sh --stage 5.1 --name "Retry Logic" --profile BACKEND_DOTNET</code></pre>
+        </section>
+
+        <!-- ==================== BENEFITS ==================== -->
+
+        <!-- Benefits -->
+        <section class="center">
+          <h2>Why This Works</h2>
+          <div
+            style="
+              display: flex;
+              justify-content: center;
+              flex-wrap: wrap;
+              gap: 1em;
+              margin-top: 0.8em;
+            "
+          >
+            <div class="stat-box" style="min-width: 140px">
+              <div class="stat-number">3,900+</div>
+              <div class="stat-label">Tests written with this framework</div>
+            </div>
+            <div class="stat-box" style="min-width: 140px">
+              <div class="stat-number">90%+</div>
+              <div class="stat-label">Coverage maintained</div>
+            </div>
+            <div class="stat-box" style="min-width: 140px">
+              <div class="stat-number">22</div>
+              <div class="stat-label">Stages completed</div>
+            </div>
+          </div>
+          <p style="margin-top: 1em; font-size: 0.7em; color: #888;">
+            Real results from production use of this framework.
+          </p>
+        </section>
+
+        <!-- Before/After -->
+        <section>
+          <h2>The Transformation</h2>
+          <table>
+            <tr>
+              <th>Without Spec-Driven</th>
+              <th>With Spec-Driven + Claude</th>
+            </tr>
+            <tr>
+              <td class="highlight-red">"Almost done" (weeks)</td>
+              <td class="highlight-green">Proof file shows exact status</td>
+            </tr>
+            <tr>
+              <td class="highlight-red">AI generates random solutions</td>
+              <td class="highlight-green">AI follows CLAUDE.md constraints</td>
+            </tr>
+            <tr>
+              <td class="highlight-red">Tests written after</td>
+              <td class="highlight-green">Tests written first (TDD)</td>
+            </tr>
+            <tr>
+              <td class="highlight-red">Context lost on session reset</td>
+              <td class="highlight-green">.stage-state.yaml recovery</td>
+            </tr>
+            <tr>
+              <td class="highlight-red">"Did we test that?"</td>
+              <td class="highlight-green">90% coverage enforced</td>
+            </tr>
+            <tr>
+              <td class="highlight-red">Manual quality checks</td>
+              <td class="highlight-green">Automated 8-gate verification</td>
+            </tr>
+          </table>
+        </section>
+
+        <!-- Getting Started -->
+        <section>
+          <h2>Getting Started</h2>
+          <ol style="font-size: 0.65em;">
+            <li style="margin: 0.4em 0;">
+              <strong>Create CLAUDE.md</strong> - Define your project spec, tech stack, constraints
+            </li>
+            <li style="margin: 0.4em 0;">
+              <strong>Break work into stages</strong> - Each stage = 1-2 weeks, testable deliverables
+            </li>
+            <li style="margin: 0.4em 0;">
+              <strong>Add the scripts</strong> - <code>init-stage.sh</code>, <code>run-quality-gates.sh</code>, <code>complete-stage.sh</code>
+            </li>
+            <li style="margin: 0.4em 0;">
+              <strong>Start Claude Code</strong> - It reads CLAUDE.md automatically
+            </li>
+            <li style="margin: 0.4em 0;">
+              <strong>Follow the workflow</strong> - BEFORE → DURING → AFTER
+            </li>
+          </ol>
+          <p style="text-align: center; margin-top: 0.5em; font-size: 0.6em; color: #888;">
+            Framework is generic - works for .NET, TypeScript, or any stack.
+          </p>
+        </section>
+
+        <!-- Summary -->
+        <section
+          class="center"
+          data-background-gradient="linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 100%)"
+        >
+          <h2>Summary</h2>
+          <p style="font-size: 0.85em; margin: 0.6em 0">
+            Transform AI-assisted development from<br />
+            <span class="highlight-red">chaotic code generation</span> to
+            <span class="highlight-green">spec-driven engineering</span>
+          </p>
+          <div
+            style="
+              display: flex;
+              justify-content: center;
+              gap: 0.5em;
+              flex-wrap: wrap;
+              margin: 1em 0;
+            "
+          >
+            <span class="badge badge-blue">CLAUDE.md Spec</span>
+            <span class="badge badge-purple">Stage Framework</span>
+            <span class="badge badge-green">Quality Gates</span>
+            <span class="badge badge-green">Proof Files</span>
+            <span class="badge badge-blue">Context Recovery</span>
+          </div>
+          <p style="color: #888; font-size: 0.7em">
+            Claude Code becomes your engineering partner, not a random code generator.
+          </p>
+        </section>
+
+        <!-- Q&A -->
+        <section
+          class="center"
+          data-background-gradient="linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)"
+        >
+          <h1>Questions?</h1>
+          <p style="margin-top: 1em; color: #4dabf7; font-size: 0.75em">
+            Try it: Create a CLAUDE.md and run your first stage
+          </p>
+        </section>
+      </div>
+    </div>
+
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox">
+      <img src="" alt="Fullscreen diagram" />
+      <div class="lightbox-hint">Click anywhere or press Escape to close</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+    <script>
+      Reveal.initialize({
+        hash: true,
+        slideNumber: true,
+        transition: "slide",
+        width: 960,
+        height: 700,
+        margin: 0.04,
+        center: true,
+        plugins: [RevealHighlight],
+      });
+
+      const lightbox = document.getElementById("lightbox");
+      const lightboxImg = lightbox.querySelector("img");
+
+      document.querySelectorAll(".mermaid-container img").forEach((img) => {
+        img.addEventListener("click", (e) => {
+          e.stopPropagation();
+          lightboxImg.src = img.src;
+          lightbox.classList.add("active");
+        });
+      });
+
+      lightbox.addEventListener("click", () => {
+        lightbox.classList.remove("active");
+      });
+
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") lightbox.classList.remove("active");
+      });
+    </script>
+  </body>
+</html>

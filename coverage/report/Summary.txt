@@ -1,30 +1,30 @@
 Summary
-  Generated on: 01/12/2025 - 00:17:22
-  Coverage date: 01/12/2025 - 00:14:09 - 01/12/2025 - 00:14:36
-  Parser: MultiReport (4x Cobertura)
-  Assemblies: 3
-  Classes: 238
-  Files: 154
-  Line coverage: 78.6%
-  Covered lines: 5819
-  Uncovered lines: 1578
-  Coverable lines: 7397
-  Total lines: 14272
-  Branch coverage: 68.5% (1618 of 2360)
-  Covered branches: 1618
-  Total branches: 2360
-  Method coverage: 85.6% (804 of 939)
-  Full method coverage: 77.2% (725 of 939)
-  Covered methods: 804
-  Fully covered methods: 725
-  Total methods: 939
+  Generated on: 04/12/2025 - 23:10:46
+  Coverage date: 04/12/2025 - 23:10:26
+  Parser: Cobertura
+  Assemblies: 1
+  Classes: 161
+  Files: 101
+  Line coverage: 71.6%
+  Covered lines: 3652
+  Uncovered lines: 1442
+  Coverable lines: 5094
+  Total lines: 9354
+  Branch coverage: 70.2% (1153 of 1641)
+  Covered branches: 1153
+  Total branches: 1641
+  Method coverage: 89.2% (497 of 557)
+  Full method coverage: 76.6% (427 of 557)
+  Covered methods: 497
+  Fully covered methods: 427
+  Total methods: 557
 
-WorkflowCore                                                     81.2%
-  WorkflowCore.Data.Migrations.AddDurationTrendsIndexes          89.9%
-  WorkflowCore.Data.Migrations.AddGraphBuildDuration             96.4%
-  WorkflowCore.Data.Migrations.InitialCreate                     96.3%
+WorkflowCore                                                     71.6%
+  WorkflowCore.Data.Migrations.AddDurationTrendsIndexes             0%
+  WorkflowCore.Data.Migrations.AddGraphBuildDuration                0%
+  WorkflowCore.Data.Migrations.InitialCreate                        0%
   WorkflowCore.Data.Migrations.WorkflowDbContextModelSnapshot       0%
-  WorkflowCore.Data.Repositories.ExecutionRepository             56.5%
+  WorkflowCore.Data.Repositories.ExecutionRepository             54.1%
   WorkflowCore.Data.Repositories.TaskExecutionRepository          100%
   WorkflowCore.Data.Repositories.TaskStatistics                     0%
   WorkflowCore.Data.Repositories.WorkflowStatistics                 0%
@@ -39,14 +39,16 @@ WorkflowCore                                                     81.2%
   WorkflowCore.Models.CompatibilityError                          100%
   WorkflowCore.Models.CompatibilityResult                         100%
   WorkflowCore.Models.ConcatOperation                              50%
+  WorkflowCore.Models.ConditionResult                             100%
+  WorkflowCore.Models.ConditionSpec                               100%
   WorkflowCore.Models.DurationDataPoint                           100%
   WorkflowCore.Models.EnrichOperation                              50%
   WorkflowCore.Models.ErrorMessageBuilder                         100%
   WorkflowCore.Models.ExecutionGraph                              100%
   WorkflowCore.Models.ExecutionGraphResult                        100%
-  WorkflowCore.Models.ExecutionRecord                             100%
+  WorkflowCore.Models.ExecutionRecord                            88.8%
   WorkflowCore.Models.FilterOperation                             100%
-  WorkflowCore.Models.FirstOperation                                0%
+  WorkflowCore.Models.FirstOperation                              100%
   WorkflowCore.Models.FlatMapOperation                             50%
   WorkflowCore.Models.FlattenOperation                              0%
   WorkflowCore.Models.FloorOperation                                0%
@@ -64,13 +66,13 @@ WorkflowCore                                                     81.2%
   WorkflowCore.Models.PercentageOperation                          50%
   WorkflowCore.Models.PropertyDefinition                          100%
   WorkflowCore.Models.RandomNOperation                           66.6%
-  WorkflowCore.Models.RandomOneOperation                           50%
+  WorkflowCore.Models.RandomOneOperation                          100%
   WorkflowCore.Models.ReplaceOperation                           66.6%
   WorkflowCore.Models.ResourceMetadata                            100%
   WorkflowCore.Models.RetryPolicyOptions                          100%
-  WorkflowCore.Models.ReverseOperation                              0%
-  WorkflowCore.Models.RoundOperation                               50%
-  WorkflowCore.Models.ScaleOperation                               50%
+  WorkflowCore.Models.ReverseOperation                            100%
+  WorkflowCore.Models.RoundOperation                              100%
+  WorkflowCore.Models.ScaleOperation                              100%
   WorkflowCore.Models.SchemaDefinition                            100%
   WorkflowCore.Models.SelectOperation                             100%
   WorkflowCore.Models.ShuffleOperation                             50%
@@ -78,9 +80,13 @@ WorkflowCore                                                     81.2%
   WorkflowCore.Models.SortByOperation                             100%
   WorkflowCore.Models.SplitOperation                               50%
   WorkflowCore.Models.SubstringOperation                         66.6%
+  WorkflowCore.Models.SwitchCase                                  100%
+  WorkflowCore.Models.SwitchDefault                               100%
+  WorkflowCore.Models.SwitchResult                                100%
+  WorkflowCore.Models.SwitchSpec                                  100%
   WorkflowCore.Models.TaskErrorInfo                                82%
   WorkflowCore.Models.TaskExecutionRecord                         100%
-  WorkflowCore.Models.TaskExecutionResult                         100%
+  WorkflowCore.Models.TaskExecutionResult                          90%
   WorkflowCore.Models.TaskStatisticsSummary                       100%
   WorkflowCore.Models.TemplateContext                             100%
   WorkflowCore.Models.TemplateExpression                          100%
@@ -89,9 +95,9 @@ WorkflowCore                                                     81.2%
   WorkflowCore.Models.TemplateResolutionException                 100%
   WorkflowCore.Models.TransformDefinition                         100%
   WorkflowCore.Models.TransformDslDefinition                      100%
-  WorkflowCore.Models.TrimOperation                                 0%
-  WorkflowCore.Models.UniqueOperation                               0%
-  WorkflowCore.Models.UppercaseOperation                            0%
+  WorkflowCore.Models.TrimOperation                               100%
+  WorkflowCore.Models.UniqueOperation                             100%
+  WorkflowCore.Models.UppercaseOperation                          100%
   WorkflowCore.Models.ValidationError                             100%
   WorkflowCore.Models.ValidationResult                            100%
   WorkflowCore.Models.WorkflowExecutionResult                     100%
@@ -106,6 +112,7 @@ WorkflowCore                                                     81.2%
   WorkflowCore.Models.WorkflowTaskStep                            100%
   WorkflowCore.Models.WorkflowVersion                             100%
   WorkflowCore.Models.ZipOperation                                 50%
+  WorkflowCore.Services.ConditionEvaluator                       93.7%
   WorkflowCore.Services.ExecutionGraphBuilder                     100%
   WorkflowCore.Services.GraphBuildDiagnostics                     100%
   WorkflowCore.Services.HttpTaskExecutor                         93.9%
@@ -159,6 +166,7 @@ WorkflowCore                                                     81.2%
   WorkflowCore.Services.SchemaParser                             81.2%
   WorkflowCore.Services.SchemaValidator                          95.5%
   WorkflowCore.Services.StatisticsAggregationService             48.4%
+  WorkflowCore.Services.SwitchEvaluator                          86.2%
   WorkflowCore.Services.TaskDependencyDiagnostic                  100%
   WorkflowCore.Services.TemplateParser                           87.2%
   WorkflowCore.Services.TemplatePreviewService                   88.3%
@@ -168,97 +176,8 @@ WorkflowCore                                                     81.2%
   WorkflowCore.Services.TransformDslParseResult                   100%
   WorkflowCore.Services.TransformDslValidationResult              100%
   WorkflowCore.Services.TransformExecutor                          76%
-  WorkflowCore.Services.TransformTaskExecutor                    62.1%
+  WorkflowCore.Services.TransformTaskExecutor                    62.9%
   WorkflowCore.Services.TypeCompatibilityChecker                  100%
-  WorkflowCore.Services.WorkflowOrchestrator                     81.6%
+  WorkflowCore.Services.WorkflowOrchestrator                     75.4%
   WorkflowCore.Services.WorkflowValidator                        94.1%
   WorkflowCore.Services.WorkflowVersioningService                88.6%
-
-WorkflowGateway                                                  72.6%
-  Program                                                           0%
-  WorkflowGateway.Controllers.DynamicWorkflowController          78.1%
-  WorkflowGateway.Controllers.ExecutionHistoryController         92.9%
-  WorkflowGateway.Controllers.TemplateController                  100%
-  WorkflowGateway.Controllers.TransformController                 100%
-  WorkflowGateway.Controllers.WorkflowManagementController       89.2%
-  WorkflowGateway.Hubs.WorkflowExecutionHub                      92.3%
-  WorkflowGateway.Models.ActualParallelGroup                      100%
-  WorkflowGateway.Models.DependencyInfo                           100%
-  WorkflowGateway.Models.DetailedWorkflowExecutionResponse        100%
-  WorkflowGateway.Models.DurationTrendsResponse                   100%
-  WorkflowGateway.Models.EndpointInfo                             100%
-  WorkflowGateway.Models.EnhancedExecutionPlan                    100%
-  WorkflowGateway.Models.ExecuteWorkflowRequest                   100%
-  WorkflowGateway.Models.ExecutionListResponse                    100%
-  WorkflowGateway.Models.ExecutionPlan                            100%
-  WorkflowGateway.Models.ExecutionSummary                         100%
-  WorkflowGateway.Models.ExecutionTraceResponse                   100%
-  WorkflowGateway.Models.GraphDiagnosticsResponse                   0%
-  WorkflowGateway.Models.GraphEdge                                100%
-  WorkflowGateway.Models.GraphNode                                100%
-  WorkflowGateway.Models.HttpRequestConfig                        100%
-  WorkflowGateway.Models.IterationTimingResponse                    0%
-  WorkflowGateway.Models.OrchestrationCostResponse                  0%
-  WorkflowGateway.Models.RetryPolicyConfig                          0%
-  WorkflowGateway.Models.SignalFlowEvent                          100%
-  WorkflowGateway.Models.TaskCompletedEvent                       100%
-  WorkflowGateway.Models.TaskDependencyDiagnosticResponse           0%
-  WorkflowGateway.Models.TaskDetailResponse                       100%
-  WorkflowGateway.Models.TaskErrorInfoResponse                      0%
-  WorkflowGateway.Models.TaskExecutionDetail                      100%
-  WorkflowGateway.Models.TaskExecutionItem                        100%
-  WorkflowGateway.Models.TaskExecutionListResponse                100%
-  WorkflowGateway.Models.TaskExecutionRequest                     100%
-  WorkflowGateway.Models.TaskExecutionResponse                    100%
-  WorkflowGateway.Models.TaskListResponse                         100%
-  WorkflowGateway.Models.TaskStartedEvent                         100%
-  WorkflowGateway.Models.TaskStats                                100%
-  WorkflowGateway.Models.TaskSummary                              100%
-  WorkflowGateway.Models.TaskSummaryStats                         100%
-  WorkflowGateway.Models.TaskTimingDetail                         100%
-  WorkflowGateway.Models.TaskUsageItem                            100%
-  WorkflowGateway.Models.TaskUsageListResponse                    100%
-  WorkflowGateway.Models.TemplateDetailResponse                   100%
-  WorkflowGateway.Models.TemplateGraph                              0%
-  WorkflowGateway.Models.TemplateGraphEdge                          0%
-  WorkflowGateway.Models.TemplateGraphNode                          0%
-  WorkflowGateway.Models.TemplateListResponse                     100%
-  WorkflowGateway.Models.TemplateMetadata                         100%
-  WorkflowGateway.Models.TemplateSummary                          100%
-  WorkflowGateway.Models.TestExecuteRequest                         0%
-  WorkflowGateway.Models.TestExecuteResponse                        0%
-  WorkflowGateway.Models.TransformRequest                         100%
-  WorkflowGateway.Models.TransformResponse                        100%
-  WorkflowGateway.Models.WorkflowCompletedEvent                   100%
-  WorkflowGateway.Models.WorkflowDetailResponse                   100%
-  WorkflowGateway.Models.WorkflowEndpoints                        100%
-  WorkflowGateway.Models.WorkflowExecutionRequest                 100%
-  WorkflowGateway.Models.WorkflowExecutionResponse                100%
-  WorkflowGateway.Models.WorkflowListResponse                     100%
-  WorkflowGateway.Models.WorkflowStartedEvent                     100%
-  WorkflowGateway.Models.WorkflowSummary                          100%
-  WorkflowGateway.Models.WorkflowSummaryStats                       0%
-  WorkflowGateway.Models.WorkflowTestRequest                      100%
-  WorkflowGateway.Models.WorkflowTestResponse                     100%
-  WorkflowGateway.Models.WorkflowVersionDetail                    100%
-  WorkflowGateway.Models.WorkflowVersionListResponse              100%
-  WorkflowGateway.Services.DynamicEndpointService                 100%
-  WorkflowGateway.Services.ExecutionTraceService                 96.8%
-  WorkflowGateway.Services.InputValidationService                 100%
-  WorkflowGateway.Services.SignalRWorkflowEventNotifier           100%
-  WorkflowGateway.Services.TemplateDiscoveryService              86.3%
-  WorkflowGateway.Services.WorkflowChangedEventArgs               100%
-  WorkflowGateway.Services.WorkflowDiscoveryService              95.2%
-  WorkflowGateway.Services.WorkflowExecutionService              65.5%
-  WorkflowGateway.Services.WorkflowWatcherService                 100%
-  WorkflowGateway.Services.WorkflowYamlParser                       0%
-  WorkflowGateway.Services.YamlParseException                       0%
-  WorkflowGateway.Swagger.DynamicWorkflowDocumentFilter             0%
-
-WorkflowOperator                                                 89.3%
-  Program                                                           0%
-  WorkflowOperator.Controllers.WorkflowController                 100%
-  WorkflowOperator.Controllers.WorkflowTaskController             100%
-  WorkflowOperator.Webhooks.AdmissionResult                       100%
-  WorkflowOperator.Webhooks.WorkflowTaskValidationWebhook         100%
-  WorkflowOperator.Webhooks.WorkflowValidationWebhook            94.9%

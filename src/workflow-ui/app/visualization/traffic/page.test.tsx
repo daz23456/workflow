@@ -104,8 +104,9 @@ describe('TrafficPage', () => {
 
       // Initially playing (pause icon visible)
       fireEvent.click(playPauseButton);
-      // Now paused (play icon visible)
-      expect(playPauseButton).toBeInTheDocument();
+      // Now paused (play icon visible) - re-query after click to avoid stale reference
+      const updatedButtons = screen.getAllByRole('button');
+      expect(updatedButtons[0]).toBeInTheDocument();
     });
 
     it('triggers surge mode when surge button is clicked', () => {

@@ -26,7 +26,10 @@
       "Bash(git log:*)",
       "Bash(/Users/darren/dev/workflow/scripts/complete-stage.sh:*)",
       "Bash(npx eslint:*)",
-      "Bash(pnpm test:*)"
+      "Bash(pnpm test:*)",
+      "Bash(npx vitest run components/dashboard/slowest-workflows-panel.test.tsx)",
+      "Bash(node dist/cli.js import:*)",
+      "Bash(/Users/darren/dev/workflow/scripts/generate-screenshot-manifest.sh:*)"
     ],
     "deny": [],
     "ask": []

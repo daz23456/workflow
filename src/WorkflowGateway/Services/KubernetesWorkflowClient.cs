@@ -153,4 +153,44 @@ public class KubernetesWorkflowClient : IKubernetesWorkflowClient
 
         return allTasks;
     }
+
+    public async Task<List<WorkflowResource>> ListAllWorkflowsAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            // Use cluster-wide query to list workflows from all namespaces
+            var response = await _kubernetes.CustomObjects.ListClusterCustomObjectAsync(
+                group: "workflow.example.com",
+                version: "v1",
+                plural: "workflows",
+                cancellationToken: cancellationToken);
+
+            return ParseWorkflowListResponse(response);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error querying workflows (cluster-wide): {ex.Message}");
+            return new List<WorkflowResource>();
+        }
+    }
+
+    public async Task<List<WorkflowTaskResource>> ListAllTasksAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            // Use cluster-wide query to list tasks from all namespaces
+            var response = await _kubernetes.CustomObjects.ListClusterCustomObjectAsync(
+                group: "workflow.example.com",
+                version: "v1",
+                plural: "workflowtasks",
+                cancellationToken: cancellationToken);
+
+            return ParseTaskListResponse(response);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error querying tasks (cluster-wide): {ex.Message}");
+            return new List<WorkflowTaskResource>();
+        }
+    }
 }

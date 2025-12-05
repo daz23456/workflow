@@ -120,6 +120,7 @@ public class ForEachExecutor : IForEachExecutor
             var stopwatch = Stopwatch.StartNew();
 
             // Create a new context with forEach information
+            // If original context has a ForEach, it becomes the parent (nested forEach)
             var itemContext = new TemplateContext
             {
                 Input = originalContext.Input,
@@ -128,7 +129,8 @@ public class ForEachExecutor : IForEachExecutor
                 {
                     ItemVar = itemVar,
                     CurrentItem = item,
-                    Index = index
+                    Index = index,
+                    Parent = originalContext.ForEach // Link to parent for nested forEach
                 }
             };
 

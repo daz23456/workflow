@@ -1,0 +1,19 @@
+apiVersion: workflow.example.com/v1
+kind: Workflow
+metadata:
+  name: slow-parallel
+  namespace: test
+spec:
+  description: "Tests orchestrator handling of slow responses - 4 parallel 2-second delays"
+  input: {}
+  tasks:
+    - id: slow-1
+      taskRef: delay2s
+    - id: slow-2
+      taskRef: delay2s
+    - id: slow-3
+      taskRef: delay2s
+    - id: slow-4
+      taskRef: delay2s
+  output:
+    allCompleted: "true"

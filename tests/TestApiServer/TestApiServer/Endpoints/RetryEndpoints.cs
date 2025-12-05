@@ -110,6 +110,24 @@ public static class RetryEndpoints
             .WithName("SlowResponse")
             .WithOpenApi();
 
+        // GET /api/retry/delay/{ms} - Simple slow response with delay in path (for easy workflow testing)
+        group.MapGet("/delay/{ms:int}", async (int ms) =>
+        {
+            var delayMs = Math.Min(ms, 30000); // Cap at 30s to prevent abuse
+            await Task.Delay(delayMs);
+
+            return Results.Ok(new
+            {
+                success = true,
+                requestedDelayMs = ms,
+                actualDelayMs = delayMs,
+                completedAt = DateTime.UtcNow.ToString("O"),
+                message = "Slow response completed"
+            });
+        })
+            .WithName("DelayedResponse")
+            .WithOpenApi();
+
         // POST /api/retry/timeout - Times out (never responds in time)
         group.MapPost("/timeout", async (TimeoutRequest? request) =>
         {

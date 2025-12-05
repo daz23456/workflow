@@ -1,0 +1,28 @@
+apiVersion: workflow.example.com/v1
+kind: Workflow
+metadata:
+  name: stress-mixed
+  namespace: test
+spec:
+  description: "Stress test with mixed slow + large payload tasks in parallel"
+  input: {}
+  tasks:
+    - id: large-1
+      taskRef: getlarge1mb
+    - id: large-2
+      taskRef: getlarge1mb
+    - id: large-3
+      taskRef: getlarge500kb
+    - id: large-4
+      taskRef: getlarge500kb
+    - id: process-1
+      taskRef: delay2s
+      dependsOn: [large-1, large-2]
+    - id: process-2
+      taskRef: delay2s
+      dependsOn: [large-3, large-4]
+    - id: aggregate
+      taskRef: getstrings
+      dependsOn: [process-1, process-2]
+  output:
+    completed: "true"

@@ -1,0 +1,30 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: delay2s
+  namespace: test
+  labels:
+    workflow.io/generated-from: openapi
+    workflow.io/operation-id: DelayedResponse
+  annotations:
+    workflow.io/source-path: /api/retry/delay/2000
+spec:
+  type: http
+  http:
+    method: GET
+    url: "http://localhost:5100/api/retry/delay/2000"
+  inputSchema:
+    type: object
+  outputSchema:
+    type: object
+    properties:
+      success:
+        type: boolean
+      requestedDelayMs:
+        type: integer
+      actualDelayMs:
+        type: integer
+      completedAt:
+        type: string
+      message:
+        type: string

@@ -1,0 +1,28 @@
+{
+  "timestamp": "2025-12-05T23:24:46.857Z",
+  "duration": 60273.043,
+  "metrics": {
+    "requests": {
+      "total": 301,
+      "rate": 4.993940657683402
+    },
+    "latency": {
+      "avg": 61.01922923588041,
+      "p95": 204.178,
+      "p99": 0
+    },
+    "workflow": {
+      "successRate": 1,
+      "avgDurationMs": 61.54,
+      "p95DurationMs": 205
+    },
+    "tasks": {
+      "total": 1082
+    },
+    "patterns": {
+      "parallelExecutions": 182,
+      "forkPatternExecutions": 118
+    }
+  },
+  "thresholds": {}
+}

@@ -1,0 +1,33 @@
+{
+  "timestamp": "2025-12-05T23:28:06.971Z",
+  "testType": "spike",
+  "configuration": {
+    "baselineRate": 3,
+    "spikeRate": 15,
+    "spikeMultiplier": 5
+  },
+  "duration": 120078.26,
+  "metrics": {
+    "requests": {
+      "total": 751,
+      "rate": 6.254254517012488
+    },
+    "latency": {
+      "avg": 22.56483621837552,
+      "p95": 32.1485,
+      "p99": 0,
+      "max": 169.376
+    },
+    "workflow": {
+      "successRate": 1,
+      "avgDurationMs": 22.766666666666666,
+      "p95DurationMs": 32,
+      "maxDurationMs": 170
+    },
+    "failures": {
+      "rate": 0,
+      "count": 0
+    }
+  },
+  "thresholds": {}
+}

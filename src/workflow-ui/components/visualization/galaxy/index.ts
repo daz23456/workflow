@@ -10,5 +10,6 @@
  */
 
 export { GalaxyScene, type GalaxySceneProps } from './galaxy-scene';
+export { GalaxySVG, type GalaxySVGProps, type SVGNamespace, type SVGWorkflow } from './galaxy-svg';
 export { NamespaceCluster, type NamespaceClusterProps } from './namespace-cluster';
 export { WorkflowPlanet, type WorkflowPlanetProps } from './workflow-planet';

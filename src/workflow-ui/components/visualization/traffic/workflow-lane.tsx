@@ -12,6 +12,7 @@
 import React, { useMemo } from 'react';
 import { Box, Sphere, Text, Line } from '@react-three/drei';
 import { Vector3 } from 'three';
+import { useRenderMode } from '../../../lib/visualization/visualization-store';
 
 export interface TaskNode {
   id: string;
@@ -39,6 +40,12 @@ export function WorkflowLane({
   onTaskClick,
   onLaneClick,
 }: WorkflowLaneProps) {
+  const renderMode = useRenderMode();
+  const isPerformanceMode = renderMode === 'performance';
+
+  // Performance mode: reduce geometry complexity
+  const taskSphereSegments = isPerformanceMode ? 8 : 16;
+
   // Calculate lane line points
   const linePoints = useMemo(() => {
     if (tasks.length < 2) return [];
@@ -90,7 +97,7 @@ export function WorkflowLane({
           }}
         >
           {/* Task sphere */}
-          <Sphere args={[0.5, 16, 16]}>
+          <Sphere args={[0.5, taskSphereSegments, taskSphereSegments]}>
             <meshStandardMaterial
               color={task.isActive ? '#ffffff' : color}
               emissive={color}

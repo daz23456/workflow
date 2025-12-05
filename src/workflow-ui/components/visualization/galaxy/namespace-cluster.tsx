@@ -14,6 +14,7 @@ import React, { useRef, useState, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Html, Sphere, MeshDistortMaterial } from '@react-three/drei';
 import type { Mesh, Group } from 'three';
+import { useRenderMode } from '../../../lib/visualization/visualization-store';
 
 export interface NamespaceClusterProps {
   id: string;
@@ -39,6 +40,8 @@ export function NamespaceCluster({
   const groupRef = useRef<Group>(null);
   const meshRef = useRef<Mesh>(null);
   const [hovered, setHovered] = useState(false);
+  const renderMode = useRenderMode();
+  const isPerformanceMode = renderMode === 'performance';
 
   // Calculate radius based on workflow count (min 1.5, scales logarithmically)
   const radius = useMemo(() => {
@@ -46,6 +49,10 @@ export function NamespaceCluster({
     const scaleFactor = Math.log2(Math.max(1, workflowCount) + 1) * 0.5;
     return baseRadius + scaleFactor;
   }, [workflowCount]);
+
+  // Performance mode: reduce geometry complexity
+  const sphereSegments = isPerformanceMode ? 16 : 64;
+  const innerSphereSegments = isPerformanceMode ? 8 : 32;
 
   // Subtle rotation animation
   useFrame((state) => {
@@ -78,25 +85,38 @@ export function NamespaceCluster({
       {/* Main glowing sphere */}
       <Sphere
         ref={meshRef}
-        args={[radius, 64, 64]}
+        args={[radius, sphereSegments, sphereSegments]}
         onClick={handleClick}
         onPointerOver={handlePointerOver}
         onPointerOut={handlePointerOut}
       >
-        <MeshDistortMaterial
-          color={color}
-          emissive={color}
-          emissiveIntensity={hovered ? 0.8 : 0.5}
-          transparent
-          opacity={0.7}
-          distort={0.3}
-          speed={2}
-          roughness={0.2}
-        />
+        {isPerformanceMode ? (
+          // Performance mode: simpler material without distortion
+          <meshStandardMaterial
+            color={color}
+            emissive={color}
+            emissiveIntensity={hovered ? 0.8 : 0.5}
+            transparent
+            opacity={0.7}
+            roughness={0.3}
+          />
+        ) : (
+          // Quality mode: full distortion effect
+          <MeshDistortMaterial
+            color={color}
+            emissive={color}
+            emissiveIntensity={hovered ? 0.8 : 0.5}
+            transparent
+            opacity={0.7}
+            distort={0.3}
+            speed={2}
+            roughness={0.2}
+          />
+        )}
       </Sphere>
 
       {/* Inner glow core */}
-      <Sphere args={[radius * 0.6, 32, 32]}>
+      <Sphere args={[radius * 0.6, innerSphereSegments, innerSphereSegments]}>
         <meshBasicMaterial color={color} transparent opacity={0.3} />
       </Sphere>
 

@@ -12,6 +12,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   TrafficCanvas,
+  TrafficSVG,
   WorkflowLane,
   ExecutionParticle,
   ThroughputMeter,
@@ -19,7 +20,10 @@ import {
   TrafficStats,
   type TrafficEvent,
   type ExecutionStatus,
+  type SVGParticle,
 } from '../../../components/visualization/traffic';
+import { VisualizationSettings } from '../../../components/visualization/visualization-settings';
+import { useRenderMode } from '../../../lib/visualization/visualization-store';
 import { Button } from '../../../components/ui/button';
 import { Play, Pause, Zap, Radio } from 'lucide-react';
 
@@ -88,6 +92,7 @@ export default function TrafficPage() {
   const [particles, setParticles] = useState<Particle[]>([]);
   const [events, setEvents] = useState<TrafficEvent[]>([]);
   const [throughput, setThroughput] = useState(0);
+  const renderMode = useRenderMode();
   const [stats, setStats] = useState({
     activeExecutions: 0,
     totalToday: 0,
@@ -184,42 +189,67 @@ export default function TrafficPage() {
     return () => clearInterval(throughputInterval);
   }, []);
 
+  // Convert particles for SVG format
+  const svgParticles: SVGParticle[] = particles.map((p) => ({
+    id: p.id,
+    workflowId: p.workflowId,
+    status: p.status,
+    progress: p.progress,
+  }));
+
+  // Render 3D or SVG based on render mode
+  const renderTraffic = () => {
+    if (renderMode === 'flat') {
+      return (
+        <TrafficSVG
+          workflows={DEMO_WORKFLOWS}
+          particles={svgParticles}
+        />
+      );
+    }
+
+    // 3D mode (quality or performance)
+    return (
+      <TrafficCanvas>
+        {/* Workflow lanes */}
+        {DEMO_WORKFLOWS.map((workflow) => (
+          <WorkflowLane
+            key={workflow.id}
+            id={workflow.id}
+            name={workflow.name}
+            color={workflow.color}
+            yPosition={workflow.yPosition}
+            tasks={workflow.tasks}
+          />
+        ))}
+
+        {/* Execution particles */}
+        {particles.map((particle) => {
+          const workflow = DEMO_WORKFLOWS.find((w) => w.id === particle.workflowId);
+          if (!workflow) return null;
+
+          return (
+            <ExecutionParticle
+              key={particle.id}
+              id={particle.id}
+              workflowId={particle.workflowId}
+              status={particle.status}
+              progress={particle.progress}
+              laneY={workflow.yPosition}
+              startX={-10}
+              endX={20}
+            />
+          );
+        })}
+      </TrafficCanvas>
+    );
+  };
+
   return (
     <div className="h-screen w-full relative bg-[#0a1628] overflow-hidden">
-      {/* 3D Traffic Visualization */}
+      {/* Traffic Visualization (3D or SVG) */}
       <div className="w-full h-full">
-        <TrafficCanvas>
-          {/* Workflow lanes */}
-          {DEMO_WORKFLOWS.map((workflow) => (
-            <WorkflowLane
-              key={workflow.id}
-              id={workflow.id}
-              name={workflow.name}
-              color={workflow.color}
-              yPosition={workflow.yPosition}
-              tasks={workflow.tasks}
-            />
-          ))}
-
-          {/* Execution particles */}
-          {particles.map((particle) => {
-            const workflow = DEMO_WORKFLOWS.find((w) => w.id === particle.workflowId);
-            if (!workflow) return null;
-
-            return (
-              <ExecutionParticle
-                key={particle.id}
-                id={particle.id}
-                workflowId={particle.workflowId}
-                status={particle.status}
-                progress={particle.progress}
-                laneY={workflow.yPosition}
-                startX={-10}
-                endX={20}
-              />
-            );
-          })}
-        </TrafficCanvas>
+        {renderTraffic()}
       </div>
 
       {/* Title - Top Center */}
@@ -235,6 +265,7 @@ export default function TrafficPage() {
 
       {/* Controls - Top Left */}
       <div className="absolute top-4 left-4 flex gap-2">
+        <VisualizationSettings />
         <Button
           variant="outline"
           size="icon"

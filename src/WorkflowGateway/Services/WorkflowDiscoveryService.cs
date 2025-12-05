@@ -16,47 +16,81 @@ public class WorkflowDiscoveryService : IWorkflowDiscoveryService
 {
     private readonly IKubernetesWorkflowClient _kubernetesClient;
     private readonly int _cacheTTLSeconds;
+    private readonly string[] _configuredNamespaces;
     private readonly ConcurrentDictionary<string, CacheEntry<List<WorkflowResource>>> _workflowCache = new();
     private readonly ConcurrentDictionary<string, CacheEntry<List<WorkflowTaskResource>>> _taskCache = new();
     private readonly object _eventLock = new();
 
     public event EventHandler<WorkflowChangedEventArgs>? WorkflowsChanged;
 
-    public WorkflowDiscoveryService(IKubernetesWorkflowClient kubernetesClient, int cacheTTLSeconds = 30)
+    public WorkflowDiscoveryService(IKubernetesWorkflowClient kubernetesClient, int cacheTTLSeconds = 30, string[]? namespaces = null)
     {
         _kubernetesClient = kubernetesClient ?? throw new ArgumentNullException(nameof(kubernetesClient));
         _cacheTTLSeconds = cacheTTLSeconds;
+        _configuredNamespaces = namespaces ?? new[] { "default" };
     }
 
     public async Task<List<WorkflowResource>> DiscoverWorkflowsAsync(string? @namespace = null)
     {
-        var ns = @namespace ?? "default";
-        var cacheKey = $"workflows:{ns}";
+        // If no namespace specified, query all configured namespaces
+        if (@namespace == null)
+        {
+            var cacheKey = "workflows:all";
+
+            // Check cache
+            if (_workflowCache.TryGetValue(cacheKey, out var cached))
+            {
+                if (DateTime.UtcNow < cached.ExpiresAt)
+                {
+                    return cached.Data;
+                }
+            }
+
+            // Query all configured namespaces in parallel
+            var workflows = await _kubernetesClient.ListWorkflowsFromNamespacesAsync(_configuredNamespaces);
+
+            // Update cache
+            var previousWorkflows = cached?.Data ?? new List<WorkflowResource>();
+            _workflowCache[cacheKey] = new CacheEntry<List<WorkflowResource>>
+            {
+                Data = workflows,
+                ExpiresAt = DateTime.UtcNow.AddSeconds(_cacheTTLSeconds)
+            };
+
+            // Detect changes and raise event
+            DetectAndRaiseWorkflowChanges(previousWorkflows, workflows);
+
+            return workflows;
+        }
+
+        // Query specific namespace
+        var ns = @namespace;
+        var nsKey = $"workflows:{ns}";
 
         // Check cache
-        if (_workflowCache.TryGetValue(cacheKey, out var cached))
+        if (_workflowCache.TryGetValue(nsKey, out var nsCached))
         {
-            if (DateTime.UtcNow < cached.ExpiresAt)
+            if (DateTime.UtcNow < nsCached.ExpiresAt)
             {
-                return cached.Data;
+                return nsCached.Data;
             }
         }
 
         // Query Kubernetes
-        var workflows = await QueryWorkflowsFromKubernetesAsync(ns);
+        var nsWorkflows = await QueryWorkflowsFromKubernetesAsync(ns);
 
         // Update cache
-        var previousWorkflows = cached?.Data ?? new List<WorkflowResource>();
-        _workflowCache[cacheKey] = new CacheEntry<List<WorkflowResource>>
+        var prevWorkflows = nsCached?.Data ?? new List<WorkflowResource>();
+        _workflowCache[nsKey] = new CacheEntry<List<WorkflowResource>>
         {
-            Data = workflows,
+            Data = nsWorkflows,
             ExpiresAt = DateTime.UtcNow.AddSeconds(_cacheTTLSeconds)
         };
 
         // Detect changes and raise event
-        DetectAndRaiseWorkflowChanges(previousWorkflows, workflows);
+        DetectAndRaiseWorkflowChanges(prevWorkflows, nsWorkflows);
 
-        return workflows;
+        return nsWorkflows;
     }
 
     public async Task<WorkflowResource?> GetWorkflowByNameAsync(string name, string? @namespace = null)
@@ -67,29 +101,57 @@ public class WorkflowDiscoveryService : IWorkflowDiscoveryService
 
     public async Task<List<WorkflowTaskResource>> DiscoverTasksAsync(string? @namespace = null)
     {
-        var ns = @namespace ?? "default";
-        var cacheKey = $"tasks:{ns}";
+        // If no namespace specified, query all configured namespaces
+        if (@namespace == null)
+        {
+            var cacheKey = "tasks:all";
+
+            // Check cache
+            if (_taskCache.TryGetValue(cacheKey, out var cached))
+            {
+                if (DateTime.UtcNow < cached.ExpiresAt)
+                {
+                    return cached.Data;
+                }
+            }
+
+            // Query all configured namespaces in parallel
+            var tasks = await _kubernetesClient.ListTasksFromNamespacesAsync(_configuredNamespaces);
+
+            // Update cache
+            _taskCache[cacheKey] = new CacheEntry<List<WorkflowTaskResource>>
+            {
+                Data = tasks,
+                ExpiresAt = DateTime.UtcNow.AddSeconds(_cacheTTLSeconds)
+            };
+
+            return tasks;
+        }
+
+        // Query specific namespace
+        var ns = @namespace;
+        var nsKey = $"tasks:{ns}";
 
         // Check cache
-        if (_taskCache.TryGetValue(cacheKey, out var cached))
+        if (_taskCache.TryGetValue(nsKey, out var nsCached))
         {
-            if (DateTime.UtcNow < cached.ExpiresAt)
+            if (DateTime.UtcNow < nsCached.ExpiresAt)
             {
-                return cached.Data;
+                return nsCached.Data;
             }
         }
 
         // Query Kubernetes
-        var tasks = await QueryTasksFromKubernetesAsync(ns);
+        var nsTasks = await QueryTasksFromKubernetesAsync(ns);
 
         // Update cache
-        _taskCache[cacheKey] = new CacheEntry<List<WorkflowTaskResource>>
+        _taskCache[nsKey] = new CacheEntry<List<WorkflowTaskResource>>
         {
-            Data = tasks,
+            Data = nsTasks,
             ExpiresAt = DateTime.UtcNow.AddSeconds(_cacheTTLSeconds)
         };
 
-        return tasks;
+        return nsTasks;
     }
 
     public async Task<WorkflowTaskResource?> GetTaskByNameAsync(string name, string? @namespace = null)

@@ -1667,65 +1667,101 @@ fi
 
 **Why:** Screenshots provide visual verification that UI components render correctly, create documentation for review, establish an audit trail showing what was built, and help future developers understand the visual intent.
 
+**Primary Source: Storybook (Recommended)**
+
+Since Gate 21 already requires Storybook stories for all components, use Storybook as the primary screenshot source:
+
+```bash
+# Automated capture from Storybook stories
+npm install -D storycap
+npx storycap http://localhost:6006 --outDir ./stage-proofs/stage-X/screenshots
+```
+
+This ensures:
+- ✅ Every story state gets a screenshot automatically
+- ✅ Completeness is guaranteed (stories exist → screenshots exist)
+- ✅ Consistent rendering environment
+- ✅ Easy to re-capture after changes
+
 **Verification:**
 ```bash
 STAGE_NUM=X
-
-# 1. Check for screenshots directory
-echo "=== UI Screenshots Gate ===" | tee ./stage-proofs/stage-$STAGE_NUM/reports/gates/gate-22-screenshots.txt
-
+REPORT="./stage-proofs/stage-$STAGE_NUM/reports/gates/gate-22-screenshots.txt"
 SCREENSHOT_DIR="./stage-proofs/stage-$STAGE_NUM/screenshots"
+
+echo "=== UI Screenshots Gate ===" | tee $REPORT
+
+# 1. Check screenshots directory exists
 if [ ! -d "$SCREENSHOT_DIR" ]; then
-  echo "❌ Screenshots directory missing: $SCREENSHOT_DIR" | tee -a ./stage-proofs/stage-$STAGE_NUM/reports/gates/gate-22-screenshots.txt
+  echo "❌ Screenshots directory missing: $SCREENSHOT_DIR" | tee -a $REPORT
   exit 1
 fi
 
-# 2. Count screenshots
-SCREENSHOT_COUNT=$(find "$SCREENSHOT_DIR" -name "*.png" -o -name "*.jpg" | wc -l | tr -d ' ')
-echo "Total Screenshots: $SCREENSHOT_COUNT" | tee -a ./stage-proofs/stage-$STAGE_NUM/reports/gates/gate-22-screenshots.txt
+# 2. Get list of story files (from Gate 21) - these define what screenshots we need
+STORY_FILES=$(find src/components -name "*.stories.tsx" ! -path "*/ui/*" 2>/dev/null)
+STORY_COUNT=$(echo "$STORY_FILES" | grep -c . || echo 0)
+echo "Storybook stories found: $STORY_COUNT" | tee -a $REPORT
 
-if [ "$SCREENSHOT_COUNT" -eq 0 ]; then
-  echo "❌ No screenshots found in $SCREENSHOT_DIR" | tee -a ./stage-proofs/stage-$STAGE_NUM/reports/gates/gate-22-screenshots.txt
-  exit 1
-fi
+# 3. Count screenshots
+SCREENSHOT_COUNT=$(find "$SCREENSHOT_DIR" -name "*.png" | wc -l | tr -d ' ')
+echo "Screenshots captured: $SCREENSHOT_COUNT" | tee -a $REPORT
 
-# 3. List all screenshots
-echo "" | tee -a ./stage-proofs/stage-$STAGE_NUM/reports/gates/gate-22-screenshots.txt
-echo "Screenshots captured:" | tee -a ./stage-proofs/stage-$STAGE_NUM/reports/gates/gate-22-screenshots.txt
-find "$SCREENSHOT_DIR" -name "*.png" -o -name "*.jpg" | while read f; do
-  echo "  ✅ $(basename $f)" | tee -a ./stage-proofs/stage-$STAGE_NUM/reports/gates/gate-22-screenshots.txt
+# 4. Cross-reference: each story file should have at least one screenshot
+echo "" | tee -a $REPORT
+echo "Coverage check (story → screenshot):" | tee -a $REPORT
+MISSING=0
+for story in $STORY_FILES; do
+  # Extract component name from story path (e.g., latency-chart from latency-chart.stories.tsx)
+  COMPONENT=$(basename "$story" .stories.tsx)
+  # Check if any screenshot contains this component name
+  if find "$SCREENSHOT_DIR" -name "*${COMPONENT}*" -type f | grep -q .; then
+    echo "  ✅ $COMPONENT" | tee -a $REPORT
+  else
+    echo "  ❌ $COMPONENT (no screenshot found)" | tee -a $REPORT
+    MISSING=$((MISSING + 1))
+  fi
 done
 
-echo "" | tee -a ./stage-proofs/stage-$STAGE_NUM/reports/gates/gate-22-screenshots.txt
-echo "✅ Gate 22 PASSED: $SCREENSHOT_COUNT screenshots captured" | tee -a ./stage-proofs/stage-$STAGE_NUM/reports/gates/gate-22-screenshots.txt
+echo "" | tee -a $REPORT
+if [ $MISSING -gt 0 ]; then
+  echo "❌ Gate 22 FAILED: $MISSING components missing screenshots" | tee -a $REPORT
+  echo "" | tee -a $REPORT
+  echo "Fix: Run 'npx storycap http://localhost:6006 --outDir $SCREENSHOT_DIR'" | tee -a $REPORT
+  exit 1
+fi
+
+echo "✅ Gate 22 PASSED: All $STORY_COUNT components have screenshots" | tee -a $REPORT
 ```
 
-**Required Screenshots:**
-- **Component States:** Default, loading, error, empty states for each new component
-- **Integration Views:** Full page views showing component in context
-- **Before/After:** For visual changes to existing components
+**Screenshot Types:**
+
+| Type | Source | When |
+|------|--------|------|
+| Component States | Storybook (storycap) | Default, loading, error, empty - from story variants |
+| Integration Views | Manual/Playwright | Full page showing components in context |
+| Before/After | Manual | Visual changes to existing components |
 
 **Naming Convention:**
 ```
-{component-name}-{state}.png
+Storybook auto-generates: {story-path}_{variant}.png
+Manual screenshots: {component}-{state}.png
+
 Examples:
-  latency-chart-default.png
-  latency-chart-loading.png
-  latency-chart-empty.png
-  dashboard-page-integration.png
+  dashboard-latency-chart--default.png    (from storycap)
+  dashboard-latency-chart--loading.png    (from storycap)
+  dashboard-page-integration.png          (manual)
 ```
 
 **Pass Criteria:**
 - ✅ Screenshots directory exists at `./stage-proofs/stage-X/screenshots/`
-- ✅ At least one screenshot per new UI component
-- ✅ Screenshots show all significant states (default, loading, error, empty)
-- ✅ Screenshots use descriptive filenames following naming convention
-- ❌ BLOCKER if no screenshots exist for UI stages
+- ✅ Every Storybook story has at least one corresponding screenshot
+- ✅ Integration screenshots for new pages (manual)
+- ❌ BLOCKER if any story is missing a screenshot
 
 **How to Capture:**
+- **Storybook (Recommended):** `npx storycap http://localhost:6006 --outDir ./screenshots`
+- **Playwright:** `await page.screenshot({ path: 'screenshot.png' })` (for integration views)
 - **Manual:** Browser DevTools → Right-click → "Capture screenshot"
-- **Playwright:** `await page.screenshot({ path: 'screenshot.png' })`
-- **Storybook:** Use Chromatic or `npx storycap` for automated capture
 
 **Artifacts:**
 - `./stage-proofs/stage-X/screenshots/*.png`

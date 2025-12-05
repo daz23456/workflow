@@ -320,24 +320,33 @@ ls -la ./reports/test-results/test-results.xml
 
 **Required for stages with UI components:**
 
-| Screenshot | Description | Path |
-|------------|-------------|------|
-| [Component Name] - Default | Default state rendering | `./screenshots/component-default.png` |
-| [Component Name] - Loading | Loading state | `./screenshots/component-loading.png` |
-| [Component Name] - Error | Error state | `./screenshots/component-error.png` |
-| [Component Name] - Empty | Empty/no data state | `./screenshots/component-empty.png` |
-| [Page Name] - Integration | Full page with component | `./screenshots/page-integration.png` |
+**Source: Storybook Stories (Recommended)**
+```bash
+# Automated capture from all Storybook stories
+npx storycap http://localhost:6006 --outDir ./stage-proofs/stage-X/screenshots
+```
+
+| Screenshot | Source | Path |
+|------------|--------|------|
+| [Component]--default | Storybook (storycap) | `./screenshots/component--default.png` |
+| [Component]--loading | Storybook (storycap) | `./screenshots/component--loading.png` |
+| [Component]--error | Storybook (storycap) | `./screenshots/component--error.png` |
+| [Component]--empty | Storybook (storycap) | `./screenshots/component--empty.png` |
+| [Page] - Integration | Manual/Playwright | `./screenshots/page-integration.png` |
 
 **Verification:**
-- [ ] All new UI components have screenshots
-- [ ] Screenshots show all significant states (default, loading, error, empty)
+- [ ] `npx storycap` run to capture all Storybook stories
+- [ ] Every component with a `.stories.tsx` file has corresponding screenshots
+- [ ] Integration screenshots captured for new pages (manual)
 - [ ] Screenshots are committed to `stage-proofs/stage-X/screenshots/`
-- [ ] Screenshots use descriptive filenames (`{component}-{state}.png`)
 
-**How to Capture:**
-- Manual: Browser DevTools → Right-click → "Capture screenshot"
-- Playwright: `await page.screenshot({ path: 'screenshot.png' })`
-- Storybook: Use Chromatic or `npx storycap` for automated capture
+**Completeness Check:**
+```bash
+# Gate 22 cross-references stories → screenshots
+# If Gate 21 passes (all components have stories) AND
+# Gate 22 passes (all stories have screenshots) THEN
+# All components have screenshots ✅
+```
 
 ---
 

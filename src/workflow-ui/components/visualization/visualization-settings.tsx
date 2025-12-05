@@ -9,12 +9,18 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useVisualizationStore } from '../../lib/visualization/visualization-store';
+import { useVisualizationStore, type RenderMode } from '../../lib/visualization/visualization-store';
 import {
   getAllThemePresets,
   getAllSignalFlowPresets,
   getAllNodeSizeModes,
 } from '../../lib/visualization/theme';
+
+const renderModes: { name: RenderMode; displayName: string; description: string; icon: string }[] = [
+  { name: 'quality', displayName: 'Quality', description: 'Full 3D effects, best visuals', icon: '🎨' },
+  { name: 'performance', displayName: 'Performance', description: 'Optimized 3D, better FPS', icon: '⚡' },
+  { name: 'flat', displayName: 'Flat', description: 'SVG 2D, smoothest performance', icon: '📊' },
+];
 
 export function VisualizationSettings() {
   const [isOpen, setIsOpen] = useState(false);
@@ -22,9 +28,11 @@ export function VisualizationSettings() {
   const themePreset = useVisualizationStore((state) => state.themePreset);
   const signalFlowPreset = useVisualizationStore((state) => state.signalFlowPreset);
   const nodeSizeMode = useVisualizationStore((state) => state.nodeSizeMode);
+  const renderMode = useVisualizationStore((state) => state.renderMode);
   const setThemePreset = useVisualizationStore((state) => state.setThemePreset);
   const setSignalFlowPreset = useVisualizationStore((state) => state.setSignalFlowPreset);
   const setNodeSizeMode = useVisualizationStore((state) => state.setNodeSizeMode);
+  const setRenderMode = useVisualizationStore((state) => state.setRenderMode);
 
   const themes = getAllThemePresets();
   const signalFlows = getAllSignalFlowPresets();
@@ -81,7 +89,32 @@ export function VisualizationSettings() {
         </button>
       </div>
 
-      {/* Three-column layout */}
+      {/* Render Mode - Prominent at top */}
+      <div className="mb-4 pb-4 border-b border-white/10">
+        <label className="block text-white/70 text-xs mb-2 uppercase tracking-wide">
+          Render Mode
+        </label>
+        <div className="flex gap-2">
+          {renderModes.map((mode) => (
+            <button
+              key={mode.name}
+              onClick={() => setRenderMode(mode.name)}
+              className={`flex-1 p-2 rounded border transition-all ${
+                renderMode === mode.name
+                  ? 'border-yellow-400 bg-yellow-400/10 text-white'
+                  : 'border-white/10 bg-white/5 text-white/70 hover:border-white/30 hover:bg-white/10'
+              }`}
+              data-testid={`render-${mode.name}`}
+            >
+              <div className="text-lg text-center">{mode.icon}</div>
+              <div className="font-medium text-sm text-center">{mode.displayName}</div>
+              <div className="text-xs opacity-60 text-center mt-0.5">{mode.description}</div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Three-column layout for other settings */}
       <div className="grid grid-cols-3 gap-4">
         {/* Theme Selection */}
         <div>

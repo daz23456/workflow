@@ -8,6 +8,7 @@
  */
 
 export { TrafficCanvas, type TrafficCanvasProps } from './traffic-canvas';
+export { TrafficSVG, type TrafficSVGProps, type SVGWorkflowLane, type SVGParticle, type SVGTask, type SVGExecutionStatus } from './traffic-svg';
 export { WorkflowLane, type WorkflowLaneProps, type TaskNode } from './workflow-lane';
 export { ExecutionParticle, type ExecutionParticleProps, type ExecutionStatus } from './execution-particle';
 export { ThroughputMeter, type ThroughputMeterProps } from './throughput-meter';

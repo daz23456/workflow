@@ -125,4 +125,32 @@ public class KubernetesWorkflowClient : IKubernetesWorkflowClient
 
         return tasks;
     }
+
+    public async Task<List<WorkflowResource>> ListWorkflowsFromNamespacesAsync(IEnumerable<string> namespaces, CancellationToken cancellationToken = default)
+    {
+        var allWorkflows = new List<WorkflowResource>();
+        var tasks = namespaces.Select(ns => ListWorkflowsAsync(ns, cancellationToken));
+        var results = await Task.WhenAll(tasks);
+
+        foreach (var workflows in results)
+        {
+            allWorkflows.AddRange(workflows);
+        }
+
+        return allWorkflows;
+    }
+
+    public async Task<List<WorkflowTaskResource>> ListTasksFromNamespacesAsync(IEnumerable<string> namespaces, CancellationToken cancellationToken = default)
+    {
+        var allTasks = new List<WorkflowTaskResource>();
+        var taskQueries = namespaces.Select(ns => ListTasksAsync(ns, cancellationToken));
+        var results = await Task.WhenAll(taskQueries);
+
+        foreach (var tasks in results)
+        {
+            allTasks.AddRange(tasks);
+        }
+
+        return allTasks;
+    }
 }

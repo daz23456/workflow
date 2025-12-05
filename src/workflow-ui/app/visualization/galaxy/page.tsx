@@ -14,7 +14,9 @@
 'use client';
 
 import React, { useState, useCallback, useMemo } from 'react';
-import { GalaxyScene, NamespaceCluster, WorkflowPlanet } from '../../../components/visualization/galaxy';
+import { GalaxyScene, GalaxySVG, NamespaceCluster, WorkflowPlanet } from '../../../components/visualization/galaxy';
+import { VisualizationSettings } from '../../../components/visualization/visualization-settings';
+import { useRenderMode } from '../../../lib/visualization/visualization-store';
 import { Button } from '../../../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card';
 import { Play, Pause, RotateCcw, Info } from 'lucide-react';
@@ -91,6 +93,7 @@ export default function GalaxyPage() {
   const [selectedNamespace, setSelectedNamespace] = useState<string | null>(null);
   const [selectedWorkflow, setSelectedWorkflow] = useState<string | null>(null);
   const [showLegend, setShowLegend] = useState(true);
+  const renderMode = useRenderMode();
 
   const handleNamespaceClick = useCallback((id: string) => {
     setSelectedNamespace((prev) => (prev === id ? null : id));
@@ -118,9 +121,22 @@ export default function GalaxyPage() {
     return selectedNsDetails.workflows.find((wf) => wf.id === selectedWorkflow);
   }, [selectedWorkflow, selectedNsDetails]);
 
-  return (
-    <div className="h-screen w-full relative bg-black">
-      {/* Galaxy 3D Scene */}
+  // Render 3D or SVG based on render mode
+  const renderGalaxy = () => {
+    if (renderMode === 'flat') {
+      return (
+        <GalaxySVG
+          namespaces={DEMO_NAMESPACES}
+          onNamespaceClick={handleNamespaceClick}
+          onWorkflowClick={handleWorkflowClick}
+          selectedNamespace={selectedNamespace}
+          selectedWorkflow={selectedWorkflow}
+        />
+      );
+    }
+
+    // 3D mode (quality or performance)
+    return (
       <GalaxyScene>
         {DEMO_NAMESPACES.map((namespace) => (
           <NamespaceCluster
@@ -149,9 +165,17 @@ export default function GalaxyPage() {
           </NamespaceCluster>
         ))}
       </GalaxyScene>
+    );
+  };
+
+  return (
+    <div className="h-screen w-full relative bg-black">
+      {/* Galaxy Scene (3D or SVG) */}
+      {renderGalaxy()}
 
       {/* Controls Overlay - Top Left */}
       <div className="absolute top-4 left-4 flex gap-2">
+        <VisualizationSettings />
         <Button
           variant="outline"
           size="icon"

@@ -13,6 +13,7 @@ import React, { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Html, Sphere } from '@react-three/drei';
 import type { Group } from 'three';
+import { useRenderMode } from '../../../lib/visualization/visualization-store';
 
 export interface WorkflowPlanetProps {
   id: string;
@@ -41,6 +42,8 @@ export function WorkflowPlanet({
 }: WorkflowPlanetProps) {
   const groupRef = useRef<Group>(null);
   const angleRef = useRef(initialAngle);
+  const renderMode = useRenderMode();
+  const isPerformanceMode = renderMode === 'performance';
 
   // Calculate radius based on task count (smaller than namespace clusters)
   const radius = useMemo(() => {
@@ -48,6 +51,9 @@ export function WorkflowPlanet({
     const scaleFactor = Math.log2(Math.max(1, taskCount) + 1) * 0.15;
     return baseRadius + scaleFactor;
   }, [taskCount]);
+
+  // Performance mode: reduce geometry complexity
+  const sphereSegments = isPerformanceMode ? 12 : 32;
 
   // Orbital animation
   useFrame((state, delta) => {
@@ -75,7 +81,7 @@ export function WorkflowPlanet({
     <group ref={groupRef}>
       {/* Planet sphere */}
       <Sphere
-        args={[radius, 32, 32]}
+        args={[radius, sphereSegments, sphereSegments]}
         onClick={handleClick}
         onPointerOver={handlePointerOver}
         onPointerOut={handlePointerOut}

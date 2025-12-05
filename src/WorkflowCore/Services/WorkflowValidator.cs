@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using WorkflowCore.Models;
 
 namespace WorkflowCore.Services;
@@ -14,6 +15,9 @@ public class WorkflowValidator : IWorkflowValidator
     private readonly ITemplateParser _templateParser;
     private readonly ITypeCompatibilityChecker _typeChecker;
 
+    // Valid identifier pattern: starts with letter or underscore, followed by alphanumeric or underscore
+    private static readonly Regex IdentifierRegex = new(@"^[a-zA-Z_][a-zA-Z0-9_]*$", RegexOptions.Compiled);
+
     public WorkflowValidator(
         ITemplateParser templateParser,
         ITypeCompatibilityChecker typeChecker)
@@ -27,6 +31,7 @@ public class WorkflowValidator : IWorkflowValidator
         Dictionary<string, WorkflowTaskResource> availableTasks)
     {
         var errors = new List<ValidationError>();
+        var warnings = new List<string>();
 
         // Validate all task references exist
         foreach (var step in workflow.Spec.Tasks)
@@ -59,6 +64,15 @@ public class WorkflowValidator : IWorkflowValidator
                     continue;
                 }
             }
+
+            // Validate control flow: Condition
+            ValidateCondition(step, errors);
+
+            // Validate control flow: Switch
+            ValidateSwitch(step, availableTasks, errors, warnings);
+
+            // Validate control flow: ForEach
+            ValidateForEach(step, errors);
 
             // Validate templates in inputs
             foreach (var (inputKey, inputTemplate) in step.Input)
@@ -136,8 +150,225 @@ public class WorkflowValidator : IWorkflowValidator
         return Task.FromResult(new ValidationResult
         {
             IsValid = errors.Count == 0,
-            Errors = errors
+            Errors = errors,
+            Warnings = warnings
         });
+    }
+
+    private void ValidateCondition(WorkflowTaskStep step, List<ValidationError> errors)
+    {
+        if (step.Condition == null)
+        {
+            return;
+        }
+
+        // Validate condition.if is not empty
+        if (string.IsNullOrWhiteSpace(step.Condition.If))
+        {
+            errors.Add(new ValidationError
+            {
+                TaskId = step.Id,
+                Field = "condition.if",
+                Message = "Condition 'if' expression is empty",
+                SuggestedFix = "Provide a valid condition expression, e.g., '{{input.approved}} == true'"
+            });
+            return;
+        }
+
+        // Validate templates within the condition expression
+        var parseResult = _templateParser.Parse(step.Condition.If);
+        if (!parseResult.IsValid)
+        {
+            foreach (var error in parseResult.Errors)
+            {
+                errors.Add(new ValidationError
+                {
+                    TaskId = step.Id,
+                    Field = "condition.if",
+                    Message = error,
+                    SuggestedFix = "Fix the template syntax in the condition expression"
+                });
+            }
+        }
+    }
+
+    private void ValidateSwitch(
+        WorkflowTaskStep step,
+        Dictionary<string, WorkflowTaskResource> availableTasks,
+        List<ValidationError> errors,
+        List<string> warnings)
+    {
+        if (step.Switch == null)
+        {
+            return;
+        }
+
+        // Validate switch.value is not empty
+        if (string.IsNullOrWhiteSpace(step.Switch.Value))
+        {
+            errors.Add(new ValidationError
+            {
+                TaskId = step.Id,
+                Field = "switch.value",
+                Message = "Switch 'value' expression is empty",
+                SuggestedFix = "Provide a valid template expression, e.g., '{{input.paymentMethod}}'"
+            });
+        }
+        else
+        {
+            // Validate template syntax in value
+            var valueParseResult = _templateParser.Parse(step.Switch.Value);
+            if (!valueParseResult.IsValid)
+            {
+                foreach (var error in valueParseResult.Errors)
+                {
+                    errors.Add(new ValidationError
+                    {
+                        TaskId = step.Id,
+                        Field = "switch.value",
+                        Message = error,
+                        SuggestedFix = "Fix the template syntax in the switch value expression"
+                    });
+                }
+            }
+        }
+
+        // Validate at least one case
+        if (step.Switch.Cases.Count == 0)
+        {
+            errors.Add(new ValidationError
+            {
+                TaskId = step.Id,
+                Field = "switch.cases",
+                Message = "Switch must have at least one case",
+                SuggestedFix = "Add at least one case with 'match' and 'taskRef' properties"
+            });
+        }
+        else
+        {
+            // Validate unique match values
+            var matchValues = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            for (int i = 0; i < step.Switch.Cases.Count; i++)
+            {
+                var switchCase = step.Switch.Cases[i];
+
+                if (!matchValues.Add(switchCase.Match))
+                {
+                    errors.Add(new ValidationError
+                    {
+                        TaskId = step.Id,
+                        Field = "switch.cases",
+                        Message = $"Duplicate switch case match value: '{switchCase.Match}'",
+                        SuggestedFix = "Ensure all case match values are unique"
+                    });
+                }
+
+                // Validate case taskRef exists
+                if (!availableTasks.ContainsKey(switchCase.TaskRef))
+                {
+                    errors.Add(new ValidationError
+                    {
+                        TaskId = step.Id,
+                        Field = $"switch.cases[{i}].taskRef",
+                        Message = $"Switch case taskRef '{switchCase.TaskRef}' not found in available tasks",
+                        SuggestedFix = $"Ensure task '{switchCase.TaskRef}' is registered as a WorkflowTask"
+                    });
+                }
+            }
+        }
+
+        // Validate default taskRef if provided
+        if (step.Switch.Default != null)
+        {
+            if (!availableTasks.ContainsKey(step.Switch.Default.TaskRef))
+            {
+                errors.Add(new ValidationError
+                {
+                    TaskId = step.Id,
+                    Field = "switch.default.taskRef",
+                    Message = $"Switch default taskRef '{step.Switch.Default.TaskRef}' not found in available tasks",
+                    SuggestedFix = $"Ensure task '{step.Switch.Default.TaskRef}' is registered as a WorkflowTask"
+                });
+            }
+        }
+        else if (step.Switch.Cases.Count > 0)
+        {
+            // Warn if no default case
+            warnings.Add($"Task '{step.Id}': switch has no default case. If no cases match, the switch will fail.");
+        }
+    }
+
+    private void ValidateForEach(WorkflowTaskStep step, List<ValidationError> errors)
+    {
+        if (step.ForEach == null)
+        {
+            return;
+        }
+
+        // Validate forEach.items is not empty
+        if (string.IsNullOrWhiteSpace(step.ForEach.Items))
+        {
+            errors.Add(new ValidationError
+            {
+                TaskId = step.Id,
+                Field = "forEach.items",
+                Message = "ForEach 'items' template expression is empty",
+                SuggestedFix = "Provide a valid template expression that resolves to an array, e.g., '{{input.orderIds}}'"
+            });
+        }
+        else
+        {
+            // Validate template syntax in items
+            var itemsParseResult = _templateParser.Parse(step.ForEach.Items);
+            if (!itemsParseResult.IsValid)
+            {
+                foreach (var error in itemsParseResult.Errors)
+                {
+                    errors.Add(new ValidationError
+                    {
+                        TaskId = step.Id,
+                        Field = "forEach.items",
+                        Message = error,
+                        SuggestedFix = "Fix the template syntax in the forEach items expression"
+                    });
+                }
+            }
+        }
+
+        // Validate forEach.itemVar is not empty
+        if (string.IsNullOrWhiteSpace(step.ForEach.ItemVar))
+        {
+            errors.Add(new ValidationError
+            {
+                TaskId = step.Id,
+                Field = "forEach.itemVar",
+                Message = "ForEach 'itemVar' (variable name) is empty",
+                SuggestedFix = "Provide a valid identifier for the item variable, e.g., 'order'"
+            });
+        }
+        else if (!IdentifierRegex.IsMatch(step.ForEach.ItemVar))
+        {
+            // Validate itemVar is a valid identifier
+            errors.Add(new ValidationError
+            {
+                TaskId = step.Id,
+                Field = "forEach.itemVar",
+                Message = $"ForEach 'itemVar' must be a valid identifier. Got: '{step.ForEach.ItemVar}'",
+                SuggestedFix = "Use a valid identifier (letters, numbers, underscores; must start with letter or underscore)"
+            });
+        }
+
+        // Validate maxParallel is non-negative
+        if (step.ForEach.MaxParallel < 0)
+        {
+            errors.Add(new ValidationError
+            {
+                TaskId = step.Id,
+                Field = "forEach.maxParallel",
+                Message = $"ForEach 'maxParallel' must be a positive number or 0 (unlimited). Got: {step.ForEach.MaxParallel}",
+                SuggestedFix = "Set maxParallel to 0 for unlimited parallelism, or a positive number to limit concurrent executions"
+            });
+        }
     }
 
     private PropertyDefinition? ResolveExpressionType(

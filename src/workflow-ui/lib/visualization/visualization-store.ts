@@ -13,7 +13,7 @@ import { create } from 'zustand';
 import type { ThemePresetName, SignalFlowPresetName, NodeSizeModeName } from './theme';
 
 export type LayoutMode = 'radial' | 'stacked' | 'hub-spoke';
-export type PerformanceMode = 'quality' | 'performance';
+export type RenderMode = 'quality' | 'performance' | 'flat';
 
 // Export for use in other components
 export { type LayoutMode as VisualizationLayoutMode };
@@ -55,7 +55,7 @@ export interface VisualizationState {
   signalFlowPreset: SignalFlowPresetName;
   nodeSizeMode: NodeSizeModeName;
   layoutMode: LayoutMode;
-  performanceMode: PerformanceMode;
+  renderMode: RenderMode;
 
   // Graph data
   nodes: Map<string, VisualizationNode>;
@@ -73,7 +73,7 @@ export interface VisualizationState {
   setSignalFlowPreset: (preset: SignalFlowPresetName) => void;
   setNodeSizeMode: (mode: NodeSizeModeName) => void;
   setLayoutMode: (mode: LayoutMode) => void;
-  setPerformanceMode: (mode: PerformanceMode) => void;
+  setRenderMode: (mode: RenderMode) => void;
 
   // Actions - Nodes
   addNode: (node: VisualizationNode) => void;
@@ -113,7 +113,7 @@ const initialState = {
   signalFlowPreset: 'particle-stream' as SignalFlowPresetName,
   nodeSizeMode: 'uniform' as NodeSizeModeName,
   layoutMode: 'radial' as LayoutMode,
-  performanceMode: 'quality' as PerformanceMode,
+  renderMode: 'quality' as RenderMode,
   nodes: new Map<string, VisualizationNode>(),
   edges: [] as VisualizationEdge[],
   activeSignals: [] as ActiveSignal[],
@@ -238,8 +238,8 @@ export const useVisualizationStore = create<VisualizationState>((set, get) => ({
     set({ layoutMode: mode });
   },
 
-  setPerformanceMode: (mode: PerformanceMode) => {
-    set({ performanceMode: mode });
+  setRenderMode: (mode: RenderMode) => {
+    set({ renderMode: mode });
   },
 
   addNode: (node: VisualizationNode) => {
@@ -388,8 +388,8 @@ export const useNodeSizeMode = () =>
   useVisualizationStore((state) => state.nodeSizeMode);
 export const useLayoutMode = () =>
   useVisualizationStore((state) => state.layoutMode);
-export const usePerformanceMode = () =>
-  useVisualizationStore((state) => state.performanceMode);
+export const useRenderMode = () =>
+  useVisualizationStore((state) => state.renderMode);
 export const useVisualizationNodes = () =>
   useVisualizationStore((state) => state.nodes);
 export const useVisualizationEdges = () =>

@@ -13,6 +13,7 @@ import React, { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Sphere, Trail } from '@react-three/drei';
 import { Mesh, Color } from 'three';
+import { useRenderMode } from '../../../lib/visualization/visualization-store';
 
 export type ExecutionStatus = 'running' | 'succeeded' | 'failed';
 
@@ -47,8 +48,15 @@ export function ExecutionParticle({
 }: ExecutionParticleProps) {
   const meshRef = useRef<Mesh>(null);
   const _progressRef = useRef(progress);
+  const renderMode = useRenderMode();
+  const isPerformanceMode = renderMode === 'performance';
 
   const color = useMemo(() => new Color(STATUS_COLORS[status]), [status]);
+
+  // Performance mode: reduce geometry complexity
+  const sphereSegments = isPerformanceMode ? 8 : 16;
+  const glowSegments = isPerformanceMode ? 6 : 8;
+  const trailLength = isPerformanceMode ? 2 : 5;
 
   // Calculate current X position based on progress
   const currentX = useMemo(() => {
@@ -71,11 +79,11 @@ export function ExecutionParticle({
     >
       <Trail
         width={1}
-        length={5}
+        length={trailLength}
         color={color}
         attenuation={(t) => t * t}
       >
-        <Sphere ref={meshRef} args={[size, 16, 16]}>
+        <Sphere ref={meshRef} args={[size, sphereSegments, sphereSegments]}>
           <meshStandardMaterial
             color={color}
             emissive={color}
@@ -87,7 +95,7 @@ export function ExecutionParticle({
       </Trail>
 
       {/* Glow effect - larger transparent sphere */}
-      <Sphere args={[size * 2, 8, 8]}>
+      <Sphere args={[size * 2, glowSegments, glowSegments]}>
         <meshBasicMaterial
           color={color}
           transparent

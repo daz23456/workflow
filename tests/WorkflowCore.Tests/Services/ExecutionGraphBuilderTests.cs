@@ -824,4 +824,117 @@ public class ExecutionGraphBuilderTests
         step1Index.Should().BeLessThan(step2Index, "step-1 must execute before step-2");
         step2Index.Should().BeLessThan(step3Index, "step-2 must execute before step-3");
     }
+
+    [Fact]
+    public void Build_ShouldPopulateDiagnostics()
+    {
+        // Arrange - Test that diagnostics are properly populated
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "task-1", TaskRef = "ref-1" },
+                    new WorkflowTaskStep
+                    {
+                        Id = "task-2",
+                        TaskRef = "ref-2",
+                        DependsOn = new List<string> { "task-1" },
+                        Input = new Dictionary<string, string>
+                        {
+                            ["data"] = "{{tasks.task-1.output.result}}"
+                        }
+                    }
+                }
+            }
+        };
+
+        // Act
+        var result = _builder.Build(workflow);
+
+        // Assert
+        result.Diagnostics.Should().NotBeNull();
+        result.Diagnostics!.TaskDiagnostics.Should().HaveCount(2);
+
+        var task1Diag = result.Diagnostics.TaskDiagnostics.First(d => d.TaskId == "task-1");
+        task1Diag.ExplicitDependencies.Should().BeEmpty();
+        task1Diag.ImplicitDependencies.Should().BeEmpty();
+
+        var task2Diag = result.Diagnostics.TaskDiagnostics.First(d => d.TaskId == "task-2");
+        task2Diag.ExplicitDependencies.Should().ContainSingle().Which.Should().Be("task-1");
+        task2Diag.ImplicitDependencies.Should().ContainSingle().Which.Should().Be("task-1");
+    }
+
+    [Fact]
+    public void Build_WithEmptyDependsOnList_ShouldNotAddDependencies()
+    {
+        // Arrange - Test empty DependsOn list (not null)
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "task-1", TaskRef = "ref-1" },
+                    new WorkflowTaskStep
+                    {
+                        Id = "task-2",
+                        TaskRef = "ref-2",
+                        DependsOn = new List<string>() // Empty list, not null
+                    }
+                }
+            }
+        };
+
+        // Act
+        var result = _builder.Build(workflow);
+
+        // Assert
+        result.IsValid.Should().BeTrue();
+        result.Graph.Should().NotBeNull();
+        result.Graph!.GetDependencies("task-2").Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Build_WithNullMetadataName_ShouldUseUnknownAsDefault()
+    {
+        // Arrange - Test null metadata name handling
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = null },
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep
+                    {
+                        Id = "task-a",
+                        TaskRef = "ref-a",
+                        Input = new Dictionary<string, string>
+                        {
+                            ["data"] = "{{tasks.task-b.output.x}}"
+                        }
+                    },
+                    new WorkflowTaskStep
+                    {
+                        Id = "task-b",
+                        TaskRef = "ref-b",
+                        Input = new Dictionary<string, string>
+                        {
+                            ["data"] = "{{tasks.task-a.output.y}}"
+                        }
+                    }
+                }
+            }
+        };
+
+        // Act
+        var result = _builder.Build(workflow);
+
+        // Assert - Should handle null name gracefully and still detect cycle
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().ContainSingle();
+        result.Errors[0].Message.Should().Contain("Circular dependency");
+    }
 }

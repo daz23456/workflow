@@ -11,8 +11,10 @@
     },
     "concurrency": 4,
     "mutate": [
-      "**/ExecutionGraph.cs",
-      "**/ExecutionGraphBuilder.cs"
+      "**/Models/**/*.cs",
+      "!**/obj/**",
+      "!**/bin/**",
+      "!**/Migrations/**"
     ]
   }
 }

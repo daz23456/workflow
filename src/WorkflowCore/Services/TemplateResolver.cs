@@ -99,7 +99,9 @@ public class TemplateResolver : ITemplateResolver
             if (forEachContext.Parent == null)
             {
                 throw new TemplateResolutionException(
-                    "forEach.$parent used but there is no parent forEach context",
+                    "forEach.$parent used but there is no parent forEach context. " +
+                    "$parent is only valid inside a nested forEach (forEach inside another forEach). " +
+                    "If you're at the outermost level, use {{forEach.{itemVar}}} directly.",
                     originalExpression);
             }
 
@@ -145,7 +147,10 @@ public class TemplateResolver : ITemplateResolver
         }
 
         throw new TemplateResolutionException(
-            $"Unknown forEach property: {parts[1]}. Expected 'index', '$parent', '$root', or '{forEachContext.ItemVar}'",
+            $"Unknown forEach property: '{parts[1]}'. " +
+            $"Valid options: 'index' (current position), '$parent' (outer loop), '$root' (outermost loop), " +
+            $"or '{forEachContext.ItemVar}' (current item as defined in your forEach.itemVar). " +
+            $"Example: {{{{forEach.{forEachContext.ItemVar}.propertyName}}}}",
             originalExpression);
     }
 

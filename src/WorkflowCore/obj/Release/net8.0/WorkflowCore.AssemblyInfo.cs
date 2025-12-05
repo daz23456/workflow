@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("WorkflowCore")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+719c06eb239b875374265c71a904862bac21c8f7")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4736fe4e0f9096f3440e5c3ca0f2ec7e798b351a")]
 [assembly: System.Reflection.AssemblyProductAttribute("WorkflowCore")]
 [assembly: System.Reflection.AssemblyTitleAttribute("WorkflowCore")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

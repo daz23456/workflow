@@ -49,6 +49,7 @@ public class DynamicWorkflowController : ControllerBase
     /// <returns>Workflow execution result</returns>
     [HttpPost("{workflowName}/execute")]
     [ProducesResponseType(typeof(WorkflowExecutionResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(WorkflowExecutionResponse), StatusCodes.Status502BadGateway)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Execute(
@@ -84,7 +85,16 @@ public class DynamicWorkflowController : ControllerBase
         // Execute workflow
         var result = await _executionService.ExecuteAsync(workflow, request.Input, cancellationToken);
 
-        return Ok(result);
+        // Return appropriate status code based on execution success
+        if (result.Success)
+        {
+            return Ok(result);
+        }
+        else
+        {
+            // Return 502 Bad Gateway for failed executions (upstream service failures)
+            return StatusCode(StatusCodes.Status502BadGateway, result);
+        }
     }
 
     /// <summary>
@@ -257,7 +267,9 @@ public class DynamicWorkflowController : ControllerBase
     /// <returns>Full execution results including task outputs</returns>
     [HttpPost("test-execute")]
     [ProducesResponseType(typeof(TestExecuteResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(TestExecuteResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(TestExecuteResponse), StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(typeof(TestExecuteResponse), StatusCodes.Status502BadGateway)]
     public async Task<IActionResult> TestExecute(
         [FromBody] TestExecuteRequest request,
         [FromQuery] string? @namespace = null,
@@ -311,7 +323,7 @@ public class DynamicWorkflowController : ControllerBase
         // Return early if validation fails
         if (validationErrors.Any())
         {
-            return Ok(new TestExecuteResponse
+            return BadRequest(new TestExecuteResponse
             {
                 Success = false,
                 WorkflowName = workflow.Metadata?.Name ?? "",
@@ -325,7 +337,7 @@ public class DynamicWorkflowController : ControllerBase
         {
             var result = await _executionService.ExecuteAsync(workflow, request.Input, cancellationToken);
 
-            return Ok(new TestExecuteResponse
+            var response = new TestExecuteResponse
             {
                 Success = result.Success,
                 WorkflowName = result.WorkflowName,
@@ -335,11 +347,21 @@ public class DynamicWorkflowController : ControllerBase
                 ExecutionTimeMs = result.ExecutionTimeMs,
                 Error = result.Error,
                 ValidationErrors = validationErrors
-            });
+            };
+
+            // Return appropriate status code based on execution success
+            if (result.Success)
+            {
+                return Ok(response);
+            }
+            else
+            {
+                return StatusCode(StatusCodes.Status502BadGateway, response);
+            }
         }
         catch (Exception ex)
         {
-            return Ok(new TestExecuteResponse
+            return StatusCode(StatusCodes.Status500InternalServerError, new TestExecuteResponse
             {
                 Success = false,
                 WorkflowName = workflow.Metadata?.Name ?? "",

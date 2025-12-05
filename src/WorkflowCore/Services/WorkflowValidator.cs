@@ -455,7 +455,7 @@ public class WorkflowValidator : IWorkflowValidator
                     TaskId = task.Id,
                     Field = "forEach",
                     Message = $"ForEach nesting depth of {depth} exceeds maximum allowed depth of {MaxForEachNestingDepth}",
-                    SuggestedFix = $"Reduce nesting by restructuring the workflow. Maximum allowed nesting depth is {MaxForEachNestingDepth}."
+                    SuggestedFix = $"Reduce nesting to max {MaxForEachNestingDepth} levels. Options: (1) Flatten nested arrays with a transform task before iteration, (2) Extract inner forEach into a separate sub-workflow, or (3) Process nested data in a single task with custom logic."
                 });
             }
         }

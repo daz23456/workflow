@@ -1,0 +1,20 @@
+{
+  "name": "@workflow/api-client",
+  "version": "0.1.0",
+  "description": "TypeScript API client for Workflow Gateway",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "keywords": ["workflow", "api", "client"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
+}

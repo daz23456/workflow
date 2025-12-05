@@ -1,0 +1,135 @@
+# CLAUDE.md - [Your Project Name]
+
+## Project Overview
+
+Build [YOUR PROJECT DESCRIPTION].
+
+**Technology Stack:**
+- Language: [.NET 8 / Python 3.12 / Go 1.21 / etc.]
+- Framework: [ASP.NET Core / FastAPI / Gin / etc.]
+- Database: [PostgreSQL / MySQL / MongoDB / etc.]
+- Testing: [xUnit / pytest / go test / etc.]
+- CI/CD: [GitHub Actions / GitLab CI / etc.]
+
+**Non-Negotiable Requirements:**
+- ✅ Test-first development (RED-GREEN-REFACTOR)
+- ✅ ≥90% code coverage enforced
+- ✅ Zero tolerance for test failures
+- ✅ No skipped tests
+- ✅ Quality gates must pass before stage completion
+
+---
+
+## Stage Execution Protocol
+
+### Every Stage: 3 Commands
+
+```bash
+# 1. BEFORE: Initialize
+./scripts/init-stage.sh --stage X.X --name "Feature Name" --profile BACKEND
+
+# 2. DURING: Implement with TDD (RED → GREEN → REFACTOR)
+
+# 3. AFTER: Run gates then complete
+./scripts/run-quality-gates.sh --stage X.X 1 2 3 4 5 6 7 8
+./scripts/complete-stage.sh --stage X.X --name "Feature Name"
+```
+
+### Context Recovery
+
+```bash
+cat stage-proofs/stage-X/.stage-state.yaml
+```
+
+---
+
+## Project Structure
+
+```
+your-project/
+├── src/
+│   └── [your-app]/
+│       ├── Controllers/
+│       ├── Services/
+│       ├── Models/
+│       └── ...
+├── tests/
+│   └── [your-app].Tests/
+├── stage-proofs/
+├── scripts/
+├── CLAUDE.md
+└── README.md
+```
+
+---
+
+## Stage Roadmap
+
+### Stage 1: [Feature Name] 🔴 NOT STARTED
+**Goal:** [What you're building]
+**Deliverables:**
+- [ ] Deliverable 1
+- [ ] Deliverable 2
+- [ ] Deliverable 3
+
+**Success Criteria:**
+- All tests passing
+- Coverage ≥90%
+- Quality gates pass
+
+### Stage 2: [Feature Name] 🔴 NOT STARTED
+**Goal:** [What you're building]
+**Deliverables:**
+- [ ] Deliverable 1
+- [ ] Deliverable 2
+
+---
+
+## Development Workflow
+
+### TDD Cycle (RED-GREEN-REFACTOR)
+
+**For every new feature:**
+
+1. **RED**: Write failing test
+2. **GREEN**: Write minimum code to pass
+3. **REFACTOR**: Clean up while keeping tests green
+
+### Running Tests
+
+```bash
+# Run all tests
+[your test command]
+
+# Run with coverage
+[your coverage command]
+
+# Run specific test
+[your specific test command]
+```
+
+---
+
+## Coding Standards
+
+- [Your code style guidelines]
+- [Naming conventions]
+- [Architecture patterns]
+
+---
+
+## Quality Gates (Enforced)
+
+### Every Stage Must Pass:
+- [ ] Gate 1: No template files
+- [ ] Gate 2: Linting passes
+- [ ] Gate 3: Build succeeds (0 warnings)
+- [ ] Gate 4: Type safety (if applicable)
+- [ ] Gate 5: All tests pass (0 failures, 0 skipped)
+- [ ] Gate 6: Code coverage ≥90%
+- [ ] Gate 7: Security scan (0 vulnerabilities)
+- [ ] Gate 8: Proof file complete
+
+---
+
+**This is your specification. Claude Code reads it and follows it. Quality is enforced, not hoped for.**

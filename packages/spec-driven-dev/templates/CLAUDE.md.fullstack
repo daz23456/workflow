@@ -1,0 +1,174 @@
+# CLAUDE.md - [Your Project Name]
+
+## Project Overview
+
+Build [YOUR PROJECT DESCRIPTION].
+
+**Technology Stack:**
+
+### Backend
+- Language: [.NET 8 / Node.js / Python / etc.]
+- Framework: [ASP.NET Core / Express / FastAPI / etc.]
+- Database: [PostgreSQL / MySQL / MongoDB / etc.]
+- API: [REST / GraphQL / gRPC]
+
+### Frontend
+- Framework: [React / Vue / Angular / Next.js / etc.]
+- Language: TypeScript
+- Styling: [Tailwind CSS / CSS Modules / etc.]
+- State: [Redux / Zustand / React Query / etc.]
+
+### Testing
+- Backend: [xUnit / Jest / pytest / etc.]
+- Frontend: [Vitest / Jest / React Testing Library]
+- E2E: [Playwright / Cypress]
+
+### Infrastructure
+- CI/CD: [GitHub Actions / GitLab CI / etc.]
+- Hosting: [Docker / Kubernetes / Vercel / etc.]
+
+**Non-Negotiable Requirements:**
+- ✅ Test-first development (RED-GREEN-REFACTOR)
+- ✅ ≥90% code coverage enforced (both frontend and backend)
+- ✅ Zero tolerance for test failures
+- ✅ No skipped tests
+- ✅ Quality gates must pass before stage completion
+
+---
+
+## Stage Execution Protocol
+
+### Every Stage: 3 Commands
+
+```bash
+# 1. BEFORE: Initialize
+./scripts/init-stage.sh --stage X.X --name "Feature Name" --profile FULLSTACK
+
+# 2. DURING: Implement with TDD (RED → GREEN → REFACTOR)
+
+# 3. AFTER: Run gates then complete
+./scripts/run-quality-gates.sh --stage X.X 1 2 3 4 5 6 7 8
+./scripts/complete-stage.sh --stage X.X --name "Feature Name"
+```
+
+### Context Recovery
+
+```bash
+cat stage-proofs/stage-X/.stage-state.yaml
+```
+
+---
+
+## Project Structure
+
+```
+your-project/
+├── backend/
+│   ├── src/
+│   │   ├── controllers/
+│   │   ├── services/
+│   │   ├── models/
+│   │   └── ...
+│   └── tests/
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── hooks/
+│   │   ├── lib/
+│   │   └── ...
+│   └── tests/
+├── e2e/                    # End-to-end tests
+├── stage-proofs/
+├── scripts/
+├── docker-compose.yml
+├── CLAUDE.md
+└── README.md
+```
+
+---
+
+## Stage Roadmap
+
+### Stage 1: [Feature Name] 🔴 NOT STARTED
+**Goal:** [What you're building]
+**Profile:** FULLSTACK
+**Deliverables:**
+- [ ] Backend: [API endpoint]
+- [ ] Frontend: [UI component]
+- [ ] E2E: [Integration test]
+
+**Success Criteria:**
+- All tests passing (backend + frontend + E2E)
+- Coverage ≥90% (both layers)
+- Quality gates pass
+
+### Stage 2: [Feature Name] 🔴 NOT STARTED
+**Goal:** [What you're building]
+**Profile:** BACKEND_ONLY / FRONTEND_ONLY
+**Deliverables:**
+- [ ] Deliverable 1
+- [ ] Deliverable 2
+
+---
+
+## Development Workflow
+
+### TDD Cycle (RED-GREEN-REFACTOR)
+
+**For every new feature:**
+
+1. **RED**: Write failing test
+2. **GREEN**: Write minimum code to pass
+3. **REFACTOR**: Clean up while keeping tests green
+
+### Running Tests
+
+```bash
+# Backend tests
+cd backend && [test command]
+
+# Frontend tests
+cd frontend && npm test
+
+# E2E tests
+npm run test:e2e
+
+# All tests
+npm run test:all
+```
+
+---
+
+## Coding Standards
+
+### Backend
+- [Your backend code style]
+- [API naming conventions]
+- [Error handling patterns]
+
+### Frontend
+- Components: PascalCase, one per file
+- Hooks: camelCase, prefix with `use`
+- Tests: Co-located with components
+
+### API Contract
+- [OpenAPI / GraphQL schema location]
+- [Versioning strategy]
+
+---
+
+## Quality Gates (Enforced)
+
+### Every Stage Must Pass:
+- [ ] Gate 1: No template files
+- [ ] Gate 2: Linting passes (backend + frontend)
+- [ ] Gate 3: Build succeeds (0 warnings)
+- [ ] Gate 4: Type safety (TypeScript + backend types)
+- [ ] Gate 5: All tests pass (0 failures, 0 skipped)
+- [ ] Gate 6: Code coverage ≥90% (both layers)
+- [ ] Gate 7: Security scan (0 vulnerabilities)
+- [ ] Gate 8: Proof file complete
+
+---
+
+**This is your specification. Claude Code reads it and follows it. Quality is enforced, not hoped for.**

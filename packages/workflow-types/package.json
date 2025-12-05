@@ -1,0 +1,24 @@
+{
+  "name": "@workflow/types",
+  "version": "0.1.0",
+  "description": "TypeScript type definitions for workflow resources",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist",
+    "lint": "eslint src --ext .ts"
+  },
+  "keywords": [
+    "workflow",
+    "types",
+    "kubernetes"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.19.25",
+    "typescript": "^5.9.3"
+  }
+}

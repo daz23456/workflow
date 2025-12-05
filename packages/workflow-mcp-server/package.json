@@ -1,0 +1,44 @@
+{
+  "name": "@workflow/mcp-server",
+  "version": "0.1.0",
+  "description": "MCP server for AI-powered workflow generation",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "workflow-mcp-server": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "type-check": "tsc --noEmit",
+    "lint": "eslint src tests --ext .ts",
+    "clean": "rm -rf dist coverage"
+  },
+  "keywords": [
+    "workflow",
+    "mcp",
+    "ai",
+    "generation"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.71.0",
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "yaml": "^2.3.4",
+    "zod": "^4.1.13"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@vitest/coverage-v8": "^2.1.0",
+    "eslint": "^8.57.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.0.0",
+    "vitest": "^2.1.0"
+  }
+}

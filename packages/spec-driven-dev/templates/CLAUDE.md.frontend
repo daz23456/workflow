@@ -1,0 +1,187 @@
+# CLAUDE.md - [Your Project Name]
+
+## Project Overview
+
+Build [YOUR PROJECT DESCRIPTION].
+
+**Technology Stack:**
+- Framework: [React 18 / Vue 3 / Angular / Next.js / etc.]
+- Language: TypeScript
+- Styling: [Tailwind CSS / CSS Modules / styled-components / etc.]
+- State: [Redux / Zustand / React Query / etc.]
+- Testing: [Vitest / Jest / React Testing Library / Playwright]
+- CI/CD: [GitHub Actions / GitLab CI / etc.]
+
+**Non-Negotiable Requirements:**
+- ✅ Test-first development (RED-GREEN-REFACTOR)
+- ✅ ≥90% code coverage enforced
+- ✅ Zero tolerance for test failures
+- ✅ No skipped tests
+- ✅ Quality gates must pass before stage completion
+
+---
+
+## Stage Execution Protocol
+
+### Every Stage: 3 Commands
+
+```bash
+# 1. BEFORE: Initialize
+./scripts/init-stage.sh --stage X.X --name "Feature Name" --profile FRONTEND
+
+# 2. DURING: Implement with TDD (RED → GREEN → REFACTOR)
+
+# 3. AFTER: Run gates then complete
+./scripts/run-quality-gates.sh --stage X.X 1 2 3 4 5 6 7 8
+./scripts/complete-stage.sh --stage X.X --name "Feature Name"
+```
+
+### Context Recovery
+
+```bash
+cat stage-proofs/stage-X/.stage-state.yaml
+```
+
+---
+
+## Project Structure
+
+```
+your-project/
+├── src/
+│   ├── components/
+│   │   ├── ui/              # Reusable UI components
+│   │   └── features/        # Feature-specific components
+│   ├── hooks/               # Custom hooks
+│   ├── lib/                 # Utilities and helpers
+│   ├── stores/              # State management
+│   └── types/               # TypeScript types
+├── tests/
+│   ├── unit/
+│   └── e2e/
+├── stage-proofs/
+├── scripts/
+├── CLAUDE.md
+└── README.md
+```
+
+---
+
+## Stage Roadmap
+
+### Stage 1: [Feature Name] 🔴 NOT STARTED
+**Goal:** [What you're building]
+**Deliverables:**
+- [ ] Deliverable 1
+- [ ] Deliverable 2
+- [ ] Deliverable 3
+
+**Success Criteria:**
+- All tests passing
+- Coverage ≥90%
+- Quality gates pass
+- E2E tests pass
+
+### Stage 2: [Feature Name] 🔴 NOT STARTED
+**Goal:** [What you're building]
+**Deliverables:**
+- [ ] Deliverable 1
+- [ ] Deliverable 2
+
+---
+
+## Development Workflow
+
+### TDD Cycle (RED-GREEN-REFACTOR)
+
+**For every new feature:**
+
+1. **RED**: Write failing test
+2. **GREEN**: Write minimum code to pass
+3. **REFACTOR**: Clean up while keeping tests green
+
+### Running Tests
+
+```bash
+# Run all tests
+npm test
+
+# Run with coverage
+npm run test:coverage
+
+# Run E2E tests
+npm run test:e2e
+
+# Run specific test
+npm test -- ComponentName
+```
+
+### Type Checking
+
+```bash
+# Check types
+npx tsc --noEmit
+
+# Watch mode
+npx tsc --noEmit --watch
+```
+
+---
+
+## Component Standards
+
+### Component Structure
+```tsx
+// ComponentName.tsx
+interface ComponentNameProps {
+  // Props with descriptions
+}
+
+export function ComponentName({ ...props }: ComponentNameProps) {
+  return (
+    // JSX
+  );
+}
+```
+
+### Test Structure
+```tsx
+// ComponentName.test.tsx
+describe('ComponentName', () => {
+  it('should render correctly', () => {
+    // Arrange, Act, Assert
+  });
+
+  it('should handle user interaction', () => {
+    // Test user interactions
+  });
+});
+```
+
+---
+
+## Coding Standards
+
+- Components: PascalCase, one per file
+- Hooks: camelCase, prefix with `use`
+- Tests: Co-located with components (*.test.tsx)
+- Types: Explicit, no `any`
+- Styling: [Your CSS approach]
+
+---
+
+## Quality Gates (Enforced)
+
+### Every Stage Must Pass:
+- [ ] Gate 1: No template files
+- [ ] Gate 2: Linting passes (ESLint)
+- [ ] Gate 3: Build succeeds (0 warnings)
+- [ ] Gate 4: Type safety (TypeScript strict)
+- [ ] Gate 5: All tests pass (0 failures, 0 skipped)
+- [ ] Gate 6: Code coverage ≥90%
+- [ ] Gate 7: Security scan (npm audit)
+- [ ] Gate 8: Proof file complete
+
+---
+
+**This is your specification. Claude Code reads it and follows it. Quality is enforced, not hoped for.**

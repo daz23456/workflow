@@ -1,0 +1,1 @@
+{"version":3,"file":"WorkflowVersionDetail.d.ts","sourceRoot":"","sources":["../../src/models/WorkflowVersionDetail.ts"],"names":[],"mappings":"AAIA,MAAM,MAAM,qBAAqB,GAAG;IAChC,WAAW,CAAC,EAAE,MAAM,GAAG,IAAI,CAAC;IAC5B,SAAS,CAAC,EAAE,MAAM,CAAC;IACnB,kBAAkB,CAAC,EAAE,MAAM,GAAG,IAAI,CAAC;CACtC,CAAC"}

@@ -1,0 +1,20 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: slowresponse
+  namespace: test
+  labels:
+    workflow.io/generated-from: openapi
+    workflow.io/operation-id: SlowResponse
+  annotations:
+    workflow.io/source-path: /api/retry/slow
+spec:
+  type: http
+  http:
+    url: "http://localhost:5100/api/retry/slow"
+    method: POST
+  inputSchema:
+    type: object
+    properties:
+  outputSchema:
+    type: object

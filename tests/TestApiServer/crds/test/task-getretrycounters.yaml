@@ -1,0 +1,20 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: getretrycounters
+  namespace: test
+  labels:
+    workflow.io/generated-from: openapi
+    workflow.io/operation-id: GetRetryCounters
+  annotations:
+    workflow.io/source-path: /api/retry/counters
+spec:
+  inputSchema:
+    type: object
+    properties: {}
+  type: http
+  http:
+    url: "http://localhost:5100/api/retry/counters"
+    method: GET
+  outputSchema:
+    type: object

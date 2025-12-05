@@ -98,6 +98,14 @@ public class WorkflowTaskStep
     [JsonPropertyName("switch")]
     public SwitchSpec? Switch { get; set; }
 
+    /// <summary>
+    /// Optional forEach for array iteration.
+    /// Executes the task for each item in the array.
+    /// </summary>
+    [YamlMember(Alias = "forEach")]
+    [JsonPropertyName("forEach")]
+    public ForEachSpec? ForEach { get; set; }
+
     [YamlMember(Alias = "timeout")]
     [JsonPropertyName("timeout")]
     public string? Timeout { get; set; }

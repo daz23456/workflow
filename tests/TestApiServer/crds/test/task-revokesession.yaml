@@ -1,0 +1,24 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: revokesession
+  namespace: test
+  labels:
+    workflow.io/generated-from: openapi
+    workflow.io/operation-id: RevokeSession
+  annotations:
+    workflow.io/source-path: /api/users/{id}/sessions/{sessionId}
+spec:
+  type: http
+  http:
+    url: "http://localhost:5100/api/users/{id}/sessions/{sessionId}"
+    method: DELETE
+  inputSchema:
+    type: object
+    properties:
+      id:
+        type: string
+      sessionId:
+        type: string
+  outputSchema:
+    type: object

@@ -1,0 +1,20 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: failonce
+  namespace: test
+  labels:
+    workflow.io/generated-from: openapi
+    workflow.io/operation-id: FailOnce
+  annotations:
+    workflow.io/source-path: /api/retry/fail-once
+spec:
+  type: http
+  http:
+    url: "http://localhost:5100/api/retry/fail-once"
+    method: POST
+  inputSchema:
+    type: object
+    properties:
+  outputSchema:
+    type: object

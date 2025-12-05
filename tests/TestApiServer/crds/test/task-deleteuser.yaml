@@ -1,0 +1,22 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: deleteuser
+  namespace: test
+  labels:
+    workflow.io/generated-from: openapi
+    workflow.io/operation-id: DeleteUser
+  annotations:
+    workflow.io/source-path: /api/users/{id}
+spec:
+  type: http
+  http:
+    url: "http://localhost:5100/api/users/{id}"
+    method: DELETE
+  inputSchema:
+    type: object
+    properties:
+      id:
+        type: string
+  outputSchema:
+    type: object

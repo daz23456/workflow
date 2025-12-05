@@ -1,0 +1,81 @@
+apiVersion: workflow.example.com/v1
+kind: Workflow
+metadata:
+  name: bulk-notifications
+  namespace: test
+spec:
+  description: Bulk notification workflow - send notifications to multiple users via multiple channels
+  input:
+    type: object
+    properties:
+      recipients:
+        type: array
+        items:
+          type: string
+        description: List of email addresses to notify
+      subject:
+        type: string
+        description: Notification subject
+      message:
+        type: string
+        description: Notification message
+      channels:
+        type: array
+        items:
+          type: string
+        description: Channels to use (email, sms, push)
+    required:
+      - recipients
+      - message
+
+  tasks:
+    # Step 1: Send bulk email notifications
+    - id: send-bulk-email
+      taskRef: bulksendnotifications
+      input:
+        body:
+          channel: "email"
+          recipients: "{{input.recipients}}"
+          body: "{{input.message}}"
+          subject: "{{input.subject}}"
+
+    # Step 2: Send push notifications in parallel
+    - id: send-push-user1
+      taskRef: sendpush
+      input:
+        body:
+          userId: "1"
+          title: "{{input.subject}}"
+          body: "{{input.message}}"
+
+    # Step 3: Send push to user 2 in parallel with user 1
+    - id: send-push-user2
+      taskRef: sendpush
+      input:
+        body:
+          userId: "2"
+          title: "{{input.subject}}"
+          body: "{{input.message}}"
+
+    # Step 4: Send SMS notification
+    - id: send-sms
+      taskRef: sendsms
+      input:
+        body:
+          phoneNumber: "+1234567890"
+          message: "{{input.message}}"
+
+    # Step 5: Get notification history to verify sends
+    - id: get-history
+      taskRef: getnotificationhistory
+      input:
+        limit: 10
+      dependsOn: [send-bulk-email, send-push-user1, send-push-user2, send-sms]
+
+  output:
+    bulkEmailResult:
+      totalSent: "{{tasks.send-bulk-email.output.totalSent}}"
+    pushNotifications:
+      - "{{tasks.send-push-user1.output.notificationId}}"
+      - "{{tasks.send-push-user2.output.notificationId}}"
+    smsNotificationId: "{{tasks.send-sms.output.notificationId}}"

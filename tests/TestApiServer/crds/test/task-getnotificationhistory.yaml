@@ -1,0 +1,26 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: getnotificationhistory
+  namespace: test
+  labels:
+    workflow.io/generated-from: openapi
+    workflow.io/operation-id: GetNotificationHistory
+  annotations:
+    workflow.io/source-path: /api/notifications/history
+spec:
+  type: http
+  http:
+    url: "http://localhost:5100/api/notifications/history"
+    method: GET
+  inputSchema:
+    type: object
+    properties:
+      userId:
+        type: string
+      channel:
+        type: string
+      limit:
+        type: integer
+  outputSchema:
+    type: object

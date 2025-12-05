@@ -107,6 +107,24 @@ Workflow Operator is a Kubernetes operator that enables composable workflow orch
 - **Fail-Fast Validation**: Validation webhooks reject invalid workflows at `kubectl apply` time
 - **Production-Ready**: >90% test coverage, comprehensive mutation testing, strict TDD development
 
+## Screenshots
+
+### Homepage
+![Homepage](docs/screenshots/01-homepage.png)
+*Landing page highlighting the composable workflow approach*
+
+### Visual Workflow Builder
+![Workflow Builder](docs/screenshots/03-workflow-builder.png)
+*Drag-and-drop workflow creation with task library sidebar*
+
+### Galaxy Visualization
+![Galaxy Visualization](docs/screenshots/05-galaxy-visualization.png)
+*3D namespace galaxy showing workflow clusters by team*
+
+### System Dashboard
+![Dashboard](docs/screenshots/07-dashboard.png)
+*Real-time metrics, latency trends, and slowest workflow identification*
+
 ## Architecture
 
 The project consists of three main components:

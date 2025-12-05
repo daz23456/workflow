@@ -1,0 +1,79 @@
+apiVersion: workflow.example.com/v1
+kind: Workflow
+metadata:
+  name: payment-capture
+  namespace: test
+spec:
+  description: Payment authorization and capture workflow with retry handling
+  input:
+    type: object
+    properties:
+      userId:
+        type: string
+        description: User ID making the payment
+      amount:
+        type: number
+        description: Payment amount
+      paymentMethodId:
+        type: string
+        description: Payment method to use
+    required:
+      - userId
+      - amount
+      - paymentMethodId
+
+  tasks:
+    # Step 1: Validate the card first
+    - id: validate-card
+      taskRef: validatecard
+      input:
+        body:
+          cardNumber: "4111111111111111"
+          expiryMonth: 12
+          expiryYear: 2025
+          cvv: "123"
+
+    # Step 2: Authorize the payment (hold funds)
+    - id: authorize-payment
+      taskRef: authorizepayment
+      input:
+        body:
+          userId: "{{input.userId}}"
+          amount: "{{input.amount}}"
+          paymentMethodId: "{{input.paymentMethodId}}"
+      dependsOn: [validate-card]
+
+    # Step 3: Get user balance before capture
+    - id: get-balance
+      taskRef: getbalance
+      input:
+        userId: "{{input.userId}}"
+      dependsOn: [authorize-payment]
+
+    # Step 4: Capture the authorized payment
+    - id: capture-payment
+      taskRef: capturepayment
+      input:
+        body:
+          paymentId: "{{tasks.authorize-payment.output.paymentId}}"
+      dependsOn: [get-balance]
+      retryPolicy:
+        maxAttempts: 3
+        backoffMultiplier: 2
+        initialDelayMs: 1000
+
+    # Step 5: Send payment confirmation
+    - id: send-confirmation
+      taskRef: sendemail
+      input:
+        body:
+          to: "user@example.com"
+          subject: "Payment Confirmed"
+          body: "Your payment of ${{input.amount}} has been processed. Transaction ID: {{tasks.capture-payment.output.paymentId}}"
+      dependsOn: [capture-payment]
+
+  output:
+    paymentId: "{{tasks.authorize-payment.output.paymentId}}"
+    authorizationCode: "{{tasks.authorize-payment.output.authorizationCode}}"
+    capturedAmount: "{{tasks.capture-payment.output.capturedAmount}}"
+    status: "{{tasks.capture-payment.output.status}}"

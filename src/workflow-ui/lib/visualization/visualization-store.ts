@@ -13,6 +13,7 @@ import { create } from 'zustand';
 import type { ThemePresetName, SignalFlowPresetName, NodeSizeModeName } from './theme';
 
 export type LayoutMode = 'radial' | 'stacked' | 'hub-spoke';
+export type PerformanceMode = 'quality' | 'performance';
 
 // Export for use in other components
 export { type LayoutMode as VisualizationLayoutMode };
@@ -54,6 +55,7 @@ export interface VisualizationState {
   signalFlowPreset: SignalFlowPresetName;
   nodeSizeMode: NodeSizeModeName;
   layoutMode: LayoutMode;
+  performanceMode: PerformanceMode;
 
   // Graph data
   nodes: Map<string, VisualizationNode>;
@@ -71,6 +73,7 @@ export interface VisualizationState {
   setSignalFlowPreset: (preset: SignalFlowPresetName) => void;
   setNodeSizeMode: (mode: NodeSizeModeName) => void;
   setLayoutMode: (mode: LayoutMode) => void;
+  setPerformanceMode: (mode: PerformanceMode) => void;
 
   // Actions - Nodes
   addNode: (node: VisualizationNode) => void;
@@ -110,6 +113,7 @@ const initialState = {
   signalFlowPreset: 'particle-stream' as SignalFlowPresetName,
   nodeSizeMode: 'uniform' as NodeSizeModeName,
   layoutMode: 'radial' as LayoutMode,
+  performanceMode: 'quality' as PerformanceMode,
   nodes: new Map<string, VisualizationNode>(),
   edges: [] as VisualizationEdge[],
   activeSignals: [] as ActiveSignal[],
@@ -232,6 +236,10 @@ export const useVisualizationStore = create<VisualizationState>((set, get) => ({
 
   setLayoutMode: (mode: LayoutMode) => {
     set({ layoutMode: mode });
+  },
+
+  setPerformanceMode: (mode: PerformanceMode) => {
+    set({ performanceMode: mode });
   },
 
   addNode: (node: VisualizationNode) => {
@@ -380,6 +388,8 @@ export const useNodeSizeMode = () =>
   useVisualizationStore((state) => state.nodeSizeMode);
 export const useLayoutMode = () =>
   useVisualizationStore((state) => state.layoutMode);
+export const usePerformanceMode = () =>
+  useVisualizationStore((state) => state.performanceMode);
 export const useVisualizationNodes = () =>
   useVisualizationStore((state) => state.nodes);
 export const useVisualizationEdges = () =>

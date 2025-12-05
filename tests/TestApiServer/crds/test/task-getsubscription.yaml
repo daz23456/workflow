@@ -1,0 +1,22 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: getsubscription
+  namespace: test
+  labels:
+    workflow.io/generated-from: openapi
+    workflow.io/operation-id: GetSubscription
+  annotations:
+    workflow.io/source-path: /api/payments/subscription/{id}
+spec:
+  type: http
+  http:
+    url: "http://localhost:5100/api/payments/subscription/{id}"
+    method: GET
+  inputSchema:
+    type: object
+    properties:
+      id:
+        type: string
+  outputSchema:
+    type: object

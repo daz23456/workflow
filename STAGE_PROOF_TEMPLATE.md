@@ -32,6 +32,7 @@
 - [👔 Principal Engineer Review](#-principal-engineer-review)
 - [💎 Value Delivered](#-value-delivered)
 - [📦 Committed Artifacts](#-committed-artifacts)
+- [📸 UI Screenshots](#-ui-screenshots-frontend_ts-only)
 - [🔄 Integration Status](#-integration-status)
 - [🚀 Ready for Next Stage](#-ready-for-next-stage)
 
@@ -72,7 +73,7 @@
 | 9 | Mutation Testing ≥80% | [✅ XX% / ⚠️ XX% / ⏭️ Skipped] |
 | 10 | Documentation | [✅ PASS / ⏭️ Skipped] |
 
-### TIER 3: Optional (Gates 11-15) - Only if selected
+### TIER 3: Optional (Gates 11-22) - Only if selected
 | Gate | Name | Result |
 |------|------|--------|
 | 11 | Integration Tests | [✅ PASS / ⏭️ N/A] |
@@ -80,6 +81,8 @@
 | 13 | API Contract | [✅ PASS / ⏭️ N/A] |
 | 14 | Accessibility (UI only) | [✅ PASS / ⏭️ N/A] |
 | 15 | E2E Tests | [✅ PASS / ⏭️ N/A] |
+| 21 | Storybook Stories (UI only) | [✅ PASS / ⏭️ N/A] |
+| 22 | UI Screenshots (UI only) | [✅ PASS / ⏭️ N/A] |
 
 **Gate Selection Rationale:**
 > [Which optional gates were run and why. Example: "BACKEND_DOTNET profile. Gates 11, 13 run for API validation. Gates 14-15 skipped (no UI)."]
@@ -296,6 +299,7 @@ Time Elapsed 00:00:03.42
 - [ ] E2E reports: `./reports/playwright/index.html` (Gate 15)
 - [ ] Accessibility: `./reports/lighthouse/report.html` (Gate 14)
 - [ ] Benchmarks: `./reports/benchmarks/report.html` (Gate 12)
+- [ ] UI Screenshots: `./screenshots/*.png` (Gate 22, FRONTEND_TS profile)
 
 **Verification:**
 ```bash
@@ -309,6 +313,31 @@ ls -la ./reports/test-results/test-results.xml
 - [ ] All artifact links in proof file point to committed files
 - [ ] Links use relative paths (`./reports/...`)
 - [ ] No broken links when viewed in GitHub/GitLab web UI
+
+---
+
+## 📸 UI Screenshots (FRONTEND_TS only)
+
+**Required for stages with UI components:**
+
+| Screenshot | Description | Path |
+|------------|-------------|------|
+| [Component Name] - Default | Default state rendering | `./screenshots/component-default.png` |
+| [Component Name] - Loading | Loading state | `./screenshots/component-loading.png` |
+| [Component Name] - Error | Error state | `./screenshots/component-error.png` |
+| [Component Name] - Empty | Empty/no data state | `./screenshots/component-empty.png` |
+| [Page Name] - Integration | Full page with component | `./screenshots/page-integration.png` |
+
+**Verification:**
+- [ ] All new UI components have screenshots
+- [ ] Screenshots show all significant states (default, loading, error, empty)
+- [ ] Screenshots are committed to `stage-proofs/stage-X/screenshots/`
+- [ ] Screenshots use descriptive filenames (`{component}-{state}.png`)
+
+**How to Capture:**
+- Manual: Browser DevTools → Right-click → "Capture screenshot"
+- Playwright: `await page.screenshot({ path: 'screenshot.png' })`
+- Storybook: Use Chromatic or `npx storycap` for automated capture
 
 ---
 

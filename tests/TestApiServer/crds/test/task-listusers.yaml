@@ -1,0 +1,24 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: listusers
+  namespace: test
+  labels:
+    workflow.io/generated-from: openapi
+    workflow.io/operation-id: ListUsers
+  annotations:
+    workflow.io/source-path: /api/users
+spec:
+  type: http
+  http:
+    url: "http://localhost:5100/api/users"
+    method: GET
+  inputSchema:
+    type: object
+    properties:
+      limit:
+        type: integer
+      offset:
+        type: integer
+  outputSchema:
+    type: object

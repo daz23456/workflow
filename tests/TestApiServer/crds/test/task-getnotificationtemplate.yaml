@@ -1,0 +1,22 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: getnotificationtemplate
+  namespace: test
+  labels:
+    workflow.io/generated-from: openapi
+    workflow.io/operation-id: GetNotificationTemplate
+  annotations:
+    workflow.io/source-path: /api/notifications/templates/{id}
+spec:
+  type: http
+  http:
+    url: "http://localhost:5100/api/notifications/templates/{id}"
+    method: GET
+  inputSchema:
+    type: object
+    properties:
+      id:
+        type: string
+  outputSchema:
+    type: object

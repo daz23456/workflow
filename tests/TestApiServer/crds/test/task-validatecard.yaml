@@ -1,0 +1,20 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: validatecard
+  namespace: test
+  labels:
+    workflow.io/generated-from: openapi
+    workflow.io/operation-id: ValidateCard
+  annotations:
+    workflow.io/source-path: /api/payments/validate-card
+spec:
+  type: http
+  http:
+    url: "http://localhost:5100/api/payments/validate-card"
+    method: POST
+  inputSchema:
+    type: object
+    properties:
+  outputSchema:
+    type: object

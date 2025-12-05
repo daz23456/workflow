@@ -1,0 +1,20 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: circuitbreakersimulation
+  namespace: test
+  labels:
+    workflow.io/generated-from: openapi
+    workflow.io/operation-id: CircuitBreakerSimulation
+  annotations:
+    workflow.io/source-path: /api/retry/circuit-breaker
+spec:
+  type: http
+  http:
+    url: "http://localhost:5100/api/retry/circuit-breaker"
+    method: POST
+  inputSchema:
+    type: object
+    properties:
+  outputSchema:
+    type: object

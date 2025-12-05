@@ -1,0 +1,29 @@
+apiVersion: workflow.example.com/v1
+kind: Workflow
+metadata:
+  name: simple-user-order
+  namespace: test
+spec:
+  description: Simple workflow - get user then get their orders
+  input:
+    type: object
+    properties:
+      userId:
+        type: string
+    required:
+      - userId
+  tasks:
+    - id: get-user
+      taskRef: getuser
+      input:
+        id: "{{input.userId}}"
+
+    - id: get-orders
+      taskRef: getuserorders
+      input:
+        id: "{{input.userId}}"
+      dependsOn: [get-user]
+
+  output:
+    userName: "{{tasks.get-user.output.name}}"
+    orderCount: "{{tasks.get-orders.output.orders.length}}"

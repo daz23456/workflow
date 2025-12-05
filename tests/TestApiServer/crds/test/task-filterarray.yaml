@@ -1,0 +1,20 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: filterarray
+  namespace: test
+  labels:
+    workflow.io/generated-from: openapi
+    workflow.io/operation-id: FilterArray
+  annotations:
+    workflow.io/source-path: /api/arrays/filter
+spec:
+  type: http
+  http:
+    url: "http://localhost:5100/api/arrays/filter"
+    method: POST
+  inputSchema:
+    type: object
+    properties:
+  outputSchema:
+    type: object

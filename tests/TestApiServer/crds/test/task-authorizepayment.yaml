@@ -1,0 +1,20 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: authorizepayment
+  namespace: test
+  labels:
+    workflow.io/generated-from: openapi
+    workflow.io/operation-id: AuthorizePayment
+  annotations:
+    workflow.io/source-path: /api/payments/authorize
+spec:
+  type: http
+  http:
+    url: "http://localhost:5100/api/payments/authorize"
+    method: POST
+  inputSchema:
+    type: object
+    properties:
+  outputSchema:
+    type: object

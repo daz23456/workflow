@@ -65,9 +65,130 @@ public class TemplateResolver : ITemplateResolver
             return ResolveInputPath(path, taskOutput, expression);
         }
 
+        // Handle {{forEach.x}} templates (item variable or index)
+        if (parts[0] == "forEach")
+        {
+            return ResolveForEachExpression(parts, context, expression);
+        }
+
         throw new TemplateResolutionException(
             $"Unknown template expression type: {expression}",
             expression);
+    }
+
+    private string ResolveForEachExpression(string[] parts, TemplateContext context, string originalExpression)
+    {
+        if (context.ForEach == null)
+        {
+            throw new TemplateResolutionException(
+                "forEach template used outside of forEach context",
+                originalExpression);
+        }
+
+        var forEachContext = context.ForEach;
+
+        // Handle {{forEach.index}}
+        if (parts[1] == "index")
+        {
+            return forEachContext.Index.ToString();
+        }
+
+        // Handle {{forEach.{itemVar}}} or {{forEach.{itemVar}.property}}
+        if (parts[1] == forEachContext.ItemVar)
+        {
+            // If just the item variable, return the whole item
+            if (parts.Length == 2)
+            {
+                return SerializeValue(forEachContext.CurrentItem);
+            }
+
+            // Otherwise, navigate into the item
+            var path = string.Join(".", parts.Skip(2));
+            return ResolveItemPath(path, forEachContext.CurrentItem, originalExpression);
+        }
+
+        throw new TemplateResolutionException(
+            $"Unknown forEach property: {parts[1]}. Expected 'index' or '{forEachContext.ItemVar}'",
+            originalExpression);
+    }
+
+    private string ResolveItemPath(string path, object? item, string originalExpression)
+    {
+        if (item == null)
+        {
+            return string.Empty;
+        }
+
+        // If item is a dictionary, use the existing path resolution
+        if (item is Dictionary<string, object> dict)
+        {
+            return ResolveInputPath(path, dict, originalExpression);
+        }
+
+        // Handle JsonElement
+        if (item is JsonElement jsonElement)
+        {
+            if (jsonElement.ValueKind == JsonValueKind.Object)
+            {
+                // Convert to dictionary and resolve
+                var itemDict = JsonElementToDictionary(jsonElement);
+                return ResolveInputPath(path, itemDict, originalExpression);
+            }
+        }
+
+        // For simple types, we can't navigate further
+        throw new TemplateResolutionException(
+            $"Cannot navigate path '{path}' on non-object item",
+            originalExpression);
+    }
+
+    private static Dictionary<string, object> JsonElementToDictionary(JsonElement element)
+    {
+        var dict = new Dictionary<string, object>();
+        foreach (var prop in element.EnumerateObject())
+        {
+            var value = ConvertJsonElement(prop.Value);
+            if (value != null)
+            {
+                dict[prop.Name] = value;
+            }
+        }
+        return dict;
+    }
+
+    private static object? ConvertJsonElement(JsonElement element)
+    {
+        return element.ValueKind switch
+        {
+            JsonValueKind.String => element.GetString(),
+            JsonValueKind.Number => element.TryGetInt64(out var l) ? l : element.GetDouble(),
+            JsonValueKind.True => true,
+            JsonValueKind.False => false,
+            JsonValueKind.Null => null,
+            JsonValueKind.Object => JsonElementToDictionary(element),
+            JsonValueKind.Array => element.EnumerateArray().Select(ConvertJsonElement).ToList(),
+            _ => element.GetRawText()
+        };
+    }
+
+    private static string SerializeValue(object? value)
+    {
+        if (value == null)
+        {
+            return string.Empty;
+        }
+
+        if (value is string str)
+        {
+            return str;
+        }
+
+        if (value is int or long or double or float or decimal or bool)
+        {
+            return value.ToString() ?? string.Empty;
+        }
+
+        return JsonSerializer.Serialize(value);
     }
 
     private string ResolveInputPath(string path, Dictionary<string, object> data, string originalExpression)

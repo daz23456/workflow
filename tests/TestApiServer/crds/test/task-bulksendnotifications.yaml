@@ -1,0 +1,20 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: bulksendnotifications
+  namespace: test
+  labels:
+    workflow.io/generated-from: openapi
+    workflow.io/operation-id: BulkSendNotifications
+  annotations:
+    workflow.io/source-path: /api/notifications/bulk
+spec:
+  type: http
+  http:
+    url: "http://localhost:5100/api/notifications/bulk"
+    method: POST
+  inputSchema:
+    type: object
+    properties:
+  outputSchema:
+    type: object

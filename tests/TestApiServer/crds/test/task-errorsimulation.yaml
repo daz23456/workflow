@@ -1,0 +1,22 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: errorsimulation
+  namespace: test
+  labels:
+    workflow.io/generated-from: openapi
+    workflow.io/operation-id: ErrorSimulation
+  annotations:
+    workflow.io/source-path: /api/retry/error/{statusCode}
+spec:
+  type: http
+  http:
+    url: "http://localhost:5100/api/retry/error/{statusCode}"
+    method: POST
+  inputSchema:
+    type: object
+    properties:
+      statusCode:
+        type: integer
+  outputSchema:
+    type: object

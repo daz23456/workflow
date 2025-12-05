@@ -1,0 +1,72 @@
+apiVersion: workflow.example.com/v1
+kind: Workflow
+metadata:
+  name: user-onboarding
+  namespace: test
+spec:
+  description: User onboarding workflow - register, set preferences, send welcome email
+  input:
+    type: object
+    properties:
+      email:
+        type: string
+        description: User email address
+      name:
+        type: string
+        description: User display name
+      password:
+        type: string
+        description: User password
+    required:
+      - email
+      - name
+      - password
+
+  tasks:
+    # Step 1: Register new user
+    - id: register-user
+      taskRef: registeruser
+      input:
+        body:
+          email: "{{input.email}}"
+          name: "{{input.name}}"
+          password: "{{input.password}}"
+
+    # Step 2: Set user preferences (parallel with profile update)
+    - id: set-preferences
+      taskRef: updateuserpreferences
+      input:
+        id: "{{tasks.register-user.output.userId}}"
+        body:
+          theme: "auto"
+          language: "en"
+          timezone: "UTC"
+          emailNotifications: true
+          pushNotifications: true
+      dependsOn: [register-user]
+
+    # Step 3: Update profile with initial info
+    - id: update-profile
+      taskRef: updateuserprofile
+      input:
+        id: "{{tasks.register-user.output.userId}}"
+        body:
+          displayName: "{{input.name}}"
+          bio: "New user"
+      dependsOn: [register-user]
+
+    # Step 4: Send welcome email notification
+    - id: send-welcome
+      taskRef: sendfromtemplate
+      input:
+        body:
+          templateId: "welcome"
+          recipient: "{{input.email}}"
+          variables:
+            name: "{{input.name}}"
+      dependsOn: [set-preferences, update-profile]
+
+  output:
+    userId: "{{tasks.register-user.output.userId}}"
+    email: "{{input.email}}"
+    welcomeNotificationId: "{{tasks.send-welcome.output.notificationId}}"

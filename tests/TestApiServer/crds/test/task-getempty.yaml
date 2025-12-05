@@ -1,0 +1,20 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: getempty
+  namespace: test
+  labels:
+    workflow.io/generated-from: openapi
+    workflow.io/operation-id: GetEmpty
+  annotations:
+    workflow.io/source-path: /api/arrays/empty
+spec:
+  inputSchema:
+    type: object
+    properties: {}
+  type: http
+  http:
+    url: "http://localhost:5100/api/arrays/empty"
+    method: GET
+  outputSchema:
+    type: object

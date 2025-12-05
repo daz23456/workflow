@@ -1,0 +1,20 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: login
+  namespace: test
+  labels:
+    workflow.io/generated-from: openapi
+    workflow.io/operation-id: Login
+  annotations:
+    workflow.io/source-path: /api/users/login
+spec:
+  type: http
+  http:
+    url: "http://localhost:5100/api/users/login"
+    method: POST
+  inputSchema:
+    type: object
+    properties:
+  outputSchema:
+    type: object

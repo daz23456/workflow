@@ -111,7 +111,7 @@ dotnet tool list -g
 |------------|----------------|-------------|----------|
 | .NET Backend | 1-8 | 9, 10 | 11, 13 |
 | .NET API | 1-8 | 9, 10 | 11, 13, 16 |
-| TypeScript UI | 1-8, 14, 15, 21 | 9, 10 | - |
+| TypeScript UI | 1-8, 14, 15, 21, 22 | 9, 10 | - |
 | TypeScript Backend | 1-8 | 9, 10 | 11 |
 | Performance-Critical | 1-8 | 9, 10 | 12 |
 | CLI Tool | 1-8 | 9, 10 | - |
@@ -120,7 +120,7 @@ dotnet tool list -g
 **Gate Numbers:**
 - **1-8:** Mandatory (TIER 1) - Note: Gate 4 is TypeScript only
 - **9-10:** Recommended (TIER 2)
-- **11-20:** Optional (TIER 3)
+- **11-22:** Optional (TIER 3)
 
 **Execution Order:** Always run gates in numeric order: **1 → 2 → 3 → (4 for TS) → 5 → 6 → 7 → 8**
 
@@ -791,7 +791,8 @@ TIER 3: OPTIONAL (11 gates - context-dependent)
 ├── Gate 18: Code Complexity Analysis
 ├── Gate 19: Dependency Freshness
 ├── Gate 20: Beginner Path
-└── Gate 21: Storybook Stories (UI - MANDATORY for FRONTEND_TS)
+├── Gate 21: Storybook Stories (UI - MANDATORY for FRONTEND_TS)
+└── Gate 22: UI Screenshots (UI - MANDATORY for FRONTEND_TS)
 ```
 
 ---
@@ -1654,6 +1655,81 @@ fi
 **Artifacts:**
 - `./stage-proofs/stage-X/reports/gates/gate-21-storybook.txt`
 - `./storybook-static/` (generated, not committed)
+
+</details>
+
+---
+
+<details>
+<summary><strong>Gate 22: UI Screenshots</strong> (MANDATORY for FRONTEND_TS)</summary>
+
+**When to Use:** ALL TypeScript UI stages (FRONTEND_TS profile)
+
+**Why:** Screenshots provide visual verification that UI components render correctly, create documentation for review, establish an audit trail showing what was built, and help future developers understand the visual intent.
+
+**Verification:**
+```bash
+STAGE_NUM=X
+
+# 1. Check for screenshots directory
+echo "=== UI Screenshots Gate ===" | tee ./stage-proofs/stage-$STAGE_NUM/reports/gates/gate-22-screenshots.txt
+
+SCREENSHOT_DIR="./stage-proofs/stage-$STAGE_NUM/screenshots"
+if [ ! -d "$SCREENSHOT_DIR" ]; then
+  echo "❌ Screenshots directory missing: $SCREENSHOT_DIR" | tee -a ./stage-proofs/stage-$STAGE_NUM/reports/gates/gate-22-screenshots.txt
+  exit 1
+fi
+
+# 2. Count screenshots
+SCREENSHOT_COUNT=$(find "$SCREENSHOT_DIR" -name "*.png" -o -name "*.jpg" | wc -l | tr -d ' ')
+echo "Total Screenshots: $SCREENSHOT_COUNT" | tee -a ./stage-proofs/stage-$STAGE_NUM/reports/gates/gate-22-screenshots.txt
+
+if [ "$SCREENSHOT_COUNT" -eq 0 ]; then
+  echo "❌ No screenshots found in $SCREENSHOT_DIR" | tee -a ./stage-proofs/stage-$STAGE_NUM/reports/gates/gate-22-screenshots.txt
+  exit 1
+fi
+
+# 3. List all screenshots
+echo "" | tee -a ./stage-proofs/stage-$STAGE_NUM/reports/gates/gate-22-screenshots.txt
+echo "Screenshots captured:" | tee -a ./stage-proofs/stage-$STAGE_NUM/reports/gates/gate-22-screenshots.txt
+find "$SCREENSHOT_DIR" -name "*.png" -o -name "*.jpg" | while read f; do
+  echo "  ✅ $(basename $f)" | tee -a ./stage-proofs/stage-$STAGE_NUM/reports/gates/gate-22-screenshots.txt
+done
+
+echo "" | tee -a ./stage-proofs/stage-$STAGE_NUM/reports/gates/gate-22-screenshots.txt
+echo "✅ Gate 22 PASSED: $SCREENSHOT_COUNT screenshots captured" | tee -a ./stage-proofs/stage-$STAGE_NUM/reports/gates/gate-22-screenshots.txt
+```
+
+**Required Screenshots:**
+- **Component States:** Default, loading, error, empty states for each new component
+- **Integration Views:** Full page views showing component in context
+- **Before/After:** For visual changes to existing components
+
+**Naming Convention:**
+```
+{component-name}-{state}.png
+Examples:
+  latency-chart-default.png
+  latency-chart-loading.png
+  latency-chart-empty.png
+  dashboard-page-integration.png
+```
+
+**Pass Criteria:**
+- ✅ Screenshots directory exists at `./stage-proofs/stage-X/screenshots/`
+- ✅ At least one screenshot per new UI component
+- ✅ Screenshots show all significant states (default, loading, error, empty)
+- ✅ Screenshots use descriptive filenames following naming convention
+- ❌ BLOCKER if no screenshots exist for UI stages
+
+**How to Capture:**
+- **Manual:** Browser DevTools → Right-click → "Capture screenshot"
+- **Playwright:** `await page.screenshot({ path: 'screenshot.png' })`
+- **Storybook:** Use Chromatic or `npx storycap` for automated capture
+
+**Artifacts:**
+- `./stage-proofs/stage-X/screenshots/*.png`
+- `./stage-proofs/stage-X/reports/gates/gate-22-screenshots.txt`
 
 </details>
 

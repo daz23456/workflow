@@ -1,0 +1,36 @@
+apiVersion: workflow.example.com/v1
+kind: Workflow
+metadata:
+  name: order-lookup
+  namespace: test
+spec:
+  description: Look up order details with invoice and total calculation
+  input:
+    type: object
+    properties:
+      orderId:
+        type: string
+    required:
+      - orderId
+  tasks:
+    - id: get-order
+      taskRef: getorder
+      input:
+        id: "{{input.orderId}}"
+
+    - id: get-invoice
+      taskRef: getorderinvoice
+      input:
+        id: "{{input.orderId}}"
+      dependsOn: [get-order]
+
+    - id: calc-total
+      taskRef: calculateordertotal
+      input:
+        id: "{{input.orderId}}"
+      dependsOn: [get-order]
+
+  output:
+    order: "{{tasks.get-order.output}}"
+    invoice: "{{tasks.get-invoice.output}}"
+    calculatedTotal: "{{tasks.calc-total.output.total}}"

@@ -471,7 +471,10 @@ public class ForEachFrame
 
 ---
 
-# Stage 20: Workflow Triggers & Scheduling
+# Stage 20: Workflow Triggers & Scheduling ✅ COMPLETE
+
+**Status:** 2 substages complete
+**Proof:** `stage-proofs/stage-20.2/STAGE_20.2_PROOF.md`
 
 ## Overview
 
@@ -537,7 +540,10 @@ spec:
 
 ---
 
-# Stage 21: Sub-Workflow Composition
+# Stage 21: Sub-Workflow Composition ✅ COMPLETE
+
+**Status:** 2 substages complete
+**Proof:** `stage-proofs/stage-21.2/STAGE_21.2_PROOF.md`
 
 ## Overview
 
@@ -827,7 +833,10 @@ Declarative workflow management via Git repositories.
 
 ---
 
-# Stage 25: Local Development CLI
+# Stage 25: Local Development CLI ✅ COMPLETE
+
+**Status:** 2 substages complete
+**Proof:** `stage-proofs/stage-25.1/STAGE_25.1_PROOF.md`
 
 ## Overview
 
@@ -912,7 +921,10 @@ workflow logs my-workflow --execution abc123 --follow
 
 ---
 
-# Stage 26: VS Code Extension
+# Stage 26: VS Code Extension ✅ COMPLETE
+
+**Status:** Complete
+**Proof:** `stage-proofs/stage-26/STAGE_26_PROOF.md`
 
 ## Overview
 
@@ -968,7 +980,10 @@ IDE integration for workflow authoring with IntelliSense and validation.
 
 ---
 
-# Stage 27: Anomaly Detection & Alerting
+# Stage 27: Anomaly Detection & Alerting ✅ COMPLETE
+
+**Status:** 2 substages complete
+**Proof:** `stage-proofs/stage-27.2/STAGE_27.2_PROOF.md`
 
 ## Overview
 
@@ -1045,7 +1060,10 @@ spec:
 
 ---
 
-# Stage 28: Circuit Breaker & Resilience
+# Stage 28: Circuit Breaker & Resilience ✅ COMPLETE
+
+**Status:** Complete
+**Proof:** `stage-proofs/stage-28/STAGE_28_PROOF.md`
 
 ## Overview
 
@@ -1390,6 +1408,231 @@ Runtime analysis of task error responses against quality best practices, with st
 
 ---
 
+# Stage 32: Data Management
+
+## Overview
+
+Comprehensive data management for the workflow engine:
+1. **CR Persistence** (32.1-32.3): Sync Workflow/Task CRs to PostgreSQL for fast restarts and rich queries
+2. **Data Retention** (32.4-32.6): Configurable cleanup of execution data
+
+## Architecture
+
+```
+kubectl apply → K8s etcd (source of truth)
+                    ↓
+               Operator watches
+                    ↓
+               PostgreSQL (synced cache)
+                    ↓
+    ┌───────────────────────────────────────┐
+    │ Fast restarts (10k CRs in <5s)        │
+    │ Rich queries (search, filter, stats)  │
+    │ Retention policies & cleanup          │
+    └───────────────────────────────────────┘
+```
+
+---
+
+## Part 1: CR Persistence (32.1-32.3)
+
+### Stage 32.1: CR Persistence Layer
+**Focus**: Sync Workflow/Task CRs to PostgreSQL on reconcile
+**Profile**: `BACKEND_DOTNET`, Gates 1-8
+**Tests**: ~25
+
+#### New Files
+| File | Purpose |
+|------|---------|
+| `src/WorkflowCore/Data/WorkflowDefinition.cs` | EF entity for Workflow CR |
+| `src/WorkflowCore/Data/TaskDefinition.cs` | EF entity for WorkflowTask CR |
+| `src/WorkflowCore/Services/ICRPersistenceService.cs` | Interface |
+| `src/WorkflowCore/Services/CRPersistenceService.cs` | Sync logic |
+| `tests/WorkflowCore.Tests/Services/CRPersistenceServiceTests.cs` | Unit tests |
+
+#### Modified Files
+| File | Changes |
+|------|---------|
+| `src/WorkflowCore/Data/WorkflowDbContext.cs` | Add WorkflowDefinitions, TaskDefinitions DbSets |
+| `src/WorkflowOperator/Controllers/WorkflowController.cs` | Call persistence on reconcile |
+| `src/WorkflowOperator/Controllers/WorkflowTaskController.cs` | Call persistence on reconcile |
+
+#### Features
+- Upsert on reconcile (create or update)
+- Delete on CR deletion
+- Store full spec as JSON + key fields indexed
+- Track sync timestamp and K8s resourceVersion
+
+---
+
+### Stage 32.2: Fast Startup & Delta Sync
+**Focus**: Load from PostgreSQL on startup, delta-sync with K8s
+**Profile**: `BACKEND_DOTNET`, Gates 1-8
+**Tests**: ~20
+
+#### New Files
+| File | Purpose |
+|------|---------|
+| `src/WorkflowOperator/Services/StartupSyncService.cs` | Fast startup logic |
+| `tests/WorkflowOperator.Tests/Services/StartupSyncServiceTests.cs` | Unit tests |
+
+#### Startup Flow
+1. Load all CRs from PostgreSQL (fast, local)
+2. List CRs from K8s API with resourceVersion
+3. Delta-sync: add missing, update changed, remove deleted
+4. Resume normal watch
+
+#### Performance Target
+- 10k CRs: <5 seconds startup (vs 30-60s from K8s only)
+
+---
+
+### Stage 32.3: Query API
+**Focus**: Rich queries for UI and analytics
+**Profile**: `BACKEND_DOTNET`, Gates 1-8
+**Tests**: ~20
+
+#### API Endpoints
+```
+GET /api/v1/workflows?search=order&namespace=prod&limit=50
+GET /api/v1/workflows/stats          # Count by namespace, by status
+GET /api/v1/tasks?usedBy=workflow    # Tasks used by a workflow
+GET /api/v1/tasks/unused             # Tasks not referenced by any workflow
+```
+
+#### Benefits
+- Fast filtering/search (vs K8s label selectors only)
+- Cross-resource queries (which workflows use this task?)
+- Aggregations (count by namespace, execution stats join)
+
+---
+
+## Part 2: Data Retention (32.4-32.6)
+
+### Retention Hierarchy
+
+```
+SystemDefault (30d/14d/7d)
+  |
+  +-- TenantPolicy (overrides system default)
+        |
+        +-- WorkflowPolicy (only applies if tenant not set)
+```
+
+### YAML Syntax
+
+```yaml
+# Tenant-level default
+apiVersion: workflow.io/v1
+kind: WorkflowTenant
+metadata:
+  name: acme-corp
+spec:
+  dataRetention:
+    executionHistory: 30d
+    taskTraces: 14d
+    apiLogs: 7d
+    cleanupSchedule: "0 2 * * *"
+
+# Per-workflow override
+apiVersion: workflow.io/v1
+kind: Workflow
+metadata:
+  name: order-processing
+spec:
+  dataRetention:
+    executionHistory: 90d    # Compliance requirement
+    taskTraces: 30d
+    apiLogs: 14d
+```
+
+---
+
+### Stage 32.4: Retention Configuration Model
+**Focus**: Models and hierarchy resolution for retention policies
+**Profile**: `BACKEND_DOTNET`, Gates 1-8
+**Tests**: ~20
+
+#### New Files
+| File | Purpose |
+|------|---------|
+| `src/WorkflowCore/Models/RetentionPolicy.cs` | Retention period configuration |
+| `src/WorkflowCore/Models/RetentionScope.cs` | Data type enum (Executions, Traces, ApiLogs) |
+| `src/WorkflowCore/Services/IRetentionResolver.cs` | Interface |
+| `src/WorkflowCore/Services/RetentionResolver.cs` | Tenant > Workflow hierarchy resolution |
+| `tests/WorkflowCore.Tests/Services/RetentionResolverTests.cs` | Unit tests |
+
+#### Key Logic
+- Parse duration strings: `7d`, `30d`, `90d`, `1y`
+- Resolve: `tenant.dataRetention ?? workflow.dataRetention ?? systemDefault`
+- Validate: min 1d, max 7y
+
+---
+
+### Stage 32.5: Cleanup Service
+**Focus**: Background service for scheduled data deletion
+**Profile**: `BACKEND_DOTNET`, Gates 1-8
+**Tests**: ~25
+
+#### New Files
+| File | Purpose |
+|------|---------|
+| `src/WorkflowCore/Services/IDataRetentionService.cs` | Interface |
+| `src/WorkflowCore/Services/DataRetentionService.cs` | Cleanup orchestration |
+| `src/WorkflowCore/Services/DataRetentionBackgroundService.cs` | IHostedService |
+| `src/WorkflowCore/Data/RetentionCleanupLog.cs` | Audit trail |
+| `tests/WorkflowCore.Tests/Services/DataRetentionServiceTests.cs` | Unit tests |
+
+#### Features
+- Batch deletion (1000 records per batch)
+- Dry-run mode
+- Cleanup audit log
+- Soft delete → hard delete after 24h grace period
+
+---
+
+### Stage 32.6: Retention API & Dashboard
+**Focus**: API endpoints and UI for managing retention
+**Profile**: `BACKEND_DOTNET` + `FRONTEND_TS`, Gates 1-8, 14, 15
+**Tests**: ~30
+
+#### API Endpoints
+```
+GET  /api/v1/retention/status     # Data volume, oldest records
+GET  /api/v1/retention/policies   # Active policies
+POST /api/v1/retention/cleanup    # Trigger manual cleanup
+GET  /api/v1/retention/logs       # Cleanup history
+```
+
+#### UI Components
+| File | Purpose |
+|------|---------|
+| `src/workflow-ui/components/settings/retention-policy-editor.tsx` | Edit settings |
+| `src/workflow-ui/components/settings/retention-status.tsx` | Storage usage |
+| `src/workflow-ui/app/settings/retention/page.tsx` | Settings page |
+
+---
+
+## Summary
+
+| Substage | Focus | Tests |
+|----------|-------|-------|
+| **Part 1: CR Persistence** | | |
+| 32.1 | CR Persistence Layer | ~25 |
+| 32.2 | Fast Startup & Delta Sync | ~20 |
+| 32.3 | Query API | ~20 |
+| **Part 2: Data Retention** | | |
+| 32.4 | Retention Configuration | ~20 |
+| 32.5 | Cleanup Service | ~25 |
+| 32.6 | Retention API & Dashboard | ~30 |
+| **Total** | | **~140** |
+
+**Profile Mix**: BACKEND_DOTNET (32.1-32.5), FRONTEND_TS (32.6)
+**Coverage Target**: 90%+
+**Independence**: Part 1 and Part 2 can be implemented in parallel
+
+---
+
 # Quick Wins (Sprinkle Throughout)
 
 These can be added to existing stages or as mini-stages:
@@ -1407,38 +1650,35 @@ These can be added to existing stages or as mini-stages:
 
 # Implementation Priority
 
-## Phase 1: Core Control Flow (Start Here)
+## Phase 1: Core Control Flow (Complete)
 | Stage | Name | Tests | Priority | Status |
 |-------|------|-------|----------|--------|
 | **19** | Control Flow (forEach, if/else, switch, nesting) | ~130 | P0 | ✅ Complete |
 
-## Phase 2: Automation & Composition
-| Stage | Name | Tests | Priority |
-|-------|------|-------|----------|
-| **20** | Triggers & Scheduling | ~80 | P0 |
-| **21** | Sub-Workflow Composition | ~60 | P1 |
+## Phase 2: Core Capabilities (Complete)
+| Stage | Name | Tests | Priority | Status |
+|-------|------|-------|----------|--------|
+| **20** | Triggers & Scheduling | ~80 | P0 | ✅ Complete |
+| **21** | Sub-Workflow Composition | ~60 | P0 | ✅ Complete |
 
-## Phase 3: Enterprise Features
-| Stage | Name | Tests | Priority |
-|-------|------|-------|----------|
-| **22** | Secrets Management | ~65 | P0 |
-| **23** | Multi-Tenancy | ~70 | P1 |
-| **24** | GitOps Integration | ~50 | P2 |
+## Phase 3: Developer Experience & Reliability
+| Stage | Name | Tests | Priority | Status |
+|-------|------|-------|----------|--------|
+| **25** | Local Development CLI | ~80 | P1 | ✅ Complete |
+| **26** | VS Code Extension | ~50 | P1 | ✅ Complete |
+| **28** | Circuit Breaker | ~65 | P1 | ✅ Complete |
+| **27** | Anomaly Detection | ~70 | P1 | ✅ Complete |
+| **32** | Data Management (CR Persistence + Retention) | ~140 | P1 | Pending |
+| **30** | Dead Letter Queue | ~55 | P1 | Pending |
 
-## Phase 4: Developer Experience
+## Phase 4: Polish & Enterprise
 | Stage | Name | Tests | Priority |
 |-------|------|-------|----------|
-| **25** | Local Development CLI | ~80 | P1 |
-| **26** | VS Code Extension | ~50 | P2 |
-
-## Phase 5: Resilience & Operations
-| Stage | Name | Tests | Priority |
-|-------|------|-------|----------|
-| **27** | Anomaly Detection | ~70 | P1 |
-| **28** | Circuit Breaker | ~65 | P1 |
-| **29** | Event Sourcing | ~70 | P2 |
-| **30** | Dead Letter Queue | ~55 | P2 |
 | **31** | Error Response Quality Scoring | ~75 | P2 |
+| **29** | Event Sourcing | ~70 | P2 |
+| **22** | Secrets Management | ~65 | P2 |
+| **23** | Multi-Tenancy | ~70 | P2 |
+| **24** | GitOps Integration | ~50 | P2 |
 
 ---
 
@@ -1446,10 +1686,10 @@ These can be added to existing stages or as mini-stages:
 
 | Metric | Value |
 |--------|-------|
-| **New Stages** | 13 (Stage 19-31) |
-| **Total Substages** | 42 |
-| **Estimated Tests** | ~920 |
-| **Estimated New Files** | ~168 |
+| **New Stages** | 14 (Stage 19-32) |
+| **Total Substages** | 48 |
+| **Estimated Tests** | ~1060 |
+| **Estimated New Files** | ~190 |
 | **Coverage Target** | 90%+ per stage |
 
 This roadmap transforms the workflow engine into a **world-class, enterprise-ready orchestration platform** comparable to AWS Step Functions, Temporal, and Apache Airflow - but Kubernetes-native and synchronous-first.

@@ -117,7 +117,7 @@ workflow-operator/
 
 ## Completed Stages
 
-**Status:** 17 stages/substages complete (60%) - Stage 8 SKIPPED (architectural decision)
+**Status:** 44 stages/substages complete - Stage 8 SKIPPED (architectural decision)
 *Note:* Stage breakdown refined - original 11 stages expanded to focused substages
 *Note:* Stage 8 skipped as it's designed for async workflows, not synchronous execution model
 
@@ -340,6 +340,198 @@ For proof of completion and actual results, see the respective `STAGE_X_PROOF.md
 - Template resolution benchmarks
 - Baseline metrics established for regression detection
 
+### Stage 9.2: Workflow Templates Library ✅
+**Status:** Complete
+**Proof:** `stage-proofs/stage-9.2/STAGE_9.2_PROOF.md`
+**Metrics:** 1487/1487 tests, 84.08% coverage, 0 vulnerabilities
+
+**Deliverables:**
+- Template browser UI with search & filter
+- 9 demo templates across 4 categories
+- One-click deploy to visual builder
+- Template preview (YAML + visual graph)
+
+**Value Delivered:** Reduce time to first workflow from 30 minutes to 2 minutes!
+
+### Stage 9.5: Interactive Documentation ✅
+**Status:** Complete
+**Proof:** `stage-proofs/stage-9.5/STAGE_9.5_PROOF.md`
+**Metrics:** 1552/1552 tests, 84.49% coverage, 0 vulnerabilities
+
+**Deliverables:**
+- Inline contextual help system
+- Interactive playground with lessons
+- Guided tours for first-time users
+- Progressive disclosure of features
+
+**Value Delivered:** Self-service onboarding - no hand-holding needed!
+
+### Stage 9.6.2: Transform DSL Frontend Builder ✅
+**Status:** Complete
+**Proof:** `stage-proofs/stage-9.6.2/STAGE_9.6.2_PROOF.md`
+**Metrics:** 120/120 tests + 15 E2E, 84.03% coverage, 0 vulnerabilities
+
+**Deliverables:**
+- Visual transform pipeline builder
+- Drag-and-drop transform operations
+- Live preview of transformation results
+- Schema-aware operation suggestions
+
+### Stage 10.2: Observability Dashboard ✅
+**Status:** Complete
+**Proof:** `stage-proofs/stage-10.2/STAGE_10.2_PROOF.md`
+**Metrics:** 3078/3078 tests, 89.6% coverage (Gateway), 0 vulnerabilities
+
+**Deliverables:**
+- Backend metrics API (P50/P95/P99 latency, throughput, error rates)
+- React dashboard with real-time charts
+- Degradation detection and alerting
+- NBomber load test suite
+
+**Value Delivered:** Full observability stack for production monitoring!
+
+### Stage 12.1-12.5: Neural Visualization ✅
+**Status:** Complete (5 substages)
+**Proof:** `stage-proofs/stage-12.5/STAGE_12.5_PROOF.md`
+**Metrics:** 62/62 tests, 93.94% coverage, 0 vulnerabilities
+
+**Deliverables:**
+- Real-time 3D visualization with Three.js
+- Workflow lanes with task checkpoints
+- Animated particle flow for executions
+- Throughput meter and event feed
+- Traffic statistics panel
+
+**Value Delivered:** Stunning real-time visualization for monitoring and demos!
+
+### Stage 13: AI-Powered Workflow Generation ✅
+**Status:** Complete
+**Proof:** `stage-proofs/stage-13/STAGE_13_PROOF.md`
+**Metrics:** 90/90 tests, 93.37% coverage, 0 vulnerabilities
+
+**Deliverables:**
+- MCP Server for Claude integration
+- list_tasks tool for task discovery
+- generate_workflow tool for natural language creation
+- validate_workflow tool for verification
+
+**Value Delivered:** Zero-to-workflow in 30 seconds - just describe what you want!
+
+### Stage 16.1: OpenAPI Parser ✅
+**Status:** Complete
+**Proof:** `stage-proofs/stage-16.1/STAGE_16.1_PROOF.md`
+**Metrics:** 44/44 tests, 90.42% coverage, 0 vulnerabilities
+
+**Deliverables:**
+- OpenAPI 2.0/3.x auto-detection and parsing
+- Schema resolution with $ref handling
+- Endpoint extraction with parameters
+- CLI integration foundation
+
+### Stage 17.1-17.2: Test API Server ✅
+**Status:** Complete (2 substages)
+**Proof:** `stage-proofs/stage-17.2/STAGE_17.2_PROOF.md`
+**Metrics:** 72/72 tests, 84% coverage, 0 vulnerabilities
+
+**Deliverables:**
+- 100+ test endpoints (structural + business domain)
+- Delay and failure simulation middleware
+- Business domain endpoints (orders, payments, inventory)
+- WorkflowTask CRD generation
+
+**Value Delivered:** Comprehensive testing infrastructure for orchestration validation!
+
+### Stage 19.1-19.5: Control Flow ✅
+**Status:** Complete (5 substages)
+**Proof:** `stage-proofs/stage-19.5/STAGE_19.5_PROOF.md`
+**Metrics:** 861/861 tests, 96.7% coverage, 0 vulnerabilities
+
+**Deliverables:**
+- Condition evaluator (if/else expressions)
+- Switch/case routing
+- forEach array iteration with parallel execution
+- Nested control flow support ($parent, $root)
+- Max nesting depth validation
+
+**Value Delivered:** Enterprise-grade control flow for complex workflows!
+
+### Stage 20.1-20.2: Workflow Triggers ✅
+**Status:** Complete (2 substages)
+**Proof:** `stage-proofs/stage-20.2/STAGE_20.2_PROOF.md`
+**Metrics:** 31/31 tests, 91.2% coverage, 0 vulnerabilities
+
+**Deliverables:**
+- Schedule triggers with cron expressions
+- Webhook triggers with HMAC validation
+- Trigger configuration models
+- Timezone support
+
+### Stage 21.1-21.2: Sub-Workflow Composition ✅
+**Status:** Complete (2 substages)
+**Proof:** `stage-proofs/stage-21.2/STAGE_21.2_PROOF.md`
+**Metrics:** 1285/1285 tests, 100% line coverage (new code)
+
+**Deliverables:**
+- WorkflowRef resolution (by name/version)
+- Sub-workflow execution with context isolation
+- Cycle detection and max depth enforcement
+- Input/output mapping between workflows
+
+**Value Delivered:** Modular workflow composition for reusability!
+
+### Stage 25-25.1: Local Development CLI ✅
+**Status:** Complete (2 substages)
+**Proof:** `stage-proofs/stage-25.1/STAGE_25.1_PROOF.md`
+**Metrics:** 158+ tests
+
+**Deliverables:**
+- CLI framework with Spectre.Console
+- init, validate, tasks commands
+- OpenAPI import functionality
+- Local execution with mock mode
+
+**Value Delivered:** Developer-friendly CLI for local workflow authoring!
+
+### Stage 26: VS Code Extension ✅
+**Status:** Complete
+**Proof:** `stage-proofs/stage-26/STAGE_26_PROOF.md`
+**Metrics:** 48/48 tests, 92.53% coverage, 0 vulnerabilities
+
+**Deliverables:**
+- Language Server Protocol (LSP) implementation
+- CompletionProvider with property/template completions
+- HoverProvider with documentation
+- DiagnosticsProvider for real-time validation
+- SnippetProvider with 12 code snippets
+- VS Code snippets for workflow authoring
+
+**Value Delivered:** IDE integration with IntelliSense and validation!
+
+### Stage 27.1-27.2: Anomaly Detection ✅
+**Status:** Complete (2 substages)
+**Proof:** `stage-proofs/stage-27.2/STAGE_27.2_PROOF.md`
+**Metrics:** 77/77 tests, ~91% coverage, 0 vulnerabilities
+
+**Deliverables:**
+- Metrics collection and baseline calculation
+- Z-score anomaly detection
+- AnomalyEvaluationService for runtime detection
+- Trend detection for early warning
+
+**Value Delivered:** Proactive detection of performance issues!
+
+### Stage 28: Circuit Breaker ✅
+**Status:** Complete
+**Proof:** `stage-proofs/stage-28/STAGE_28_PROOF.md`
+
+**Deliverables:**
+- Circuit breaker state machine (Closed/Open/Half-Open)
+- Sliding window failure counter
+- Fallback task execution
+- Integration with orchestrator
+
+**Value Delivered:** Prevent cascade failures with resilience patterns!
+
 ---
 
 ## GitLab CI Pipeline
@@ -437,33 +629,8 @@ dotnet run -c Release --project tests/WorkflowCore.PerformanceTests
 **Stage 9.1: Visual Workflow Builder ✅ COMPLETE**
 *See Completed Stages section above for details.*
 
-**Stage 9.2: Workflow Templates Library (1 week) 🔴 P0 - CRITICAL**
-*Accelerate workflow creation - don't start from scratch*
-
-1. **Template Categories**
-   - API Composition (parallel-api-fetch, sequential-pipeline, conditional-branching)
-   - Data Processing (etl-pipeline, batch-processing, aggregation)
-   - Real-Time (websocket-stream, event-driven, polling)
-   - Integrations (slack-notification, github-webhook, payment-processing)
-
-2. **Template Browser UI**
-   - Search & filter by category/difficulty
-   - Preview (YAML + visual graph)
-   - One-click deploy to visual builder
-   - Placeholder highlighting for customization
-
-3. **Template Validation**
-   - All templates pass schema validation
-   - E2E tests for each template
-   - Performance benchmarks included
-
-4. **TDD Targets**
-   - 20+ template validation tests
-   - E2E tests for each template
-   - Template browser UI tests
-   - Maintain ≥90% coverage
-
-5. **Value:** **Reduce time to first workflow from 30 minutes to 2 minutes!**
+**Stage 9.2: Workflow Templates Library ✅ COMPLETE**
+*See Completed Stages section above for details.*
 
 **Stage 9.3: WebSocket API for Workflow Execution ✅ COMPLETE**
 *See Completed Stages section above for details.*
@@ -471,48 +638,18 @@ dotnet run -c Release --project tests/WorkflowCore.PerformanceTests
 **Stage 9.4: Enhanced Debugging Tools ✅ COMPLETE**
 *See Completed Stages section above for details.*
 
-**Stage 9.5: Interactive Documentation & Learning (1 week) 🟡 P1 - IMPORTANT**
-*Make learning self-service*
-
-1. **Inline Contextual Help**
-   - Hover over task → Show description, example, schema
-   - Help icon on every field → Explains what it does
-   - Link to detailed docs for advanced topics
-
-2. **Interactive Playground**
-   - Lesson 1: Hello World (first workflow)
-   - Lesson 2: Task dependencies
-   - Lesson 3: Parallel execution
-   - Lesson 4: Template syntax
-   - Lesson 5: WebSocket streams
-
-3. **Guided Tours**
-   - First-time user interactive tour
-   - Tooltips highlight features
-   - Progressive disclosure
-
-4. **TDD Targets**
-   - 15+ documentation tests (ensure examples work)
-   - Accessibility tests for help UI
-   - Maintain ≥90% coverage
-
-5. **Value:** **Self-service onboarding - no hand-holding needed!**
+**Stage 9.5: Interactive Documentation ✅ COMPLETE**
+*See Completed Stages section above for details.*
 
 **Stage 9.6: Transform DSL (Data Transformation Pipeline)**
 
 **Stage 9.6.1: Transform DSL Backend Foundation ✅ COMPLETE**
 *See Completed Stages section above for details.*
 
-**Stage 9.6.2: Transform DSL Frontend Builder 🟡 P1 - IMPORTANT**
-*Visual builder for transform pipelines*
+**Stage 9.6.2: Transform DSL Frontend Builder ✅ COMPLETE**
+*See Completed Stages section above for details.*
 
-1. **Transform Pipeline Builder UI**
-   - Drag-and-drop transform operations
-   - Live preview of transformation results
-   - Schema-aware operation suggestions
-   - Pipeline validation and testing
-
-**Total Timeline: 6.5 weeks** (4 of 7 substages complete)
+**Stage 9 Complete!** All 7 substages delivered.
 
 **Success Metrics:**
 - Time to First Workflow: <5 minutes (80% of users)
@@ -523,43 +660,13 @@ dotnet run -c Release --project tests/WorkflowCore.PerformanceTests
 - Test Coverage: ≥90% (non-negotiable)
 
 ### Week 9-10 (Performance & Production):
-**Stage 10: Performance Testing & Optimization (TDD)**
+**Stage 10: Performance Testing & Optimization ✅ COMPLETE**
 
 **Phase 1: Performance Benchmarks ✅ COMPLETE**
 *See Completed Stages section above for details.*
 
-**Phase 2: Load Testing & Observability (Remaining)**
-1. Load Testing with NBomber
-   - Concurrent workflow executions
-   - Stress test admission webhooks
-   - Database performance under load
-2. Observability & Real-Time Monitoring Dashboard
-   - New Relic integration
-   - Distributed tracing
-   - Custom metrics and dashboards
-   - **System Health Dashboard (UI)**:
-     - Platform-wide orchestration overhead (average across all workflows)
-     - Execution volume / throughput (requests/sec, trends over time)
-     - Error rates by workflow (success/failure breakdown)
-     - P50/P95/P99 latency percentiles
-     - "Health score" for the platform (composite metric)
-   - **Per-Workflow Metrics**:
-     - Average execution time and trends
-     - Orchestration overhead percentage
-     - Task-level bottleneck identification
-     - Comparison against historical baseline
-   - **Worst Performers Panel**:
-     - Top 10 slowest workflows (by avg execution time)
-     - Top 10 highest overhead workflows (by orchestration %)
-     - Workflows with degrading performance (trend detection)
-   - **Alerting & Thresholds**:
-     - Configurable alerts (overhead > X%, error rate > Y%)
-     - Slack/webhook notifications
-     - Anomaly detection (sudden performance degradation)
-   - **Historical Analysis**:
-     - Time-range selector (1h, 24h, 7d, 30d)
-     - Before/after comparison for deployments
-     - Export metrics as CSV/JSON
+**Phase 2: Observability Dashboard ✅ COMPLETE (Stage 10.2)**
+*See Completed Stages section above for details.*
 
 ### Week 11-12 (Cloud Deployment & E2E):
 **Stage 11: Cloud Deployment & Production Hardening (TDD)**
@@ -577,155 +684,12 @@ dotnet run -c Release --project tests/WorkflowCore.PerformanceTests
    - High availability configuration
 
 ### Week 13 (Neural Visualization):
-**Stage 12: Real-Time Neural Network Visualization (TDD)**
-*Scope:* Live 3D visualization of workflow execution as neural network
-*Deliverables:* 5
-*Tests:* ~30-35 tests
-*Dependencies:* Stages 7.8, 7.85, 9 (UI)
-*Value:* Stunning real-time visualization for monitoring, demos, and traffic pattern analysis
-
-1. Real-Time Event Streaming (Backend)
-   - Add SignalR hub to WorkflowGateway
-   - Emit execution events from WorkflowOrchestrator:
-     - WorkflowStarted (workflow_name, execution_id, timestamp)
-     - TaskStarted (task_id, execution_id, dependencies)
-     - TaskCompleted (task_id, status, duration, outputs)
-     - SignalFlow (from_task, to_task, execution_id) - dependency activation
-     - WorkflowCompleted (execution_id, status, duration)
-   - Event aggregation and batching (for high-traffic scenarios)
-   - WebSocket connection management and reconnection logic
-   - Add tests for event emission and SignalR hub
-
-2. Graph Layout & Positioning Algorithm
-   - Automatic node positioning based on ExecutionGraph structure
-   - Force-directed layout algorithm (D3.js integration)
-   - Cluster similar workflows by domain/namespace
-   - Calculate node positions (x, y, z coordinates for 3D)
-   - Return graph layout data via API endpoint
-   - Tests for layout algorithm with complex graphs
-
-3. 3D Visualization Component (Frontend)
-   - Three.js / WebGL-based rendering engine
-   - Neurons (tasks): sphere geometries with glow shaders
-     - Idle state: dim blue/purple ambient glow
-     - Executing: bright pulsing animation
-     - Success: green flash then fade to idle
-     - Failed: red pulse with persistent red tint
-   - Edges (dependencies): line geometries with particle systems
-     - Signal flow: animated particles traveling from source to target
-     - Width based on call frequency or data volume
-   - Camera controls: orbit, zoom, pan
-   - Performance optimization: instancing, frustum culling, LOD
-
-4. Animation System & Visual Effects
-   - Pulse animation system for task execution (glow intensity curves)
-   - Particle system for signal flow along edges
-   - Bloom/glow post-processing effects (UnrealBloomPass)
-   - Synchronized firing for parallel task groups
-   - Heat map overlay showing "hot paths" (frequently-used tasks)
-   - Fade-out animation after workflow completion
-   - Tests for animation timing and state transitions
-
-5. Advanced Features & Replay Mode
-   - Replay past executions at configurable speed (1x, 10x, 100x)
-   - Time-lapse view showing network growth over days/weeks
-   - Filter by workflow name, status, or time range
-   - Performance metrics overlay (execution time, throughput)
-   - "Brain growth" visualization (network expands as workflows added)
-   - Export visualization as video (for demos/presentations)
-   - Integration tests with real SignalR events
-
-**Visual Design Goals:**
-- Dark theme with neon/bioluminescent aesthetics
-- Organic clustering (workflows form "brain regions")
-- Mesmerizing at high traffic (100+ concurrent workflows)
-- Educational: understand workflow composition at a glance
-- Demo-ready: impressive for presentations and marketing
-
-**Performance Targets:**
-- Handle 1000+ req/s with smooth 60fps rendering
-- Support 100+ concurrent workflow visualizations
-- Sub-100ms latency for event → visualization
-- Efficient WebGL rendering (no DOM manipulation)
+**Stage 12: Real-Time Neural Network Visualization ✅ COMPLETE**
+*See Completed Stages section above for details (Stage 12.1-12.5).*
 
 ### Week 14+ (AI-Powered Creation):
-**Stage 13: AI-Powered Workflow Generation (TDD)**
-*Scope:* Natural language workflow creation via MCP server
-*Deliverables:* 5
-*Tests:* ~35-40 tests
-*Dependencies:* Stages 9.1 (Visual Builder), 9.2 (Templates)
-*Value:* "Describe what you want, get a working workflow" - the ultimate DX
-
-*Philosophy:* Users shouldn't need to know YAML syntax, task schemas, or template expressions. They describe their intent; the system figures out the rest.
-
-1. **Task Discovery MCP Tool**
-   - `list_tasks(category?, capability?, search?)` → task metadata + schemas
-   - `get_task_schema(task_name)` → full input/output schema with examples
-   - `search_tasks(natural_language_query)` → semantic search over task descriptions
-   - Rich task metadata: descriptions, examples, tags, capabilities
-   - Tests for search relevance and schema accuracy
-
-2. **Workflow Generation MCP Tool**
-   - `generate_workflow(intent, constraints?)` → YAML workflow definition
-   - Intent parsing: extract tasks, dependencies, data flow from natural language
-   - Auto-insert transform tasks to bridge schema mismatches
-   - Handle parallel vs sequential based on dependency analysis
-   - Configurable constraints: max tasks, allowed categories, timeout limits
-   - Tests for common patterns (fan-out, pipeline, aggregation)
-
-3. **Validation & Refinement Loop**
-   - `validate_workflow(yaml)` → errors with suggested fixes
-   - `refine_workflow(yaml, feedback)` → improved YAML based on user feedback
-   - Schema compatibility checking with clear error messages
-   - Template expression validation
-   - Circular dependency detection
-   - Tests for error recovery and refinement scenarios
-
-4. **Workflow Execution MCP Tools**
-   - `dry_run_workflow(yaml, sample_input)` → execution plan preview
-   - `execute_workflow(name, input)` → run and return results
-   - `get_execution_status(execution_id)` → real-time status
-   - Integration with existing WorkflowGateway APIs
-   - Tests for execution lifecycle
-
-5. **Claude Desktop / MCP Integration**
-   - MCP server implementation (TypeScript or C#)
-   - Claude Desktop configuration examples
-   - Interactive workflow building sessions
-   - Conversational refinement ("make it faster", "add error handling")
-   - Documentation and setup guide
-
-**Example Interaction:**
-```
-User: "When a new order comes in, fetch the customer details,
-       check their credit limit, and if approved, send a
-       confirmation email and update inventory"
-
-AI: I'll create a workflow with these tasks:
-    1. fetch-customer (from order.customer_id)
-    2. check-credit-limit (parallel with inventory check)
-    3. check-inventory (parallel with credit check)
-    4. send-confirmation-email (depends on both checks passing)
-    5. update-inventory (depends on confirmation)
-
-    [Shows generated YAML]
-
-    Want me to deploy this or make changes first?
-```
-
-**TDD Targets:**
-- 35+ tests across MCP tools
-- Integration tests with real Claude API (mocked)
-- E2E test: natural language → deployed workflow
-- Maintain ≥90% coverage
-
-**Success Metrics:**
-- Intent-to-workflow accuracy: >85% on common patterns
-- Generation time: <5 seconds for typical workflows
-- User satisfaction: 90%+ approve generated workflow on first try
-- Adoption: 30% of new workflows created via AI after launch
-
-**Value:** **Zero-to-workflow in 30 seconds** - just describe what you want!
+**Stage 13: AI-Powered Workflow Generation ✅ COMPLETE**
+*See Completed Stages section above for details.*
 
 ### Week 15+ (Intelligent Optimization):
 **Stage 14: Workflow Optimization Engine (TDD)**

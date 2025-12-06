@@ -70,7 +70,18 @@ export interface WorkflowBuilderNodeData extends Record<string, unknown> {
 /**
  * Node types supported by the workflow builder
  */
-export type WorkflowNodeType = 'task' | 'input' | 'output';
+export type WorkflowNodeType = 'task' | 'input' | 'output' | 'subworkflow';
+
+/**
+ * Sub-workflow specific node data
+ */
+export interface SubWorkflowNodeData extends WorkflowBuilderNodeData {
+  workflowRef: string;
+  taskCount?: number;
+  isExpanded?: boolean;
+  cycleWarning?: string;
+  executionStatus?: 'idle' | 'running' | 'success' | 'failed';
+}
 
 /**
  * Workflow builder node (extends React Flow Node)
@@ -238,7 +249,7 @@ export function createWorkflowMetadata(partial?: Partial<WorkflowMetadata>): Wor
 /**
  * Valid node types
  */
-const VALID_NODE_TYPES: WorkflowNodeType[] = ['task', 'input', 'output'];
+const VALID_NODE_TYPES: WorkflowNodeType[] = ['task', 'input', 'output', 'subworkflow'];
 
 /**
  * Type guard: check if node is valid
@@ -253,6 +264,8 @@ export function isValidNode(node: any): node is WorkflowBuilderNode {
   if (typeof node.data.label !== 'string') return false;
   // taskRef only required for task nodes
   if (node.type === 'task' && (!node.data.taskRef || typeof node.data.taskRef !== 'string')) return false;
+  // workflowRef required for subworkflow nodes
+  if (node.type === 'subworkflow' && (!node.data.workflowRef || typeof node.data.workflowRef !== 'string')) return false;
 
   return true;
 }

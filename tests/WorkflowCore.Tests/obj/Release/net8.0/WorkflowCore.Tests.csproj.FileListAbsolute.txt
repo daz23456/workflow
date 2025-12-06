@@ -138,3 +138,5 @@
 /Users/darren/dev/workflow/tests/WorkflowCore.Tests/bin/Release/net8.0/JsonPath.Net.dll
 /Users/darren/dev/workflow/tests/WorkflowCore.Tests/bin/Release/net8.0/NCrontab.dll
 /Users/darren/dev/workflow/tests/WorkflowCore.Tests/obj/Release/net8.0/WorkflowCore.Tests.sourcelink.json
+/Users/darren/dev/workflow/tests/WorkflowCore.Tests/bin/Release/net8.0/Pipelines.Sockets.Unofficial.dll
+/Users/darren/dev/workflow/tests/WorkflowCore.Tests/bin/Release/net8.0/StackExchange.Redis.dll

@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "YENWpBwUJGA=",
+  "dgSpecHash": "NfzDfrGcNsQ=",
   "success": true,
   "projectFilePath": "/Users/darren/dev/workflow/src/WorkflowCore/WorkflowCore.csproj",
   "expectedPackageFiles": [
@@ -36,7 +36,9 @@
     "/Users/darren/.nuget/packages/ncrontab/3.3.3/ncrontab.3.3.3.nupkg.sha512",
     "/Users/darren/.nuget/packages/npgsql/8.0.5/npgsql.8.0.5.nupkg.sha512",
     "/Users/darren/.nuget/packages/npgsql.entityframeworkcore.postgresql/8.0.10/npgsql.entityframeworkcore.postgresql.8.0.10.nupkg.sha512",
+    "/Users/darren/.nuget/packages/pipelines.sockets.unofficial/2.2.8/pipelines.sockets.unofficial.2.2.8.nupkg.sha512",
     "/Users/darren/.nuget/packages/serilog/3.1.1/serilog.3.1.1.nupkg.sha512",
+    "/Users/darren/.nuget/packages/stackexchange.redis/2.7.27/stackexchange.redis.2.7.27.nupkg.sha512",
     "/Users/darren/.nuget/packages/system.codedom/4.4.0/system.codedom.4.4.0.nupkg.sha512",
     "/Users/darren/.nuget/packages/system.collections.immutable/6.0.0/system.collections.immutable.6.0.0.nupkg.sha512",
     "/Users/darren/.nuget/packages/system.composition/6.0.0/system.composition.6.0.0.nupkg.sha512",

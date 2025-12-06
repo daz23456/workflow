@@ -1,0 +1,9 @@
+Gate 7: Zero Vulnerabilities
+Result: PASS
+
+dotnet list package --vulnerable --include-transitive
+
+The following sources were used:
+   https://api.nuget.org/v3/index.json
+
+The given project `WorkflowCore` has no vulnerable packages given the current sources.

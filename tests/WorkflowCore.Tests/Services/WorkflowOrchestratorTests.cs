@@ -4574,7 +4574,7 @@ spec:
         var circuitBreakerMock = new Mock<ICircuitBreaker>();
 
         // Circuit is open - should block execution but allow fallback
-        circuitBreakerMock.Setup(cb => cb.CanExecute(It.IsAny<string>())).Returns(false);
+        circuitBreakerMock.Setup(cb => cb.CanExecute()).Returns(false);
         circuitBreakerMock.Setup(cb => cb.GetState()).Returns(new CircuitStateInfo { State = CircuitState.Open });
 
         circuitBreakerRegistryMock
@@ -4666,7 +4666,7 @@ spec:
         var circuitBreakerMock = new Mock<ICircuitBreaker>();
 
         // Circuit is closed - allows execution
-        circuitBreakerMock.Setup(cb => cb.CanExecute(It.IsAny<string>())).Returns(true);
+        circuitBreakerMock.Setup(cb => cb.CanExecute()).Returns(true);
         circuitBreakerMock.Setup(cb => cb.GetState()).Returns(new CircuitStateInfo { State = CircuitState.Closed });
 
         circuitBreakerRegistryMock
@@ -4729,8 +4729,8 @@ spec:
         result.TaskResults["task-1"].Success.Should().BeFalse();
 
         // Verify failure was recorded to circuit breaker
-        circuitBreakerMock.Verify(cb => cb.RecordFailure("http-task"), Times.Once);
-        circuitBreakerMock.Verify(cb => cb.RecordSuccess("http-task"), Times.Never);
+        circuitBreakerMock.Verify(cb => cb.RecordFailure(), Times.Once);
+        circuitBreakerMock.Verify(cb => cb.RecordSuccess(), Times.Never);
     }
 
     [Fact]

@@ -1,0 +1,10 @@
+Gate 5: All Tests Passing
+Result: PASS
+
+WorkflowCore.Tests:
+Passed!  - Failed:     0, Passed:  1564, Skipped:     0, Total:  1564, Duration: 2 s
+
+WorkflowGateway.Tests:
+Passed!  - Failed:     0, Passed:   541, Skipped:     0, Total:   541, Duration: 17 s
+
+Total: 2105 tests, 0 failures

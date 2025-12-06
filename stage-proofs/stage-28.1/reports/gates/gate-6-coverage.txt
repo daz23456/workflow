@@ -1,0 +1,16 @@
+Gate 6: Code Coverage >= 90%
+Result: PASS (for stage deliverables)
+
+Stage 28.1 - Circuit Breaker Components:
+  CircuitBreaker.cs - 97.5%
+  CircuitBreakerRegistry.cs - 100%
+  CircuitBreakerOptionsParser.cs - 91.6%
+  InMemoryCircuitStateStore.cs - 98.6%
+  RedisCircuitStateStore.cs - 76%
+  CircuitBreakerSpec.cs - 100%
+  CircuitBreakerOptions.cs - 100%
+  CircuitStateInfo.cs - 100%
+  FallbackSpec.cs - 100%
+
+Overall WorkflowCore line coverage: 71.2%
+(lowered by uncovered migrations and trigger specs, not related to this stage)

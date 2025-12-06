@@ -1,0 +1,193 @@
+{
+  "Workflow": {
+    "prefix": "workflow",
+    "body": [
+      "apiVersion: workflow.io/v1",
+      "kind: Workflow",
+      "metadata:",
+      "  name: ${1:my-workflow}",
+      "  labels:",
+      "    app: ${2:my-app}",
+      "spec:",
+      "  description: \"${3:Workflow description}\"",
+      "  input:",
+      "    type: object",
+      "    properties:",
+      "      ${4:inputField}:",
+      "        type: string",
+      "  tasks:",
+      "    - id: ${5:first-task}",
+      "      taskRef: ${6:task-name}",
+      "      input:",
+      "        ${7:param}: \"{{input.${4:inputField}}}\"",
+      "  output:",
+      "    ${8:result}: \"{{tasks.${5:first-task}.output}}\""
+    ],
+    "description": "Create a new workflow resource"
+  },
+  "Task Step": {
+    "prefix": "task",
+    "body": [
+      "- id: ${1:task-id}",
+      "  taskRef: ${2:task-name}",
+      "  input:",
+      "    ${3:param}: \"${4:value}\""
+    ],
+    "description": "Add a task step to a workflow"
+  },
+  "WorkflowTask": {
+    "prefix": "workflowtask",
+    "body": [
+      "apiVersion: workflow.io/v1",
+      "kind: WorkflowTask",
+      "metadata:",
+      "  name: ${1:my-task}",
+      "  labels:",
+      "    app: ${2:my-app}",
+      "spec:",
+      "  type: http",
+      "  http:",
+      "    url: \"${3:https://api.example.com/endpoint}\"",
+      "    method: ${4|GET,POST,PUT,DELETE|}",
+      "    headers:",
+      "      Content-Type: application/json",
+      "  input:",
+      "    type: object",
+      "    properties:",
+      "      ${5:inputField}:",
+      "        type: string",
+      "  output:",
+      "    type: object",
+      "    properties:",
+      "      ${6:outputField}:",
+      "        type: string"
+    ],
+    "description": "Create a new WorkflowTask resource"
+  },
+  "ForEach Loop": {
+    "prefix": "foreach",
+    "body": [
+      "- id: ${1:loop-task}",
+      "  taskRef: ${2:task-name}",
+      "  forEach:",
+      "    collection: \"{{tasks.${3:previous-task}.output.${4:items}}}\"",
+      "    itemVar: item",
+      "  input:",
+      "    ${5:param}: \"{{forEach.item}}\""
+    ],
+    "description": "Add a forEach loop to iterate over a collection"
+  },
+  "Conditional Task": {
+    "prefix": "condition",
+    "body": [
+      "- id: ${1:conditional-task}",
+      "  taskRef: ${2:task-name}",
+      "  condition: \"{{tasks.${3:check-task}.output.${4:shouldRun} == true}}\"",
+      "  input:",
+      "    ${5:param}: \"${6:value}\""
+    ],
+    "description": "Add a task with a condition"
+  },
+  "Schedule Trigger": {
+    "prefix": "trigger-cron",
+    "body": [
+      "triggers:",
+      "  - type: schedule",
+      "    schedule:",
+      "      cron: \"${1:0 */5 * * * *}\"",
+      "      timezone: \"${2:UTC}\""
+    ],
+    "description": "Add a cron schedule trigger to a workflow"
+  },
+  "Dependencies": {
+    "prefix": "dependson",
+    "body": [
+      "dependsOn:",
+      "  - ${1:task-id-1}",
+      "  - ${2:task-id-2}"
+    ],
+    "description": "Add task dependencies"
+  },
+  "Input Schema": {
+    "prefix": "input-schema",
+    "body": [
+      "input:",
+      "  type: object",
+      "  properties:",
+      "    ${1:fieldName}:",
+      "      type: ${2|string,number,boolean,object,array|}",
+      "      description: \"${3:Field description}\"",
+      "  required:",
+      "    - ${1:fieldName}"
+    ],
+    "description": "Define workflow input schema"
+  },
+  "Output Mapping": {
+    "prefix": "output",
+    "body": [
+      "output:",
+      "  ${1:resultField}: \"{{tasks.${2:task-id}.output.${3:field}}}\""
+    ],
+    "description": "Define workflow output mapping"
+  },
+  "Task with Dependencies": {
+    "prefix": "task-with-deps",
+    "body": [
+      "- id: ${1:task-id}",
+      "  taskRef: ${2:task-name}",
+      "  dependsOn:",
+      "    - ${3:previous-task}",
+      "  input:",
+      "    ${4:param}: \"{{tasks.${3:previous-task}.output.${5:field}}}\""
+    ],
+    "description": "Add a task that depends on other tasks"
+  },
+  "Parallel Tasks": {
+    "prefix": "parallel-tasks",
+    "body": [
+      "- id: ${1:task-a}",
+      "  taskRef: ${2:task-name-a}",
+      "  input:",
+      "    param: \"${3:value-a}\"",
+      "- id: ${4:task-b}",
+      "  taskRef: ${5:task-name-b}",
+      "  input:",
+      "    param: \"${6:value-b}\"",
+      "- id: ${7:aggregator}",
+      "  taskRef: ${8:aggregate-task}",
+      "  dependsOn:",
+      "    - ${1:task-a}",
+      "    - ${4:task-b}",
+      "  input:",
+      "    resultA: \"{{tasks.${1:task-a}.output}}\"",
+      "    resultB: \"{{tasks.${4:task-b}.output}}\""
+    ],
+    "description": "Add multiple tasks that run in parallel"
+  },
+  "HTTP Task Definition": {
+    "prefix": "http-task",
+    "body": [
+      "apiVersion: workflow.io/v1",
+      "kind: WorkflowTask",
+      "metadata:",
+      "  name: ${1:http-task}",
+      "spec:",
+      "  type: http",
+      "  http:",
+      "    url: \"${2:https://api.example.com}\"",
+      "    method: ${3|GET,POST,PUT,PATCH,DELETE|}",
+      "    headers:",
+      "      Content-Type: application/json",
+      "      Authorization: \"Bearer {{input.token}}\"",
+      "    body: |",
+      "      {",
+      "        \"${4:field}\": \"{{input.${5:value}}}\"",
+      "      }",
+      "    timeout: ${6:30s}",
+      "    retryPolicy:",
+      "      maxRetries: ${7:3}",
+      "      backoff: exponential"
+    ],
+    "description": "Create an HTTP task with full configuration"
+  }
+}

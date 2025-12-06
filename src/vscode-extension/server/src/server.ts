@@ -6,11 +6,15 @@ import {
   TextDocumentSyncKind,
   InitializeResult,
   Diagnostic,
-  DiagnosticSeverity
+  DiagnosticSeverity,
+  CompletionItem,
+  TextDocumentPositionParams,
+  Hover
 } from 'vscode-languageserver/node';
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import * as YAML from 'yaml';
-import { SchemaValidator } from '@workflow/validation';
+import { CompletionProvider } from './completionProvider';
+import { HoverProvider } from './hoverProvider';
+import { DiagnosticsProvider, DiagnosticSeverity as ProviderDiagnosticSeverity } from './diagnosticsProvider';
 
 // Create a connection for the server using Node's IPC as a transport
 const connection = createConnection(ProposedFeatures.all);
@@ -18,17 +22,22 @@ const connection = createConnection(ProposedFeatures.all);
 // Create a simple text document manager
 const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
 
-// Initialize schema validator
-const schemaValidator = new SchemaValidator();
+// Initialize providers
+const completionProvider = new CompletionProvider();
+const hoverProvider = new HoverProvider();
+const diagnosticsProvider = new DiagnosticsProvider();
 
 connection.onInitialize((params: InitializeParams) => {
   const result: InitializeResult = {
     capabilities: {
       textDocumentSync: TextDocumentSyncKind.Incremental,
-      // Tell the client that this server supports code completion
+      // Code completion
       completionProvider: {
-        resolveProvider: true
-      }
+        resolveProvider: true,
+        triggerCharacters: ['.', ':', '{']
+      },
+      // Hover documentation
+      hoverProvider: true
     }
   };
   return result;
@@ -43,133 +52,142 @@ documents.onDidChangeContent(change => {
   validateWorkflowDocument(change.document);
 });
 
-async function validateWorkflowDocument(textDocument: TextDocument): Promise<void> {
+function validateWorkflowDocument(textDocument: TextDocument): void {
   const text = textDocument.getText();
-  const diagnostics: Diagnostic[] = [];
 
-  try {
-    // Parse YAML
-    const doc = YAML.parse(text);
-    
-    if (!doc) {
-      return; // Empty document
-    }
+  // Use DiagnosticsProvider to get diagnostics
+  const providerDiagnostics = diagnosticsProvider.getDiagnostics(text);
 
-    // Check if it's a Workflow or WorkflowTask
-    const kind = doc.kind;
-    
-    if (kind === 'Workflow') {
-      // Validate workflow structure
-      validateWorkflow(doc, diagnostics, textDocument);
-    } else if (kind === 'WorkflowTask') {
-      // Validate task structure
-      validateWorkflowTask(doc, diagnostics, textDocument);
-    }
-  } catch (err) {
-    // YAML parsing error
-    const message = err instanceof Error ? err.message : String(err);
-    diagnostics.push({
-      severity: DiagnosticSeverity.Error,
-      range: {
-        start: { line: 0, character: 0 },
-        end: { line: 0, character: Number.MAX_VALUE }
-      },
-      message: `YAML Parse Error: ${message}`,
-      source: 'workflow-validator'
-    });
-  }
+  // Convert to LSP Diagnostic format
+  const diagnostics: Diagnostic[] = providerDiagnostics.map(d => ({
+    severity: mapSeverity(d.severity),
+    range: d.range,
+    message: d.message,
+    source: d.source
+  }));
 
   // Send the computed diagnostics to VSCode
   connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
 }
 
-function validateWorkflow(
-  doc: any,
-  diagnostics: Diagnostic[],
-  textDocument: TextDocument
-): void {
-  // Basic structure validation
-  if (!doc.metadata?.name) {
-    diagnostics.push({
-      severity: DiagnosticSeverity.Error,
-      range: {
-        start: { line: 0, character: 0 },
-        end: { line: 0, character: Number.MAX_VALUE }
-      },
-      message: 'Workflow must have metadata.name',
-      source: 'workflow-validator'
-    });
-  }
-
-  if (!doc.spec?.tasks || !Array.isArray(doc.spec.tasks)) {
-    diagnostics.push({
-      severity: DiagnosticSeverity.Error,
-      range: {
-        start: { line: 0, character: 0 },
-        end: { line: 0, character: Number.MAX_VALUE }
-      },
-      message: 'Workflow must have spec.tasks array',
-      source: 'workflow-validator'
-    });
-  }
-
-  // Validate each task step
-  if (doc.spec?.tasks) {
-    for (const task of doc.spec.tasks) {
-      if (!task.id) {
-        diagnostics.push({
-          severity: DiagnosticSeverity.Error,
-          range: {
-            start: { line: 0, character: 0 },
-            end: { line: 0, character: Number.MAX_VALUE }
-          },
-          message: 'Task must have an id',
-          source: 'workflow-validator'
-        });
-      }
-      if (!task.taskRef) {
-        diagnostics.push({
-          severity: DiagnosticSeverity.Error,
-          range: {
-            start: { line: 0, character: 0 },
-            end: { line: 0, character: Number.MAX_VALUE }
-          },
-          message: `Task '${task.id}' must have a taskRef`,
-          source: 'workflow-validator'
-        });
-      }
-    }
+function mapSeverity(severity: ProviderDiagnosticSeverity): DiagnosticSeverity {
+  switch (severity) {
+    case ProviderDiagnosticSeverity.Error:
+      return DiagnosticSeverity.Error;
+    case ProviderDiagnosticSeverity.Warning:
+      return DiagnosticSeverity.Warning;
+    case ProviderDiagnosticSeverity.Information:
+      return DiagnosticSeverity.Information;
+    case ProviderDiagnosticSeverity.Hint:
+      return DiagnosticSeverity.Hint;
+    default:
+      return DiagnosticSeverity.Error;
   }
 }
 
-function validateWorkflowTask(
-  doc: any,
-  diagnostics: Diagnostic[],
-  textDocument: TextDocument
-): void {
-  if (!doc.metadata?.name) {
-    diagnostics.push({
-      severity: DiagnosticSeverity.Error,
-      range: {
-        start: { line: 0, character: 0 },
-        end: { line: 0, character: Number.MAX_VALUE }
-      },
-      message: 'WorkflowTask must have metadata.name',
-      source: 'workflow-validator'
-    });
+// Handle completion requests
+connection.onCompletion((params: TextDocumentPositionParams): CompletionItem[] => {
+  const document = documents.get(params.textDocument.uri);
+  if (!document) {
+    return [];
   }
 
-  if (!doc.spec?.type) {
-    diagnostics.push({
-      severity: DiagnosticSeverity.Error,
-      range: {
-        start: { line: 0, character: 0 },
-        end: { line: 0, character: Number.MAX_VALUE }
-      },
-      message: 'WorkflowTask must have spec.type',
-      source: 'workflow-validator'
-    });
+  const text = document.getText();
+  const lineText = getLineText(document, params.position.line);
+
+  // Detect if we're inside a template expression
+  const templateContext = detectTemplateContext(lineText, params.position.character);
+
+  const context = {
+    text,
+    position: params.position,
+    lineText,
+    isInsideTemplateExpression: templateContext.isInside,
+    templatePrefix: templateContext.prefix
+  };
+
+  return completionProvider.getCompletions(context);
+});
+
+// Handle hover requests
+connection.onHover((params: TextDocumentPositionParams): Hover | null => {
+  const document = documents.get(params.textDocument.uri);
+  if (!document) {
+    return null;
   }
+
+  const text = document.getText();
+  const word = getWordAtPosition(document, params.position);
+
+  if (!word) {
+    return null;
+  }
+
+  const context = {
+    text,
+    position: params.position,
+    word
+  };
+
+  const result = hoverProvider.getHover(context);
+
+  if (result) {
+    return {
+      contents: {
+        kind: 'markdown',
+        value: result.contents
+      }
+    };
+  }
+
+  return null;
+});
+
+function getLineText(document: TextDocument, line: number): string {
+  const text = document.getText();
+  const lines = text.split('\n');
+  return lines[line] || '';
+}
+
+function getWordAtPosition(document: TextDocument, position: { line: number; character: number }): string {
+  const lineText = getLineText(document, position.line);
+
+  // Find word boundaries
+  let start = position.character;
+  let end = position.character;
+
+  // Move start backwards
+  while (start > 0 && /[\w-]/.test(lineText[start - 1])) {
+    start--;
+  }
+
+  // Move end forwards
+  while (end < lineText.length && /[\w-]/.test(lineText[end])) {
+    end++;
+  }
+
+  return lineText.substring(start, end);
+}
+
+function detectTemplateContext(lineText: string, character: number): { isInside: boolean; prefix: string } {
+  // Check if we're inside {{ ... }}
+  const beforeCursor = lineText.substring(0, character);
+  const openBraceIndex = beforeCursor.lastIndexOf('{{');
+
+  if (openBraceIndex === -1) {
+    return { isInside: false, prefix: '' };
+  }
+
+  // Check if there's a closing brace between open and cursor
+  const afterOpen = beforeCursor.substring(openBraceIndex);
+  if (afterOpen.includes('}}')) {
+    return { isInside: false, prefix: '' };
+  }
+
+  // We're inside a template expression
+  // Extract the prefix (e.g., "input." or "tasks.")
+  const content = afterOpen.substring(2); // Remove "{{"
+  return { isInside: true, prefix: content };
 }
 
 // Make the text document manager listen on the connection

@@ -7,7 +7,10 @@
     "build": "webpack --mode production",
     "type-check": "tsc --noEmit",
     "watch": "webpack --mode development --watch",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
   },
   "dependencies": {
     "@workflow/types": "workspace:*",
@@ -18,7 +21,10 @@
     "yaml": "^2.3.4"
   },
   "devDependencies": {
+    "@types/jest": "^29.5.11",
     "@types/node": "^20.19.25",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.1",
     "typescript": "^5.9.3",
     "webpack": "^5.94.0",
     "webpack-cli": "^5.1.4",

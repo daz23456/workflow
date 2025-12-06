@@ -38,6 +38,16 @@
         "title": "Show Workflow Graph",
         "category": "Workflow"
       }
+    ],
+    "snippets": [
+      {
+        "language": "workflow-yaml",
+        "path": "./snippets/workflow.json"
+      },
+      {
+        "language": "yaml",
+        "path": "./snippets/workflow.json"
+      }
     ]
   },
   "scripts": {

@@ -4434,7 +4434,7 @@ spec:
         var circuitBreakerMock = new Mock<ICircuitBreaker>();
 
         // Circuit is closed - should allow execution
-        circuitBreakerMock.Setup(cb => cb.CanExecute(It.IsAny<string>())).Returns(true);
+        circuitBreakerMock.Setup(cb => cb.CanExecute()).Returns(true);
         circuitBreakerMock.Setup(cb => cb.GetState()).Returns(new CircuitStateInfo { State = CircuitState.Closed });
 
         circuitBreakerRegistryMock
@@ -4493,8 +4493,8 @@ spec:
         result.TaskResults["task-1"].CircuitState.Should().Be(CircuitState.Closed);
 
         // Verify circuit breaker was checked and success was recorded
-        circuitBreakerMock.Verify(cb => cb.CanExecute("http-task"), Times.Once);
-        circuitBreakerMock.Verify(cb => cb.RecordSuccess("http-task"), Times.Once);
+        circuitBreakerMock.Verify(cb => cb.CanExecute(), Times.Once);
+        circuitBreakerMock.Verify(cb => cb.RecordSuccess(), Times.Once);
     }
 
     [Fact]
@@ -4505,7 +4505,7 @@ spec:
         var circuitBreakerMock = new Mock<ICircuitBreaker>();
 
         // Circuit is open - should block execution
-        circuitBreakerMock.Setup(cb => cb.CanExecute(It.IsAny<string>())).Returns(false);
+        circuitBreakerMock.Setup(cb => cb.CanExecute()).Returns(false);
         circuitBreakerMock.Setup(cb => cb.GetState()).Returns(new CircuitStateInfo { State = CircuitState.Open });
 
         circuitBreakerRegistryMock

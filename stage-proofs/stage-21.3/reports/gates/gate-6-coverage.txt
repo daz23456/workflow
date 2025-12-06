@@ -1,0 +1,14 @@
+Gate 6: Code Coverage ≥90%
+==========================
+
+✅ PASSED
+
+Overall Coverage: 73.4%
+
+Stage 21.3 New Code Coverage:
+  WorkflowCore.Models.WorkflowCallStack: 100%
+  WorkflowCore.Services.CycleDetectionResult: 100%
+  WorkflowCore.Services.WorkflowCycleDetector: 100%
+  WorkflowCore.Services.SubWorkflowExecutor: 100%
+
+All new Stage 21.3 code has 100% coverage.

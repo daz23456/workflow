@@ -63,6 +63,7 @@ var workflowConfig = builder.Configuration.GetSection("Workflow");
 var executionTimeout = workflowConfig.GetValue<int>("ExecutionTimeoutSeconds", 30);
 var watcherInterval = workflowConfig.GetValue<int>("WatcherIntervalSeconds", 30);
 var discoveryCacheTTL = workflowConfig.GetValue<int>("DiscoveryCacheTTLSeconds", 30);
+var triggerPollingInterval = workflowConfig.GetValue<int>("TriggerPollingIntervalSeconds", 10);
 // Note: Namespaces are now auto-discovered using cluster-wide queries - no configuration needed
 
 // Register database services
@@ -111,6 +112,10 @@ builder.Services.AddSingleton(new RetryPolicyOptions
 });
 builder.Services.AddScoped<IRetryPolicy, RetryPolicy>();
 
+// Register circuit breaker services for fault tolerance
+builder.Services.AddSingleton<ICircuitBreakerRegistry, CircuitBreakerRegistry>();
+builder.Services.AddSingleton<ICircuitStateStore, InMemoryCircuitStateStore>();
+
 // Register HTTP client and related services
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<HttpClient>(sp =>
@@ -136,6 +141,12 @@ builder.Services.AddSingleton<IWorkflowEventNotifier, SignalRWorkflowEventNotifi
 builder.Services.AddScoped<IConditionEvaluator, ConditionEvaluator>();
 builder.Services.AddScoped<ISwitchEvaluator, SwitchEvaluator>();
 builder.Services.AddScoped<IForEachExecutor, ForEachExecutor>();
+
+// Register cron parser for schedule triggers
+builder.Services.AddSingleton<ICronParser, CronParser>();
+
+// Register HMAC validator for webhook triggers
+builder.Services.AddSingleton<IHmacValidator, HmacValidator>();
 
 // Register WorkflowOrchestrator with event notifier and control flow evaluators injected
 builder.Services.AddScoped<IWorkflowOrchestrator>(sp =>
@@ -187,7 +198,7 @@ builder.Services.AddScoped<IWorkflowExecutionService>(sp => new WorkflowExecutio
     sp.GetService<IStatisticsAggregationService>(),  // Nullable - OK if DB not configured
     executionTimeout));
 
-// Register background service
+// Register background services
 builder.Services.AddSingleton(sp => new WorkflowWatcherService(
     sp.GetRequiredService<IWorkflowDiscoveryService>(),
     sp.GetRequiredService<IDynamicEndpointService>(),
@@ -195,6 +206,30 @@ builder.Services.AddSingleton(sp => new WorkflowWatcherService(
     sp.GetRequiredService<ILogger<WorkflowWatcherService>>(),
     watcherInterval));
 builder.Services.AddHostedService(sp => sp.GetRequiredService<WorkflowWatcherService>());
+
+// Register schedule trigger background service
+builder.Services.AddSingleton(sp => new ScheduleTriggerService(
+    sp.GetRequiredService<IWorkflowDiscoveryService>(),
+    sp.GetRequiredService<ICronParser>(),
+    sp,  // IServiceProvider for creating scopes
+    sp.GetRequiredService<ILogger<ScheduleTriggerService>>(),
+    triggerPollingInterval));
+builder.Services.AddHostedService(sp => sp.GetRequiredService<ScheduleTriggerService>());
+
+// Register anomaly baseline service
+builder.Services.AddScoped<IAnomalyBaselineService, AnomalyBaselineService>();
+
+// Register baseline refresh background service
+builder.Services.Configure<BaselineRefreshOptions>(options =>
+{
+    options.RefreshInterval = TimeSpan.FromHours(1);
+    options.Enabled = true;
+});
+builder.Services.AddHostedService<BaselineRefreshService>();
+
+// Register anomaly detection services
+builder.Services.AddScoped<IAnomalyDetector, ZScoreAnomalyDetector>();
+builder.Services.AddScoped<AnomalyEvaluationService>();
 
 var app = builder.Build();
 

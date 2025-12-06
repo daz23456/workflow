@@ -543,6 +543,14 @@
           }
         }
       },
+      "NCrontab/3.3.3": {
+        "runtime": {
+          "lib/netstandard2.0/NCrontab.dll": {
+            "assemblyVersion": "3.3.3.0",
+            "fileVersion": "3.3.3.0"
+          }
+        }
+      },
       "NETStandard.Library/1.6.1": {
         "dependencies": {
           "Microsoft.NETCore.Platforms": "1.1.1",
@@ -1407,6 +1415,7 @@
           "JsonSchema.Net": "7.4.0",
           "KubernetesClient": "18.0.5",
           "Microsoft.EntityFrameworkCore": "8.0.11",
+          "NCrontab": "3.3.3",
           "Npgsql.EntityFrameworkCore.PostgreSQL": "8.0.10",
           "Serilog": "3.1.1",
           "System.Text.Json": "9.0.0",
@@ -1650,6 +1659,13 @@
       "sha512": "sha512-4rNnAwdpXJBuxqrOCzCyICXHSImOTRktCgCWXWykuF1qwoIsVvEnR7PjbMk/eLOxWvhmj5Kwt+kDV3RGUYcNwg==",
       "path": "moq/4.20.70",
       "hashPath": "moq.4.20.70.nupkg.sha512"
+    },
+    "NCrontab/3.3.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-2yzZXZLI0YpxrNgWnW/4xoo7ErLgWJIwTljRVEJ3hyjc7Kw9eGdjbFZGP1AhBuTUEZQ443PgZifG1yox6Qo1/A==",
+      "path": "ncrontab/3.3.3",
+      "hashPath": "ncrontab.3.3.3.nupkg.sha512"
     },
     "NETStandard.Library/1.6.1": {
       "type": "package",

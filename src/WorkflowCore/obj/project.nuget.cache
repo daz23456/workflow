@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "vUrfSEQWrUE=",
+  "dgSpecHash": "YENWpBwUJGA=",
   "success": true,
   "projectFilePath": "/Users/darren/dev/workflow/src/WorkflowCore/WorkflowCore.csproj",
   "expectedPackageFiles": [
@@ -33,6 +33,7 @@
     "/Users/darren/.nuget/packages/microsoft.extensions.options/8.0.2/microsoft.extensions.options.8.0.2.nupkg.sha512",
     "/Users/darren/.nuget/packages/microsoft.extensions.primitives/8.0.0/microsoft.extensions.primitives.8.0.0.nupkg.sha512",
     "/Users/darren/.nuget/packages/mono.texttemplating/2.2.1/mono.texttemplating.2.2.1.nupkg.sha512",
+    "/Users/darren/.nuget/packages/ncrontab/3.3.3/ncrontab.3.3.3.nupkg.sha512",
     "/Users/darren/.nuget/packages/npgsql/8.0.5/npgsql.8.0.5.nupkg.sha512",
     "/Users/darren/.nuget/packages/npgsql.entityframeworkcore.postgresql/8.0.10/npgsql.entityframeworkcore.postgresql.8.0.10.nupkg.sha512",
     "/Users/darren/.nuget/packages/serilog/3.1.1/serilog.3.1.1.nupkg.sha512",

@@ -1,0 +1,54 @@
+
+> workflow-root@1.0.0 build
+> turbo run build
+
+turbo 2.6.1
+
+ WARNING  Unable to calculate transitive closures: Workspace 'packages/workflow-cli' not found in lockfile.
+• Packages in scope: @workflow/api-client, @workflow/cli, @workflow/graph, @workflow/mcp-server, @workflow/types, @workflow/ui-components, @workflow/validation, workflow-ui, workflow-vscode-client, workflow-vscode-server
+• Running build in 10 packages
+• Remote caching disabled
+workflow-ui:build: cache miss, executing 06b5613430bfc709
+@workflow/api-client:build: cache hit, replaying logs 3d9dcdc5aaef877f
+@workflow/api-client:build: 
+@workflow/api-client:build: > @workflow/api-client@0.1.0 build /Users/darren/dev/workflow/packages/workflow-api-client
+@workflow/api-client:build: > tsc
+@workflow/api-client:build: 
+@workflow/types:build: cache hit, replaying logs 0f2e79c66c17a254
+@workflow/types:build: 
+@workflow/types:build: > @workflow/types@0.1.0 build /Users/darren/dev/workflow/packages/workflow-types
+@workflow/types:build: > tsc
+@workflow/types:build: 
+@workflow/validation:build: cache miss, executing fdbd3b409fd4f215
+@workflow/cli:build: cache hit, replaying logs aa2a5013d83d7e5a
+@workflow/cli:build: 
+@workflow/cli:build: > @workflow/cli@0.1.0 build /Users/darren/dev/workflow/packages/workflow-cli
+@workflow/cli:build: > tsc
+@workflow/cli:build: 
+@workflow/mcp-server:build: cache hit, replaying logs 7229d048339c228b
+@workflow/mcp-server:build: 
+@workflow/mcp-server:build: > @workflow/mcp-server@0.1.0 build /Users/darren/dev/workflow/packages/workflow-mcp-server
+@workflow/mcp-server:build: > tsc
+@workflow/mcp-server:build: 
+workflow-ui:build: 
+workflow-ui:build: > workflow-ui@0.1.0 build /Users/darren/dev/workflow/src/workflow-ui
+workflow-ui:build: > next build
+workflow-ui:build: 
+@workflow/validation:build: 
+@workflow/validation:build: > @workflow/validation@0.1.0 build /Users/darren/dev/workflow/packages/workflow-validation
+@workflow/validation:build: > tsc
+@workflow/validation:build: 
+workflow-ui:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+@workflow/validation:build: src/schemaValidator.ts(2,51): error TS6305: Output file '/Users/darren/dev/workflow/packages/workflow-types/dist/index.d.ts' has not been built from source file '/Users/darren/dev/workflow/packages/workflow-types/src/index.ts'.
+@workflow/validation:build: src/templateParser.ts(1,57): error TS6305: Output file '/Users/darren/dev/workflow/packages/workflow-types/dist/index.d.ts' has not been built from source file '/Users/darren/dev/workflow/packages/workflow-types/src/index.ts'.
+@workflow/validation:build:  ELIFECYCLE  Command failed with exit code 2.
+@workflow/validation:build: ERROR: command finished with error: command (/Users/darren/dev/workflow/packages/workflow-validation) /usr/local/bin/pnpm run build exited (2)
+workflow-ui:build:  ELIFECYCLE  Command failed with exit code 130.
+@workflow/validation#build: command (/Users/darren/dev/workflow/packages/workflow-validation) /usr/local/bin/pnpm run build exited (2)
+
+ Tasks:    4 successful, 6 total
+Cached:    4 cached, 6 total
+  Time:    2.774s 
+Failed:    @workflow/validation#build
+
+ ERROR  run failed: command  exited (2)

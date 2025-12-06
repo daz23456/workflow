@@ -56,9 +56,10 @@ function getBaseUrl(spec) {
  */
 function extractSchemas(spec) {
     const schemas = {};
-    if (spec.components?.schemas) {
-        for (const [name, schema] of Object.entries(spec.components.schemas)) {
-            schemas[name] = convertSchema(schema);
+    const componentSchemas = spec.components?.schemas;
+    if (componentSchemas) {
+        for (const [name, schema] of Object.entries(componentSchemas)) {
+            schemas[name] = convertSchema(schema, componentSchemas);
         }
     }
     return schemas;
@@ -66,9 +67,10 @@ function extractSchemas(spec) {
 /**
  * Extract all endpoints from paths
  */
-function extractEndpoints(spec, schemas) {
+function extractEndpoints(spec, _schemas) {
     const endpoints = [];
     const methods = ['get', 'post', 'put', 'delete', 'patch'];
+    const componentSchemas = spec.components?.schemas;
     if (!spec.paths)
         return endpoints;
     for (const [path, pathItem] of Object.entries(spec.paths)) {
@@ -78,7 +80,7 @@ function extractEndpoints(spec, schemas) {
             const operation = pathItem[method];
             if (!operation)
                 continue;
-            const endpoint = parseOperation(path, method.toUpperCase(), operation, schemas);
+            const endpoint = parseOperation(path, method.toUpperCase(), operation, componentSchemas);
             endpoints.push(endpoint);
         }
     }
@@ -87,7 +89,7 @@ function extractEndpoints(spec, schemas) {
 /**
  * Parse a single operation into our format
  */
-function parseOperation(path, method, operation, schemas) {
+function parseOperation(path, method, operation, componentSchemas) {
     const operationId = operation.operationId || generateOperationId(path, method);
     return {
         operationId,
@@ -96,9 +98,9 @@ function parseOperation(path, method, operation, schemas) {
         summary: operation.summary,
         description: operation.description,
         tags: operation.tags || [],
-        parameters: parseParameters(operation.parameters || []),
-        requestBody: parseRequestBody(operation.requestBody),
-        responses: parseResponses(operation.responses),
+        parameters: parseParameters(operation.parameters || [], componentSchemas),
+        requestBody: parseRequestBody(operation.requestBody, componentSchemas),
+        responses: parseResponses(operation.responses, componentSchemas),
         security: extractSecuritySchemes(operation.security)
     };
 }
@@ -117,19 +119,19 @@ function generateOperationId(path, method) {
 /**
  * Parse parameters array
  */
-function parseParameters(parameters) {
+function parseParameters(parameters, componentSchemas) {
     return parameters.map(param => ({
         name: param.name,
         in: param.in,
         required: param.required || false,
-        schema: convertSchema(param.schema || { type: 'string' }),
+        schema: convertSchema(param.schema || { type: 'string' }, componentSchemas),
         description: param.description
     }));
 }
 /**
  * Parse request body
  */
-function parseRequestBody(requestBody) {
+function parseRequestBody(requestBody, componentSchemas) {
     if (!requestBody?.content)
         return undefined;
     // Prefer application/json
@@ -141,14 +143,14 @@ function parseRequestBody(requestBody) {
     return {
         required: requestBody.required || false,
         contentType,
-        schema: convertSchema(mediaType.schema),
+        schema: convertSchema(mediaType.schema, componentSchemas),
         description: requestBody.description
     };
 }
 /**
  * Parse responses
  */
-function parseResponses(responses) {
+function parseResponses(responses, componentSchemas) {
     const parsed = [];
     for (const [statusCode, response] of Object.entries(responses)) {
         const resp = response;
@@ -158,7 +160,7 @@ function parseResponses(responses) {
             contentType = Object.keys(resp.content).find(ct => ct.includes('json'))
                 || Object.keys(resp.content)[0];
             if (contentType && resp.content[contentType]?.schema) {
-                schema = convertSchema(resp.content[contentType].schema);
+                schema = convertSchema(resp.content[contentType].schema, componentSchemas);
             }
         }
         parsed.push({
@@ -179,9 +181,41 @@ function extractSecuritySchemes(security) {
     return security.flatMap(req => Object.keys(req));
 }
 /**
- * Convert OpenAPI schema to our JsonSchema format
+ * Check if a schema is a reference object
  */
-function convertSchema(schema) {
+function isReferenceObject(schema) {
+    return typeof schema === 'object' && schema !== null && '$ref' in schema;
+}
+/**
+ * Resolve a $ref to its schema name
+ * e.g., "#/components/schemas/User" -> "User"
+ */
+function resolveRefName(ref) {
+    const match = ref.match(/^#\/components\/schemas\/(.+)$/);
+    return match ? match[1] : null;
+}
+/**
+ * Convert OpenAPI schema to our JsonSchema format
+ * Handles both SchemaObject and ReferenceObject ($ref)
+ */
+function convertSchema(schema, componentSchemas, visited = new Set()) {
+    // Handle $ref schemas
+    if (isReferenceObject(schema)) {
+        const refName = resolveRefName(schema.$ref);
+        if (refName && componentSchemas) {
+            // Prevent circular reference loops
+            if (visited.has(refName)) {
+                return { type: 'object', description: `Circular reference to ${refName}` };
+            }
+            visited.add(refName);
+            const referencedSchema = componentSchemas[refName];
+            if (referencedSchema) {
+                return convertSchema(referencedSchema, componentSchemas, visited);
+            }
+        }
+        // Couldn't resolve ref, return generic object
+        return { type: 'object' };
+    }
     const result = {};
     if (schema.type)
         result.type = schema.type;
@@ -206,19 +240,19 @@ function convertSchema(schema) {
     if (schema.properties) {
         result.properties = {};
         for (const [name, prop] of Object.entries(schema.properties)) {
-            result.properties[name] = convertSchema(prop);
+            result.properties[name] = convertSchema(prop, componentSchemas, new Set(visited));
         }
     }
     // Handle array items (type guard for ArraySchemaObject)
     if ('items' in schema && schema.items) {
-        result.items = convertSchema(schema.items);
+        result.items = convertSchema(schema.items, componentSchemas, new Set(visited));
     }
     if (schema.additionalProperties !== undefined) {
         if (typeof schema.additionalProperties === 'boolean') {
             result.additionalProperties = schema.additionalProperties;
         }
         else {
-            result.additionalProperties = convertSchema(schema.additionalProperties);
+            result.additionalProperties = convertSchema(schema.additionalProperties, componentSchemas, new Set(visited));
         }
     }
     return result;

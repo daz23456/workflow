@@ -40,4 +40,21 @@ public class TaskExecutionResult
     /// Actual timestamp when task execution completed (captured by orchestrator)
     /// </summary>
     public DateTime CompletedAt { get; set; }
+
+    /// <summary>
+    /// Current state of the circuit breaker after this execution.
+    /// Only populated if the task has circuit breaker configuration.
+    /// </summary>
+    public CircuitState? CircuitState { get; set; }
+
+    /// <summary>
+    /// Indicates whether a fallback task was executed instead of the primary task.
+    /// True when circuit is open and fallback is configured.
+    /// </summary>
+    public bool UsedFallback { get; set; }
+
+    /// <summary>
+    /// Reference to the fallback task that was executed, if UsedFallback is true.
+    /// </summary>
+    public string? FallbackTaskRef { get; set; }
 }

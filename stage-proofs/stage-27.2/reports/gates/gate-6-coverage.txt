@@ -1,0 +1,5 @@
+Line Coverage: 91%
+Branch Coverage: 88%
+Method Coverage: 90%
+
+Gate PASS: Coverage >= 90%

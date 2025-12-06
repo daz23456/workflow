@@ -1,1 +1,0 @@
-{"version":3,"file":"WorkflowTestResponse.d.ts","sourceRoot":"","sources":["../../src/models/WorkflowTestResponse.ts"],"names":[],"mappings":"AAIA,MAAM,MAAM,oBAAoB,GAAG;IAC/B,KAAK,CAAC,EAAE,OAAO,CAAC;IAChB,gBAAgB,CAAC,EAAE,KAAK,CAAC,MAAM,CAAC,GAAG,IAAI,CAAC;IACxC,aAAa,CAAC,EAAE,GAAG,CAAC;CACvB,CAAC"}

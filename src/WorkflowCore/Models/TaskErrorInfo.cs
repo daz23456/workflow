@@ -47,7 +47,12 @@ public enum TaskErrorType
     /// <summary>
     /// Error type could not be determined
     /// </summary>
-    UnknownError
+    UnknownError,
+
+    /// <summary>
+    /// Circuit breaker is open, blocking execution to prevent cascade failures
+    /// </summary>
+    CircuitBreakerOpen
 }
 
 /// <summary>

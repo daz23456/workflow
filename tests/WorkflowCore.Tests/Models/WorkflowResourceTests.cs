@@ -117,7 +117,8 @@ spec:
 
         // Assert
         step.Id.Should().Be(string.Empty);
-        step.TaskRef.Should().Be(string.Empty);
+        step.TaskRef.Should().BeNull(); // Nullable for mutual exclusivity with WorkflowRef
+        step.WorkflowRef.Should().BeNull();
         step.Input.Should().NotBeNull();
         step.Input.Should().BeEmpty();
         step.Condition.Should().BeNull();
@@ -321,5 +322,182 @@ spec:
             step!.DependsOn.Should().NotBeNull($"Failed for JSON: {json}");
             step.DependsOn.Should().ContainSingle().Which.Should().Be("dep1");
         }
+    }
+
+    // ========== CIRCUIT BREAKER DESERIALIZATION TESTS ==========
+
+    [Fact]
+    public void WorkflowTaskStep_ShouldDeserializeCircuitBreaker_FromYaml()
+    {
+        // Arrange
+        var yaml = @"
+apiVersion: workflows.example.com/v1
+kind: Workflow
+metadata:
+  name: circuit-breaker-workflow
+spec:
+  tasks:
+    - id: external-api-call
+      taskRef: http-get
+      input:
+        url: 'https://api.example.com/data'
+      circuitBreaker:
+        failureThreshold: 5
+        samplingDuration: 60s
+        breakDuration: 30s
+        halfOpenRequests: 3
+";
+
+        // Act
+        var deserializer = new DeserializerBuilder()
+            .WithNamingConvention(CamelCaseNamingConvention.Instance)
+            .Build();
+        var resource = deserializer.Deserialize<WorkflowResource>(yaml);
+
+        // Assert
+        resource.Should().NotBeNull();
+        resource.Spec.Tasks.Should().HaveCount(1);
+        var task = resource.Spec.Tasks[0];
+        task.CircuitBreaker.Should().NotBeNull();
+        task.CircuitBreaker!.FailureThreshold.Should().Be(5);
+        task.CircuitBreaker.SamplingDuration.Should().Be("60s");
+        task.CircuitBreaker.BreakDuration.Should().Be("30s");
+        task.CircuitBreaker.HalfOpenRequests.Should().Be(3);
+    }
+
+    [Fact]
+    public void WorkflowTaskStep_ShouldDeserializeFallback_FromYaml()
+    {
+        // Arrange
+        var yaml = @"
+apiVersion: workflows.example.com/v1
+kind: Workflow
+metadata:
+  name: fallback-workflow
+spec:
+  tasks:
+    - id: external-api-call
+      taskRef: http-get
+      fallback:
+        taskRef: get-cached-data
+        input:
+          key: '{{input.cacheKey}}'
+";
+
+        // Act
+        var deserializer = new DeserializerBuilder()
+            .WithNamingConvention(CamelCaseNamingConvention.Instance)
+            .Build();
+        var resource = deserializer.Deserialize<WorkflowResource>(yaml);
+
+        // Assert
+        resource.Should().NotBeNull();
+        resource.Spec.Tasks.Should().HaveCount(1);
+        var task = resource.Spec.Tasks[0];
+        task.Fallback.Should().NotBeNull();
+        task.Fallback!.TaskRef.Should().Be("get-cached-data");
+        task.Fallback.Input.Should().ContainKey("key");
+        task.Fallback.Input["key"].Should().Be("{{input.cacheKey}}");
+    }
+
+    [Fact]
+    public void WorkflowTaskStep_ShouldDeserializeCircuitBreakerAndFallback_FromYaml()
+    {
+        // Arrange - both circuit breaker and fallback configured
+        var yaml = @"
+apiVersion: workflows.example.com/v1
+kind: Workflow
+metadata:
+  name: resilient-workflow
+spec:
+  tasks:
+    - id: call-external-api
+      taskRef: http-get
+      input:
+        url: 'https://api.example.com/data'
+      circuitBreaker:
+        failureThreshold: 5
+        samplingDuration: 60s
+        breakDuration: 30s
+        halfOpenRequests: 3
+      fallback:
+        taskRef: get-cached-data
+        input:
+          key: '{{input.cacheKey}}'
+";
+
+        // Act
+        var deserializer = new DeserializerBuilder()
+            .WithNamingConvention(CamelCaseNamingConvention.Instance)
+            .Build();
+        var resource = deserializer.Deserialize<WorkflowResource>(yaml);
+
+        // Assert
+        resource.Should().NotBeNull();
+        var task = resource.Spec.Tasks[0];
+        task.CircuitBreaker.Should().NotBeNull();
+        task.Fallback.Should().NotBeNull();
+        task.CircuitBreaker!.FailureThreshold.Should().Be(5);
+        task.Fallback!.TaskRef.Should().Be("get-cached-data");
+    }
+
+    [Fact]
+    public void WorkflowTaskStep_ShouldDeserializeCircuitBreaker_FromJson()
+    {
+        // Arrange
+        var json = @"
+{
+    ""apiVersion"": ""workflows.example.com/v1"",
+    ""kind"": ""Workflow"",
+    ""metadata"": { ""name"": ""cb-workflow"" },
+    ""spec"": {
+        ""tasks"": [
+            {
+                ""id"": ""api-call"",
+                ""taskRef"": ""http-get"",
+                ""circuitBreaker"": {
+                    ""failureThreshold"": 10,
+                    ""samplingDuration"": ""2m"",
+                    ""breakDuration"": ""45s"",
+                    ""halfOpenRequests"": 5
+                },
+                ""fallback"": {
+                    ""taskRef"": ""cache-fallback"",
+                    ""input"": { ""id"": ""{{input.id}}"" }
+                }
+            }
+        ]
+    }
+}";
+
+        // Act
+        var options = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
+        var resource = JsonSerializer.Deserialize<WorkflowResource>(json, options);
+
+        // Assert
+        resource.Should().NotBeNull();
+        var task = resource!.Spec.Tasks[0];
+        task.CircuitBreaker.Should().NotBeNull();
+        task.CircuitBreaker!.FailureThreshold.Should().Be(10);
+        task.CircuitBreaker.SamplingDuration.Should().Be("2m");
+        task.CircuitBreaker.BreakDuration.Should().Be("45s");
+        task.CircuitBreaker.HalfOpenRequests.Should().Be(5);
+        task.Fallback.Should().NotBeNull();
+        task.Fallback!.TaskRef.Should().Be("cache-fallback");
+    }
+
+    [Fact]
+    public void WorkflowTaskStep_CircuitBreakerAndFallback_ShouldDefaultToNull()
+    {
+        // Act
+        var step = new WorkflowTaskStep();
+
+        // Assert
+        step.CircuitBreaker.Should().BeNull();
+        step.Fallback.Should().BeNull();
     }
 }

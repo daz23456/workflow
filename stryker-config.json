@@ -3,7 +3,7 @@
   "stryker-config": {
     "project": "WorkflowCore.csproj",
     "test-projects": ["WorkflowCore.Tests.csproj"],
-    "reporters": ["html", "progress", "cleartext"],
+    "reporters": ["html", "progress", "cleartext", "json"],
     "thresholds": {
       "high": 80,
       "low": 60,

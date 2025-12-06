@@ -1,0 +1,4 @@
+Gate 6: Code Coverage - PASS
+New code coverage: 100% lines, 97% branches
+WorkflowRefResolver: 100% line, 97% branch
+WorkflowRefSpec: 100% line, 100% branch

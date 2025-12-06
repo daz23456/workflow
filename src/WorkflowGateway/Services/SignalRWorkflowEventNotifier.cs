@@ -128,6 +128,33 @@ public class SignalRWorkflowEventNotifier : IWorkflowEventNotifier
         );
     }
 
+    public async Task OnAnomalyDetectedAsync(WorkflowCore.Models.AnomalyEvent anomalyEvent)
+    {
+        var executionId = Guid.Parse(anomalyEvent.ExecutionId);
+        var groupName = GetExecutionGroupName(executionId);
+        var anomalyDetectedEvent = new AnomalyDetectedEvent
+        {
+            Id = anomalyEvent.Id,
+            ExecutionId = executionId,
+            WorkflowName = anomalyEvent.WorkflowName,
+            TaskId = anomalyEvent.TaskId,
+            Severity = anomalyEvent.Severity.ToString(),
+            MetricType = anomalyEvent.MetricType,
+            ActualValue = anomalyEvent.ActualValue,
+            ExpectedValue = anomalyEvent.ExpectedValue,
+            ZScore = anomalyEvent.ZScore,
+            DeviationPercent = anomalyEvent.DeviationPercent,
+            Description = anomalyEvent.Description,
+            DetectedAt = anomalyEvent.DetectedAt
+        };
+
+        // Broadcast to both execution-specific group and global visualization group
+        await Task.WhenAll(
+            _hubContext.Clients.Group(groupName).AnomalyDetected(anomalyDetectedEvent),
+            _hubContext.Clients.Group(WorkflowExecutionHub.VisualizationGroupName).AnomalyDetected(anomalyDetectedEvent)
+        );
+    }
+
     private static string GetExecutionGroupName(Guid executionId)
     {
         return $"execution-{executionId}";

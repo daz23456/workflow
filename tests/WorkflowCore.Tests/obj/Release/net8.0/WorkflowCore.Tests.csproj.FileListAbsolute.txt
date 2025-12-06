@@ -136,3 +136,5 @@
 /Users/darren/dev/workflow/tests/WorkflowCore.Tests/bin/Release/net8.0/Npgsql.EntityFrameworkCore.PostgreSQL.dll
 /Users/darren/dev/workflow/tests/WorkflowCore.Tests/bin/Release/net8.0/Humanizer.dll
 /Users/darren/dev/workflow/tests/WorkflowCore.Tests/bin/Release/net8.0/JsonPath.Net.dll
+/Users/darren/dev/workflow/tests/WorkflowCore.Tests/bin/Release/net8.0/NCrontab.dll
+/Users/darren/dev/workflow/tests/WorkflowCore.Tests/obj/Release/net8.0/WorkflowCore.Tests.sourcelink.json

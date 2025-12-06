@@ -1,0 +1,1 @@
+# Backend-only stage - no screenshots required

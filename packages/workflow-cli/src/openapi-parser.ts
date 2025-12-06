@@ -107,10 +107,11 @@ function getBaseUrl(spec: OpenAPIV3.Document): string {
  */
 function extractSchemas(spec: OpenAPIV3.Document): Record<string, JsonSchema> {
   const schemas: Record<string, JsonSchema> = {};
+  const componentSchemas = spec.components?.schemas as Record<string, OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject> | undefined;
 
-  if (spec.components?.schemas) {
-    for (const [name, schema] of Object.entries(spec.components.schemas)) {
-      schemas[name] = convertSchema(schema as OpenAPIV3.SchemaObject);
+  if (componentSchemas) {
+    for (const [name, schema] of Object.entries(componentSchemas)) {
+      schemas[name] = convertSchema(schema, componentSchemas);
     }
   }
 
@@ -120,9 +121,10 @@ function extractSchemas(spec: OpenAPIV3.Document): Record<string, JsonSchema> {
 /**
  * Extract all endpoints from paths
  */
-function extractEndpoints(spec: OpenAPIV3.Document, schemas: Record<string, JsonSchema>): ParsedEndpoint[] {
+function extractEndpoints(spec: OpenAPIV3.Document, _schemas: Record<string, JsonSchema>): ParsedEndpoint[] {
   const endpoints: ParsedEndpoint[] = [];
   const methods = ['get', 'post', 'put', 'delete', 'patch'] as const;
+  const componentSchemas = spec.components?.schemas as Record<string, OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject> | undefined;
 
   if (!spec.paths) return endpoints;
 
@@ -133,7 +135,7 @@ function extractEndpoints(spec: OpenAPIV3.Document, schemas: Record<string, Json
       const operation = pathItem[method] as OpenAPIV3.OperationObject | undefined;
       if (!operation) continue;
 
-      const endpoint = parseOperation(path, method.toUpperCase(), operation, schemas);
+      const endpoint = parseOperation(path, method.toUpperCase(), operation, componentSchemas);
       endpoints.push(endpoint);
     }
   }
@@ -148,7 +150,7 @@ function parseOperation(
   path: string,
   method: string,
   operation: OpenAPIV3.OperationObject,
-  _schemas: Record<string, JsonSchema>
+  componentSchemas?: Record<string, OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject>
 ): ParsedEndpoint {
   const operationId = operation.operationId || generateOperationId(path, method);
 
@@ -159,9 +161,9 @@ function parseOperation(
     summary: operation.summary,
     description: operation.description,
     tags: operation.tags || [],
-    parameters: parseParameters(operation.parameters as OpenAPIV3.ParameterObject[] || []),
-    requestBody: parseRequestBody(operation.requestBody as OpenAPIV3.RequestBodyObject | undefined),
-    responses: parseResponses(operation.responses as OpenAPIV3.ResponsesObject),
+    parameters: parseParameters(operation.parameters as OpenAPIV3.ParameterObject[] || [], componentSchemas),
+    requestBody: parseRequestBody(operation.requestBody as OpenAPIV3.RequestBodyObject | undefined, componentSchemas),
+    responses: parseResponses(operation.responses as OpenAPIV3.ResponsesObject, componentSchemas),
     security: extractSecuritySchemes(operation.security)
   };
 }
@@ -183,12 +185,18 @@ function generateOperationId(path: string, method: string): string {
 /**
  * Parse parameters array
  */
-function parseParameters(parameters: OpenAPIV3.ParameterObject[]): ParsedParameter[] {
+function parseParameters(
+  parameters: OpenAPIV3.ParameterObject[],
+  componentSchemas?: Record<string, OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject>
+): ParsedParameter[] {
   return parameters.map(param => ({
     name: param.name,
     in: param.in as ParsedParameter['in'],
     required: param.required || false,
-    schema: convertSchema(param.schema as OpenAPIV3.SchemaObject || { type: 'string' }),
+    schema: convertSchema(
+      param.schema as OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject || { type: 'string' },
+      componentSchemas
+    ),
     description: param.description
   }));
 }
@@ -196,7 +204,10 @@ function parseParameters(parameters: OpenAPIV3.ParameterObject[]): ParsedParamet
 /**
  * Parse request body
  */
-function parseRequestBody(requestBody: OpenAPIV3.RequestBodyObject | undefined): ParsedRequestBody | undefined {
+function parseRequestBody(
+  requestBody: OpenAPIV3.RequestBodyObject | undefined,
+  componentSchemas?: Record<string, OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject>
+): ParsedRequestBody | undefined {
   if (!requestBody?.content) return undefined;
 
   // Prefer application/json
@@ -209,7 +220,10 @@ function parseRequestBody(requestBody: OpenAPIV3.RequestBodyObject | undefined):
   return {
     required: requestBody.required || false,
     contentType,
-    schema: convertSchema(mediaType.schema as OpenAPIV3.SchemaObject),
+    schema: convertSchema(
+      mediaType.schema as OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject,
+      componentSchemas
+    ),
     description: requestBody.description
   };
 }
@@ -217,7 +231,10 @@ function parseRequestBody(requestBody: OpenAPIV3.RequestBodyObject | undefined):
 /**
  * Parse responses
  */
-function parseResponses(responses: OpenAPIV3.ResponsesObject): ParsedResponse[] {
+function parseResponses(
+  responses: OpenAPIV3.ResponsesObject,
+  componentSchemas?: Record<string, OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject>
+): ParsedResponse[] {
   const parsed: ParsedResponse[] = [];
 
   for (const [statusCode, response] of Object.entries(responses)) {
@@ -231,7 +248,10 @@ function parseResponses(responses: OpenAPIV3.ResponsesObject): ParsedResponse[] 
         || Object.keys(resp.content)[0];
 
       if (contentType && resp.content[contentType]?.schema) {
-        schema = convertSchema(resp.content[contentType].schema as OpenAPIV3.SchemaObject);
+        schema = convertSchema(
+          resp.content[contentType].schema as OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject,
+          componentSchemas
+        );
       }
     }
 
@@ -255,9 +275,49 @@ function extractSecuritySchemes(security: OpenAPIV3.SecurityRequirementObject[] 
 }
 
 /**
- * Convert OpenAPI schema to our JsonSchema format
+ * Check if a schema is a reference object
  */
-function convertSchema(schema: OpenAPIV3.SchemaObject): JsonSchema {
+function isReferenceObject(schema: unknown): schema is OpenAPIV3.ReferenceObject {
+  return typeof schema === 'object' && schema !== null && '$ref' in schema;
+}
+
+/**
+ * Resolve a $ref to its schema name
+ * e.g., "#/components/schemas/User" -> "User"
+ */
+function resolveRefName(ref: string): string | null {
+  const match = ref.match(/^#\/components\/schemas\/(.+)$/);
+  return match ? match[1] : null;
+}
+
+/**
+ * Convert OpenAPI schema to our JsonSchema format
+ * Handles both SchemaObject and ReferenceObject ($ref)
+ */
+function convertSchema(
+  schema: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject,
+  componentSchemas?: Record<string, OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject>,
+  visited: Set<string> = new Set()
+): JsonSchema {
+  // Handle $ref schemas
+  if (isReferenceObject(schema)) {
+    const refName = resolveRefName(schema.$ref);
+    if (refName && componentSchemas) {
+      // Prevent circular reference loops
+      if (visited.has(refName)) {
+        return { type: 'object', description: `Circular reference to ${refName}` };
+      }
+      visited.add(refName);
+
+      const referencedSchema = componentSchemas[refName];
+      if (referencedSchema) {
+        return convertSchema(referencedSchema, componentSchemas, visited);
+      }
+    }
+    // Couldn't resolve ref, return generic object
+    return { type: 'object' };
+  }
+
   const result: JsonSchema = {};
 
   if (schema.type) result.type = schema.type as string;
@@ -274,20 +334,32 @@ function convertSchema(schema: OpenAPIV3.SchemaObject): JsonSchema {
   if (schema.properties) {
     result.properties = {};
     for (const [name, prop] of Object.entries(schema.properties)) {
-      result.properties[name] = convertSchema(prop as OpenAPIV3.SchemaObject);
+      result.properties[name] = convertSchema(
+        prop as OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject,
+        componentSchemas,
+        new Set(visited)
+      );
     }
   }
 
   // Handle array items (type guard for ArraySchemaObject)
   if ('items' in schema && schema.items) {
-    result.items = convertSchema(schema.items as OpenAPIV3.SchemaObject);
+    result.items = convertSchema(
+      schema.items as OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject,
+      componentSchemas,
+      new Set(visited)
+    );
   }
 
   if (schema.additionalProperties !== undefined) {
     if (typeof schema.additionalProperties === 'boolean') {
       result.additionalProperties = schema.additionalProperties;
     } else {
-      result.additionalProperties = convertSchema(schema.additionalProperties as OpenAPIV3.SchemaObject);
+      result.additionalProperties = convertSchema(
+        schema.additionalProperties as OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject,
+        componentSchemas,
+        new Set(visited)
+      );
     }
   }
 

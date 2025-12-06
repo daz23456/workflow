@@ -62,3 +62,22 @@ public class SignalFlowEvent
     public string ToTaskId { get; set; } = string.Empty;
     public DateTime Timestamp { get; set; }
 }
+
+/// <summary>
+/// Event emitted when a performance anomaly is detected during workflow or task execution.
+/// </summary>
+public class AnomalyDetectedEvent
+{
+    public string Id { get; set; } = string.Empty;
+    public Guid ExecutionId { get; set; }
+    public string WorkflowName { get; set; } = string.Empty;
+    public string? TaskId { get; set; }
+    public string Severity { get; set; } = string.Empty;
+    public string MetricType { get; set; } = string.Empty;
+    public double ActualValue { get; set; }
+    public double ExpectedValue { get; set; }
+    public double ZScore { get; set; }
+    public double DeviationPercent { get; set; }
+    public string Description { get; set; } = string.Empty;
+    public DateTime DetectedAt { get; set; }
+}

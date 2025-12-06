@@ -45,4 +45,9 @@ public interface IWorkflowEventNotifier
     /// Used for neural visualization to animate data flow along edges.
     /// </summary>
     Task OnSignalFlowAsync(Guid executionId, string fromTaskId, string toTaskId, DateTime timestamp);
+
+    /// <summary>
+    /// Called when a performance anomaly is detected during workflow or task execution.
+    /// </summary>
+    Task OnAnomalyDetectedAsync(Models.AnomalyEvent anomalyEvent);
 }

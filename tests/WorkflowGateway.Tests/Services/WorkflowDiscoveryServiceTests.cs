@@ -241,9 +241,9 @@ public class WorkflowDiscoveryServiceTests
     }
 
     [Fact]
-    public async Task DiscoverWorkflows_WithNullNamespace_ShouldUseDefault()
+    public async Task DiscoverWorkflows_WithNullNamespace_ShouldUseClusterWideQuery()
     {
-        // Arrange - Tests line 32: var ns = @namespace ?? "default";
+        // Arrange - When namespace is null, uses cluster-wide query
         var workflows = new List<WorkflowResource>
         {
             new WorkflowResource
@@ -254,7 +254,7 @@ public class WorkflowDiscoveryServiceTests
         };
 
         _k8sClientMock
-            .Setup(x => x.ListWorkflowsAsync("default", It.IsAny<CancellationToken>()))
+            .Setup(x => x.ListAllWorkflowsAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(workflows);
 
         // Act
@@ -262,7 +262,7 @@ public class WorkflowDiscoveryServiceTests
 
         // Assert
         result.Should().HaveCount(1);
-        _k8sClientMock.Verify(x => x.ListWorkflowsAsync("default", It.IsAny<CancellationToken>()), Times.Once);
+        _k8sClientMock.Verify(x => x.ListAllWorkflowsAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -348,9 +348,9 @@ public class WorkflowDiscoveryServiceTests
     }
 
     [Fact]
-    public async Task DiscoverTasks_WithNullNamespace_ShouldUseDefault()
+    public async Task DiscoverTasks_WithNullNamespace_ShouldUseClusterWideQuery()
     {
-        // Arrange - Tests line 69: var ns = @namespace ?? "default";
+        // Arrange - When namespace is null, uses cluster-wide query
         var tasks = new List<WorkflowTaskResource>
         {
             new WorkflowTaskResource
@@ -361,7 +361,7 @@ public class WorkflowDiscoveryServiceTests
         };
 
         _k8sClientMock
-            .Setup(x => x.ListTasksAsync("default", It.IsAny<CancellationToken>()))
+            .Setup(x => x.ListAllTasksAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(tasks);
 
         // Act
@@ -369,7 +369,7 @@ public class WorkflowDiscoveryServiceTests
 
         // Assert
         result.Should().HaveCount(1);
-        _k8sClientMock.Verify(x => x.ListTasksAsync("default", It.IsAny<CancellationToken>()), Times.Once);
+        _k8sClientMock.Verify(x => x.ListAllTasksAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]

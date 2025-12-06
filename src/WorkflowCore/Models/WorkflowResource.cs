@@ -43,6 +43,14 @@ public class WorkflowSpec
     [YamlMember(Alias = "output")]
     [JsonPropertyName("output")]
     public Dictionary<string, string>? Output { get; set; }
+
+    /// <summary>
+    /// Optional triggers for automatic workflow execution.
+    /// Supports schedule (cron), webhook, and event-based triggers.
+    /// </summary>
+    [YamlMember(Alias = "triggers")]
+    [JsonPropertyName("triggers")]
+    public List<TriggerSpec>? Triggers { get; set; }
 }
 
 public class WorkflowInputParameter
@@ -72,7 +80,17 @@ public class WorkflowTaskStep
 
     [YamlMember(Alias = "taskRef")]
     [JsonPropertyName("taskRef")]
-    public string TaskRef { get; set; } = string.Empty;
+    public string? TaskRef { get; set; }
+
+    /// <summary>
+    /// Reference to another workflow to execute as a sub-workflow.
+    /// Mutually exclusive with TaskRef.
+    /// Supports formats: "name", "name@version", "namespace/name", "namespace/name@version"
+    /// Stage 21: Sub-Workflow Composition
+    /// </summary>
+    [YamlMember(Alias = "workflowRef")]
+    [JsonPropertyName("workflowRef")]
+    public string? WorkflowRef { get; set; }
 
     [YamlMember(Alias = "input")]
     [JsonPropertyName("input")]
@@ -109,6 +127,22 @@ public class WorkflowTaskStep
     [YamlMember(Alias = "timeout")]
     [JsonPropertyName("timeout")]
     public string? Timeout { get; set; }
+
+    /// <summary>
+    /// Optional circuit breaker configuration for fault tolerance.
+    /// Opens circuit after repeated failures, preventing cascade failures.
+    /// </summary>
+    [YamlMember(Alias = "circuitBreaker")]
+    [JsonPropertyName("circuitBreaker")]
+    public CircuitBreakerSpec? CircuitBreaker { get; set; }
+
+    /// <summary>
+    /// Optional fallback task to execute when circuit is open.
+    /// Provides degraded service instead of failing immediately.
+    /// </summary>
+    [YamlMember(Alias = "fallback")]
+    [JsonPropertyName("fallback")]
+    public FallbackSpec? Fallback { get; set; }
 }
 
 public class WorkflowStatus

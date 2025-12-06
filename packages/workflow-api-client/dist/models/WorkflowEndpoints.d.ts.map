@@ -1,1 +1,0 @@
-{"version":3,"file":"WorkflowEndpoints.d.ts","sourceRoot":"","sources":["../../src/models/WorkflowEndpoints.ts"],"names":[],"mappings":"AAIA,MAAM,MAAM,iBAAiB,GAAG;IAC5B,OAAO,CAAC,EAAE,MAAM,GAAG,IAAI,CAAC;IACxB,IAAI,CAAC,EAAE,MAAM,GAAG,IAAI,CAAC;IACrB,OAAO,CAAC,EAAE,MAAM,GAAG,IAAI,CAAC;CAC3B,CAAC"}

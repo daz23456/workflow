@@ -1,0 +1,14 @@
+
+> workflow-vscode-server@0.1.0 test
+> jest
+
+PASS src/hoverProvider.test.ts
+PASS src/snippetProvider.test.ts
+PASS src/diagnosticsProvider.test.ts
+PASS src/completionProvider.test.ts
+
+Test Suites: 4 passed, 4 total
+Tests:       48 passed, 48 total
+Snapshots:   0 total
+Time:        4.458 s, estimated 5 s
+Ran all test suites.

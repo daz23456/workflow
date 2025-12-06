@@ -59,6 +59,56 @@ spec:
                         description: "List of task IDs that must complete before this task starts"
                         items:
                           type: string
+                      condition:
+                        type: object
+                        description: "Conditional execution - task runs only if condition evaluates to true"
+                        properties:
+                          if:
+                            type: string
+                            description: "Expression to evaluate (e.g., '{{input.approved}} == true')"
+                      switch:
+                        type: object
+                        description: "Multi-branch routing based on value matching"
+                        properties:
+                          value:
+                            type: string
+                            description: "Expression to evaluate and match against cases"
+                          cases:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                match:
+                                  type: string
+                                  description: "Value to match against"
+                                taskRef:
+                                  type: string
+                                  description: "Task to execute if matched"
+                          default:
+                            type: object
+                            properties:
+                              taskRef:
+                                type: string
+                                description: "Task to execute if no cases match"
+                      forEach:
+                        type: object
+                        description: "Iterate over an array, executing task for each item"
+                        properties:
+                          items:
+                            type: string
+                            description: "Expression returning array to iterate (e.g., '{{tasks.fetch.output.users}}')"
+                          itemVar:
+                            type: string
+                            description: "Variable name for current item (default: 'item')"
+                          indexVar:
+                            type: string
+                            description: "Variable name for current index (default: 'index')"
+                          parallel:
+                            type: boolean
+                            description: "Execute iterations in parallel (default: false)"
+                          maxConcurrency:
+                            type: integer
+                            description: "Max parallel iterations (default: unlimited)"
                 output:
                   type: object
                   additionalProperties:

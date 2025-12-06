@@ -1,0 +1,28 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: dynamic-baseurl
+  namespace: default
+spec:
+  type: http
+  description: HTTP task with configurable base URL - enables environment switching (dev/staging/prod) or multi-tenant API calls.
+  request:
+    url: "{{input.baseUrl}}{{input.path}}"
+    method: GET
+    headers:
+      Accept: "application/json"
+  inputSchema:
+    type: object
+    properties:
+      baseUrl:
+        type: string
+        description: Base URL without trailing slash (e.g., https://api.dev.example.com or https://api.prod.example.com)
+      path:
+        type: string
+        description: API path with leading slash (e.g., /users/123 or /orders?status=pending)
+    required:
+      - baseUrl
+      - path
+  outputSchema:
+    type: object
+    description: Response from the endpoint (schema varies by path)

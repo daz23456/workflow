@@ -1,0 +1,2 @@
+STAGE 27.1 GATES PASSED
+1, 2, 3, 5, 6, 7, 8: PASS (N/A for TypeScript-specific gates)

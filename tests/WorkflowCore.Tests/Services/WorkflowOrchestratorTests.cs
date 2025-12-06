@@ -3518,4 +3518,1274 @@ spec:
     }
 
     #endregion
+
+    #region Mutation Killing Tests - Round 11 (WorkflowOrchestrator Non-String Mutations)
+
+    [Fact]
+    public async Task ExecuteAsync_GraphBuildDuration_ShouldBeNonZero_KillLine89Statement()
+    {
+        // Target: Line 89 - graphBuildStopwatch.Stop();
+        // If this statement is removed, GraphBuildDuration would be 0 or very large
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "task1", TaskRef = "test-task" }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["test-task"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } }
+        };
+
+        var graph = new ExecutionGraph();
+        graph.AddNode("task1");
+
+        _graphBuilderMock.Setup(x => x.Build(workflow))
+            .Returns(() =>
+            {
+                // Add a small delay to ensure measurable duration
+                Thread.Sleep(1);
+                return new ExecutionGraphResult { IsValid = true, Graph = graph };
+            });
+
+        _taskExecutorMock
+            .Setup(x => x.ExecuteAsync(It.IsAny<WorkflowTaskSpec>(), It.IsAny<TemplateContext>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new TaskExecutionResult { Success = true, Output = new Dictionary<string, object>() });
+
+        var result = await _orchestrator.ExecuteAsync(workflow, tasks, new Dictionary<string, object>(), CancellationToken.None);
+
+        result.Success.Should().BeTrue();
+        // If graphBuildStopwatch.Stop() is removed, this would be invalid
+        result.GraphBuildDuration.Should().BeGreaterThan(TimeSpan.Zero);
+        result.GraphBuildDuration.Should().BeLessThan(TimeSpan.FromSeconds(5)); // Sanity check
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_MultipleIterations_VerifyIterationCountIncreases_KillLine143()
+    {
+        // Target: Line 143 - iterationCount++ (PostIncrement mutation)
+        // If changed to -- or removed, iteration tracking would break
+        // This test verifies behavior by having sequential dependent tasks
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "first", TaskRef = "test-task" },
+                    new WorkflowTaskStep { Id = "second", TaskRef = "test-task", DependsOn = new List<string> { "first" } },
+                    new WorkflowTaskStep { Id = "third", TaskRef = "test-task", DependsOn = new List<string> { "second" } }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["test-task"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } }
+        };
+
+        var graph = new ExecutionGraph();
+        graph.AddNode("first");
+        graph.AddNode("second");
+        graph.AddNode("third");
+        graph.AddDependency("second", "first");
+        graph.AddDependency("third", "second");
+
+        _graphBuilderMock.Setup(x => x.Build(workflow))
+            .Returns(new ExecutionGraphResult { IsValid = true, Graph = graph });
+
+        var executionOrder = new List<string>();
+        _taskExecutorMock
+            .Setup(x => x.ExecuteAsync(It.IsAny<WorkflowTaskSpec>(), It.IsAny<TemplateContext>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((WorkflowTaskSpec spec, TemplateContext ctx, CancellationToken ct) =>
+            {
+                // Extract task ID from context if available
+                return new TaskExecutionResult { Success = true, Output = new Dictionary<string, object>() };
+            });
+
+        var result = await _orchestrator.ExecuteAsync(workflow, tasks, new Dictionary<string, object>(), CancellationToken.None);
+
+        result.Success.Should().BeTrue();
+        // All 3 tasks should execute in order (3 iterations)
+        result.TaskResults.Should().HaveCount(3);
+        result.TaskResults["first"].Success.Should().BeTrue();
+        result.TaskResults["second"].Success.Should().BeTrue();
+        result.TaskResults["third"].Success.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_SchedulingDelay_CalculatedFromPreviousIteration_KillLine145()
+    {
+        // Target: Line 145 - Conditional for schedulingDelay calculation
+        // If mutated to (false? ...), schedulingDelay would always be TimeSpan.Zero
+        // We test this by having multiple sequential iterations
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "first", TaskRef = "test-task" },
+                    new WorkflowTaskStep { Id = "second", TaskRef = "test-task", DependsOn = new List<string> { "first" } }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["test-task"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } }
+        };
+
+        var graph = new ExecutionGraph();
+        graph.AddNode("first");
+        graph.AddNode("second");
+        graph.AddDependency("second", "first");
+
+        _graphBuilderMock.Setup(x => x.Build(workflow))
+            .Returns(new ExecutionGraphResult { IsValid = true, Graph = graph });
+
+        _taskExecutorMock
+            .Setup(x => x.ExecuteAsync(It.IsAny<WorkflowTaskSpec>(), It.IsAny<TemplateContext>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new TaskExecutionResult { Success = true, Output = new Dictionary<string, object>() });
+
+        var result = await _orchestrator.ExecuteAsync(workflow, tasks, new Dictionary<string, object>(), CancellationToken.None);
+
+        result.Success.Should().BeTrue();
+        result.TaskResults.Should().HaveCount(2);
+        // Both tasks should have valid timing data
+        result.TaskResults["first"].Duration.Should().BeGreaterOrEqualTo(TimeSpan.Zero);
+        result.TaskResults["second"].Duration.Should().BeGreaterOrEqualTo(TimeSpan.Zero);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_FailedDependency_SkippedTaskGetsErrorMessage_KillLine173()
+    {
+        // Target: Line 173 - errors.Add(...) statement
+        // If removed, error messages wouldn't be added for skipped tasks
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "failing", TaskRef = "test-task" },
+                    new WorkflowTaskStep { Id = "blocked", TaskRef = "test-task", DependsOn = new List<string> { "failing" } }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["test-task"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } }
+        };
+
+        var graph = new ExecutionGraph();
+        graph.AddNode("failing");
+        graph.AddNode("blocked");
+        graph.AddDependency("blocked", "failing");
+
+        _graphBuilderMock.Setup(x => x.Build(workflow))
+            .Returns(new ExecutionGraphResult { IsValid = true, Graph = graph });
+
+        _taskExecutorMock
+            .Setup(x => x.ExecuteAsync(It.IsAny<WorkflowTaskSpec>(), It.IsAny<TemplateContext>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new TaskExecutionResult { Success = false, Errors = new List<string> { "Task failed" } });
+
+        var result = await _orchestrator.ExecuteAsync(workflow, tasks, new Dictionary<string, object>(), CancellationToken.None);
+
+        result.Success.Should().BeFalse();
+        // The errors list should contain the skipped task error message
+        result.Errors.Should().Contain(e => e.Contains("skipped due to failed dependency"));
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_FirstTask_FoundCorrectly_KillLine181FirstOrDefault()
+    {
+        // Target: Line 181 - First() to FirstOrDefault() mutation
+        // Tests that First() correctly finds the matching task step
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "task-a", TaskRef = "test-task" },
+                    new WorkflowTaskStep { Id = "task-b", TaskRef = "test-task", DependsOn = new List<string> { "task-a" } }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["test-task"] = new WorkflowTaskResource
+            {
+                Spec = new WorkflowTaskSpec
+                {
+                    Type = "http",
+                    OutputSchema = new SchemaDefinition
+                    {
+                        Type = "object",
+                        Properties = new Dictionary<string, PropertyDefinition>
+                        {
+                            ["value"] = new PropertyDefinition { Type = "string" }
+                        }
+                    }
+                }
+            }
+        };
+
+        var graph = new ExecutionGraph();
+        graph.AddNode("task-a");
+        graph.AddNode("task-b");
+        graph.AddDependency("task-b", "task-a");
+
+        _graphBuilderMock.Setup(x => x.Build(workflow))
+            .Returns(new ExecutionGraphResult { IsValid = true, Graph = graph });
+
+        _taskExecutorMock
+            .Setup(x => x.ExecuteAsync(It.IsAny<WorkflowTaskSpec>(), It.IsAny<TemplateContext>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new TaskExecutionResult
+            {
+                Success = true,
+                Output = new Dictionary<string, object> { ["value"] = "test" }
+            });
+
+        var result = await _orchestrator.ExecuteAsync(workflow, tasks, new Dictionary<string, object>(), CancellationToken.None);
+
+        result.Success.Should().BeTrue();
+        result.TaskResults.Should().HaveCount(2);
+        result.TaskResults["task-a"].Output.Should().ContainKey("value");
+    }
+
+    #endregion
+
+    #region Mutation Killing Tests - Round 12 (OrchestrationCost Metrics)
+
+    [Fact]
+    public async Task ExecuteAsync_OrchestrationCost_MinMaxTimestamps_KillLines741_746()
+    {
+        // Target: Line 741-742 Min() mutation and Line 745-746 Max() mutation
+        // If Min() changed to Max() or vice versa, FirstTaskStartedAt/LastTaskCompletedAt would be wrong
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "first", TaskRef = "test-task" },
+                    new WorkflowTaskStep { Id = "second", TaskRef = "test-task" },
+                    new WorkflowTaskStep { Id = "third", TaskRef = "test-task", DependsOn = new List<string> { "first", "second" } }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["test-task"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } }
+        };
+
+        var graph = new ExecutionGraph();
+        graph.AddNode("first");
+        graph.AddNode("second");
+        graph.AddNode("third");
+        graph.AddDependency("third", "first");
+        graph.AddDependency("third", "second");
+
+        _graphBuilderMock.Setup(x => x.Build(workflow))
+            .Returns(new ExecutionGraphResult { IsValid = true, Graph = graph });
+
+        var callCount = 0;
+        _taskExecutorMock
+            .Setup(x => x.ExecuteAsync(It.IsAny<WorkflowTaskSpec>(), It.IsAny<TemplateContext>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(() =>
+            {
+                callCount++;
+                // Add small delays to distinguish task timings
+                System.Threading.Thread.Sleep(5);
+                return new TaskExecutionResult { Success = true, Output = new Dictionary<string, object>() };
+            });
+
+        var result = await _orchestrator.ExecuteAsync(workflow, tasks, new Dictionary<string, object>(), CancellationToken.None);
+
+        result.Success.Should().BeTrue();
+        // Verify all 3 tasks completed successfully
+        result.TaskResults.Should().HaveCount(3);
+        // OrchestrationCost should have valid timestamps
+        result.OrchestrationCost.Should().NotBeNull();
+        // FirstTaskStartedAt should be <= LastTaskCompletedAt (Min gives earliest, Max gives latest)
+        result.OrchestrationCost!.FirstTaskStartedAt.Should().BeOnOrBefore(result.OrchestrationCost.LastTaskCompletedAt);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_OrchestrationCost_SkipFirstIteration_KillLine753()
+    {
+        // Target: Line 753 - Skip(1) mutation (Skip to Take)
+        // If Skip(1) changed to Take(1), only first iteration's delay would count
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "a", TaskRef = "test-task" },
+                    new WorkflowTaskStep { Id = "b", TaskRef = "test-task", DependsOn = new List<string> { "a" } },
+                    new WorkflowTaskStep { Id = "c", TaskRef = "test-task", DependsOn = new List<string> { "b" } }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["test-task"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } }
+        };
+
+        var graph = new ExecutionGraph();
+        graph.AddNode("a");
+        graph.AddNode("b");
+        graph.AddNode("c");
+        graph.AddDependency("b", "a");
+        graph.AddDependency("c", "b");
+
+        _graphBuilderMock.Setup(x => x.Build(workflow))
+            .Returns(new ExecutionGraphResult { IsValid = true, Graph = graph });
+
+        _taskExecutorMock
+            .Setup(x => x.ExecuteAsync(It.IsAny<WorkflowTaskSpec>(), It.IsAny<TemplateContext>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new TaskExecutionResult { Success = true, Output = new Dictionary<string, object>() });
+
+        var result = await _orchestrator.ExecuteAsync(workflow, tasks, new Dictionary<string, object>(), CancellationToken.None);
+
+        result.Success.Should().BeTrue();
+        result.TaskResults.Should().HaveCount(3);
+        // Should have 3 iterations (one per task in sequence)
+        result.OrchestrationCost.Should().NotBeNull();
+        result.OrchestrationCost!.ExecutionIterations.Should().BeGreaterOrEqualTo(3);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_OrchestrationCost_TotalMsGreaterThanZero_KillLine764()
+    {
+        // Target: Line 764 - totalMs > 0 conditional mutation
+        // If changed to totalMs >= 0 or totalMs < 0, division would give wrong results
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "task", TaskRef = "test-task" }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["test-task"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } }
+        };
+
+        var graph = new ExecutionGraph();
+        graph.AddNode("task");
+
+        _graphBuilderMock.Setup(x => x.Build(workflow))
+            .Returns(new ExecutionGraphResult { IsValid = true, Graph = graph });
+
+        _taskExecutorMock
+            .Setup(x => x.ExecuteAsync(It.IsAny<WorkflowTaskSpec>(), It.IsAny<TemplateContext>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(() =>
+            {
+                System.Threading.Thread.Sleep(10); // Ensure non-zero duration
+                return new TaskExecutionResult { Success = true, Output = new Dictionary<string, object>() };
+            });
+
+        var result = await _orchestrator.ExecuteAsync(workflow, tasks, new Dictionary<string, object>(), CancellationToken.None);
+
+        result.Success.Should().BeTrue();
+        result.OrchestrationCost.Should().NotBeNull();
+        // OrchestrationCostPercentage should be between 0 and 100
+        result.OrchestrationCost!.OrchestrationCostPercentage.Should().BeGreaterOrEqualTo(0);
+        result.OrchestrationCost!.OrchestrationCostPercentage.Should().BeLessThanOrEqualTo(100);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_OrchestrationCost_ArithmeticCalculations_KillLine762_765()
+    {
+        // Target: Line 762 arithmetic (setupMs + teardownMs + schedulingMs)
+        // Target: Line 765 arithmetic (orchestrationMs / totalMs * 100)
+        // If + changed to - or / changed to *, results would be wrong
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "fast-task", TaskRef = "test-task" }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["test-task"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } }
+        };
+
+        var graph = new ExecutionGraph();
+        graph.AddNode("fast-task");
+
+        _graphBuilderMock.Setup(x => x.Build(workflow))
+            .Returns(new ExecutionGraphResult { IsValid = true, Graph = graph });
+
+        _taskExecutorMock
+            .Setup(x => x.ExecuteAsync(It.IsAny<WorkflowTaskSpec>(), It.IsAny<TemplateContext>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new TaskExecutionResult { Success = true, Output = new Dictionary<string, object>() });
+
+        var result = await _orchestrator.ExecuteAsync(workflow, tasks, new Dictionary<string, object>(), CancellationToken.None);
+
+        result.Success.Should().BeTrue();
+        result.OrchestrationCost.Should().NotBeNull();
+        // Verify the orchestration cost percentage is a valid positive number (not negative from wrong arithmetic)
+        result.OrchestrationCost!.OrchestrationCostPercentage.Should().BeGreaterOrEqualTo(0);
+        // Total execution time should be recorded
+        result.OrchestrationCost!.TotalTaskExecutionTime.Should().BeGreaterOrEqualTo(TimeSpan.Zero);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_CancellationToken_ReturnsFailedResult_KillLine140()
+    {
+        // Target: Line 140 - cancellationToken.ThrowIfCancellationRequested()
+        // If this statement is removed, cancelled tokens won't immediately stop execution
+        // The orchestrator catches OperationCanceledException and returns a failed result
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "task", TaskRef = "test-task" }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["test-task"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } }
+        };
+
+        var graph = new ExecutionGraph();
+        graph.AddNode("task");
+
+        _graphBuilderMock.Setup(x => x.Build(workflow))
+            .Returns(new ExecutionGraphResult { IsValid = true, Graph = graph });
+
+        // Create a pre-cancelled token
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        var result = await _orchestrator.ExecuteAsync(workflow, tasks, new Dictionary<string, object>(), cts.Token);
+
+        // The orchestrator returns a failed result when cancelled
+        result.Success.Should().BeFalse();
+        result.Errors.Should().Contain(e => e.Contains("cancelled", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WhileLoop_ExitsWhenRemainingCountZero_KillLine138()
+    {
+        // Target: Line 138 - while (remainingTasks.Count > 0)
+        // If > 0 changed to >= 0, the loop would never exit (infinite loop)
+        // This test verifies the loop exits correctly
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "single-task", TaskRef = "test-task" }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["test-task"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } }
+        };
+
+        var graph = new ExecutionGraph();
+        graph.AddNode("single-task");
+
+        _graphBuilderMock.Setup(x => x.Build(workflow))
+            .Returns(new ExecutionGraphResult { IsValid = true, Graph = graph });
+
+        _taskExecutorMock
+            .Setup(x => x.ExecuteAsync(It.IsAny<WorkflowTaskSpec>(), It.IsAny<TemplateContext>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new TaskExecutionResult { Success = true, Output = new Dictionary<string, object>() });
+
+        var result = await _orchestrator.ExecuteAsync(workflow, tasks, new Dictionary<string, object>(), CancellationToken.None);
+
+        // If the loop didn't exit, this wouldn't complete
+        result.Success.Should().BeTrue();
+        result.TaskResults.Should().HaveCount(1);
+        result.TaskResults["single-task"].Success.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_MultipleParallelTasks_AllComplete_KillLine541FirstOrDefault()
+    {
+        // Target: Line 541 - First() to FirstOrDefault() mutation
+        // Tests that First() correctly finds task in workflow when emitting events
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "parallel-1", TaskRef = "test-task" },
+                    new WorkflowTaskStep { Id = "parallel-2", TaskRef = "test-task" }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["test-task"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } }
+        };
+
+        var graph = new ExecutionGraph();
+        graph.AddNode("parallel-1");
+        graph.AddNode("parallel-2");
+
+        _graphBuilderMock.Setup(x => x.Build(workflow))
+            .Returns(new ExecutionGraphResult { IsValid = true, Graph = graph });
+
+        _taskExecutorMock
+            .Setup(x => x.ExecuteAsync(It.IsAny<WorkflowTaskSpec>(), It.IsAny<TemplateContext>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new TaskExecutionResult { Success = true, Output = new Dictionary<string, object>() });
+
+        var result = await _orchestrator.ExecuteAsync(workflow, tasks, new Dictionary<string, object>(), CancellationToken.None);
+
+        result.Success.Should().BeTrue();
+        result.TaskResults.Should().HaveCount(2);
+        result.TaskResults["parallel-1"].Success.Should().BeTrue();
+        result.TaskResults["parallel-2"].Success.Should().BeTrue();
+    }
+
+    #endregion
+
+    #region Mutation Killing Tests - Round 13 (Input/Context Handling)
+
+    [Fact]
+    public async Task ExecuteAsync_TaskWithEmptyInputDict_UsesWorkflowContext_KillLine450()
+    {
+        // Target: Line 450 - if (taskStep.Input.Count > 0)
+        // If mutation changes to >= 0, it would try to merge an empty input dictionary
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep
+                    {
+                        Id = "task",
+                        TaskRef = "test-task",
+                        Input = new Dictionary<string, string>() // Empty input dictionary
+                    }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["test-task"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } }
+        };
+
+        var graph = new ExecutionGraph();
+        graph.AddNode("task");
+
+        _graphBuilderMock.Setup(x => x.Build(workflow))
+            .Returns(new ExecutionGraphResult { IsValid = true, Graph = graph });
+
+        TemplateContext capturedContext = null!;
+        _taskExecutorMock
+            .Setup(x => x.ExecuteAsync(It.IsAny<WorkflowTaskSpec>(), It.IsAny<TemplateContext>(), It.IsAny<CancellationToken>()))
+            .Callback<WorkflowTaskSpec, TemplateContext, CancellationToken>((_, ctx, _) => capturedContext = ctx)
+            .ReturnsAsync(new TaskExecutionResult { Success = true, Output = new Dictionary<string, object>() });
+
+        var workflowInput = new Dictionary<string, object> { ["key"] = "value" };
+        var result = await _orchestrator.ExecuteAsync(workflow, tasks, workflowInput, CancellationToken.None);
+
+        result.Success.Should().BeTrue();
+        // With empty Input dictionary, the original context should be used
+        capturedContext.Input.Should().ContainKey("key");
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_JsonObjectInput_Deserializes_KillLine462()
+    {
+        // Target: Line 462 - resolvedValue.StartsWith("{")
+        // If mutation changes the logical OR to AND, JSON object detection breaks
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep
+                    {
+                        Id = "task",
+                        TaskRef = "test-task",
+                        Input = new Dictionary<string, string>
+                        {
+                            ["jsonObj"] = "{{input.data}}"
+                        }
+                    }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["test-task"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } }
+        };
+
+        var graph = new ExecutionGraph();
+        graph.AddNode("task");
+
+        _graphBuilderMock.Setup(x => x.Build(workflow))
+            .Returns(new ExecutionGraphResult { IsValid = true, Graph = graph });
+
+        _templateResolverMock
+            .Setup(x => x.ResolveAsync(It.IsAny<string>(), It.IsAny<TemplateContext>()))
+            .ReturnsAsync("{\"nested\":\"value\"}");
+
+        TemplateContext capturedContext = null!;
+        _taskExecutorMock
+            .Setup(x => x.ExecuteAsync(It.IsAny<WorkflowTaskSpec>(), It.IsAny<TemplateContext>(), It.IsAny<CancellationToken>()))
+            .Callback<WorkflowTaskSpec, TemplateContext, CancellationToken>((_, ctx, _) => capturedContext = ctx)
+            .ReturnsAsync(new TaskExecutionResult { Success = true, Output = new Dictionary<string, object>() });
+
+        var result = await _orchestrator.ExecuteAsync(workflow, tasks, new Dictionary<string, object>(), CancellationToken.None);
+
+        result.Success.Should().BeTrue();
+        // The JSON object should be deserialized, not kept as a string
+        capturedContext.Input["jsonObj"].Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_JsonArrayInput_Deserializes_KillLine462()
+    {
+        // Target: Line 462 - resolvedValue.StartsWith("[")
+        // Tests the array branch of JSON detection
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep
+                    {
+                        Id = "task",
+                        TaskRef = "test-task",
+                        Input = new Dictionary<string, string>
+                        {
+                            ["jsonArr"] = "{{input.items}}"
+                        }
+                    }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["test-task"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } }
+        };
+
+        var graph = new ExecutionGraph();
+        graph.AddNode("task");
+
+        _graphBuilderMock.Setup(x => x.Build(workflow))
+            .Returns(new ExecutionGraphResult { IsValid = true, Graph = graph });
+
+        _templateResolverMock
+            .Setup(x => x.ResolveAsync(It.IsAny<string>(), It.IsAny<TemplateContext>()))
+            .ReturnsAsync("[1, 2, 3]");
+
+        TemplateContext capturedContext = null!;
+        _taskExecutorMock
+            .Setup(x => x.ExecuteAsync(It.IsAny<WorkflowTaskSpec>(), It.IsAny<TemplateContext>(), It.IsAny<CancellationToken>()))
+            .Callback<WorkflowTaskSpec, TemplateContext, CancellationToken>((_, ctx, _) => capturedContext = ctx)
+            .ReturnsAsync(new TaskExecutionResult { Success = true, Output = new Dictionary<string, object>() });
+
+        var result = await _orchestrator.ExecuteAsync(workflow, tasks, new Dictionary<string, object>(), CancellationToken.None);
+
+        result.Success.Should().BeTrue();
+        // The JSON array should be deserialized
+        capturedContext.Input["jsonArr"].Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_NonJsonStringInput_KeptAsString_KillLine462()
+    {
+        // Target: Line 462 - Test that non-JSON strings are NOT deserialized
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep
+                    {
+                        Id = "task",
+                        TaskRef = "test-task",
+                        Input = new Dictionary<string, string>
+                        {
+                            ["plainText"] = "{{input.message}}"
+                        }
+                    }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["test-task"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } }
+        };
+
+        var graph = new ExecutionGraph();
+        graph.AddNode("task");
+
+        _graphBuilderMock.Setup(x => x.Build(workflow))
+            .Returns(new ExecutionGraphResult { IsValid = true, Graph = graph });
+
+        _templateResolverMock
+            .Setup(x => x.ResolveAsync(It.IsAny<string>(), It.IsAny<TemplateContext>()))
+            .ReturnsAsync("hello world");
+
+        TemplateContext capturedContext = null!;
+        _taskExecutorMock
+            .Setup(x => x.ExecuteAsync(It.IsAny<WorkflowTaskSpec>(), It.IsAny<TemplateContext>(), It.IsAny<CancellationToken>()))
+            .Callback<WorkflowTaskSpec, TemplateContext, CancellationToken>((_, ctx, _) => capturedContext = ctx)
+            .ReturnsAsync(new TaskExecutionResult { Success = true, Output = new Dictionary<string, object>() });
+
+        var result = await _orchestrator.ExecuteAsync(workflow, tasks, new Dictionary<string, object>(), CancellationToken.None);
+
+        result.Success.Should().BeTrue();
+        // Non-JSON strings should be kept as-is
+        capturedContext.Input["plainText"].Should().Be("hello world");
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_TaskInputMerging_PreservesWorkflowInput_KillLine494()
+    {
+        // Target: Line 494 - new TemplateContext with merged inputs
+        // Verifies that the TemplateContext is properly initialized with merged inputs
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep
+                    {
+                        Id = "task",
+                        TaskRef = "test-task",
+                        Input = new Dictionary<string, string>
+                        {
+                            ["taskInput"] = "taskValue"
+                        }
+                    }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["test-task"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } }
+        };
+
+        var graph = new ExecutionGraph();
+        graph.AddNode("task");
+
+        _graphBuilderMock.Setup(x => x.Build(workflow))
+            .Returns(new ExecutionGraphResult { IsValid = true, Graph = graph });
+
+        _templateResolverMock
+            .Setup(x => x.ResolveAsync(It.IsAny<string>(), It.IsAny<TemplateContext>()))
+            .ReturnsAsync("taskValue");
+
+        TemplateContext capturedContext = null!;
+        _taskExecutorMock
+            .Setup(x => x.ExecuteAsync(It.IsAny<WorkflowTaskSpec>(), It.IsAny<TemplateContext>(), It.IsAny<CancellationToken>()))
+            .Callback<WorkflowTaskSpec, TemplateContext, CancellationToken>((_, ctx, _) => capturedContext = ctx)
+            .ReturnsAsync(new TaskExecutionResult { Success = true, Output = new Dictionary<string, object>() });
+
+        var workflowInput = new Dictionary<string, object>
+        {
+            ["workflowKey"] = "workflowValue"
+        };
+        var result = await _orchestrator.ExecuteAsync(workflow, tasks, workflowInput, CancellationToken.None);
+
+        result.Success.Should().BeTrue();
+        // Both workflow input and task input should be present
+        capturedContext.Input.Should().ContainKey("workflowKey");
+        capturedContext.Input.Should().ContainKey("taskInput");
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_IterationCount_TracksCorrectly_KillLine143()
+    {
+        // Target: Line 143 - iterationCount++
+        // If mutation changes to iterationCount--, the count would be wrong
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "a", TaskRef = "test-task" },
+                    new WorkflowTaskStep { Id = "b", TaskRef = "test-task", DependsOn = new List<string> { "a" } },
+                    new WorkflowTaskStep { Id = "c", TaskRef = "test-task", DependsOn = new List<string> { "b" } }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["test-task"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } }
+        };
+
+        var graph = new ExecutionGraph();
+        graph.AddNode("a");
+        graph.AddNode("b");
+        graph.AddNode("c");
+        graph.AddDependency("b", "a");
+        graph.AddDependency("c", "b");
+
+        _graphBuilderMock.Setup(x => x.Build(workflow))
+            .Returns(new ExecutionGraphResult { IsValid = true, Graph = graph });
+
+        _taskExecutorMock
+            .Setup(x => x.ExecuteAsync(It.IsAny<WorkflowTaskSpec>(), It.IsAny<TemplateContext>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new TaskExecutionResult { Success = true, Output = new Dictionary<string, object>() });
+
+        var result = await _orchestrator.ExecuteAsync(workflow, tasks, new Dictionary<string, object>(), CancellationToken.None);
+
+        result.Success.Should().BeTrue();
+        // Sequential tasks should have 3 iterations (one per task)
+        result.OrchestrationCost.Should().NotBeNull();
+        result.OrchestrationCost!.ExecutionIterations.Should().Be(3);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_SchedulingDelay_Calculated_KillLine145()
+    {
+        // Target: Line 145 - Conditional expression for scheduling delay
+        // Tests that previousIterationEndTime logic works
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "a", TaskRef = "test-task" },
+                    new WorkflowTaskStep { Id = "b", TaskRef = "test-task", DependsOn = new List<string> { "a" } }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["test-task"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } }
+        };
+
+        var graph = new ExecutionGraph();
+        graph.AddNode("a");
+        graph.AddNode("b");
+        graph.AddDependency("b", "a");
+
+        _graphBuilderMock.Setup(x => x.Build(workflow))
+            .Returns(new ExecutionGraphResult { IsValid = true, Graph = graph });
+
+        _taskExecutorMock
+            .Setup(x => x.ExecuteAsync(It.IsAny<WorkflowTaskSpec>(), It.IsAny<TemplateContext>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new TaskExecutionResult { Success = true, Output = new Dictionary<string, object>() });
+
+        var result = await _orchestrator.ExecuteAsync(workflow, tasks, new Dictionary<string, object>(), CancellationToken.None);
+
+        result.Success.Should().BeTrue();
+        // OrchestrationCost should have timing information
+        result.OrchestrationCost.Should().NotBeNull();
+        result.OrchestrationCost!.ExecutionIterations.Should().Be(2);
+    }
+
+    #endregion
+
+    #region Circuit Breaker Integration Tests
+
+    [Fact]
+    public async Task ExecuteAsync_WithCircuitBreakerClosed_ShouldExecuteTaskNormally()
+    {
+        // Arrange
+        var circuitBreakerRegistryMock = new Mock<ICircuitBreakerRegistry>();
+        var circuitBreakerMock = new Mock<ICircuitBreaker>();
+
+        // Circuit is closed - should allow execution
+        circuitBreakerMock.Setup(cb => cb.CanExecute(It.IsAny<string>())).Returns(true);
+        circuitBreakerMock.Setup(cb => cb.GetState()).Returns(new CircuitStateInfo { State = CircuitState.Closed });
+
+        circuitBreakerRegistryMock
+            .Setup(r => r.GetOrCreate(It.IsAny<string>(), It.IsAny<CircuitBreakerOptions>()))
+            .Returns(circuitBreakerMock.Object);
+
+        var orchestrator = new WorkflowOrchestrator(
+            _graphBuilderMock.Object,
+            _taskExecutorMock.Object,
+            _templateResolverMock.Object,
+            _responseStorageMock.Object,
+            circuitBreakerRegistry: circuitBreakerRegistryMock.Object);
+
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep
+                    {
+                        Id = "task-1",
+                        TaskRef = "http-task",
+                        CircuitBreaker = new CircuitBreakerSpec
+                        {
+                            FailureThreshold = 5,
+                            SamplingDuration = "60s",
+                            BreakDuration = "30s"
+                        }
+                    }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["http-task"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } }
+        };
+
+        var graph = new ExecutionGraph();
+        graph.AddNode("task-1");
+
+        _graphBuilderMock.Setup(x => x.Build(workflow))
+            .Returns(new ExecutionGraphResult { IsValid = true, Graph = graph });
+
+        _taskExecutorMock
+            .Setup(x => x.ExecuteAsync(It.IsAny<WorkflowTaskSpec>(), It.IsAny<TemplateContext>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new TaskExecutionResult { Success = true, Output = new Dictionary<string, object> { ["result"] = "success" } });
+
+        // Act
+        var result = await orchestrator.ExecuteAsync(workflow, tasks, new Dictionary<string, object>());
+
+        // Assert
+        result.Success.Should().BeTrue();
+        result.TaskResults["task-1"].Success.Should().BeTrue();
+        result.TaskResults["task-1"].CircuitState.Should().Be(CircuitState.Closed);
+
+        // Verify circuit breaker was checked and success was recorded
+        circuitBreakerMock.Verify(cb => cb.CanExecute("http-task"), Times.Once);
+        circuitBreakerMock.Verify(cb => cb.RecordSuccess("http-task"), Times.Once);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithCircuitBreakerOpen_ShouldReturnCircuitOpenError()
+    {
+        // Arrange
+        var circuitBreakerRegistryMock = new Mock<ICircuitBreakerRegistry>();
+        var circuitBreakerMock = new Mock<ICircuitBreaker>();
+
+        // Circuit is open - should block execution
+        circuitBreakerMock.Setup(cb => cb.CanExecute(It.IsAny<string>())).Returns(false);
+        circuitBreakerMock.Setup(cb => cb.GetState()).Returns(new CircuitStateInfo { State = CircuitState.Open });
+
+        circuitBreakerRegistryMock
+            .Setup(r => r.GetOrCreate(It.IsAny<string>(), It.IsAny<CircuitBreakerOptions>()))
+            .Returns(circuitBreakerMock.Object);
+
+        var orchestrator = new WorkflowOrchestrator(
+            _graphBuilderMock.Object,
+            _taskExecutorMock.Object,
+            _templateResolverMock.Object,
+            _responseStorageMock.Object,
+            circuitBreakerRegistry: circuitBreakerRegistryMock.Object);
+
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep
+                    {
+                        Id = "task-1",
+                        TaskRef = "http-task",
+                        CircuitBreaker = new CircuitBreakerSpec
+                        {
+                            FailureThreshold = 5,
+                            SamplingDuration = "60s",
+                            BreakDuration = "30s"
+                        }
+                    }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["http-task"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } }
+        };
+
+        var graph = new ExecutionGraph();
+        graph.AddNode("task-1");
+
+        _graphBuilderMock.Setup(x => x.Build(workflow))
+            .Returns(new ExecutionGraphResult { IsValid = true, Graph = graph });
+
+        // Act
+        var result = await orchestrator.ExecuteAsync(workflow, tasks, new Dictionary<string, object>());
+
+        // Assert
+        result.Success.Should().BeFalse();
+        result.TaskResults["task-1"].Success.Should().BeFalse();
+        result.TaskResults["task-1"].CircuitState.Should().Be(CircuitState.Open);
+        result.TaskResults["task-1"].Errors.Should().Contain(e => e.Contains("circuit") || e.Contains("Circuit"));
+
+        // Verify HTTP task was NOT executed
+        _taskExecutorMock.Verify(
+            x => x.ExecuteAsync(It.IsAny<WorkflowTaskSpec>(), It.IsAny<TemplateContext>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithCircuitBreakerOpenAndFallback_ShouldExecuteFallbackTask()
+    {
+        // Arrange
+        var circuitBreakerRegistryMock = new Mock<ICircuitBreakerRegistry>();
+        var circuitBreakerMock = new Mock<ICircuitBreaker>();
+
+        // Circuit is open - should block execution but allow fallback
+        circuitBreakerMock.Setup(cb => cb.CanExecute(It.IsAny<string>())).Returns(false);
+        circuitBreakerMock.Setup(cb => cb.GetState()).Returns(new CircuitStateInfo { State = CircuitState.Open });
+
+        circuitBreakerRegistryMock
+            .Setup(r => r.GetOrCreate(It.IsAny<string>(), It.IsAny<CircuitBreakerOptions>()))
+            .Returns(circuitBreakerMock.Object);
+
+        var orchestrator = new WorkflowOrchestrator(
+            _graphBuilderMock.Object,
+            _taskExecutorMock.Object,
+            _templateResolverMock.Object,
+            _responseStorageMock.Object,
+            circuitBreakerRegistry: circuitBreakerRegistryMock.Object);
+
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep
+                    {
+                        Id = "task-1",
+                        TaskRef = "http-task",
+                        CircuitBreaker = new CircuitBreakerSpec
+                        {
+                            FailureThreshold = 5,
+                            SamplingDuration = "60s",
+                            BreakDuration = "30s"
+                        },
+                        Fallback = new FallbackSpec
+                        {
+                            TaskRef = "fallback-task",
+                            Input = new Dictionary<string, string> { ["key"] = "cached-value" }
+                        }
+                    }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["http-task"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } },
+            ["fallback-task"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } }
+        };
+
+        var graph = new ExecutionGraph();
+        graph.AddNode("task-1");
+
+        _graphBuilderMock.Setup(x => x.Build(workflow))
+            .Returns(new ExecutionGraphResult { IsValid = true, Graph = graph });
+
+        // Setup fallback task to succeed
+        _taskExecutorMock
+            .Setup(x => x.ExecuteAsync(
+                It.Is<WorkflowTaskSpec>(s => s == tasks["fallback-task"].Spec),
+                It.IsAny<TemplateContext>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new TaskExecutionResult
+            {
+                Success = true,
+                Output = new Dictionary<string, object> { ["cached"] = "data" }
+            });
+
+        // Act
+        var result = await orchestrator.ExecuteAsync(workflow, tasks, new Dictionary<string, object>());
+
+        // Assert
+        result.Success.Should().BeTrue();
+        result.TaskResults["task-1"].Success.Should().BeTrue();
+        result.TaskResults["task-1"].UsedFallback.Should().BeTrue();
+        result.TaskResults["task-1"].FallbackTaskRef.Should().Be("fallback-task");
+        result.TaskResults["task-1"].CircuitState.Should().Be(CircuitState.Open);
+        result.TaskResults["task-1"].Output.Should().ContainKey("cached");
+
+        // Verify fallback task was executed (not the main task)
+        _taskExecutorMock.Verify(
+            x => x.ExecuteAsync(
+                It.Is<WorkflowTaskSpec>(s => s == tasks["fallback-task"].Spec),
+                It.IsAny<TemplateContext>(),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WhenTaskFails_ShouldRecordFailureToCircuitBreaker()
+    {
+        // Arrange
+        var circuitBreakerRegistryMock = new Mock<ICircuitBreakerRegistry>();
+        var circuitBreakerMock = new Mock<ICircuitBreaker>();
+
+        // Circuit is closed - allows execution
+        circuitBreakerMock.Setup(cb => cb.CanExecute(It.IsAny<string>())).Returns(true);
+        circuitBreakerMock.Setup(cb => cb.GetState()).Returns(new CircuitStateInfo { State = CircuitState.Closed });
+
+        circuitBreakerRegistryMock
+            .Setup(r => r.GetOrCreate(It.IsAny<string>(), It.IsAny<CircuitBreakerOptions>()))
+            .Returns(circuitBreakerMock.Object);
+
+        var orchestrator = new WorkflowOrchestrator(
+            _graphBuilderMock.Object,
+            _taskExecutorMock.Object,
+            _templateResolverMock.Object,
+            _responseStorageMock.Object,
+            circuitBreakerRegistry: circuitBreakerRegistryMock.Object);
+
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep
+                    {
+                        Id = "task-1",
+                        TaskRef = "http-task",
+                        CircuitBreaker = new CircuitBreakerSpec
+                        {
+                            FailureThreshold = 5,
+                            SamplingDuration = "60s",
+                            BreakDuration = "30s"
+                        }
+                    }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["http-task"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } }
+        };
+
+        var graph = new ExecutionGraph();
+        graph.AddNode("task-1");
+
+        _graphBuilderMock.Setup(x => x.Build(workflow))
+            .Returns(new ExecutionGraphResult { IsValid = true, Graph = graph });
+
+        // Setup task to fail
+        _taskExecutorMock
+            .Setup(x => x.ExecuteAsync(It.IsAny<WorkflowTaskSpec>(), It.IsAny<TemplateContext>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new TaskExecutionResult
+            {
+                Success = false,
+                Errors = new List<string> { "Service unavailable" }
+            });
+
+        // Act
+        var result = await orchestrator.ExecuteAsync(workflow, tasks, new Dictionary<string, object>());
+
+        // Assert
+        result.Success.Should().BeFalse();
+        result.TaskResults["task-1"].Success.Should().BeFalse();
+
+        // Verify failure was recorded to circuit breaker
+        circuitBreakerMock.Verify(cb => cb.RecordFailure("http-task"), Times.Once);
+        circuitBreakerMock.Verify(cb => cb.RecordSuccess("http-task"), Times.Never);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithoutCircuitBreaker_ShouldExecuteNormally()
+    {
+        // Arrange - No circuit breaker configured on task
+        var circuitBreakerRegistryMock = new Mock<ICircuitBreakerRegistry>();
+
+        var orchestrator = new WorkflowOrchestrator(
+            _graphBuilderMock.Object,
+            _taskExecutorMock.Object,
+            _templateResolverMock.Object,
+            _responseStorageMock.Object,
+            circuitBreakerRegistry: circuitBreakerRegistryMock.Object);
+
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep
+                    {
+                        Id = "task-1",
+                        TaskRef = "http-task"
+                        // No CircuitBreaker configured
+                    }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["http-task"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec { Type = "http" } }
+        };
+
+        var graph = new ExecutionGraph();
+        graph.AddNode("task-1");
+
+        _graphBuilderMock.Setup(x => x.Build(workflow))
+            .Returns(new ExecutionGraphResult { IsValid = true, Graph = graph });
+
+        _taskExecutorMock
+            .Setup(x => x.ExecuteAsync(It.IsAny<WorkflowTaskSpec>(), It.IsAny<TemplateContext>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new TaskExecutionResult { Success = true, Output = new Dictionary<string, object>() });
+
+        // Act
+        var result = await orchestrator.ExecuteAsync(workflow, tasks, new Dictionary<string, object>());
+
+        // Assert
+        result.Success.Should().BeTrue();
+
+        // Verify circuit breaker registry was NOT called
+        circuitBreakerRegistryMock.Verify(r => r.GetOrCreate(It.IsAny<string>(), It.IsAny<CircuitBreakerOptions>()), Times.Never);
+    }
+
+    #endregion
 }

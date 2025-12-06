@@ -32,7 +32,14 @@
       "Bash(/Users/darren/dev/workflow/scripts/generate-screenshot-manifest.sh:*)",
       "Bash(npx create-next-app:*)",
       "Bash(xxd:*)",
-      "Bash(dotnet ef database update:*)"
+      "Bash(dotnet ef database update:*)",
+      "Bash(/Users/darren/dev/workflow/tests/integration/workflow-integration-tests.sh)",
+      "Bash(/Users/darren/dev/workflow/tests/integration/workflow-integration-tests.sh --chaos)",
+      "Bash(DURATION=1m RATE=5 k6 run:*)",
+      "Bash(BASELINE_RATE=3 SPIKE_MULTIPLIER=5 k6 run:*)",
+      "Bash(time curl -s -X POST http://localhost:5001/api/v1/workflows/slow-parallel/execute -H \"Content-Type: application/json\" -d '{\"\"\"\"input\"\"\"\": {}}')",
+      "Bash(time curl -s -X POST http://localhost:5001/api/v1/workflows/large-payload-parallel/execute -H \"Content-Type: application/json\" -d '{\"\"\"\"input\"\"\"\": {}}')",
+      "Bash(time curl -s -X POST http://localhost:5001/api/v1/workflows/stress-mixed/execute -H \"Content-Type: application/json\" -d '{\"\"\"\"input\"\"\"\": {}}')"
     ],
     "deny": [],
     "ask": []

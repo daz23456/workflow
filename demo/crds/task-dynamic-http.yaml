@@ -1,0 +1,24 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: dynamic-http
+  namespace: default
+spec:
+  type: http
+  description: Generic HTTP task - URL is passed as input parameter. Useful for testing, proxying, or calling arbitrary endpoints.
+  request:
+    url: "{{input.url}}"
+    method: GET
+    headers:
+      Accept: "application/json"
+  inputSchema:
+    type: object
+    properties:
+      url:
+        type: string
+        description: The full URL to call (e.g., https://api.example.com/data)
+    required:
+      - url
+  outputSchema:
+    type: object
+    description: Response from the dynamic endpoint (schema varies by endpoint)

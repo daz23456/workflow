@@ -39,4 +39,9 @@ public interface IWorkflowExecutionClient
     /// Used for neural visualization to animate data flow along edges.
     /// </summary>
     Task SignalFlow(SignalFlowEvent signalEvent);
+
+    /// <summary>
+    /// Notifies client that a performance anomaly was detected during execution.
+    /// </summary>
+    Task AnomalyDetected(AnomalyDetectedEvent anomalyEvent);
 }

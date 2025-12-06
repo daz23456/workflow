@@ -855,4 +855,601 @@ public class WorkflowValidatorTests
         result.IsValid.Should().BeTrue();
         result.Errors.Should().BeEmpty();
     }
+
+    #region Mutation Killing Tests - Round 10 (WorkflowValidator Non-String Mutations)
+
+    [Fact]
+    public async Task ValidateAsync_TransformTaskMissingTransform_ShouldSkipInputValidation_KillLine67Continue()
+    {
+        // This test kills the statement mutation at line 67 (continue;)
+        // If continue is removed, it would try to validate inputs on a transform task with missing Transform
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep
+                    {
+                        Id = "transform-data",
+                        TaskRef = "transform-task",
+                        Input = new Dictionary<string, string>
+                        {
+                            ["data"] = "{{input.value}}"
+                        }
+                    }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["transform-task"] = new WorkflowTaskResource
+            {
+                Spec = new WorkflowTaskSpec
+                {
+                    Type = "transform",
+                    Transform = null,  // Missing Transform - triggers continue at line 67
+                    InputSchema = new SchemaDefinition
+                    {
+                        Type = "object",
+                        Properties = new Dictionary<string, PropertyDefinition>
+                        {
+                            ["data"] = new PropertyDefinition { Type = "string" }
+                        }
+                    }
+                }
+            }
+        };
+
+        // Template parser should NOT be called because continue skips input validation
+        // (If continue is removed, the parser would be called)
+        _templateParserMock.Setup(x => x.Parse("{{input.value}}"))
+            .Returns(new TemplateParseResult { IsValid = true });
+
+        // Act
+        var result = await _validator.ValidateAsync(workflow, tasks);
+
+        // Assert - Should fail due to missing Transform, with exactly 1 error
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().ContainSingle(e => e.Message.Contains("Transform definition is required"));
+    }
+
+    [Fact]
+    public async Task ValidateAsync_InvalidTemplateThenValidInput_ShouldSkipTypeChecking_KillLine88Continue()
+    {
+        // This test kills the statement mutation at line 88 (continue;)
+        // If continue is removed, it would continue to type-check after invalid template error
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep
+                    {
+                        Id = "task-1",
+                        TaskRef = "task-a",
+                        Input = new Dictionary<string, string>
+                        {
+                            ["badField"] = "{{unclosed",
+                            ["goodField"] = "{{input.value}}"
+                        }
+                    }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["task-a"] = new WorkflowTaskResource
+            {
+                Spec = new WorkflowTaskSpec
+                {
+                    InputSchema = new SchemaDefinition
+                    {
+                        Type = "object",
+                        Properties = new Dictionary<string, PropertyDefinition>
+                        {
+                            ["badField"] = new PropertyDefinition { Type = "string" },
+                            ["goodField"] = new PropertyDefinition { Type = "string" }
+                        }
+                    }
+                }
+            }
+        };
+
+        _templateParserMock.Setup(x => x.Parse("{{unclosed"))
+            .Returns(new TemplateParseResult
+            {
+                IsValid = false,
+                Errors = new List<string> { "Unclosed template" }
+            });
+
+        _templateParserMock.Setup(x => x.Parse("{{input.value}}"))
+            .Returns(new TemplateParseResult { IsValid = true });
+
+        // Act
+        var result = await _validator.ValidateAsync(workflow, tasks);
+
+        // Assert - Should have error for invalid template
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().Contain(e => e.Message.Contains("Unclosed template"));
+    }
+
+    [Fact]
+    public async Task ValidateAsync_OutputMappingWithNullTaskId_ShouldSkipTaskExistenceCheck_KillLine135AndOperator()
+    {
+        // This test kills the logical mutation at line 135 (&& to ||)
+        // If && is changed to ||, it would check task existence even when taskId is null
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep
+                    {
+                        Id = "task-1",
+                        TaskRef = "task-a"
+                    }
+                },
+                Output = new Dictionary<string, string>
+                {
+                    ["result"] = "{{input.value}}"  // Not a TaskOutput type
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["task-a"] = new WorkflowTaskResource
+            {
+                Spec = new WorkflowTaskSpec()
+            }
+        };
+
+        // Template is TaskOutput type but with null TaskId - tests the && condition
+        _templateParserMock.Setup(x => x.Parse("{{input.value}}"))
+            .Returns(new TemplateParseResult
+            {
+                IsValid = true,
+                Expressions = new List<TemplateExpression>
+                {
+                    new TemplateExpression
+                    {
+                        Type = TemplateExpressionType.TaskOutput,  // TaskOutput type
+                        TaskId = null,  // But null TaskId - should skip check due to &&
+                        Path = "value"
+                    }
+                }
+            });
+
+        // Act
+        var result = await _validator.ValidateAsync(workflow, tasks);
+
+        // Assert - Should pass (no error for null taskId)
+        result.IsValid.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ValidateAsync_OutputMappingWithMultipleTasks_OnlyOneMatches_KillLine137AnyToAll()
+    {
+        // This test kills the LINQ mutation at line 137 (Any() to All())
+        // If Any() is changed to All(), it would fail when not ALL tasks match
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "task-1", TaskRef = "task-a" },
+                    new WorkflowTaskStep { Id = "task-2", TaskRef = "task-b" },
+                    new WorkflowTaskStep { Id = "task-3", TaskRef = "task-c" }
+                },
+                Output = new Dictionary<string, string>
+                {
+                    ["result"] = "{{tasks.task-2.output.value}}"  // References task-2 (not all tasks)
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["task-a"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec() },
+            ["task-b"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec() },
+            ["task-c"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec() }
+        };
+
+        _templateParserMock.Setup(x => x.Parse("{{tasks.task-2.output.value}}"))
+            .Returns(new TemplateParseResult
+            {
+                IsValid = true,
+                Expressions = new List<TemplateExpression>
+                {
+                    new TemplateExpression
+                    {
+                        Type = TemplateExpressionType.TaskOutput,
+                        TaskId = "task-2",  // Only matches task-2, not all tasks
+                        Path = "value"
+                    }
+                }
+            });
+
+        // Act
+        var result = await _validator.ValidateAsync(workflow, tasks);
+
+        // Assert - Should pass because task-2 exists (Any matches)
+        result.IsValid.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ValidateAsync_EmptyConditionIf_ShouldNotParseTemplate_KillLine181Return()
+    {
+        // This test kills the statement mutation at line 181 (return;)
+        // If return is removed, it would try to parse an empty condition string
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep
+                    {
+                        Id = "conditional-task",
+                        TaskRef = "task-a",
+                        Condition = new ConditionSpec
+                        {
+                            If = "   "  // Empty/whitespace - triggers return at line 181
+                        }
+                    }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["task-a"] = new WorkflowTaskResource
+            {
+                Spec = new WorkflowTaskSpec()
+            }
+        };
+
+        // Template parser should NOT be called for empty condition.if
+        // (If return is removed, parser would be called with whitespace)
+
+        // Act
+        var result = await _validator.ValidateAsync(workflow, tasks);
+
+        // Assert - Should fail with exactly one error about empty condition
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().ContainSingle(e => e.Message.Contains("Condition 'if' expression is empty"));
+
+        // Verify parser was NOT called for the condition
+        _templateParserMock.Verify(x => x.Parse("   "), Times.Never());
+    }
+
+    [Fact]
+    public async Task ValidateAsync_SwitchWithNoCasesAndNoDefault_ShouldNotAddWarning_KillLine300Equality()
+    {
+        // This test kills the equality mutation at line 300 (> 0 to >= 0)
+        // Line 300: else if (step.Switch.Cases.Count > 0) - adds warning if no default
+        // If > 0 is changed to >= 0, it would add warning even when Cases.Count == 0
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep
+                    {
+                        Id = "switch-task",
+                        TaskRef = "task-a",
+                        Switch = new SwitchSpec
+                        {
+                            Value = "{{input.type}}",
+                            Cases = new List<SwitchCase>(),  // Empty cases - Count == 0
+                            Default = null  // No default
+                        }
+                    }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["task-a"] = new WorkflowTaskResource
+            {
+                Spec = new WorkflowTaskSpec()
+            }
+        };
+
+        _templateParserMock.Setup(x => x.Parse("{{input.type}}"))
+            .Returns(new TemplateParseResult { IsValid = true });
+
+        // Act
+        var result = await _validator.ValidateAsync(workflow, tasks);
+
+        // Assert - Should have error for empty cases, but NO warning about missing default
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().Contain(e => e.Message.Contains("Switch must have at least one case"));
+        result.Warnings.Should().BeEmpty();  // No "no default case" warning when cases are empty
+    }
+
+    [Fact]
+    public async Task ValidateAsync_SwitchWithCasesButNoDefault_ShouldAddWarning()
+    {
+        // Complementary test - ensures warning IS added when cases exist but no default
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep
+                    {
+                        Id = "switch-task",
+                        TaskRef = "task-a",
+                        Switch = new SwitchSpec
+                        {
+                            Value = "{{input.type}}",
+                            Cases = new List<SwitchCase>
+                            {
+                                new SwitchCase { Match = "option1", TaskRef = "task-a" }
+                            },
+                            Default = null  // No default
+                        }
+                    }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["task-a"] = new WorkflowTaskResource
+            {
+                Spec = new WorkflowTaskSpec()
+            }
+        };
+
+        _templateParserMock.Setup(x => x.Parse("{{input.type}}"))
+            .Returns(new TemplateParseResult { IsValid = true });
+
+        // Act
+        var result = await _validator.ValidateAsync(workflow, tasks);
+
+        // Assert - Should have warning about missing default
+        result.IsValid.Should().BeTrue();
+        result.Warnings.Should().Contain(w => w.Contains("no default case"));
+    }
+
+    [Fact]
+    public async Task ValidateAsync_TaskOutputExpressionWithNullTaskId_ShouldSkipResolution_KillLine385AndOperator()
+    {
+        // This test kills the logical mutation at line 385 (&& to ||)
+        // If && is changed to ||, it would try to resolve even when taskId is null
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep
+                    {
+                        Id = "task-1",
+                        TaskRef = "task-a",
+                        Input = new Dictionary<string, string>
+                        {
+                            ["field"] = "{{tasks..output.value}}"  // Invalid - empty taskId
+                        }
+                    }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["task-a"] = new WorkflowTaskResource
+            {
+                Spec = new WorkflowTaskSpec
+                {
+                    InputSchema = new SchemaDefinition
+                    {
+                        Type = "object",
+                        Properties = new Dictionary<string, PropertyDefinition>
+                        {
+                            ["field"] = new PropertyDefinition { Type = "string" }
+                        }
+                    }
+                }
+            }
+        };
+
+        _templateParserMock.Setup(x => x.Parse("{{tasks..output.value}}"))
+            .Returns(new TemplateParseResult
+            {
+                IsValid = true,
+                Expressions = new List<TemplateExpression>
+                {
+                    new TemplateExpression
+                    {
+                        Type = TemplateExpressionType.TaskOutput,
+                        TaskId = null,  // Null TaskId - should skip resolution due to &&
+                        Path = "value"
+                    }
+                }
+            });
+
+        // Act
+        var result = await _validator.ValidateAsync(workflow, tasks);
+
+        // Assert - Should pass (no error for null taskId)
+        result.IsValid.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ValidateAsync_NestedPathWithMissingProperty_ShouldReturnNull_KillLine420OrOperator()
+    {
+        // This test kills the logical mutation at line 420 (|| to &&)
+        // Line 420: if (current.Properties == null || !current.Properties.ContainsKey(part))
+        // If || is changed to &&, it would only return null when BOTH conditions are true
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "task-1", TaskRef = "task-a" },
+                    new WorkflowTaskStep
+                    {
+                        Id = "task-2",
+                        TaskRef = "task-b",
+                        Input = new Dictionary<string, string>
+                        {
+                            ["data"] = "{{tasks.task-1.output.user.nonexistent}}"
+                        }
+                    }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["task-a"] = new WorkflowTaskResource
+            {
+                Spec = new WorkflowTaskSpec
+                {
+                    OutputSchema = new SchemaDefinition
+                    {
+                        Type = "object",
+                        Properties = new Dictionary<string, PropertyDefinition>
+                        {
+                            ["user"] = new PropertyDefinition
+                            {
+                                Type = "object",
+                                Properties = new Dictionary<string, PropertyDefinition>
+                                {
+                                    // "name" exists but "nonexistent" does not
+                                    ["name"] = new PropertyDefinition { Type = "string" }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            ["task-b"] = new WorkflowTaskResource
+            {
+                Spec = new WorkflowTaskSpec
+                {
+                    InputSchema = new SchemaDefinition
+                    {
+                        Type = "object",
+                        Properties = new Dictionary<string, PropertyDefinition>
+                        {
+                            ["data"] = new PropertyDefinition { Type = "string" }
+                        }
+                    }
+                }
+            }
+        };
+
+        _templateParserMock.Setup(x => x.Parse("{{tasks.task-1.output.user.nonexistent}}"))
+            .Returns(new TemplateParseResult
+            {
+                IsValid = true,
+                Expressions = new List<TemplateExpression>
+                {
+                    new TemplateExpression
+                    {
+                        Type = TemplateExpressionType.TaskOutput,
+                        TaskId = "task-1",
+                        Path = "user.nonexistent"  // "user" exists but "nonexistent" doesn't
+                    }
+                }
+            });
+
+        // Act
+        var result = await _validator.ValidateAsync(workflow, tasks);
+
+        // Assert - Should pass because property couldn't be resolved (returns null, skips type check)
+        result.IsValid.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ValidateAsync_WorkflowWithNoForEachTasks_ShouldReturnEarly_KillLine444Return()
+    {
+        // This test kills the statement mutation at line 444 (return;)
+        // If return is removed, it would continue processing even when no forEach tasks exist
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep { Id = "task-1", TaskRef = "task-a" },
+                    new WorkflowTaskStep { Id = "task-2", TaskRef = "task-b" },
+                    new WorkflowTaskStep { Id = "task-3", TaskRef = "task-c" }
+                    // No forEach on any tasks
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["task-a"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec() },
+            ["task-b"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec() },
+            ["task-c"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec() }
+        };
+
+        _templateParserMock.Setup(x => x.Parse(It.IsAny<string>()))
+            .Returns(new TemplateParseResult { IsValid = true });
+
+        // Act
+        var result = await _validator.ValidateAsync(workflow, tasks);
+
+        // Assert - Should pass with no errors (forEach validation exits early)
+        result.IsValid.Should().BeTrue();
+        result.Errors.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ValidateAsync_ForEachTaskWithValidNesting_ShouldPass()
+    {
+        // Complementary test for line 444 - ensures forEach validation runs when tasks exist
+        var workflow = new WorkflowResource
+        {
+            Spec = new WorkflowSpec
+            {
+                Tasks = new List<WorkflowTaskStep>
+                {
+                    new WorkflowTaskStep
+                    {
+                        Id = "foreach-task",
+                        TaskRef = "task-a",
+                        ForEach = new ForEachSpec
+                        {
+                            Items = "{{input.items}}",
+                            ItemVar = "item"
+                        }
+                    }
+                }
+            }
+        };
+
+        var tasks = new Dictionary<string, WorkflowTaskResource>
+        {
+            ["task-a"] = new WorkflowTaskResource { Spec = new WorkflowTaskSpec() }
+        };
+
+        _templateParserMock.Setup(x => x.Parse(It.IsAny<string>()))
+            .Returns(new TemplateParseResult { IsValid = true });
+
+        // Act
+        var result = await _validator.ValidateAsync(workflow, tasks);
+
+        // Assert - Should pass
+        result.IsValid.Should().BeTrue();
+    }
+
+    #endregion
 }

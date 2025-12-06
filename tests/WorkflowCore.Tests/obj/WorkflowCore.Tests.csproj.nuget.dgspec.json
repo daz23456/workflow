@@ -65,6 +65,10 @@
               "target": "Package",
               "version": "[8.0.11, )"
             },
+            "NCrontab": {
+              "target": "Package",
+              "version": "[3.3.3, )"
+            },
             "Npgsql.EntityFrameworkCore.PostgreSQL": {
               "target": "Package",
               "version": "[8.0.10, )"

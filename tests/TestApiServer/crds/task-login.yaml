@@ -1,0 +1,44 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: login
+  namespace: test
+  labels:
+    workflow.io/generated-from: openapi
+    workflow.io/operation-id: Login
+  annotations:
+    workflow.io/source-path: /api/users/login
+    workflow.io/source-method: POST
+spec:
+  type: http
+  description: POST /api/users/login
+  request:
+    url: http://localhost:5100/api/users/login
+    method: POST
+    headers:
+      Accept: application/json
+      Content-Type: application/json
+    body: '{{input.body | toJson}}'
+  inputSchema:
+    type: object
+    properties:
+      body:
+        type: object
+        properties:
+          email:
+            type: string
+          userId:
+            type: string
+          password:
+            type: string
+        additionalProperties: false
+        description: Request body
+    required:
+      - body
+  outputSchema:
+    type: object
+    description: Response from the endpoint
+  timeout: 30s
+  retry:
+    maxAttempts: 3
+    backoffMs: 1000

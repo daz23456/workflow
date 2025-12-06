@@ -1,0 +1,71 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: checkinventory
+  namespace: test
+  labels:
+    workflow.io/generated-from: openapi
+    workflow.io/operation-id: CheckInventory
+  annotations:
+    workflow.io/source-path: /api/inventory/check
+    workflow.io/source-method: POST
+spec:
+  type: http
+  description: POST /api/inventory/check
+  request:
+    url: http://localhost:5100/api/inventory/check
+    method: POST
+    headers:
+      Accept: application/json
+      Content-Type: application/json
+    body: '{{input.body | toJson}}'
+  inputSchema:
+    type: object
+    properties:
+      body:
+        type: object
+        properties:
+          productIds:
+            type: array
+            items:
+              type: string
+        additionalProperties: false
+        description: Request body
+    required:
+      - body
+  outputSchema:
+    type: object
+    properties:
+      available:
+        type: array
+        items:
+          type: object
+          properties:
+            id:
+              type: string
+            quantity:
+              type: integer
+              format: int32
+            price:
+              type: number
+              format: double
+          additionalProperties: false
+      unavailable:
+        type: array
+        items:
+          type: object
+          properties:
+            id:
+              type: string
+            quantity:
+              type: integer
+              format: int32
+            price:
+              type: number
+              format: double
+          additionalProperties: false
+    additionalProperties: false
+  timeout: 30s
+  retry:
+    maxAttempts: 3
+    backoffMs: 1000

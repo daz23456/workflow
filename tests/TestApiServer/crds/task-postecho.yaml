@@ -1,0 +1,40 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: postecho
+  namespace: test
+  labels:
+    workflow.io/generated-from: openapi
+    workflow.io/operation-id: PostEcho
+  annotations:
+    workflow.io/source-path: /api/primitives/echo
+    workflow.io/source-method: POST
+spec:
+  type: http
+  description: POST /api/primitives/echo
+  request:
+    url: http://localhost:5100/api/primitives/echo
+    method: POST
+    headers:
+      Accept: application/json
+      Content-Type: application/json
+    body: '{{input.body | toJson}}'
+  inputSchema:
+    type: object
+    properties:
+      body:
+        type: object
+        properties:
+          message:
+            type: string
+        additionalProperties: false
+        description: Request body
+    required:
+      - body
+  outputSchema:
+    type: object
+    description: Response from the endpoint
+  timeout: 30s
+  retry:
+    maxAttempts: 3
+    backoffMs: 1000

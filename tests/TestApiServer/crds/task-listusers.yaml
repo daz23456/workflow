@@ -1,0 +1,37 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: listusers
+  namespace: test
+  labels:
+    workflow.io/generated-from: openapi
+    workflow.io/operation-id: ListUsers
+  annotations:
+    workflow.io/source-path: /api/users
+    workflow.io/source-method: GET
+spec:
+  type: http
+  description: GET /api/users
+  request:
+    url: http://localhost:5100/api/users
+    method: GET
+    headers:
+      Accept: application/json
+  inputSchema:
+    type: object
+    properties:
+      limit:
+        type: integer
+        format: int32
+        description: 'Query parameter: limit'
+      offset:
+        type: integer
+        format: int32
+        description: 'Query parameter: offset'
+  outputSchema:
+    type: object
+    description: Response from the endpoint
+  timeout: 30s
+  retry:
+    maxAttempts: 3
+    backoffMs: 1000

@@ -1,0 +1,48 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: sendpush
+  namespace: test
+  labels:
+    workflow.io/generated-from: openapi
+    workflow.io/operation-id: SendPush
+  annotations:
+    workflow.io/source-path: /api/notifications/push
+    workflow.io/source-method: POST
+spec:
+  type: http
+  description: POST /api/notifications/push
+  request:
+    url: http://localhost:5100/api/notifications/push
+    method: POST
+    headers:
+      Accept: application/json
+      Content-Type: application/json
+    body: '{{input.body | toJson}}'
+  inputSchema:
+    type: object
+    properties:
+      body:
+        type: object
+        properties:
+          userId:
+            type: string
+          title:
+            type: string
+          body:
+            type: string
+          data:
+            type: object
+            additionalProperties:
+              type: string
+        additionalProperties: false
+        description: Request body
+    required:
+      - body
+  outputSchema:
+    type: object
+    description: Response from the endpoint
+  timeout: 30s
+  retry:
+    maxAttempts: 3
+    backoffMs: 1000

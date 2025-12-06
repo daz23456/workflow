@@ -10,20 +10,49 @@ const spikeRecoveryTime = new Trend('spike_recovery_time_ms');
 // Configuration
 const GATEWAY_URL = __ENV.GATEWAY_URL || 'http://localhost:5001';
 
-// Test workflows (using known working workflows)
+// Verified workflows - same as soak test but weighted for fast response
+// Focus on lighter workflows for spike testing to isolate orchestration performance
 const workflows = [
-    {
-        name: 'parallel-data-fetch',
-        weight: 60,
-        input: { productId: 'prod-1' },
-        expectedTasks: 4
-    },
+    // === FAST WORKFLOWS (70% - minimize response time variance) ===
     {
         name: 'order-lookup',
-        weight: 40,
-        input: { orderId: 'ord-101' },
-        expectedTasks: 3
-    }
+        weight: 25,
+        input: { orderId: 'ord-101' }
+    },
+    {
+        name: 'parallel-data-fetch',
+        weight: 25,
+        input: { productId: 'prod-1' }
+    },
+    {
+        name: 'data-chaining',
+        weight: 20,
+        input: { userId: '1' }
+    },
+
+    // === CONTROL FLOW (20% - verify control flow under load) ===
+    {
+        name: 'conditional-demo',
+        weight: 10,
+        input: { userId: '1', checkInventory: true }
+    },
+    {
+        name: 'switch-demo',
+        weight: 10,
+        input: { userId: '1', paymentMethod: 'stripe', notificationType: 'push' }
+    },
+
+    // === PARALLEL PATTERNS (10% - verify parallelism under load) ===
+    {
+        name: 'large-payload-parallel',
+        weight: 5,
+        input: {}
+    },
+    {
+        name: 'slow-parallel',
+        weight: 5,
+        input: {}
+    },
 ];
 
 // Spike test configuration
@@ -188,7 +217,7 @@ export function handleSummary(data) {
 
     return {
         'stdout': textSummary(data),
-        'tests/load/results/spike-summary.json': JSON.stringify(summary, null, 2),
+        'results/spike-summary.json': JSON.stringify(summary, null, 2),
     };
 }
 

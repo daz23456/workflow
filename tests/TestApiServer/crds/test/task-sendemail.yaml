@@ -8,13 +8,28 @@ metadata:
     workflow.io/operation-id: SendEmail
   annotations:
     workflow.io/source-path: /api/notifications/email
+    workflow.io/source-method: POST
 spec:
   type: http
-  http:
+  description: "POST /api/notifications/email - Send email notification"
+  request:
     url: "http://localhost:5100/api/notifications/email"
     method: POST
+    headers:
+      Accept: application/json
+      Content-Type: application/json
+    body: '{{input.body}}'
   inputSchema:
     type: object
     properties:
+      body:
+        description: "JSON body with To, Subject, Body fields"
+    required:
+      - body
   outputSchema:
     type: object
+    description: Response from the endpoint
+  timeout: 30s
+  retry:
+    maxAttempts: 3
+    backoffMs: 1000

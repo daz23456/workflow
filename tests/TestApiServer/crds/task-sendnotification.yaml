@@ -1,0 +1,53 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: sendnotification
+  namespace: test
+  labels:
+    workflow.io/generated-from: openapi
+    workflow.io/operation-id: SendNotification
+  annotations:
+    workflow.io/source-path: /api/notifications/send
+    workflow.io/source-method: POST
+spec:
+  type: http
+  description: POST /api/notifications/send
+  request:
+    url: http://localhost:5100/api/notifications/send
+    method: POST
+    headers:
+      Accept: application/json
+      Content-Type: application/json
+    body: '{{input.body | toJson}}'
+  inputSchema:
+    type: object
+    properties:
+      body:
+        type: object
+        properties:
+          userId:
+            type: string
+          type:
+            type: string
+          message:
+            type: string
+        additionalProperties: false
+        description: Request body
+    required:
+      - body
+  outputSchema:
+    type: object
+    properties:
+      notificationId:
+        type: string
+      sent:
+        type: boolean
+      channel:
+        type: string
+      recipient:
+        type: string
+    additionalProperties: false
+  timeout: 30s
+  retry:
+    maxAttempts: 3
+    backoffMs: 1000

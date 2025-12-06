@@ -132,7 +132,12 @@ builder.Services.AddScoped<ITemplatePreviewService, TemplatePreviewService>();
 // Register SignalR event notifier for real-time workflow events
 builder.Services.AddSingleton<IWorkflowEventNotifier, SignalRWorkflowEventNotifier>();
 
-// Register WorkflowOrchestrator with event notifier injected
+// Register control flow evaluators for condition, switch, and forEach
+builder.Services.AddScoped<IConditionEvaluator, ConditionEvaluator>();
+builder.Services.AddScoped<ISwitchEvaluator, SwitchEvaluator>();
+builder.Services.AddScoped<IForEachExecutor, ForEachExecutor>();
+
+// Register WorkflowOrchestrator with event notifier and control flow evaluators injected
 builder.Services.AddScoped<IWorkflowOrchestrator>(sp =>
 {
     var graphBuilder = sp.GetRequiredService<IExecutionGraphBuilder>();
@@ -141,6 +146,9 @@ builder.Services.AddScoped<IWorkflowOrchestrator>(sp =>
     var responseStorage = sp.GetRequiredService<WorkflowCore.Interfaces.IResponseStorage>();
     var transformExecutor = sp.GetService<ITransformTaskExecutor>();
     var eventNotifier = sp.GetService<IWorkflowEventNotifier>();
+    var conditionEvaluator = sp.GetService<IConditionEvaluator>();
+    var switchEvaluator = sp.GetService<ISwitchEvaluator>();
+    var forEachExecutor = sp.GetService<IForEachExecutor>();
 
     return new WorkflowOrchestrator(
         graphBuilder,
@@ -149,7 +157,10 @@ builder.Services.AddScoped<IWorkflowOrchestrator>(sp =>
         responseStorage,
         maxConcurrentTasks: 10,
         transformExecutor,
-        eventNotifier);
+        eventNotifier,
+        conditionEvaluator,
+        switchEvaluator,
+        forEachExecutor);
 });
 
 // Register Kubernetes client and workflow discovery services

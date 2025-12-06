@@ -1,0 +1,46 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: errorsimulation
+  namespace: test
+  labels:
+    workflow.io/generated-from: openapi
+    workflow.io/operation-id: ErrorSimulation
+  annotations:
+    workflow.io/source-path: /api/retry/error/{statusCode}
+    workflow.io/source-method: POST
+spec:
+  type: http
+  description: POST /api/retry/error/{statusCode}
+  request:
+    url: http://localhost:5100/api/retry/error/{{input.statusCode}}
+    method: POST
+    headers:
+      Accept: application/json
+      Content-Type: application/json
+    body: '{{input.body | toJson}}'
+  inputSchema:
+    type: object
+    properties:
+      statusCode:
+        type: integer
+        format: int32
+        description: 'Path parameter: statusCode'
+      body:
+        type: object
+        properties:
+          message:
+            type: string
+          title:
+            type: string
+        additionalProperties: false
+        description: Request body
+    required:
+      - statusCode
+  outputSchema:
+    type: object
+    description: Response from the endpoint
+  timeout: 30s
+  retry:
+    maxAttempts: 3
+    backoffMs: 1000

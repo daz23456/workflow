@@ -23,4 +23,4 @@ spec:
 
   output:
     userName: "{{tasks.get-user.output.name}}"
-    orderCount: "{{tasks.get-orders.output.orders.length}}"
+    orders: "{{tasks.get-orders.output.orders}}"

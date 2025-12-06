@@ -1,0 +1,29 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: getempty
+  namespace: test
+  labels:
+    workflow.io/generated-from: openapi
+    workflow.io/operation-id: GetEmpty
+  annotations:
+    workflow.io/source-path: /api/arrays/empty
+    workflow.io/source-method: GET
+spec:
+  type: http
+  description: GET /api/arrays/empty
+  request:
+    url: http://localhost:5100/api/arrays/empty
+    method: GET
+    headers:
+      Accept: application/json
+  inputSchema:
+    type: object
+    properties: {}
+  outputSchema:
+    type: object
+    description: Response from the endpoint
+  timeout: 30s
+  retry:
+    maxAttempts: 3
+    backoffMs: 1000

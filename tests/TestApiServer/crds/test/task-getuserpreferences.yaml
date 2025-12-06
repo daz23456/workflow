@@ -8,15 +8,27 @@ metadata:
     workflow.io/operation-id: GetUserPreferences
   annotations:
     workflow.io/source-path: /api/users/{id}/preferences
+    workflow.io/source-method: GET
 spec:
   type: http
-  http:
-    url: "http://localhost:5100/api/users/{id}/preferences"
+  description: GET /api/users/{id}/preferences
+  request:
+    url: http://localhost:5100/api/users/{{input.id}}/preferences
     method: GET
+    headers:
+      Accept: application/json
   inputSchema:
     type: object
     properties:
       id:
         type: string
+        description: 'Path parameter: id'
+    required:
+      - id
   outputSchema:
     type: object
+    description: User preferences response
+  timeout: 30s
+  retry:
+    maxAttempts: 3
+    backoffMs: 1000

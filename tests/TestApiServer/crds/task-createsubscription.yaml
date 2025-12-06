@@ -1,0 +1,47 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: createsubscription
+  namespace: test
+  labels:
+    workflow.io/generated-from: openapi
+    workflow.io/operation-id: CreateSubscription
+  annotations:
+    workflow.io/source-path: /api/payments/subscription
+    workflow.io/source-method: POST
+spec:
+  type: http
+  description: POST /api/payments/subscription
+  request:
+    url: http://localhost:5100/api/payments/subscription
+    method: POST
+    headers:
+      Accept: application/json
+      Content-Type: application/json
+    body: '{{input.body | toJson}}'
+  inputSchema:
+    type: object
+    properties:
+      body:
+        type: object
+        properties:
+          userId:
+            type: string
+          planId:
+            type: string
+          amount:
+            type: number
+            format: double
+          interval:
+            type: string
+        additionalProperties: false
+        description: Request body
+    required:
+      - body
+  outputSchema:
+    type: object
+    description: Response from the endpoint
+  timeout: 30s
+  retry:
+    maxAttempts: 3
+    backoffMs: 1000

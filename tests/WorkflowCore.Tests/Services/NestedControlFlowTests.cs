@@ -450,7 +450,7 @@ public class NestedControlFlowTests
                 {
                     Items = i == 0 ? "{{input.items}}" : "{{forEach.item.children}}",
                     ItemVar = $"item{i}",
-                    MaxParallel = 5
+                    MaxConcurrency = 5
                 }
             };
 

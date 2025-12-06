@@ -1,0 +1,29 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: getlarge1000
+  namespace: test
+  labels:
+    workflow.io/generated-from: openapi
+    workflow.io/operation-id: GetLarge1000
+  annotations:
+    workflow.io/source-path: /api/arrays/large/1000
+    workflow.io/source-method: GET
+spec:
+  type: http
+  description: GET /api/arrays/large/1000
+  request:
+    url: http://localhost:5100/api/arrays/large/1000
+    method: GET
+    headers:
+      Accept: application/json
+  inputSchema:
+    type: object
+    properties: {}
+  outputSchema:
+    type: object
+    description: Response from the endpoint
+  timeout: 30s
+  retry:
+    maxAttempts: 3
+    backoffMs: 1000

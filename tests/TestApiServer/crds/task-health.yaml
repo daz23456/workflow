@@ -1,0 +1,29 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: health
+  namespace: test
+  labels:
+    workflow.io/generated-from: openapi
+    workflow.io/operation-id: Health
+  annotations:
+    workflow.io/source-path: /health
+    workflow.io/source-method: GET
+spec:
+  type: http
+  description: GET /health
+  request:
+    url: http://localhost:5100/health
+    method: GET
+    headers:
+      Accept: application/json
+  inputSchema:
+    type: object
+    properties: {}
+  outputSchema:
+    type: object
+    description: Response from the endpoint
+  timeout: 30s
+  retry:
+    maxAttempts: 3
+    backoffMs: 1000

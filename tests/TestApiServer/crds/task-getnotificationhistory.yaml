@@ -1,0 +1,39 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: getnotificationhistory
+  namespace: test
+  labels:
+    workflow.io/generated-from: openapi
+    workflow.io/operation-id: GetNotificationHistory
+  annotations:
+    workflow.io/source-path: /api/notifications/history
+    workflow.io/source-method: GET
+spec:
+  type: http
+  description: GET /api/notifications/history
+  request:
+    url: http://localhost:5100/api/notifications/history
+    method: GET
+    headers:
+      Accept: application/json
+  inputSchema:
+    type: object
+    properties:
+      userId:
+        type: string
+        description: 'Query parameter: userId'
+      channel:
+        type: string
+        description: 'Query parameter: channel'
+      limit:
+        type: integer
+        format: int32
+        description: 'Query parameter: limit'
+  outputSchema:
+    type: object
+    description: Response from the endpoint
+  timeout: 30s
+  retry:
+    maxAttempts: 3
+    backoffMs: 1000

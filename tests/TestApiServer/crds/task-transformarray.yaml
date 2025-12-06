@@ -1,0 +1,42 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: transformarray
+  namespace: test
+  labels:
+    workflow.io/generated-from: openapi
+    workflow.io/operation-id: TransformArray
+  annotations:
+    workflow.io/source-path: /api/arrays/transform
+    workflow.io/source-method: POST
+spec:
+  type: http
+  description: POST /api/arrays/transform
+  request:
+    url: http://localhost:5100/api/arrays/transform
+    method: POST
+    headers:
+      Accept: application/json
+      Content-Type: application/json
+    body: '{{input.body | toJson}}'
+  inputSchema:
+    type: object
+    properties:
+      body:
+        type: object
+        properties:
+          items:
+            type: array
+            items:
+              type: string
+        additionalProperties: false
+        description: Request body
+    required:
+      - body
+  outputSchema:
+    type: object
+    description: Response from the endpoint
+  timeout: 30s
+  retry:
+    maxAttempts: 3
+    backoffMs: 1000

@@ -364,15 +364,15 @@ public class WorkflowValidator : IWorkflowValidator
             });
         }
 
-        // Validate maxParallel is non-negative
-        if (step.ForEach.MaxParallel < 0)
+        // Validate maxConcurrency is non-negative
+        if (step.ForEach.MaxConcurrency < 0)
         {
             errors.Add(new ValidationError
             {
                 TaskId = step.Id,
-                Field = "forEach.maxParallel",
-                Message = $"ForEach 'maxParallel' must be a positive number or 0 (unlimited). Got: {step.ForEach.MaxParallel}",
-                SuggestedFix = "Set maxParallel to 0 for unlimited parallelism, or a positive number to limit concurrent executions"
+                Field = "forEach.maxConcurrency",
+                Message = $"ForEach 'maxConcurrency' must be a positive number or 0 (unlimited). Got: {step.ForEach.MaxConcurrency}",
+                SuggestedFix = "Set maxConcurrency to 0 for unlimited parallelism, or a positive number to limit concurrent executions"
             });
         }
     }

@@ -240,7 +240,7 @@ public class ForEachExecutorTests
     #region Parallel Execution Tests
 
     [Fact]
-    public async Task ExecuteAsync_WithMaxParallel_LimitsConcurrency()
+    public async Task ExecuteAsync_WithMaxConcurrency_LimitsConcurrency()
     {
         // Arrange
         var maxConcurrent = 0;
@@ -249,7 +249,7 @@ public class ForEachExecutorTests
         {
             Items = "{{input.items}}",
             ItemVar = "item",
-            MaxParallel = 2
+            MaxConcurrency = 2
         };
         var context = new TemplateContext
         {
@@ -277,7 +277,7 @@ public class ForEachExecutorTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_WithNoMaxParallel_RunsAllInParallel()
+    public async Task ExecuteAsync_WithNoMaxConcurrency_RunsAllInParallel()
     {
         // Arrange
         var maxConcurrent = 0;
@@ -286,7 +286,7 @@ public class ForEachExecutorTests
         {
             Items = "{{input.items}}",
             ItemVar = "item"
-            // No MaxParallel = unlimited
+            // No MaxConcurrency = unlimited
         };
         var context = new TemplateContext
         {
@@ -310,7 +310,7 @@ public class ForEachExecutorTests
         });
 
         // Assert
-        maxConcurrent.Should().BeGreaterThan(1, "without MaxParallel, tasks should run concurrently");
+        maxConcurrent.Should().BeGreaterThan(1, "without MaxConcurrency, tasks should run concurrently");
     }
 
     #endregion

@@ -60,18 +60,18 @@ export function LatencyDistribution({
 }: LatencyDistributionProps) {
   if (isLoading) {
     return (
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Latency Distribution</h2>
-        <div className="h-40 bg-gray-100 animate-pulse rounded" />
+      <div className="theme-card p-4">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Latency Distribution</h2>
+        <div className="h-40 bg-gray-100 dark:bg-gray-700 animate-pulse theme-rounded-md" />
       </div>
     );
   }
 
   if (!p50Ms || !p95Ms) {
     return (
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Latency Distribution</h2>
-        <div className="h-40 flex items-center justify-center text-gray-500">
+      <div className="theme-card p-4">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Latency Distribution</h2>
+        <div className="h-40 flex items-center justify-center text-gray-500 dark:text-gray-400">
           No distribution data available
         </div>
       </div>
@@ -85,17 +85,17 @@ export function LatencyDistribution({
     const data = payload[0].payload;
 
     return (
-      <div className="bg-white p-2 rounded border shadow text-sm">
-        <p className="font-semibold">{data.latency}ms</p>
+      <div className="theme-card p-2 text-sm">
+        <p className="font-semibold text-gray-900 dark:text-gray-100">{data.latency}ms</p>
       </div>
     );
   };
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4" data-testid="latency-distribution">
+    <div className="theme-card p-4" data-testid="latency-distribution">
       <div className="mb-3">
-        <h2 className="text-lg font-semibold text-gray-900">Latency Distribution</h2>
-        <p className="text-sm text-gray-500">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Latency Distribution</h2>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
           {workflowName ? `Estimated distribution for ${workflowName}` : 'Estimated latency distribution'}
         </p>
       </div>
@@ -162,15 +162,15 @@ export function LatencyDistribution({
       <div className="flex justify-center gap-6 mt-2 text-xs">
         <span className="flex items-center gap-1">
           <span className="w-3 h-0.5 bg-green-500 inline-block" style={{ borderStyle: 'dashed' }} />
-          <span className="text-gray-600">P50: <strong>{p50Ms}ms</strong></span>
+          <span className="text-gray-600 dark:text-gray-400">P50: <strong className="text-gray-900 dark:text-gray-200">{p50Ms}ms</strong></span>
         </span>
         <span className="flex items-center gap-1">
           <span className="w-3 h-0.5 bg-blue-500 inline-block" style={{ borderStyle: 'dashed' }} />
-          <span className="text-gray-600">Avg: <strong>{Math.round(avgMs)}ms</strong></span>
+          <span className="text-gray-600 dark:text-gray-400">Avg: <strong className="text-gray-900 dark:text-gray-200">{Math.round(avgMs)}ms</strong></span>
         </span>
         <span className="flex items-center gap-1">
           <span className="w-3 h-0.5 bg-orange-500 inline-block" style={{ borderStyle: 'dashed' }} />
-          <span className="text-gray-600">P95: <strong>{p95Ms}ms</strong></span>
+          <span className="text-gray-600 dark:text-gray-400">P95: <strong className="text-gray-900 dark:text-gray-200">{p95Ms}ms</strong></span>
         </span>
       </div>
     </div>

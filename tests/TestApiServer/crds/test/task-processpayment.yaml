@@ -18,7 +18,7 @@ spec:
     headers:
       Accept: application/json
       Content-Type: application/json
-    body: '{{input.body | toJson}}'
+    body: '{{input.body}}'
   inputSchema:
     type: object
     properties:

@@ -1,6 +1,7 @@
 'use client';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ThemeProvider } from '@/components/theme-provider';
 import { useState, useEffect } from 'react';
 import { TourProvider } from '@/components/tours/tour-provider';
 
@@ -48,10 +49,12 @@ export function Providers({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <TourProvider>
-        {children}
-      </TourProvider>
-    </QueryClientProvider>
+    <ThemeProvider>
+      <QueryClientProvider client={queryClient}>
+        <TourProvider>
+          {children}
+        </TourProvider>
+      </QueryClientProvider>
+    </ThemeProvider>
   );
 }

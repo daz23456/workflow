@@ -65,12 +65,12 @@ public class ForEachExecutor : IForEachExecutor
         // Execute iterations
         var itemResults = new ConcurrentBag<ForEachItemResult>();
 
-        // Use semaphore to limit concurrency if MaxParallel is set
-        var maxParallel = forEachSpec.MaxParallel > 0
-            ? forEachSpec.MaxParallel
+        // Use semaphore to limit concurrency if MaxConcurrency is set
+        var maxConcurrency = forEachSpec.MaxConcurrency > 0
+            ? forEachSpec.MaxConcurrency
             : int.MaxValue; // No limit
 
-        using var semaphore = new SemaphoreSlim(maxParallel);
+        using var semaphore = new SemaphoreSlim(maxConcurrency);
 
         var tasks = items.Select((item, index) => ExecuteItemAsync(
             item,

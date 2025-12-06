@@ -1,0 +1,48 @@
+apiVersion: workflow.example.com/v1
+kind: Workflow
+metadata:
+  name: data-chaining
+  namespace: test
+spec:
+  description: "Demonstrates data passing from one task to another via template expressions"
+  input:
+    userId:
+      type: string
+      required: true
+      description: "The user ID to fetch details for"
+  tasks:
+    # Step 1: Fetch user details
+    - id: fetch-user
+      taskRef: getuser
+      input:
+        id: "{{input.userId}}"
+
+    # Step 2: Use user's ID to fetch their orders (chaining user data)
+    - id: fetch-user-orders
+      taskRef: getuserorders
+      input:
+        id: "{{tasks.fetch-user.output.id}}"
+      dependsOn: [fetch-user]
+
+    # Step 3: Get user profile using data from step 1
+    - id: fetch-profile
+      taskRef: getuserprofile
+      input:
+        id: "{{tasks.fetch-user.output.id}}"
+      dependsOn: [fetch-user]
+
+    # Step 4: Fetch preferences using chained user ID
+    - id: fetch-preferences
+      taskRef: getuserpreferences
+      input:
+        id: "{{tasks.fetch-user.output.id}}"
+      dependsOn: [fetch-user]
+
+  output:
+    user: "{{tasks.fetch-user.output}}"
+    userId: "{{tasks.fetch-user.output.id}}"
+    userName: "{{tasks.fetch-user.output.name}}"
+    userEmail: "{{tasks.fetch-user.output.email}}"
+    orders: "{{tasks.fetch-user-orders.output}}"
+    profile: "{{tasks.fetch-profile.output}}"
+    preferences: "{{tasks.fetch-preferences.output}}"

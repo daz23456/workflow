@@ -1,0 +1,13 @@
+apiVersion: workflow.example.com/v1
+kind: Workflow
+metadata:
+  name: retry-fail-once
+  namespace: test
+spec:
+  description: "Tests orchestrator retry - endpoint fails once then succeeds"
+  input: {}
+  tasks:
+    - id: will-fail-once
+      taskRef: failonce
+  output:
+    result: "${{ tasks.will-fail-once.output.message }}"

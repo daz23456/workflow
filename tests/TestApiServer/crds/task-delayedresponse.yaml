@@ -1,0 +1,35 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: delayedresponse
+  namespace: test
+  labels:
+    workflow.io/generated-from: openapi
+    workflow.io/operation-id: DelayedResponse
+  annotations:
+    workflow.io/source-path: /api/retry/delay/{ms}
+    workflow.io/source-method: GET
+spec:
+  type: http
+  description: GET /api/retry/delay/{ms}
+  request:
+    url: http://localhost:5100/api/retry/delay/{{input.ms}}
+    method: GET
+    headers:
+      Accept: application/json
+  inputSchema:
+    type: object
+    properties:
+      ms:
+        type: integer
+        format: int32
+        description: 'Path parameter: ms'
+    required:
+      - ms
+  outputSchema:
+    type: object
+    description: Response from the endpoint
+  timeout: 30s
+  retry:
+    maxAttempts: 3
+    backoffMs: 1000

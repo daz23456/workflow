@@ -1,0 +1,36 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: transform-pipeline
+  namespace: test
+  labels:
+    workflow.io/category: transform
+  annotations:
+    workflow.io/description: "Complex multi-step transform pipeline"
+spec:
+  type: transform
+  transform:
+    input: "$"
+    pipeline:
+      # Step 1: Filter active items
+      - operation: filter
+        condition: "$.status == 'active'"
+      # Step 2: Map to simpler structure
+      - operation: map
+        expression: "{ id: $.id, name: $.name, amount: $.amount }"
+      # Step 3: Sort by amount descending
+      - operation: sortBy
+        field: "$.amount"
+        descending: true
+      # Step 4: Take top 5
+      - operation: limit
+        count: 5
+  inputSchema:
+    type: array
+    items:
+      type: object
+  outputSchema:
+    type: object
+    properties:
+      result:
+        type: array

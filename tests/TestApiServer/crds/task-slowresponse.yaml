@@ -1,0 +1,41 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: slowresponse
+  namespace: test
+  labels:
+    workflow.io/generated-from: openapi
+    workflow.io/operation-id: SlowResponse
+  annotations:
+    workflow.io/source-path: /api/retry/slow
+    workflow.io/source-method: POST
+spec:
+  type: http
+  description: POST /api/retry/slow
+  request:
+    url: http://localhost:5100/api/retry/slow
+    method: POST
+    headers:
+      Accept: application/json
+      Content-Type: application/json
+    body: '{{input.body | toJson}}'
+  inputSchema:
+    type: object
+    properties:
+      body:
+        type: object
+        properties:
+          delayMs:
+            type: integer
+            format: int32
+        additionalProperties: false
+        description: Request body
+    required:
+      - body
+  outputSchema:
+    type: object
+    description: Response from the endpoint
+  timeout: 30s
+  retry:
+    maxAttempts: 3
+    backoffMs: 1000

@@ -8,13 +8,28 @@ metadata:
     workflow.io/operation-id: SendPush
   annotations:
     workflow.io/source-path: /api/notifications/push
+    workflow.io/source-method: POST
 spec:
   type: http
-  http:
+  description: "POST /api/notifications/push - Send push notification"
+  request:
     url: "http://localhost:5100/api/notifications/push"
     method: POST
+    headers:
+      Accept: application/json
+      Content-Type: application/json
+    body: '{{input.body}}'
   inputSchema:
     type: object
     properties:
+      body:
+        description: "JSON body with UserId, Title, Body fields"
+    required:
+      - body
   outputSchema:
     type: object
+    description: Response from the endpoint
+  timeout: 30s
+  retry:
+    maxAttempts: 3
+    backoffMs: 1000

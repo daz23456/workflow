@@ -43,10 +43,8 @@ export function buildGraphFromTasks(tasks: TaskDetail[]): WorkflowGraph {
   // Create edges if tasks have dependsOn
   const edges: GraphEdge[] = [];
   tasks.forEach((task) => {
-    console.log(`Task ${task.id} dependsOn:`, task.dependsOn);
     if (task.dependsOn && task.dependsOn.length > 0) {
       task.dependsOn.forEach((depId) => {
-        console.log(`Creating edge: ${depId} -> ${task.id}`);
         edges.push({
           id: `${depId}-to-${task.id}`,
           source: depId,
@@ -57,8 +55,6 @@ export function buildGraphFromTasks(tasks: TaskDetail[]): WorkflowGraph {
       });
     }
   });
-
-  console.log(`Created ${edges.length} edges:`, edges);
 
   // Create parallel groups
   // If no dependencies, all tasks are parallel (level 0)

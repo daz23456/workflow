@@ -1,0 +1,25 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: transform-map
+  namespace: test
+  labels:
+    workflow.io/category: transform
+  annotations:
+    workflow.io/description: "Map array items to new structure"
+spec:
+  type: transform
+  transform:
+    input: "$"
+    pipeline:
+      - operation: map
+        expression: "{ id: $.id, fullName: $.name, contact: $.email }"
+  inputSchema:
+    type: array
+    items:
+      type: object
+  outputSchema:
+    type: object
+    properties:
+      result:
+        type: array

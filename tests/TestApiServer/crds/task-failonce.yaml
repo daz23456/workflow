@@ -1,0 +1,38 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: failonce
+  namespace: test
+  labels:
+    workflow.io/generated-from: openapi
+    workflow.io/operation-id: FailOnce
+  annotations:
+    workflow.io/source-path: /api/retry/fail-once
+    workflow.io/source-method: POST
+spec:
+  type: http
+  description: POST /api/retry/fail-once
+  request:
+    url: http://localhost:5100/api/retry/fail-once
+    method: POST
+    headers:
+      Accept: application/json
+      Content-Type: application/json
+    body: '{{input.body | toJson}}'
+  inputSchema:
+    type: object
+    properties:
+      body:
+        type: object
+        properties:
+          key:
+            type: string
+        additionalProperties: false
+        description: Request body
+  outputSchema:
+    type: object
+    description: Response from the endpoint
+  timeout: 30s
+  retry:
+    maxAttempts: 3
+    backoffMs: 1000

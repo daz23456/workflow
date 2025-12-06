@@ -23,18 +23,18 @@ interface LatencyChartProps {
 export function LatencyChart({ data, isLoading, title = 'Latency Over Time' }: LatencyChartProps) {
   if (isLoading) {
     return (
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">{title}</h2>
-        <div className="h-64 bg-gray-100 animate-pulse rounded" role="status" aria-label="Loading chart" />
+      <div className="theme-card p-4">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">{title}</h2>
+        <div className="h-64 bg-gray-100 dark:bg-gray-700 animate-pulse theme-rounded-md" role="status" aria-label="Loading chart" />
       </div>
     );
   }
 
   if (!data || data.length === 0) {
     return (
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">{title}</h2>
-        <div className="h-64 flex items-center justify-center text-gray-500">
+      <div className="theme-card p-4">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">{title}</h2>
+        <div className="h-64 flex items-center justify-center text-gray-500 dark:text-gray-400">
           No data available
         </div>
       </div>
@@ -58,24 +58,24 @@ export function LatencyChart({ data, isLoading, title = 'Latency Over Time' }: L
     const data = payload[0].payload;
 
     return (
-      <div className="bg-white p-3 rounded-lg border shadow-lg text-sm">
-        <p className="font-semibold mb-2">{data.fullDate}</p>
+      <div className="theme-card p-3 text-sm">
+        <p className="font-semibold mb-2 text-gray-900 dark:text-gray-100">{data.fullDate}</p>
         <div className="space-y-1">
           <div className="flex justify-between gap-4">
-            <span className="text-gray-600">P95:</span>
-            <span className="font-semibold text-orange-600">{data.p95Ms}ms</span>
+            <span className="text-gray-600 dark:text-gray-400">P95:</span>
+            <span className="font-semibold text-orange-600 dark:text-orange-400">{data.p95Ms}ms</span>
           </div>
           <div className="flex justify-between gap-4">
-            <span className="text-gray-600">Average:</span>
-            <span className="font-semibold text-blue-600">{data.avgMs}ms</span>
+            <span className="text-gray-600 dark:text-gray-400">Average:</span>
+            <span className="font-semibold text-blue-600 dark:text-blue-400">{data.avgMs}ms</span>
           </div>
           <div className="flex justify-between gap-4">
-            <span className="text-gray-600">Executions:</span>
-            <span className="font-semibold">{data.count}</span>
+            <span className="text-gray-600 dark:text-gray-400">Executions:</span>
+            <span className="font-semibold text-gray-900 dark:text-gray-100">{data.count}</span>
           </div>
           <div className="flex justify-between gap-4">
-            <span className="text-gray-600">Error Rate:</span>
-            <span className={`font-semibold ${data.errorRate > 10 ? 'text-red-600' : 'text-green-600'}`}>
+            <span className="text-gray-600 dark:text-gray-400">Error Rate:</span>
+            <span className={`font-semibold ${data.errorRate > 10 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
               {data.errorRate.toFixed(1)}%
             </span>
           </div>
@@ -89,8 +89,8 @@ export function LatencyChart({ data, isLoading, title = 'Latency Over Time' }: L
   const minP95 = Math.min(...p95Values);
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4" data-testid="latency-chart">
-      <h2 className="text-lg font-semibold text-gray-900 mb-4">{title}</h2>
+    <div className="theme-card p-4" data-testid="latency-chart">
+      <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">{title}</h2>
 
       <ResponsiveContainer width="100%" height={220}>
         <ComposedChart data={chartData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
@@ -155,10 +155,10 @@ export function LatencyChart({ data, isLoading, title = 'Latency Over Time' }: L
       </ResponsiveContainer>
 
       {/* Summary stats */}
-      <div className="flex justify-between mt-3 pt-3 border-t text-xs text-gray-500">
-        <span>Min P95: <strong className="text-gray-700">{Math.round(minP95)}ms</strong></span>
-        <span>Max P95: <strong className="text-gray-700">{Math.round(maxP95)}ms</strong></span>
-        <span>Data points: <strong className="text-gray-700">{data.length}</strong></span>
+      <div className="flex justify-between mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 text-xs text-gray-500 dark:text-gray-400">
+        <span>Min P95: <strong className="text-gray-700 dark:text-gray-300">{Math.round(minP95)}ms</strong></span>
+        <span>Max P95: <strong className="text-gray-700 dark:text-gray-300">{Math.round(maxP95)}ms</strong></span>
+        <span>Data points: <strong className="text-gray-700 dark:text-gray-300">{data.length}</strong></span>
       </div>
     </div>
   );

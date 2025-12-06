@@ -1,0 +1,85 @@
+apiVersion: workflow.example.com/v1
+kind: Workflow
+metadata:
+  name: conditional-demo
+  namespace: test
+spec:
+  description: "Demonstrates conditional task execution using condition.if expressions"
+  input:
+    orderId:
+      type: string
+      required: true
+      description: "Order ID to process"
+    skipPayment:
+      type: boolean
+      required: false
+      description: "If true, skip payment processing"
+    notifyUser:
+      type: boolean
+      required: false
+      description: "If true, send notification"
+    minimumAmount:
+      type: number
+      required: false
+      description: "Minimum order amount to require approval"
+  tasks:
+    # Step 1: Always fetch the order
+    - id: get-order
+      taskRef: getorder
+      input:
+        id: "{{input.orderId}}"
+
+    # Step 2: Check inventory (always runs)
+    - id: check-inventory
+      taskRef: checkinventory
+      input:
+        body: '{"productId": "{{tasks.get-order.output.productId}}", "quantity": 1}'
+      dependsOn: [get-order]
+
+    # Step 3: Process payment ONLY if skipPayment is not true
+    # Demonstrates: condition with input parameter
+    - id: process-payment
+      taskRef: processpayment
+      condition:
+        if: "{{input.skipPayment}} != true"
+      input:
+        body: '{"orderId": "{{input.orderId}}", "amount": {{tasks.get-order.output.total}}}'
+      dependsOn: [get-order, check-inventory]
+
+    # Step 4: Send notification ONLY if notifyUser is true
+    # Demonstrates: condition with boolean check
+    - id: send-notification
+      taskRef: sendnotification
+      condition:
+        if: "{{input.notifyUser}} == true"
+      input:
+        body: '{"userId": "{{tasks.get-order.output.userId}}", "message": "Order {{input.orderId}} processed"}'
+      dependsOn: [get-order]
+
+    # Step 5: High-value order approval - only if amount > minimumAmount
+    # Demonstrates: numeric comparison condition
+    - id: high-value-approval
+      taskRef: getorder
+      condition:
+        if: "{{tasks.get-order.output.total}} > 100"
+      input:
+        id: "{{input.orderId}}"
+      dependsOn: [get-order]
+
+    # Step 6: Check for express shipping - based on order status
+    # Demonstrates: string comparison condition
+    - id: express-shipping-check
+      taskRef: getorder
+      condition:
+        if: "{{tasks.get-order.output.status}} == 'express'"
+      input:
+        id: "{{input.orderId}}"
+      dependsOn: [get-order]
+
+  output:
+    order: "{{tasks.get-order.output}}"
+    inventoryCheck: "{{tasks.check-inventory.output}}"
+    paymentResult: "{{tasks.process-payment.output}}"
+    notificationSent: "{{tasks.send-notification.output}}"
+    highValueApproval: "{{tasks.high-value-approval.output}}"
+    expressCheck: "{{tasks.express-shipping-check.output}}"

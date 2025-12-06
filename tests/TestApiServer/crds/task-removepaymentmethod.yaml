@@ -1,0 +1,34 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: removepaymentmethod
+  namespace: test
+  labels:
+    workflow.io/generated-from: openapi
+    workflow.io/operation-id: RemovePaymentMethod
+  annotations:
+    workflow.io/source-path: /api/payments/methods/{id}
+    workflow.io/source-method: DELETE
+spec:
+  type: http
+  description: DELETE /api/payments/methods/{id}
+  request:
+    url: http://localhost:5100/api/payments/methods/{{input.id}}
+    method: DELETE
+    headers:
+      Accept: application/json
+  inputSchema:
+    type: object
+    properties:
+      id:
+        type: string
+        description: 'Path parameter: id'
+    required:
+      - id
+  outputSchema:
+    type: object
+    description: Response from the endpoint
+  timeout: 30s
+  retry:
+    maxAttempts: 3
+    backoffMs: 1000

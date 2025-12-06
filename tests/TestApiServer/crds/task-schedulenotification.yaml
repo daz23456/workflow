@@ -1,0 +1,49 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: schedulenotification
+  namespace: test
+  labels:
+    workflow.io/generated-from: openapi
+    workflow.io/operation-id: ScheduleNotification
+  annotations:
+    workflow.io/source-path: /api/notifications/schedule
+    workflow.io/source-method: POST
+spec:
+  type: http
+  description: POST /api/notifications/schedule
+  request:
+    url: http://localhost:5100/api/notifications/schedule
+    method: POST
+    headers:
+      Accept: application/json
+      Content-Type: application/json
+    body: '{{input.body | toJson}}'
+  inputSchema:
+    type: object
+    properties:
+      body:
+        type: object
+        properties:
+          channel:
+            type: string
+          recipient:
+            type: string
+          body:
+            type: string
+          scheduledFor:
+            type: string
+            format: date-time
+          subject:
+            type: string
+        additionalProperties: false
+        description: Request body
+    required:
+      - body
+  outputSchema:
+    type: object
+    description: Response from the endpoint
+  timeout: 30s
+  retry:
+    maxAttempts: 3
+    backoffMs: 1000

@@ -1,0 +1,52 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: processpayment
+  namespace: test
+  labels:
+    workflow.io/generated-from: openapi
+    workflow.io/operation-id: ProcessPayment
+  annotations:
+    workflow.io/source-path: /api/payments/process
+    workflow.io/source-method: POST
+spec:
+  type: http
+  description: POST /api/payments/process
+  request:
+    url: http://localhost:5100/api/payments/process
+    method: POST
+    headers:
+      Accept: application/json
+      Content-Type: application/json
+    body: '{{input.body | toJson}}'
+  inputSchema:
+    type: object
+    properties:
+      body:
+        type: object
+        properties:
+          userId:
+            type: string
+          amount:
+            type: number
+            format: double
+          orderId:
+            type: string
+        additionalProperties: false
+        description: Request body
+    required:
+      - body
+  outputSchema:
+    type: object
+    properties:
+      transactionId:
+        type: string
+      status:
+        type: string
+      timestamp:
+        type: string
+    additionalProperties: false
+  timeout: 30s
+  retry:
+    maxAttempts: 3
+    backoffMs: 1000

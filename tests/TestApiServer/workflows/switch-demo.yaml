@@ -1,0 +1,90 @@
+apiVersion: workflow.example.com/v1
+kind: Workflow
+metadata:
+  name: switch-demo
+  namespace: test
+spec:
+  description: "Demonstrates switch/case routing based on value matching"
+  input:
+    userId:
+      type: string
+      required: true
+      description: "User ID to process"
+    paymentMethod:
+      type: string
+      required: true
+      description: "Payment method: stripe, paypal, invoice, or bank"
+    notificationType:
+      type: string
+      required: true
+      description: "Notification type: email, sms, or push"
+  tasks:
+    # Step 1: Fetch user data first
+    - id: get-user
+      taskRef: getuser
+      input:
+        id: "{{input.userId}}"
+
+    # Step 2: Route to different payment processors based on payment method
+    # Demonstrates: switch with string matching
+    - id: payment-router
+      taskRef: processpayment
+      switch:
+        value: "{{input.paymentMethod}}"
+        cases:
+          - match: "stripe"
+            taskRef: processpayment
+          - match: "paypal"
+            taskRef: processpayment
+          - match: "invoice"
+            taskRef: createorder
+        default:
+          taskRef: processpayment
+      input:
+        body: '{"userId": "{{input.userId}}", "method": "{{input.paymentMethod}}"}'
+      dependsOn: [get-user]
+
+    # Step 3: Route to different notification channels
+    # Demonstrates: switch with notification routing
+    # Note: Using sendpush for all cases since body format is tied to taskRef
+    - id: notification-router
+      taskRef: sendpush
+      switch:
+        value: "{{input.notificationType}}"
+        cases:
+          - match: "email"
+            taskRef: sendpush
+          - match: "sms"
+            taskRef: sendpush
+          - match: "push"
+            taskRef: sendpush
+        default:
+          taskRef: sendpush
+      input:
+        body: '{"UserId": "{{input.userId}}", "Title": "Payment Notification", "Body": "Payment processed for user {{input.userId}}"}'
+      dependsOn: [get-user, payment-router]
+
+    # Step 4: Route based on user tier (from task output)
+    # Demonstrates: switch using task output value
+    - id: tier-router
+      taskRef: getuser
+      switch:
+        value: "{{tasks.get-user.output.tier}}"
+        cases:
+          - match: "gold"
+            taskRef: getuserprofile
+          - match: "silver"
+            taskRef: getuserprofile
+          - match: "bronze"
+            taskRef: getuser
+        default:
+          taskRef: getuser
+      input:
+        id: "{{input.userId}}"
+      dependsOn: [get-user]
+
+  output:
+    user: "{{tasks.get-user.output}}"
+    paymentResult: "{{tasks.payment-router.output}}"
+    notificationResult: "{{tasks.notification-router.output}}"
+    tierAction: "{{tasks.tier-router.output}}"

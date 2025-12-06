@@ -50,6 +50,8 @@ public static class ChainableEndpoints
             return Results.Ok(user);
         })
             .WithName("GetUser")
+            .Produces<User>()
+            .Produces(StatusCodes.Status404NotFound)
             .WithOpenApi();
 
         // 17. GET /api/users/{id}/orders
@@ -59,9 +61,11 @@ public static class ChainableEndpoints
                 return Results.NotFound(new { error = $"User {id} not found" });
 
             var orders = _orders.GetValueOrDefault(id, new List<Order>());
-            return Results.Ok(new { orders });
+            return Results.Ok(new GetUserOrdersResponse { Orders = orders.ToArray() });
         })
             .WithName("GetUserOrders")
+            .Produces<GetUserOrdersResponse>()
+            .Produces(StatusCodes.Status404NotFound)
             .WithOpenApi();
 
         // 18. POST /api/inventory/check
@@ -88,9 +92,14 @@ public static class ChainableEndpoints
                 }
             }
 
-            return Results.Ok(new { available, unavailable });
+            return Results.Ok(new InventoryCheckResponse
+            {
+                Available = available.ToArray(),
+                Unavailable = unavailable.ToArray()
+            });
         })
             .WithName("CheckInventory")
+            .Produces<InventoryCheckResponse>()
             .WithOpenApi();
 
         // 19. POST /api/payments/process
@@ -102,22 +111,25 @@ public static class ChainableEndpoints
             var user = _users[request.UserId];
             if (request.Amount > user.CreditLimit)
             {
-                return Results.BadRequest(new
+                return Results.BadRequest(new PaymentErrorResponse
                 {
-                    error = "Insufficient credit",
-                    creditLimit = user.CreditLimit,
-                    requestedAmount = request.Amount
+                    Error = "Insufficient credit",
+                    CreditLimit = user.CreditLimit,
+                    RequestedAmount = request.Amount
                 });
             }
 
-            return Results.Ok(new
+            return Results.Ok(new PaymentResponse
             {
-                transactionId = $"txn-{Guid.NewGuid():N}",
-                status = "approved",
-                timestamp = DateTime.UtcNow.ToString("O")
+                TransactionId = $"txn-{Guid.NewGuid():N}",
+                Status = "approved",
+                Timestamp = DateTime.UtcNow.ToString("O")
             });
         })
             .WithName("ProcessPayment")
+            .Produces<PaymentResponse>()
+            .Produces<PaymentErrorResponse>(StatusCodes.Status400BadRequest)
+            .Produces(StatusCodes.Status404NotFound)
             .WithOpenApi();
 
         // 20. POST /api/notifications/send
@@ -126,15 +138,17 @@ public static class ChainableEndpoints
             if (!_users.ContainsKey(request.UserId))
                 return Results.NotFound(new { error = $"User {request.UserId} not found" });
 
-            return Results.Ok(new
+            return Results.Ok(new SendNotificationResponse
             {
-                notificationId = $"notif-{Guid.NewGuid():N}",
-                sent = true,
-                channel = "email",
-                recipient = _users[request.UserId].Email
+                NotificationId = $"notif-{Guid.NewGuid():N}",
+                Sent = true,
+                Channel = "email",
+                Recipient = _users[request.UserId].Email
             });
         })
             .WithName("SendNotification")
+            .Produces<SendNotificationResponse>()
+            .Produces(StatusCodes.Status404NotFound)
             .WithOpenApi();
     }
 }
@@ -182,3 +196,37 @@ public class ProductAvailability
 public record InventoryCheckRequest(string[] ProductIds);
 public record PaymentRequest(string UserId, decimal Amount, string OrderId);
 public record NotificationRequest(string UserId, string Type, string Message);
+
+// Response models for OpenAPI documentation
+public class GetUserOrdersResponse
+{
+    public Order[] Orders { get; set; } = Array.Empty<Order>();
+}
+
+public class InventoryCheckResponse
+{
+    public ProductAvailability[] Available { get; set; } = Array.Empty<ProductAvailability>();
+    public ProductAvailability[] Unavailable { get; set; } = Array.Empty<ProductAvailability>();
+}
+
+public class PaymentResponse
+{
+    public string TransactionId { get; set; } = "";
+    public string Status { get; set; } = "";
+    public string Timestamp { get; set; } = "";
+}
+
+public class PaymentErrorResponse
+{
+    public string Error { get; set; } = "";
+    public decimal CreditLimit { get; set; }
+    public decimal RequestedAmount { get; set; }
+}
+
+public class SendNotificationResponse
+{
+    public string NotificationId { get; set; } = "";
+    public bool Sent { get; set; }
+    public string Channel { get; set; } = "";
+    public string Recipient { get; set; } = "";
+}

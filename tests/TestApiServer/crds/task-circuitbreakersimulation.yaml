@@ -1,0 +1,46 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: circuitbreakersimulation
+  namespace: test
+  labels:
+    workflow.io/generated-from: openapi
+    workflow.io/operation-id: CircuitBreakerSimulation
+  annotations:
+    workflow.io/source-path: /api/retry/circuit-breaker
+    workflow.io/source-method: POST
+spec:
+  type: http
+  description: POST /api/retry/circuit-breaker
+  request:
+    url: http://localhost:5100/api/retry/circuit-breaker
+    method: POST
+    headers:
+      Accept: application/json
+      Content-Type: application/json
+    body: '{{input.body | toJson}}'
+  inputSchema:
+    type: object
+    properties:
+      body:
+        type: object
+        properties:
+          threshold:
+            type: integer
+            format: int32
+          cooldownCalls:
+            type: integer
+            format: int32
+          key:
+            type: string
+        additionalProperties: false
+        description: Request body
+    required:
+      - body
+  outputSchema:
+    type: object
+    description: Response from the endpoint
+  timeout: 30s
+  retry:
+    maxAttempts: 3
+    backoffMs: 1000

@@ -6,6 +6,8 @@ public interface IRetryPolicy
 {
     TimeSpan CalculateDelay(int attemptNumber);
     bool ShouldRetry(Exception exception, int attemptNumber);
+    bool ShouldRetryStatusCode(int httpStatusCode, int attemptNumber);
+    bool IsRetryableStatusCode(int httpStatusCode);
 }
 
 public class RetryPolicy : IRetryPolicy
@@ -56,5 +58,26 @@ public class RetryPolicy : IRetryPolicy
 
         // Default: don't retry
         return false;
+    }
+
+    public bool ShouldRetryStatusCode(int httpStatusCode, int attemptNumber)
+    {
+        // Don't retry if max attempts exceeded
+        if (attemptNumber > _options.MaxRetryCount)
+        {
+            return false;
+        }
+
+        return IsRetryableStatusCode(httpStatusCode);
+    }
+
+    public bool IsRetryableStatusCode(int httpStatusCode)
+    {
+        // Retry on server errors (5xx) - these are typically transient
+        // 500 Internal Server Error - may be transient
+        // 502 Bad Gateway - upstream server issue, often transient
+        // 503 Service Unavailable - explicitly transient
+        // 504 Gateway Timeout - upstream timeout, often transient
+        return httpStatusCode >= 500 && httpStatusCode <= 599;
     }
 }

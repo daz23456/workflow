@@ -1,0 +1,34 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: getuserprofile
+  namespace: test
+  labels:
+    workflow.io/generated-from: openapi
+    workflow.io/operation-id: GetUserProfile
+  annotations:
+    workflow.io/source-path: /api/users/{id}/profile
+    workflow.io/source-method: GET
+spec:
+  type: http
+  description: GET /api/users/{id}/profile
+  request:
+    url: http://localhost:5100/api/users/{{input.id}}/profile
+    method: GET
+    headers:
+      Accept: application/json
+  inputSchema:
+    type: object
+    properties:
+      id:
+        type: string
+        description: 'Path parameter: id'
+    required:
+      - id
+  outputSchema:
+    type: object
+    description: Response from the endpoint
+  timeout: 30s
+  retry:
+    maxAttempts: 3
+    backoffMs: 1000

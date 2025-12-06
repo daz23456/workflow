@@ -1,0 +1,25 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: transform-filter
+  namespace: test
+  labels:
+    workflow.io/category: transform
+  annotations:
+    workflow.io/description: "Filter array items based on condition"
+spec:
+  type: transform
+  transform:
+    input: "$"
+    pipeline:
+      - operation: filter
+        condition: "$.status == 'active'"
+  inputSchema:
+    type: array
+    items:
+      type: object
+  outputSchema:
+    type: object
+    properties:
+      result:
+        type: array

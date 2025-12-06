@@ -16,5 +16,22 @@ spec:
   inputSchema:
     type: object
     properties:
+      failCount:
+        type: integer
+        description: "Number of times to fail before succeeding"
+      key:
+        type: string
+        description: "Unique key for this retry sequence"
+    required:
+      - failCount
   outputSchema:
     type: object
+    properties:
+      success:
+        type: boolean
+      attempts:
+        type: integer
+      configuredFailures:
+        type: integer
+      message:
+        type: string

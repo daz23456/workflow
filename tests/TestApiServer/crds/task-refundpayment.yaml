@@ -1,0 +1,45 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: refundpayment
+  namespace: test
+  labels:
+    workflow.io/generated-from: openapi
+    workflow.io/operation-id: RefundPayment
+  annotations:
+    workflow.io/source-path: /api/payments/refund
+    workflow.io/source-method: POST
+spec:
+  type: http
+  description: POST /api/payments/refund
+  request:
+    url: http://localhost:5100/api/payments/refund
+    method: POST
+    headers:
+      Accept: application/json
+      Content-Type: application/json
+    body: '{{input.body | toJson}}'
+  inputSchema:
+    type: object
+    properties:
+      body:
+        type: object
+        properties:
+          paymentId:
+            type: string
+          amount:
+            type: number
+            format: double
+          reason:
+            type: string
+        additionalProperties: false
+        description: Request body
+    required:
+      - body
+  outputSchema:
+    type: object
+    description: Response from the endpoint
+  timeout: 30s
+  retry:
+    maxAttempts: 3
+    backoffMs: 1000

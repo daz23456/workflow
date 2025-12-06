@@ -1,0 +1,28 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: transform-aggregate
+  namespace: test
+  labels:
+    workflow.io/category: transform
+  annotations:
+    workflow.io/description: "Aggregate array into summary"
+spec:
+  type: transform
+  transform:
+    input: "$"
+    pipeline:
+      - operation: aggregate
+        aggregations:
+          count: "count()"
+          total: "sum($.amount)"
+          average: "avg($.amount)"
+  inputSchema:
+    type: array
+    items:
+      type: object
+  outputSchema:
+    type: object
+    properties:
+      result:
+        type: object

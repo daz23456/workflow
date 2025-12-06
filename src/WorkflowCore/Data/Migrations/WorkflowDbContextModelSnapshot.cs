@@ -109,6 +109,76 @@ namespace WorkflowCore.Data.Migrations
                     b.ToTable("TaskExecutionRecords");
                 });
 
+            modelBuilder.Entity("WorkflowCore.Models.TaskStatisticsSummary", b =>
+                {
+                    b.Property<string>("TaskRef")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<long>("AverageDurationMs")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("FailureCount")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("LastExecutedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("SuccessCount")
+                        .HasColumnType("integer");
+
+                    b.Property<double>("SuccessRate")
+                        .HasColumnType("double precision");
+
+                    b.Property<long>("TotalDurationMs")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("TotalExecutions")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("TaskRef");
+
+                    b.ToTable("TaskStatisticsSummaries");
+                });
+
+            modelBuilder.Entity("WorkflowCore.Models.WorkflowStatisticsSummary", b =>
+                {
+                    b.Property<string>("WorkflowName")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<long>("AverageDurationMs")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("FailureCount")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("LastExecutedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("SuccessCount")
+                        .HasColumnType("integer");
+
+                    b.Property<double>("SuccessRate")
+                        .HasColumnType("double precision");
+
+                    b.Property<long>("TotalDurationMs")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("TotalExecutions")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("WorkflowName");
+
+                    b.ToTable("WorkflowStatisticsSummaries");
+                });
+
             modelBuilder.Entity("WorkflowCore.Models.WorkflowVersion", b =>
                 {
                     b.Property<Guid>("Id")

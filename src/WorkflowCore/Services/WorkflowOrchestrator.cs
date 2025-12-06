@@ -24,6 +24,7 @@ public class WorkflowOrchestrator : IWorkflowOrchestrator
     private readonly IResponseStorage _responseStorage;
     private readonly IConditionEvaluator? _conditionEvaluator;
     private readonly ISwitchEvaluator? _switchEvaluator;
+    private readonly IForEachExecutor? _forEachExecutor;
     private readonly SemaphoreSlim _semaphore;
 
     public WorkflowOrchestrator(
@@ -35,7 +36,8 @@ public class WorkflowOrchestrator : IWorkflowOrchestrator
         ITransformTaskExecutor? transformTaskExecutor = null,
         IWorkflowEventNotifier? eventNotifier = null,
         IConditionEvaluator? conditionEvaluator = null,
-        ISwitchEvaluator? switchEvaluator = null)
+        ISwitchEvaluator? switchEvaluator = null,
+        IForEachExecutor? forEachExecutor = null)
     {
         _graphBuilder = graphBuilder ?? throw new ArgumentNullException(nameof(graphBuilder));
         _httpTaskExecutor = httpTaskExecutor ?? throw new ArgumentNullException(nameof(httpTaskExecutor));
@@ -45,6 +47,7 @@ public class WorkflowOrchestrator : IWorkflowOrchestrator
         _eventNotifier = eventNotifier;
         _conditionEvaluator = conditionEvaluator;
         _switchEvaluator = switchEvaluator;
+        _forEachExecutor = forEachExecutor;
 
         if (maxConcurrentTasks <= 0)
         {
@@ -293,6 +296,86 @@ public class WorkflowOrchestrator : IWorkflowOrchestrator
                         // Capture actual start time AFTER semaphore acquired (when task actually starts)
                         var actualStartTime = DateTime.UtcNow;
                         TaskExecutionResult taskResult;
+
+                        // Handle forEach iteration if present
+                        if (taskStep.ForEach != null && _forEachExecutor != null)
+                        {
+                            var forEachResult = await _forEachExecutor.ExecuteAsync(
+                                taskStep.ForEach,
+                                context,
+                                async (itemContext, item, index) =>
+                                {
+                                    // Resolve task inputs using the forEach context
+                                    var taskContext = itemContext;
+                                    if (taskStep.Input != null && taskStep.Input.Count > 0)
+                                    {
+                                        var mergedInput = new Dictionary<string, object>(itemContext.Input);
+                                        foreach (var (key, value) in taskStep.Input)
+                                        {
+                                            try
+                                            {
+                                                var resolvedValue = await _templateResolver.ResolveAsync(value, itemContext);
+                                                if (resolvedValue.StartsWith("{") || resolvedValue.StartsWith("["))
+                                                {
+                                                    try
+                                                    {
+                                                        var deserialized = JsonSerializer.Deserialize<object>(resolvedValue);
+                                                        mergedInput[key] = deserialized ?? resolvedValue;
+                                                    }
+                                                    catch
+                                                    {
+                                                        mergedInput[key] = resolvedValue;
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    mergedInput[key] = resolvedValue;
+                                                }
+                                            }
+                                            catch (Exception ex)
+                                            {
+                                                return new TaskExecutionResult
+                                                {
+                                                    Success = false,
+                                                    Errors = new List<string> { $"Failed to resolve input '{key}': {ex.Message}" }
+                                                };
+                                            }
+                                        }
+
+                                        taskContext = new TemplateContext
+                                        {
+                                            Input = mergedInput,
+                                            TaskOutputs = itemContext.TaskOutputs,
+                                            ForEach = itemContext.ForEach
+                                        };
+                                    }
+
+                                    // Execute the HTTP task for this iteration
+                                    return await _httpTaskExecutor.ExecuteAsync(taskSpec, taskContext, cancellationToken);
+                                });
+
+                            // Convert ForEachResult to TaskExecutionResult
+                            taskResult = new TaskExecutionResult
+                            {
+                                Success = forEachResult.Success,
+                                Output = new Dictionary<string, object>
+                                {
+                                    ["results"] = forEachResult.Outputs ?? new List<Dictionary<string, object>>(),
+                                    ["itemCount"] = forEachResult.ItemCount,
+                                    ["successCount"] = forEachResult.SuccessCount,
+                                    ["failureCount"] = forEachResult.FailureCount
+                                },
+                                Errors = forEachResult.ItemResults?
+                                    .Where(r => !r.Success && r.Error != null)
+                                    .Select(r => $"Item {r.Index}: {r.Error}")
+                                    .ToList() ?? new List<string>(),
+                                StartedAt = actualStartTime,
+                                CompletedAt = DateTime.UtcNow,
+                                Duration = DateTime.UtcNow - actualStartTime
+                            };
+
+                            return (taskId, taskResult);
+                        }
 
                         // Route based on task type
                         if (taskSpec.Type == "transform")

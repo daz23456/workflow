@@ -38,35 +38,35 @@ export default function PlaygroundPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen theme-gradient">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex items-center justify-between">
             <div data-tour="playground-header">
               <div className="flex items-center gap-3 mb-2">
-                <GraduationCap className="w-8 h-8 text-blue-500" />
-                <h1 className="text-3xl font-bold text-gray-900">Interactive Playground</h1>
+                <GraduationCap className="w-8 h-8 theme-accent-text" />
+                <h1 className="text-3xl text-gray-900 dark:text-white">Interactive Playground</h1>
               </div>
-              <p className="text-gray-600">
+              <p className="text-gray-600 dark:text-gray-300">
                 Learn workflow orchestration through hands-on interactive lessons
               </p>
             </div>
 
             {/* Stats Card */}
-            <div className="bg-blue-50 rounded-lg p-4 border border-blue-200" data-tour="completion-stats">
+            <div className="bg-[var(--theme-accent-light)] theme-rounded-lg p-4 border border-[var(--theme-accent)]/30 theme-shadow-md" data-tour="completion-stats">
               <div className="flex items-center gap-3">
-                <TrendingUp className="w-6 h-6 text-blue-600" />
+                <TrendingUp className="w-6 h-6 theme-accent-text" />
                 <div>
-                  <div className="text-2xl font-bold text-blue-900">
+                  <div className="text-2xl font-bold text-gray-900 dark:text-white">
                     {completedCount}/{totalLessons}
                   </div>
-                  <div className="text-sm text-blue-700">Lessons Completed</div>
+                  <div className="text-sm theme-accent-text">Lessons Completed</div>
                 </div>
               </div>
-              <div className="mt-2 h-2 bg-blue-200 rounded-full overflow-hidden">
+              <div className="mt-2 h-2 bg-gray-200 dark:bg-gray-700 theme-rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-blue-500"
+                  className="h-full theme-accent"
                   style={{ width: `${completionPercentage}%` }}
                   data-testid="overall-progress-bar"
                 />
@@ -79,7 +79,7 @@ export default function PlaygroundPage() {
       {/* Filters */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex items-center gap-4" data-tour="difficulty-filters">
-          <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
+          <div className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
             <Filter className="w-4 h-4" />
             <span>Filter by difficulty:</span>
           </div>
@@ -89,10 +89,10 @@ export default function PlaygroundPage() {
               <button
                 key={level}
                 onClick={() => setDifficultyFilter(level)}
-                className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                className={`px-4 py-2 text-sm font-medium theme-rounded-md transition-colors ${
                   difficultyFilter === level
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                    ? 'theme-accent text-white theme-shadow-sm'
+                    : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
                 }`}
                 data-testid={`filter-${level}`}
               >
@@ -102,7 +102,7 @@ export default function PlaygroundPage() {
           </div>
 
           {difficultyFilter !== 'all' && (
-            <span className="text-sm text-gray-500">
+            <span className="text-sm text-gray-500 dark:text-gray-400">
               {filteredLessons.length} lesson{filteredLessons.length !== 1 ? 's' : ''}
             </span>
           )}
@@ -113,7 +113,7 @@ export default function PlaygroundPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
         {filteredLessons.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-gray-500">No lessons found for this difficulty level.</p>
+            <p className="text-gray-500 dark:text-gray-400">No lessons found for this difficulty level.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" data-testid="lessons-grid" data-tour="lessons-grid">

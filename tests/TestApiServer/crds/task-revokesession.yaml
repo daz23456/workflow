@@ -1,0 +1,38 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: revokesession
+  namespace: test
+  labels:
+    workflow.io/generated-from: openapi
+    workflow.io/operation-id: RevokeSession
+  annotations:
+    workflow.io/source-path: /api/users/{id}/sessions/{sessionId}
+    workflow.io/source-method: DELETE
+spec:
+  type: http
+  description: DELETE /api/users/{id}/sessions/{sessionId}
+  request:
+    url: http://localhost:5100/api/users/{{input.id}}/sessions/{{input.sessionId}}
+    method: DELETE
+    headers:
+      Accept: application/json
+  inputSchema:
+    type: object
+    properties:
+      id:
+        type: string
+        description: 'Path parameter: id'
+      sessionId:
+        type: string
+        description: 'Path parameter: sessionId'
+    required:
+      - id
+      - sessionId
+  outputSchema:
+    type: object
+    description: Response from the endpoint
+  timeout: 30s
+  retry:
+    maxAttempts: 3
+    backoffMs: 1000

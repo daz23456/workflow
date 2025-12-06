@@ -10,6 +10,7 @@
  */
 
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import type { ThemePresetName, SignalFlowPresetName, NodeSizeModeName } from './theme';
 
 export type LayoutMode = 'radial' | 'stacked' | 'hub-spoke';
@@ -219,7 +220,9 @@ function calculateNodePositions(
   return positions;
 }
 
-export const useVisualizationStore = create<VisualizationState>((set, get) => ({
+export const useVisualizationStore = create<VisualizationState>()(
+  persist(
+    (set, get) => ({
   ...initialState,
 
   setThemePreset: (preset: ThemePresetName) => {
@@ -351,8 +354,8 @@ export const useVisualizationStore = create<VisualizationState>((set, get) => ({
       });
     });
 
-    const edges: VisualizationEdge[] = dependencies.map((dep, index) => ({
-      id: `edge-${index}`,
+    const edges: VisualizationEdge[] = dependencies.map((dep) => ({
+      id: `edge-${dep.from}-${dep.to}`,
       source: dep.from,
       target: dep.to,
     }));
@@ -377,7 +380,20 @@ export const useVisualizationStore = create<VisualizationState>((set, get) => ({
       activeSignals: [],
     });
   },
-}));
+    }),
+    {
+      name: 'visualization-settings',
+      // Only persist visual settings, not runtime data (nodes, edges, signals)
+      partialize: (state) => ({
+        themePreset: state.themePreset,
+        signalFlowPreset: state.signalFlowPreset,
+        nodeSizeMode: state.nodeSizeMode,
+        layoutMode: state.layoutMode,
+        renderMode: state.renderMode,
+      }),
+    }
+  )
+);
 
 // Selector hooks
 export const useThemePreset = () =>

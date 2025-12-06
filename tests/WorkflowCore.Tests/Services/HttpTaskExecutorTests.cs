@@ -1453,4 +1453,108 @@ public class HttpTaskExecutorTests
     }
 
     #endregion
+
+    #region Dynamic URL Tests
+
+    [Fact]
+    public async Task ExecuteAsync_WithFullyDynamicUrl_ShouldResolveEntireUrl()
+    {
+        // Arrange - URL is entirely from input (pattern: {{input.url}})
+        var taskSpec = new WorkflowTaskSpec
+        {
+            Type = "http",
+            Request = new HttpRequestDefinition
+            {
+                Method = "GET",
+                Url = "{{input.url}}"
+            }
+        };
+
+        var inputs = new Dictionary<string, object>
+        {
+            ["url"] = "https://api.example.com/dynamic/endpoint"
+        };
+
+        var context = new TemplateContext { Input = inputs };
+
+        _templateResolverMock.Setup(x => x.ResolveAsync("{{input.url}}", context))
+            .ReturnsAsync("https://api.example.com/dynamic/endpoint");
+
+        _httpClientMock.Setup(x => x.SendAsync(
+            It.Is<HttpRequestMessage>(r =>
+                r.RequestUri!.ToString() == "https://api.example.com/dynamic/endpoint"),
+            It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent("{\"status\":\"ok\"}")
+            });
+
+        _schemaValidatorMock.Setup(x => x.ValidateAsync(
+            It.IsAny<SchemaDefinition>(), It.IsAny<object>()))
+            .ReturnsAsync(new ValidationResult { IsValid = true });
+
+        // Act
+        var result = await _executor.ExecuteAsync(taskSpec, context, CancellationToken.None);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        _templateResolverMock.Verify(x => x.ResolveAsync("{{input.url}}", context), Times.Once);
+        _httpClientMock.Verify(x => x.SendAsync(
+            It.Is<HttpRequestMessage>(r =>
+                r.RequestUri!.ToString() == "https://api.example.com/dynamic/endpoint"),
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithDynamicBaseUrlAndPath_ShouldConcatenateCorrectly()
+    {
+        // Arrange - Base URL + path pattern: {{input.baseUrl}}{{input.path}}
+        var taskSpec = new WorkflowTaskSpec
+        {
+            Type = "http",
+            Request = new HttpRequestDefinition
+            {
+                Method = "GET",
+                Url = "{{input.baseUrl}}{{input.path}}"
+            }
+        };
+
+        var inputs = new Dictionary<string, object>
+        {
+            ["baseUrl"] = "https://api.staging.example.com",
+            ["path"] = "/users/456"
+        };
+
+        var context = new TemplateContext { Input = inputs };
+
+        _templateResolverMock.Setup(x => x.ResolveAsync("{{input.baseUrl}}{{input.path}}", context))
+            .ReturnsAsync("https://api.staging.example.com/users/456");
+
+        _httpClientMock.Setup(x => x.SendAsync(
+            It.Is<HttpRequestMessage>(r =>
+                r.RequestUri!.ToString() == "https://api.staging.example.com/users/456"),
+            It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent("{\"id\":456,\"name\":\"Test User\"}")
+            });
+
+        _schemaValidatorMock.Setup(x => x.ValidateAsync(
+            It.IsAny<SchemaDefinition>(), It.IsAny<object>()))
+            .ReturnsAsync(new ValidationResult { IsValid = true });
+
+        // Act
+        var result = await _executor.ExecuteAsync(taskSpec, context, CancellationToken.None);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        _httpClientMock.Verify(x => x.SendAsync(
+            It.Is<HttpRequestMessage>(r =>
+                r.RequestUri!.ToString() == "https://api.staging.example.com/users/456"),
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    #endregion
 }

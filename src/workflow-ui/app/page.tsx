@@ -9,22 +9,22 @@ export const metadata: Metadata = {
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
+    <div className="min-h-screen theme-gradient">
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-16 text-center">
-        <div className="inline-block px-4 py-2 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold mb-6">
+        <div className="inline-block px-4 py-2 bg-[var(--theme-accent-light)] text-gray-800 dark:text-gray-200 rounded-full text-sm font-semibold mb-6">
           Stop Reinventing the Wheel
         </div>
-        <h1 className="text-5xl font-bold text-gray-900 mb-6">
+        <h1 className="text-5xl font-bold text-gray-900 dark:text-white mb-6">
           Build Reusable Lego Bricks,
           <br />
-          <span className="text-blue-600">Not Distributed Monoliths</span>
+          <span className="theme-accent-text">Not Distributed Monoliths</span>
         </h1>
-        <p className="text-xl text-gray-600 mb-4 max-w-3xl mx-auto">
+        <p className="text-xl text-gray-600 dark:text-gray-300 mb-4 max-w-3xl mx-auto">
           <strong>Platform teams</strong> build battle-tested task libraries. <br />
           <strong>Product teams</strong> compose workflows in minutes.
         </p>
-        <p className="text-lg text-gray-500 mb-8 max-w-2xl mx-auto">
+        <p className="text-lg text-gray-500 dark:text-gray-400 mb-8 max-w-2xl mx-auto">
           Zero copy-paste. Zero HTTP client code.
           <br />
           Update once, improve 50 workflows instantly.
@@ -32,13 +32,13 @@ export default function Home() {
         <div className="flex gap-4 justify-center">
           <Link
             href="/tasks"
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+            className="px-6 py-3 theme-button theme-shadow-md"
           >
             Browse Task Library
           </Link>
           <Link
             href="/workflows"
-            className="px-6 py-3 bg-gray-100 text-gray-900 rounded-lg font-semibold hover:bg-gray-200 transition-colors"
+            className="px-6 py-3 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white theme-rounded-md font-semibold hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors theme-shadow-sm"
           >
             View Workflows
           </Link>
@@ -46,14 +46,14 @@ export default function Home() {
       </section>
 
       {/* Why This Matters Section */}
-      <section className="bg-white py-16 border-y border-gray-200">
+      <section className="bg-white dark:bg-gray-900 py-16 border-y border-gray-200 dark:border-gray-800">
         <div className="container mx-auto px-4">
           <div className="max-w-5xl mx-auto">
-            <h2 className="text-3xl font-bold text-center mb-12">Why This Matters</h2>
+            <h2 className="text-3xl font-bold text-center mb-12 text-gray-900 dark:text-white">Why This Matters</h2>
             <div className="grid md:grid-cols-2 gap-8">
               <div>
-                <h3 className="text-xl font-semibold mb-3 text-red-600">❌ Before</h3>
-                <ul className="space-y-2 text-gray-600">
+                <h3 className="text-xl font-semibold mb-3 text-red-600 dark:text-red-400">❌ Before</h3>
+                <ul className="space-y-2 text-gray-600 dark:text-gray-300">
                   <li>• 3 weeks to ship a simple API composition</li>
                   <li>• Update a shared API → coordinate 30 deployments</li>
                   <li>• Copy-paste retry logic across 50 services</li>
@@ -62,8 +62,8 @@ export default function Home() {
                 </ul>
               </div>
               <div>
-                <h3 className="text-xl font-semibold mb-3 text-green-600">✅ After</h3>
-                <ul className="space-y-2 text-gray-600">
+                <h3 className="text-xl font-semibold mb-3 text-green-600 dark:text-green-400">✅ After</h3>
+                <ul className="space-y-2 text-gray-600 dark:text-gray-300">
                   <li>• Ship features in hours, not weeks</li>
                   <li>• Update task once → 50 workflows auto-upgrade</li>
                   <li>• Safe continuous deployment - no lock-step required</li>
@@ -72,8 +72,8 @@ export default function Home() {
                 </ul>
               </div>
             </div>
-            <div className="mt-8 p-6 bg-blue-50 rounded-lg border border-blue-200">
-              <p className="text-center text-gray-700">
+            <div className="mt-8 p-6 bg-[var(--theme-accent-light)] rounded-lg border border-[var(--theme-accent)]/30">
+              <p className="text-center text-gray-700 dark:text-gray-200">
                 <strong>One task, three workflows, zero duplication.</strong> That&apos;s the power of
                 composability.
               </p>
@@ -84,12 +84,12 @@ export default function Home() {
 
       {/* Features Section */}
       <section className="container mx-auto px-4 py-16">
-        <h2 className="text-3xl font-bold text-center mb-12">Key Features</h2>
+        <h2 className="text-3xl font-bold text-center mb-12 text-gray-900 dark:text-white">Key Features</h2>
         <div className="grid md:grid-cols-3 gap-8">
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+          <div className="theme-card p-6">
+            <div className="w-12 h-12 bg-[var(--theme-accent-light)] theme-rounded-lg flex items-center justify-center mb-4">
               <svg
-                className="w-6 h-6 text-blue-600"
+                className="w-6 h-6 theme-accent-text"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -102,17 +102,17 @@ export default function Home() {
                 />
               </svg>
             </div>
-            <h3 className="text-xl font-semibold mb-2">Parallel Execution</h3>
-            <p className="text-gray-600">
+            <h3 className="text-xl mb-2 text-gray-900 dark:text-white">Parallel Execution</h3>
+            <p className="text-gray-600 dark:text-gray-300">
               Automatically identifies and executes independent tasks in parallel with configurable
               concurrency limits.
             </p>
           </div>
 
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+          <div className="theme-card p-6">
+            <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 theme-rounded-lg flex items-center justify-center mb-4">
               <svg
-                className="w-6 h-6 text-green-600"
+                className="w-6 h-6 text-green-600 dark:text-green-400"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -125,17 +125,17 @@ export default function Home() {
                 />
               </svg>
             </div>
-            <h3 className="text-xl font-semibold mb-2">Schema Validation</h3>
-            <p className="text-gray-600">
+            <h3 className="text-xl mb-2 text-gray-900 dark:text-white">Schema Validation</h3>
+            <p className="text-gray-600 dark:text-gray-300">
               JSON Schema-based validation ensures type safety and fail-fast behavior at design
               time.
             </p>
           </div>
 
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
+          <div className="theme-card p-6">
+            <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 theme-rounded-lg flex items-center justify-center mb-4">
               <svg
-                className="w-6 h-6 text-purple-600"
+                className="w-6 h-6 text-purple-600 dark:text-purple-400"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -148,17 +148,17 @@ export default function Home() {
                 />
               </svg>
             </div>
-            <h3 className="text-xl font-semibold mb-2">Execution History</h3>
-            <p className="text-gray-600">
+            <h3 className="text-xl mb-2 text-gray-900 dark:text-white">Execution History</h3>
+            <p className="text-gray-600 dark:text-gray-300">
               Full audit trail with task-level details, timing breakdowns, and dependency resolution
               tracking.
             </p>
           </div>
 
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mb-4">
+          <div className="theme-card p-6">
+            <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 theme-rounded-lg flex items-center justify-center mb-4">
               <svg
-                className="w-6 h-6 text-orange-600"
+                className="w-6 h-6 text-orange-600 dark:text-orange-400"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -171,16 +171,16 @@ export default function Home() {
                 />
               </svg>
             </div>
-            <h3 className="text-xl font-semibold mb-2">Timeout Control</h3>
-            <p className="text-gray-600">
+            <h3 className="text-xl mb-2 text-gray-900 dark:text-white">Timeout Control</h3>
+            <p className="text-gray-600 dark:text-gray-300">
               Per-task timeout support with graceful failure handling and clear error messages.
             </p>
           </div>
 
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mb-4">
+          <div className="theme-card p-6">
+            <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 theme-rounded-lg flex items-center justify-center mb-4">
               <svg
-                className="w-6 h-6 text-red-600"
+                className="w-6 h-6 text-red-600 dark:text-red-400"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -193,16 +193,16 @@ export default function Home() {
                 />
               </svg>
             </div>
-            <h3 className="text-xl font-semibold mb-2">Smart Retries</h3>
-            <p className="text-gray-600">
+            <h3 className="text-xl mb-2 text-gray-900 dark:text-white">Smart Retries</h3>
+            <p className="text-gray-600 dark:text-gray-300">
               Exponential backoff retry policies with configurable attempts and delay strategies.
             </p>
           </div>
 
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mb-4">
+          <div className="theme-card p-6">
+            <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/30 theme-rounded-lg flex items-center justify-center mb-4">
               <svg
-                className="w-6 h-6 text-indigo-600"
+                className="w-6 h-6 text-indigo-600 dark:text-indigo-400"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -215,8 +215,8 @@ export default function Home() {
                 />
               </svg>
             </div>
-            <h3 className="text-xl font-semibold mb-2">Template Expressions</h3>
-            <p className="text-gray-600">
+            <h3 className="text-xl mb-2 text-gray-900 dark:text-white">Template Expressions</h3>
+            <p className="text-gray-600 dark:text-gray-300">
               Dynamic data flow with template expressions for passing data between tasks seamlessly.
             </p>
           </div>
@@ -224,88 +224,88 @@ export default function Home() {
       </section>
 
       {/* How It Works Section */}
-      <section className="bg-gray-50 py-16">
+      <section className="bg-gray-50 dark:bg-gray-950 py-16">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-4">How It Works</h2>
-          <p className="text-center text-gray-600 mb-12 max-w-2xl mx-auto">
+          <h2 className="text-3xl font-bold text-center mb-4 text-gray-900 dark:text-white">How It Works</h2>
+          <p className="text-center text-gray-600 dark:text-gray-300 mb-12 max-w-2xl mx-auto">
             See how the same tasks get reused across different workflows with zero duplication
           </p>
           <div className="max-w-5xl mx-auto">
             <div className="grid md:grid-cols-2 gap-6">
               {/* Platform Team Side */}
-              <div className="bg-white rounded-lg shadow-sm border-2 border-blue-200 p-6">
+              <div className="theme-card border-2 border-[var(--theme-accent)]/30 p-6">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">
+                  <div className="w-10 h-10 theme-accent theme-rounded-full flex items-center justify-center text-white font-bold">
                     P
                   </div>
                   <div>
-                    <h3 className="font-semibold text-lg">Platform Team</h3>
-                    <p className="text-sm text-gray-600">Builds task library once</p>
+                    <h3 className="font-semibold text-lg text-gray-900 dark:text-white">Platform Team</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Builds task library once</p>
                   </div>
                 </div>
                 <div className="space-y-3">
-                  <div className="p-3 bg-blue-50 rounded border border-blue-200">
-                    <code className="text-sm font-mono text-blue-800">fetch-user</code>
-                    <p className="text-xs text-gray-600 mt-1">Get user from API</p>
+                  <div className="p-3 bg-[var(--theme-accent-light)] rounded border border-[var(--theme-accent)]/30">
+                    <code className="text-sm font-mono theme-accent-text">fetch-user</code>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Get user from API</p>
                   </div>
-                  <div className="p-3 bg-blue-50 rounded border border-blue-200">
-                    <code className="text-sm font-mono text-blue-800">send-notification</code>
-                    <p className="text-xs text-gray-600 mt-1">Send via notification service</p>
+                  <div className="p-3 bg-[var(--theme-accent-light)] rounded border border-[var(--theme-accent)]/30">
+                    <code className="text-sm font-mono theme-accent-text">send-notification</code>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Send via notification service</p>
                   </div>
-                  <div className="p-3 bg-blue-50 rounded border border-blue-200">
-                    <code className="text-sm font-mono text-blue-800">validate-data</code>
-                    <p className="text-xs text-gray-600 mt-1">Validate against rules</p>
+                  <div className="p-3 bg-[var(--theme-accent-light)] rounded border border-[var(--theme-accent)]/30">
+                    <code className="text-sm font-mono theme-accent-text">validate-data</code>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Validate against rules</p>
                   </div>
                 </div>
               </div>
 
               {/* Product Teams Side */}
-              <div className="bg-white rounded-lg shadow-sm border-2 border-green-200 p-6">
+              <div className="theme-card border-2 border-green-200 dark:border-green-800 p-6">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center text-white font-bold">
+                  <div className="w-10 h-10 bg-green-600 theme-rounded-full flex items-center justify-center text-white font-bold">
                     T
                   </div>
                   <div>
-                    <h3 className="font-semibold text-lg">Product Teams</h3>
-                    <p className="text-sm text-gray-600">Compose workflows from tasks</p>
+                    <h3 className="font-semibold text-lg text-gray-900 dark:text-white">Product Teams</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Compose workflows from tasks</p>
                   </div>
                 </div>
                 <div className="space-y-3">
-                  <div className="p-3 bg-green-50 rounded border border-green-200">
-                    <p className="font-semibold text-sm mb-1">User Registration</p>
+                  <div className="p-3 bg-green-50 dark:bg-green-900/30 rounded border border-green-200 dark:border-green-800">
+                    <p className="font-semibold text-sm mb-1 text-gray-900 dark:text-white">User Registration</p>
                     <div className="flex gap-1 flex-wrap">
-                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                      <span className="text-xs bg-[var(--theme-accent-light)] theme-accent-text px-2 py-1 rounded">
                         validate-data
                       </span>
-                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                      <span className="text-xs bg-[var(--theme-accent-light)] theme-accent-text px-2 py-1 rounded">
                         fetch-user
                       </span>
-                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                      <span className="text-xs bg-[var(--theme-accent-light)] theme-accent-text px-2 py-1 rounded">
                         send-notification
                       </span>
                     </div>
                   </div>
-                  <div className="p-3 bg-green-50 rounded border border-green-200">
-                    <p className="font-semibold text-sm mb-1">Profile Update</p>
+                  <div className="p-3 bg-green-50 dark:bg-green-900/30 rounded border border-green-200 dark:border-green-800">
+                    <p className="font-semibold text-sm mb-1 text-gray-900 dark:text-white">Profile Update</p>
                     <div className="flex gap-1 flex-wrap">
-                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                      <span className="text-xs bg-[var(--theme-accent-light)] theme-accent-text px-2 py-1 rounded">
                         fetch-user
                       </span>
-                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                      <span className="text-xs bg-[var(--theme-accent-light)] theme-accent-text px-2 py-1 rounded">
                         validate-data
                       </span>
                     </div>
                   </div>
-                  <div className="p-3 bg-green-50 rounded border border-green-200">
-                    <p className="font-semibold text-sm mb-1">Alert Workflow</p>
+                  <div className="p-3 bg-green-50 dark:bg-green-900/30 rounded border border-green-200 dark:border-green-800">
+                    <p className="font-semibold text-sm mb-1 text-gray-900 dark:text-white">Alert Workflow</p>
                     <div className="flex gap-1 flex-wrap">
-                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                      <span className="text-xs bg-[var(--theme-accent-light)] theme-accent-text px-2 py-1 rounded">
                         fetch-user
                       </span>
-                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                      <span className="text-xs bg-[var(--theme-accent-light)] theme-accent-text px-2 py-1 rounded">
                         validate-data
                       </span>
-                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                      <span className="text-xs bg-[var(--theme-accent-light)] theme-accent-text px-2 py-1 rounded">
                         send-notification
                       </span>
                     </div>
@@ -314,14 +314,14 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="mt-8 p-6 bg-gradient-to-r from-blue-50 to-green-50 rounded-lg border border-blue-200">
-              <p className="text-center text-gray-800">
+            <div className="mt-8 p-6 bg-gradient-to-r from-[var(--theme-accent-light)] to-green-50 dark:from-[var(--theme-accent-light)] dark:to-green-900/30 rounded-lg border border-[var(--theme-accent)]/30">
+              <p className="text-center text-gray-800 dark:text-gray-200">
                 <strong>3 tasks</strong> × <strong>3 workflows</strong> ={' '}
-                <strong className="text-blue-600">9 integrations</strong> with{' '}
+                <strong className="theme-accent-text">9 integrations</strong> with{' '}
                 <strong className="text-green-600">zero code duplication</strong>
               </p>
-              <p className="text-center text-sm text-gray-600 mt-2">
-                Update <code className="text-xs bg-white px-2 py-1 rounded">send-notification</code>{' '}
+              <p className="text-center text-sm text-gray-600 dark:text-gray-400 mt-2">
+                Update <code className="text-xs bg-white dark:bg-gray-700 px-2 py-1 rounded">send-notification</code>{' '}
                 once → All three workflows get the upgrade. Deploy independently, no lock-step needed.
               </p>
             </div>
@@ -417,10 +417,10 @@ export default function Home() {
 
       {/* VSCode Extension Section */}
       <section className="container mx-auto px-4 py-16">
-        <div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-2xl p-12 text-white text-center">
+        <div className="theme-accent theme-rounded-xl theme-shadow-xl p-12 text-white text-center">
           <div className="flex justify-center mb-6">
-            <div className="w-16 h-16 bg-white rounded-lg flex items-center justify-center">
-              <svg className="w-10 h-10 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+            <div className="w-16 h-16 bg-white theme-rounded-lg flex items-center justify-center">
+              <svg className="w-10 h-10 theme-accent-text" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M23.15 2.587L18.21.21a1.494 1.494 0 0 0-1.705.29l-9.46 8.63-4.12-3.128a.999.999 0 0 0-1.276.057L.327 7.261A1 1 0 0 0 .326 8.74L3.899 12 .326 15.26a1 1 0 0 0 .001 1.479L1.65 17.94a.999.999 0 0 0 1.276.057l4.12-3.128 9.46 8.63a1.492 1.492 0 0 0 1.704.29l4.942-2.377A1.5 1.5 0 0 0 24 20.06V3.939a1.5 1.5 0 0 0-.85-1.352zm-5.146 14.861L10.826 12l7.178-5.448v10.896z" />
               </svg>
             </div>
@@ -434,7 +434,7 @@ export default function Home() {
               href="https://marketplace.visualstudio.com/items?itemName=workflow.workflow-designer"
               target="_blank"
               rel="noopener noreferrer"
-              className="px-6 py-3 bg-white text-blue-600 rounded-lg font-semibold hover:bg-gray-100 transition-colors inline-flex items-center gap-2"
+              className="px-6 py-3 bg-white theme-accent-text rounded-lg font-semibold hover:bg-gray-100 transition-colors inline-flex items-center gap-2"
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M21.29 4.1L20.08 2a.999.999 0 00-1.72.62v18.76a1 1 0 001.72.62l1.21-2.1a3 3 0 000-3.24L18 12l3.29-4.66a3 3 0 000-3.24zM3 12a9 9 0 0113.38-7.87V4.91a7 7 0 10.01 14.18v-1.22A9 9 0 013 12z" />
@@ -445,7 +445,7 @@ export default function Home() {
               href="https://github.com/workflow-engine/vscode-extension"
               target="_blank"
               rel="noopener noreferrer"
-              className="px-6 py-3 bg-blue-700 text-white rounded-lg font-semibold hover:bg-blue-800 transition-colors"
+              className="px-6 py-3 bg-[var(--theme-accent-dark)] text-white rounded-lg font-semibold hover:opacity-90 transition-opacity"
             >
               View on GitHub
             </a>
@@ -455,10 +455,10 @@ export default function Home() {
 
       {/* Coming Soon Section */}
       <section className="container mx-auto px-4 py-16">
-        <h2 className="text-3xl font-bold text-center mb-12">Coming Soon</h2>
+        <h2 className="text-3xl font-bold text-center mb-12 text-gray-900 dark:text-white">Coming Soon</h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
           {/* Stage 11: Cloud Deployment */}
-          <div className="bg-gradient-to-br from-sky-50 to-blue-50 p-6 rounded-lg border border-sky-200">
+          <div className="bg-gradient-to-br from-sky-50 to-blue-50 dark:from-sky-900/30 dark:to-blue-900/30 p-6 rounded-lg border border-sky-200 dark:border-sky-800">
             <div className="flex items-start gap-4">
               <div className="w-10 h-10 bg-sky-600 rounded-lg flex items-center justify-center flex-shrink-0">
                 <svg
@@ -476,8 +476,8 @@ export default function Home() {
                 </svg>
               </div>
               <div>
-                <h3 className="font-semibold text-lg mb-2">Cloud Deployment</h3>
-                <p className="text-gray-600 text-sm">
+                <h3 className="font-semibold text-lg mb-2 text-gray-900 dark:text-white">Cloud Deployment</h3>
+                <p className="text-gray-600 dark:text-gray-300 text-sm">
                   Helm charts for GKE & AKS, production hardening, and high availability configuration
                 </p>
               </div>
@@ -485,7 +485,7 @@ export default function Home() {
           </div>
 
           {/* Stage 14: Workflow Optimizer */}
-          <div className="bg-gradient-to-br from-emerald-50 to-teal-50 p-6 rounded-lg border border-emerald-200">
+          <div className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/30 dark:to-teal-900/30 p-6 rounded-lg border border-emerald-200 dark:border-emerald-800">
             <div className="flex items-start gap-4">
               <div className="w-10 h-10 bg-emerald-600 rounded-lg flex items-center justify-center flex-shrink-0">
                 <svg
@@ -503,8 +503,8 @@ export default function Home() {
                 </svg>
               </div>
               <div>
-                <h3 className="font-semibold text-lg mb-2">Workflow Optimizer</h3>
-                <p className="text-gray-600 text-sm">
+                <h3 className="font-semibold text-lg mb-2 text-gray-900 dark:text-white">Workflow Optimizer</h3>
+                <p className="text-gray-600 dark:text-gray-300 text-sm">
                   Automatic performance tuning with algebraic transforms - proven safe by replaying past executions
                 </p>
               </div>
@@ -512,7 +512,7 @@ export default function Home() {
           </div>
 
           {/* Stage 15: MCP Server */}
-          <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-6 rounded-lg border border-purple-200">
+          <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/30 dark:to-pink-900/30 p-6 rounded-lg border border-purple-200 dark:border-purple-800">
             <div className="flex items-start gap-4">
               <div className="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
                 <svg
@@ -530,8 +530,8 @@ export default function Home() {
                 </svg>
               </div>
               <div>
-                <h3 className="font-semibold text-lg mb-2">MCP Workflow Server</h3>
-                <p className="text-gray-600 text-sm">
+                <h3 className="font-semibold text-lg mb-2 text-gray-900 dark:text-white">MCP Workflow Server</h3>
+                <p className="text-gray-600 dark:text-gray-300 text-sm">
                   Let any chatbot discover and execute workflows via Model Context Protocol
                 </p>
               </div>
@@ -539,7 +539,7 @@ export default function Home() {
           </div>
 
           {/* Stage 16: OpenAPI Task Generator */}
-          <div className="bg-gradient-to-br from-orange-50 to-red-50 p-6 rounded-lg border border-orange-200">
+          <div className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/30 dark:to-red-900/30 p-6 rounded-lg border border-orange-200 dark:border-orange-800">
             <div className="flex items-start gap-4">
               <div className="w-10 h-10 bg-orange-600 rounded-lg flex items-center justify-center flex-shrink-0">
                 <svg
@@ -557,8 +557,8 @@ export default function Home() {
                 </svg>
               </div>
               <div>
-                <h3 className="font-semibold text-lg mb-2">OpenAPI Task Generator</h3>
-                <p className="text-gray-600 text-sm">
+                <h3 className="font-semibold text-lg mb-2 text-gray-900 dark:text-white">OpenAPI Task Generator</h3>
+                <p className="text-gray-600 dark:text-gray-300 text-sm">
                   Auto-generate WorkflowTask CRDs from OpenAPI specs - complete PACT replacement
                 </p>
               </div>
@@ -566,7 +566,7 @@ export default function Home() {
           </div>
 
           {/* Stage 17: Test API Server */}
-          <div className="bg-gradient-to-br from-cyan-50 to-teal-50 p-6 rounded-lg border border-cyan-200">
+          <div className="bg-gradient-to-br from-cyan-50 to-teal-50 dark:from-cyan-900/30 dark:to-teal-900/30 p-6 rounded-lg border border-cyan-200 dark:border-cyan-800">
             <div className="flex items-start gap-4">
               <div className="w-10 h-10 bg-cyan-600 rounded-lg flex items-center justify-center flex-shrink-0">
                 <svg
@@ -584,8 +584,8 @@ export default function Home() {
                 </svg>
               </div>
               <div>
-                <h3 className="font-semibold text-lg mb-2">Test API Server</h3>
-                <p className="text-gray-600 text-sm">
+                <h3 className="font-semibold text-lg mb-2 text-gray-900 dark:text-white">Test API Server</h3>
+                <p className="text-gray-600 dark:text-gray-300 text-sm">
                   100 endpoints for testing orchestration - validates transforms, errors, and retries
                 </p>
               </div>
@@ -593,7 +593,7 @@ export default function Home() {
           </div>
 
           {/* Stage 18: Synthetic Health Checks */}
-          <div className="bg-gradient-to-br from-rose-50 to-pink-50 p-6 rounded-lg border border-rose-200">
+          <div className="bg-gradient-to-br from-rose-50 to-pink-50 dark:from-rose-900/30 dark:to-pink-900/30 p-6 rounded-lg border border-rose-200 dark:border-rose-800">
             <div className="flex items-start gap-4">
               <div className="w-10 h-10 bg-rose-600 rounded-lg flex items-center justify-center flex-shrink-0">
                 <svg
@@ -611,8 +611,8 @@ export default function Home() {
                 </svg>
               </div>
               <div>
-                <h3 className="font-semibold text-lg mb-2">Synthetic Health Checks</h3>
-                <p className="text-gray-600 text-sm">
+                <h3 className="font-semibold text-lg mb-2 text-gray-900 dark:text-white">Synthetic Health Checks</h3>
+                <p className="text-gray-600 dark:text-gray-300 text-sm">
                   Proactive endpoint monitoring - catch broken APIs before users do
                 </p>
               </div>
@@ -622,7 +622,7 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="bg-gradient-to-r from-gray-900 to-blue-900 text-white py-16">
+      <section className="bg-gradient-to-r from-gray-900 to-gray-800 text-white py-16">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-4">Ready to Build with Lego Bricks?</h2>
           <p className="text-xl text-gray-300 mb-8">
@@ -631,7 +631,7 @@ export default function Home() {
           <div className="flex gap-4 justify-center flex-wrap">
             <Link
               href="/tasks"
-              className="px-8 py-4 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+              className="px-8 py-4 theme-accent text-white rounded-lg font-semibold hover:opacity-90 transition-opacity"
             >
               Explore Task Library
             </Link>

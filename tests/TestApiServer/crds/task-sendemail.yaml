@@ -1,0 +1,46 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: sendemail
+  namespace: test
+  labels:
+    workflow.io/generated-from: openapi
+    workflow.io/operation-id: SendEmail
+  annotations:
+    workflow.io/source-path: /api/notifications/email
+    workflow.io/source-method: POST
+spec:
+  type: http
+  description: POST /api/notifications/email
+  request:
+    url: http://localhost:5100/api/notifications/email
+    method: POST
+    headers:
+      Accept: application/json
+      Content-Type: application/json
+    body: '{{input.body | toJson}}'
+  inputSchema:
+    type: object
+    properties:
+      body:
+        type: object
+        properties:
+          to:
+            type: string
+          subject:
+            type: string
+          body:
+            type: string
+          from:
+            type: string
+        additionalProperties: false
+        description: Request body
+    required:
+      - body
+  outputSchema:
+    type: object
+    description: Response from the endpoint
+  timeout: 30s
+  retry:
+    maxAttempts: 3
+    backoffMs: 1000

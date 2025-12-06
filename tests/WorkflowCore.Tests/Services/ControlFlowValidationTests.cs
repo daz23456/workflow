@@ -392,7 +392,7 @@ public class ControlFlowValidationTests
     }
 
     [Fact]
-    public async Task ValidateAsync_WithNegativeMaxParallel_ShouldReturnError()
+    public async Task ValidateAsync_WithNegativeMaxConcurrency_ShouldReturnError()
     {
         // Arrange
         var workflow = CreateWorkflowWithForEach("{{input.orderIds}}", "orderId", -1);
@@ -404,12 +404,12 @@ public class ControlFlowValidationTests
         // Assert
         result.IsValid.Should().BeFalse();
         result.Errors.Should().Contain(e =>
-            e.Field == "forEach.maxParallel" &&
+            e.Field == "forEach.maxConcurrency" &&
             e.Message.Contains("positive") || e.Message.Contains("greater than"));
     }
 
     [Fact]
-    public async Task ValidateAsync_WithZeroMaxParallel_ShouldReturnSuccess()
+    public async Task ValidateAsync_WithZeroMaxConcurrency_ShouldReturnSuccess()
     {
         // Arrange - 0 means unlimited parallelism, which is valid
         var workflow = CreateWorkflowWithForEach("{{input.orderIds}}", "orderId", 0);
@@ -469,7 +469,7 @@ public class ControlFlowValidationTests
                         {
                             Items = "{{input.orders}}",
                             ItemVar = "order",
-                            MaxParallel = 5
+                            MaxConcurrency = 5
                         }
                     }
                 }
@@ -503,7 +503,7 @@ public class ControlFlowValidationTests
                         {
                             Items = "", // Empty
                             ItemVar = "123bad", // Invalid
-                            MaxParallel = -1 // Negative
+                            MaxConcurrency = -1 // Negative
                         },
                         Switch = new SwitchSpec
                         {
@@ -584,7 +584,7 @@ public class ControlFlowValidationTests
         };
     }
 
-    private WorkflowResource CreateWorkflowWithForEach(string items, string itemVar, int maxParallel)
+    private WorkflowResource CreateWorkflowWithForEach(string items, string itemVar, int maxConcurrency)
     {
         return new WorkflowResource
         {
@@ -600,7 +600,7 @@ public class ControlFlowValidationTests
                         {
                             Items = items,
                             ItemVar = itemVar,
-                            MaxParallel = maxParallel
+                            MaxConcurrency = maxConcurrency
                         }
                     }
                 }

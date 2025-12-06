@@ -17,21 +17,21 @@ interface MetricCardProps {
 
 function MetricCard({ label, value, unit, isLoading, color = 'default' }: MetricCardProps) {
   const colorClasses = {
-    default: 'text-gray-900',
-    success: 'text-green-600',
-    warning: 'text-yellow-600',
-    error: 'text-red-600',
+    default: 'text-gray-900 dark:text-gray-100',
+    success: 'text-green-600 dark:text-green-400',
+    warning: 'text-yellow-600 dark:text-yellow-400',
+    error: 'text-red-600 dark:text-red-400',
   };
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
-      <p className="text-sm font-medium text-gray-500">{label}</p>
+    <div className="theme-card p-4">
+      <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{label}</p>
       {isLoading ? (
-        <div className="h-8 w-24 bg-gray-200 animate-pulse rounded mt-1" role="status" aria-label={`Loading ${label}`} />
+        <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 animate-pulse theme-rounded-sm mt-1" role="status" aria-label={`Loading ${label}`} />
       ) : (
         <p className={`text-2xl font-bold mt-1 ${colorClasses[color]}`}>
           {value}
-          {unit && <span className="text-sm font-normal text-gray-500 ml-1">{unit}</span>}
+          {unit && <span className="text-sm font-normal text-gray-500 dark:text-gray-400 ml-1">{unit}</span>}
         </p>
       )}
     </div>

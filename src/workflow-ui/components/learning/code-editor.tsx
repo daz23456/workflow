@@ -10,6 +10,7 @@
  * - Real-time editing
  * - Validation feedback
  * - Accessibility support
+ * - Theme-aware (respects system dark mode)
  */
 
 import { useEffect, useRef, useState } from 'react';
@@ -26,7 +27,6 @@ interface CodeEditorProps {
   height?: string;
   className?: string;
   placeholder?: string;
-  theme?: 'light' | 'dark';
 }
 
 /**
@@ -48,12 +48,31 @@ export function CodeEditor({
   height = '400px',
   className = '',
   placeholder,
-  theme = 'light',
 }: CodeEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
   const editableCompartment = useRef(new Compartment());
+  const themeCompartment = useRef(new Compartment());
   const [isMounted, setIsMounted] = useState(false);
+  const [isDark, setIsDark] = useState(false);
+
+  // Detect dark mode from document
+  useEffect(() => {
+    const checkDarkMode = () => {
+      setIsDark(document.documentElement.classList.contains('dark'));
+    };
+
+    checkDarkMode();
+
+    // Watch for dark mode changes
+    const observer = new MutationObserver(checkDarkMode);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class'],
+    });
+
+    return () => observer.disconnect();
+  }, []);
 
   // Initialize CodeMirror editor
   useEffect(() => {
@@ -63,6 +82,7 @@ export function CodeEditor({
       basicSetup,
       yaml(),
       editableCompartment.current.of(EditorView.editable.of(!readOnly)),
+      themeCompartment.current.of(isDark ? oneDark : []),
       EditorView.updateListener.of((update: ViewUpdate) => {
         if (update.docChanged && onChange) {
           const newValue = update.state.doc.toString();
@@ -70,11 +90,6 @@ export function CodeEditor({
         }
       }),
     ];
-
-    // Add theme if dark mode
-    if (theme === 'dark') {
-      extensions.push(oneDark);
-    }
 
     // Add placeholder if provided
     if (placeholder) {
@@ -106,6 +121,15 @@ export function CodeEditor({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Update theme when dark mode changes
+  useEffect(() => {
+    if (!viewRef.current || !isMounted) return;
+
+    viewRef.current.dispatch({
+      effects: themeCompartment.current.reconfigure(isDark ? oneDark : []),
+    });
+  }, [isDark, isMounted]);
+
   // Update editor content when value prop changes (but only if different from editor content)
   useEffect(() => {
     if (!viewRef.current || !isMounted) return;
@@ -133,13 +157,13 @@ export function CodeEditor({
 
   return (
     <div
-      className={`border border-gray-300 rounded-lg overflow-hidden ${className}`}
+      className={`border border-gray-300 dark:border-gray-600 theme-rounded-lg overflow-hidden ${className}`}
       style={{ height }}
       data-testid="code-editor"
     >
       <div
         ref={editorRef}
-        className="h-full"
+        className="h-full [&_.cm-editor]:h-full [&_.cm-scroller]:!font-mono"
         aria-label={readOnly ? 'Read-only code editor' : 'Code editor'}
         role="textbox"
         aria-readonly={readOnly}

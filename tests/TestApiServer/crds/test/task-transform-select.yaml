@@ -1,0 +1,27 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: transform-select
+  namespace: test
+  labels:
+    workflow.io/category: transform
+  annotations:
+    workflow.io/description: "Select specific fields from an object"
+spec:
+  type: transform
+  transform:
+    input: "$"
+    pipeline:
+      - operation: select
+        fields:
+          - id
+          - name
+          - email
+  inputSchema:
+    type: object
+    description: "Any object to select fields from"
+  outputSchema:
+    type: object
+    properties:
+      result:
+        type: object

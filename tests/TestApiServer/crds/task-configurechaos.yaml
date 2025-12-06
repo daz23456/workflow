@@ -1,0 +1,74 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: configurechaos
+  namespace: test
+  labels:
+    workflow.io/generated-from: openapi
+    workflow.io/operation-id: ConfigureChaos
+  annotations:
+    workflow.io/source-path: /api/chaos/configure
+    workflow.io/source-method: POST
+spec:
+  type: http
+  description: POST /api/chaos/configure
+  request:
+    url: http://localhost:5100/api/chaos/configure
+    method: POST
+    headers:
+      Accept: application/json
+      Content-Type: application/json
+    body: '{{input.body | toJson}}'
+  inputSchema:
+    type: object
+    properties:
+      body:
+        type: object
+        properties:
+          mode:
+            type: integer
+            format: int32
+            enum:
+              - 0
+              - 1
+              - 2
+              - 3
+              - 4
+              - 5
+          failureProbability:
+            type: number
+            format: double
+          failureStatusCodes:
+            type: array
+            items:
+              type: integer
+              format: int32
+          failCountBeforeSuccess:
+            type: integer
+            format: int32
+          minDelayMs:
+            type: integer
+            format: int32
+          maxDelayMs:
+            type: integer
+            format: int32
+          pathPattern:
+            type: string
+          targetEndpoints:
+            type: array
+            items:
+              type: string
+          delayProbability:
+            type: number
+            format: double
+        additionalProperties: false
+        description: Request body
+    required:
+      - body
+  outputSchema:
+    type: object
+    description: Response from the endpoint
+  timeout: 30s
+  retry:
+    maxAttempts: 3
+    backoffMs: 1000

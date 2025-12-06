@@ -1,0 +1,69 @@
+apiVersion: workflow.example.com/v1
+kind: Workflow
+metadata:
+  name: transform-demo
+  namespace: test
+spec:
+  description: "Demonstrates Transform DSL operations: filter, map, select, aggregate, sort"
+  input:
+    userId:
+      type: string
+      required: true
+      description: "User ID to fetch orders for"
+  tasks:
+    # Step 1: Fetch user orders (returns array of orders)
+    - id: fetch-orders
+      taskRef: getuserorders
+      input:
+        id: "{{input.userId}}"
+
+    # Step 2: Transform - Select only specific fields from orders
+    - id: select-order-fields
+      taskRef: transform-select
+      input:
+        data: "{{tasks.fetch-orders.output}}"
+      dependsOn: [fetch-orders]
+
+    # Step 3: Transform - Filter to only active orders
+    - id: filter-active-orders
+      taskRef: transform-filter
+      input:
+        data: "{{tasks.fetch-orders.output}}"
+      dependsOn: [fetch-orders]
+
+    # Step 4: Transform - Map orders to simplified structure
+    - id: map-order-structure
+      taskRef: transform-map
+      input:
+        data: "{{tasks.fetch-orders.output}}"
+      dependsOn: [fetch-orders]
+
+    # Step 5: Transform - Aggregate order totals
+    - id: aggregate-order-totals
+      taskRef: transform-aggregate
+      input:
+        data: "{{tasks.fetch-orders.output}}"
+      dependsOn: [fetch-orders]
+
+    # Step 6: Transform - Sort orders by date
+    - id: sort-orders-by-date
+      taskRef: transform-sort
+      input:
+        data: "{{tasks.fetch-orders.output}}"
+      dependsOn: [fetch-orders]
+
+    # Step 7: Complex pipeline transform
+    - id: complex-pipeline
+      taskRef: transform-pipeline
+      input:
+        data: "{{tasks.fetch-orders.output}}"
+      dependsOn: [fetch-orders]
+
+  output:
+    originalOrders: "{{tasks.fetch-orders.output}}"
+    selectedFields: "{{tasks.select-order-fields.output.result}}"
+    activeOrders: "{{tasks.filter-active-orders.output.result}}"
+    mappedOrders: "{{tasks.map-order-structure.output.result}}"
+    aggregateTotals: "{{tasks.aggregate-order-totals.output.result}}"
+    sortedOrders: "{{tasks.sort-orders-by-date.output.result}}"
+    pipelineResult: "{{tasks.complex-pipeline.output.result}}"

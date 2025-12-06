@@ -1,0 +1,48 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: validatecard
+  namespace: test
+  labels:
+    workflow.io/generated-from: openapi
+    workflow.io/operation-id: ValidateCard
+  annotations:
+    workflow.io/source-path: /api/payments/validate-card
+    workflow.io/source-method: POST
+spec:
+  type: http
+  description: POST /api/payments/validate-card
+  request:
+    url: http://localhost:5100/api/payments/validate-card
+    method: POST
+    headers:
+      Accept: application/json
+      Content-Type: application/json
+    body: '{{input.body | toJson}}'
+  inputSchema:
+    type: object
+    properties:
+      body:
+        type: object
+        properties:
+          cardNumber:
+            type: string
+          expiryMonth:
+            type: integer
+            format: int32
+          expiryYear:
+            type: integer
+            format: int32
+          cvv:
+            type: string
+        additionalProperties: false
+        description: Request body
+    required:
+      - body
+  outputSchema:
+    type: object
+    description: Response from the endpoint
+  timeout: 30s
+  retry:
+    maxAttempts: 3
+    backoffMs: 1000

@@ -1,0 +1,43 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: cancelorder
+  namespace: test
+  labels:
+    workflow.io/generated-from: openapi
+    workflow.io/operation-id: CancelOrder
+  annotations:
+    workflow.io/source-path: /api/orders/{id}/cancel
+    workflow.io/source-method: POST
+spec:
+  type: http
+  description: POST /api/orders/{id}/cancel
+  request:
+    url: http://localhost:5100/api/orders/{{input.id}}/cancel
+    method: POST
+    headers:
+      Accept: application/json
+      Content-Type: application/json
+    body: '{{input.body | toJson}}'
+  inputSchema:
+    type: object
+    properties:
+      id:
+        type: string
+        description: 'Path parameter: id'
+      body:
+        type: object
+        properties:
+          reason:
+            type: string
+        additionalProperties: false
+        description: Request body
+    required:
+      - id
+  outputSchema:
+    type: object
+    description: Response from the endpoint
+  timeout: 30s
+  retry:
+    maxAttempts: 3
+    backoffMs: 1000

@@ -1,0 +1,37 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: getpaginated
+  namespace: test
+  labels:
+    workflow.io/generated-from: openapi
+    workflow.io/operation-id: GetPaginated
+  annotations:
+    workflow.io/source-path: /api/arrays/paginated
+    workflow.io/source-method: GET
+spec:
+  type: http
+  description: GET /api/arrays/paginated
+  request:
+    url: http://localhost:5100/api/arrays/paginated
+    method: GET
+    headers:
+      Accept: application/json
+  inputSchema:
+    type: object
+    properties:
+      page:
+        type: integer
+        format: int32
+        description: 'Query parameter: page'
+      size:
+        type: integer
+        format: int32
+        description: 'Query parameter: size'
+  outputSchema:
+    type: object
+    description: Response from the endpoint
+  timeout: 30s
+  retry:
+    maxAttempts: 3
+    backoffMs: 1000

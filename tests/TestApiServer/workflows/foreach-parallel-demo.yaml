@@ -1,0 +1,53 @@
+apiVersion: workflow.example.com/v1
+kind: Workflow
+metadata:
+  name: foreach-parallel-demo
+  namespace: test
+spec:
+  description: "Demonstrates forEach with parallel execution and maxConcurrency limiting"
+  input:
+    userIds:
+      type: array
+      required: true
+      description: "Array of user IDs to process in parallel"
+  tasks:
+    # Task 1: Process all users in parallel with limited concurrency
+    # maxConcurrency: 3 means only 3 API calls at a time
+    - id: process-users-limited
+      taskRef: getuser
+      forEach:
+        items: "{{input.userIds}}"
+        itemVar: "userId"
+        indexVar: "idx"
+        parallel: true
+        maxConcurrency: 3
+      input:
+        id: "{{forEach.userId}}"
+
+    # Task 2: Fetch orders for each user (sequential - no parallel flag)
+    - id: fetch-user-orders
+      taskRef: getuserorders
+      dependsOn: [process-users-limited]
+      forEach:
+        items: "{{input.userIds}}"
+        itemVar: "userId"
+        parallel: false  # Sequential processing
+      input:
+        id: "{{forEach.userId}}"
+
+    # Task 3: Send notifications in parallel - unlimited concurrency
+    - id: notify-all-users
+      taskRef: sendpush
+      dependsOn: [fetch-user-orders]
+      forEach:
+        items: "{{input.userIds}}"
+        itemVar: "userId"
+        parallel: true
+        # No maxConcurrency = unlimited parallel
+      input:
+        body: '{"UserId": "{{forEach.userId}}", "Title": "Processing Complete", "Body": "Your orders have been processed"}'
+
+  output:
+    processedUsers: "{{tasks.process-users-limited.output}}"
+    userOrders: "{{tasks.fetch-user-orders.output}}"
+    notifications: "{{tasks.notify-all-users.output}}"

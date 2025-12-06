@@ -17,7 +17,7 @@ public class WorkflowDbContextFactory : IDesignTimeDbContextFactory<WorkflowDbCo
 
         // Use a temporary connection string for migrations
         // In production, the actual connection string will be provided via DI
-        optionsBuilder.UseNpgsql("Host=localhost;Database=workflow_migrations;Username=postgres;Password=postgres");
+        optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=workflow_dev;Username=workflow;Password=workflow");
 
         return new WorkflowDbContext(optionsBuilder.Options);
     }

@@ -1,0 +1,52 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: updateuserpreferences
+  namespace: test
+  labels:
+    workflow.io/generated-from: openapi
+    workflow.io/operation-id: UpdateUserPreferences
+  annotations:
+    workflow.io/source-path: /api/users/{id}/preferences
+    workflow.io/source-method: PUT
+spec:
+  type: http
+  description: PUT /api/users/{id}/preferences
+  request:
+    url: http://localhost:5100/api/users/{{input.id}}/preferences
+    method: PUT
+    headers:
+      Accept: application/json
+      Content-Type: application/json
+    body: '{{input.body | toJson}}'
+  inputSchema:
+    type: object
+    properties:
+      id:
+        type: string
+        description: 'Path parameter: id'
+      body:
+        type: object
+        properties:
+          theme:
+            type: string
+          language:
+            type: string
+          timezone:
+            type: string
+          emailNotifications:
+            type: boolean
+          pushNotifications:
+            type: boolean
+        additionalProperties: false
+        description: Request body
+    required:
+      - id
+      - body
+  outputSchema:
+    type: object
+    description: Response from the endpoint
+  timeout: 30s
+  retry:
+    maxAttempts: 3
+    backoffMs: 1000

@@ -1,0 +1,48 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: bulksendnotifications
+  namespace: test
+  labels:
+    workflow.io/generated-from: openapi
+    workflow.io/operation-id: BulkSendNotifications
+  annotations:
+    workflow.io/source-path: /api/notifications/bulk
+    workflow.io/source-method: POST
+spec:
+  type: http
+  description: POST /api/notifications/bulk
+  request:
+    url: http://localhost:5100/api/notifications/bulk
+    method: POST
+    headers:
+      Accept: application/json
+      Content-Type: application/json
+    body: '{{input.body | toJson}}'
+  inputSchema:
+    type: object
+    properties:
+      body:
+        type: object
+        properties:
+          channel:
+            type: string
+          recipients:
+            type: array
+            items:
+              type: string
+          body:
+            type: string
+          subject:
+            type: string
+        additionalProperties: false
+        description: Request body
+    required:
+      - body
+  outputSchema:
+    type: object
+    description: Response from the endpoint
+  timeout: 30s
+  retry:
+    maxAttempts: 3
+    backoffMs: 1000

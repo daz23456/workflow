@@ -1,0 +1,62 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: getuserorders
+  namespace: test
+  labels:
+    workflow.io/generated-from: openapi
+    workflow.io/operation-id: GetUserOrders
+  annotations:
+    workflow.io/source-path: /api/users/{id}/orders
+    workflow.io/source-method: GET
+spec:
+  type: http
+  description: GET /api/users/{id}/orders
+  request:
+    url: http://localhost:5100/api/users/{{input.id}}/orders
+    method: GET
+    headers:
+      Accept: application/json
+  inputSchema:
+    type: object
+    properties:
+      id:
+        type: string
+        description: 'Path parameter: id'
+    required:
+      - id
+  outputSchema:
+    type: object
+    properties:
+      orders:
+        type: array
+        items:
+          type: object
+          properties:
+            orderId:
+              type: string
+            total:
+              type: number
+              format: double
+            status:
+              type: string
+            items:
+              type: array
+              items:
+                type: object
+                properties:
+                  productId:
+                    type: string
+                  quantity:
+                    type: integer
+                    format: int32
+                  price:
+                    type: number
+                    format: double
+                additionalProperties: false
+          additionalProperties: false
+    additionalProperties: false
+  timeout: 30s
+  retry:
+    maxAttempts: 3
+    backoffMs: 1000

@@ -95,21 +95,32 @@ public class HttpTaskExecutor : IHttpTaskExecutor
                     // Execute HTTP request
                     var response = await _httpClient.SendAsync(request, effectiveToken);
 
-                    // Check for non-success status codes and create structured error
+                    // Check for non-success status codes
                     if (!response.IsSuccessStatusCode)
                     {
-                        stopwatch.Stop();
+                        var statusCode = (int)response.StatusCode;
                         var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
 
+                        // Check if this is a retryable status code (5xx) and we have retries left
+                        if (_retryPolicy.ShouldRetryStatusCode(statusCode, attemptNumber))
+                        {
+                            // Wait before retrying
+                            var delay = _retryPolicy.CalculateDelay(attemptNumber);
+                            await Task.Delay(delay, cancellationToken);
+                            continue; // Retry the request
+                        }
+
+                        // Non-retryable or retries exhausted - return error
+                        stopwatch.Stop();
                         return new TaskExecutionResult
                         {
                             Success = false,
                             Errors = new List<string>
                             {
-                                $"HTTP {(int)response.StatusCode}: {response.ReasonPhrase}"
+                                $"HTTP {statusCode}: {response.ReasonPhrase}"
                             },
                             ErrorInfo = CreateHttpErrorInfo(
-                                (int)response.StatusCode,
+                                statusCode,
                                 responseBody,
                                 resolvedUrl,
                                 httpMethod,
@@ -265,13 +276,28 @@ public class HttpTaskExecutor : IHttpTaskExecutor
 
         var request = new HttpRequestMessage(method, resolvedUrl);
 
-        // Add headers
+        // Collect content headers for later (Content-Type, Content-Length, etc. must go on content, not request)
+        var contentHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        var contentHeaderNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "Content-Type", "Content-Length", "Content-Encoding", "Content-Language",
+            "Content-Location", "Content-MD5", "Content-Range", "Content-Disposition", "Expires", "Last-Modified"
+        };
+
+        // Add request headers (excluding content headers)
         if (requestDef.Headers != null)
         {
             foreach (var (key, value) in requestDef.Headers)
             {
                 var resolvedValue = await _templateResolver.ResolveAsync(value, context);
-                request.Headers.Add(key, resolvedValue);
+                if (contentHeaderNames.Contains(key))
+                {
+                    contentHeaders[key] = resolvedValue;
+                }
+                else
+                {
+                    request.Headers.TryAddWithoutValidation(key, resolvedValue);
+                }
             }
         }
 
@@ -280,7 +306,10 @@ public class HttpTaskExecutor : IHttpTaskExecutor
             (method == HttpMethod.Post || method == HttpMethod.Put || method == HttpMethod.Patch))
         {
             var resolvedBody = await _templateResolver.ResolveAsync(requestDef.Body, context);
-            request.Content = new StringContent(resolvedBody, Encoding.UTF8, "application/json");
+
+            // Determine content type from headers or default to application/json
+            var contentType = contentHeaders.TryGetValue("Content-Type", out var ct) ? ct : "application/json";
+            request.Content = new StringContent(resolvedBody, Encoding.UTF8, contentType);
         }
 
         return request;

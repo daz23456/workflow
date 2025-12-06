@@ -1,0 +1,19 @@
+apiVersion: workflow.example.com/v1
+kind: Workflow
+metadata:
+  name: retry-exceed-limit
+  namespace: test
+spec:
+  description: "Tests orchestrator retry limit - endpoint fails 5 times (exceeds 3 retry limit)"
+  input:
+    key:
+      type: string
+      description: "Unique key for this test run"
+  tasks:
+    - id: will-exceed-retries
+      taskRef: failntimes
+      input:
+        failCount: "5"
+        key: "{{input.key}}"
+  output:
+    result: "should-not-reach-here"

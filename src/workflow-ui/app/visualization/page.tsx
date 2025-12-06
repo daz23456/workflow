@@ -258,6 +258,13 @@ export default function VisualizationPage() {
 
   const autoRunRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Track which executions have had their first task connected to input
+  const connectedExecutionsRef = useRef<Set<string>>(new Set());
+  // Track workflow name -> input node ID mapping
+  const workflowInputNodesRef = useRef<Map<string, string>>(new Map());
+  // Track executionId -> workflowName mapping
+  const executionToWorkflowRef = useRef<Map<string, string>>(new Map());
+
   const addNode = useVisualizationStore((state) => state.addNode);
   const addEdge = useVisualizationStore((state) => state.addEdge);
   const updateNodeStatus = useVisualizationStore((state) => state.updateNodeStatus);
@@ -308,29 +315,86 @@ export default function VisualizationPage() {
         await client.joinVisualizationGroup();
         setIsConnected(true);
 
-        // Handle workflow started - track the workflow
+        // Handle workflow started - create input node for workflow
         client.onWorkflowStarted((event: WorkflowStartedEvent) => {
           setActiveExecutions((n) => n + 1);
+
+          // Track execution -> workflow mapping
+          executionToWorkflowRef.current.set(event.executionId, event.workflowName);
+
+          // Create input node for this workflow if not exists
+          const inputNodeId = `input-${event.workflowName.toLowerCase().replace(/\s+/g, '-')}`;
+
+          if (!workflowInputNodesRef.current.has(event.workflowName)) {
+            workflowInputNodesRef.current.set(event.workflowName, inputNodeId);
+
+            // Check if node already exists in store
+            const storeNodes = useVisualizationStore.getState().nodes;
+            if (!storeNodes.has(inputNodeId)) {
+              // Create input node at center
+              addNode({
+                id: inputNodeId,
+                label: event.workflowName,
+                position: { x: 0, y: 0, z: 0.5 },
+                status: 'running',
+                sizeScale: 1.2,
+              });
+            }
+          }
+
+          // Update input node status to running
+          updateNodeStatus(inputNodeId, 'running');
         });
 
         // Handle task started - add node if not exists, update status
         client.onTaskStarted((event: TaskStartedEvent) => {
           const nodeId = taskToNodeId(event.taskName);
 
+          // Check if node already exists in the store (not inside state setter callback)
+          const storeNodes = useVisualizationStore.getState().nodes;
+          if (!storeNodes.has(nodeId)) {
+            // New task discovered - add to visualization
+            const position = calculateDynamicPosition(event.taskName, storeNodes.size);
+            addNode({
+              id: nodeId,
+              label: event.taskName,
+              position,
+              status: 'running',
+              sizeScale: 1.0,
+            });
+          }
+
+          // Connect first task of each execution to the workflow's input node
+          if (!connectedExecutionsRef.current.has(event.executionId)) {
+            connectedExecutionsRef.current.add(event.executionId);
+
+            // Find the workflow's input node
+            const workflowName = executionToWorkflowRef.current.get(event.executionId);
+            if (workflowName) {
+              const inputNodeId = workflowInputNodesRef.current.get(workflowName);
+              if (inputNodeId) {
+                // Check if edge already exists
+                const currentEdges = useVisualizationStore.getState().edges;
+                const edgeExists = currentEdges.some(e => e.source === inputNodeId && e.target === nodeId);
+
+                if (!edgeExists) {
+                  addEdge({
+                    id: `edge-${inputNodeId}-${nodeId}`,
+                    source: inputNodeId,
+                    target: nodeId,
+                  });
+                }
+
+                // Trigger signal animation from input to first task
+                triggerSignal(inputNodeId, nodeId);
+                setTotalSignals((n) => n + 1);
+              }
+            }
+          }
+
+          // Update local tracking
           setLiveTasks((prev) => {
             const updated = new Map(prev);
-            const existing = updated.get(nodeId);
-            if (!existing) {
-              // New task discovered - add to visualization
-              const position = calculateDynamicPosition(event.taskName, prev.size);
-              addNode({
-                id: nodeId,
-                label: event.taskName,
-                position,
-                status: 'running',
-                sizeScale: 1.0,
-              });
-            }
             updated.set(nodeId, { workflowName: event.taskName, status: 'running' });
             return updated;
           });
@@ -359,17 +423,27 @@ export default function VisualizationPage() {
         client.onSignalFlow((event: SignalFlowEvent) => {
           const fromNodeId = taskToNodeId(event.fromTaskId);
           const toNodeId = taskToNodeId(event.toTaskId);
+          // Use unique edge key based on source->target for both tracking and ID
           const edgeKey = `${fromNodeId}->${toNodeId}`;
 
+          // Check if edge exists (not inside state setter callback)
+          const currentEdges = useVisualizationStore.getState().edges;
+          const edgeExists = currentEdges.some(e => e.source === fromNodeId && e.target === toNodeId);
+
+          if (!edgeExists) {
+            // Use unique edge ID based on source->target to avoid duplicates
+            addEdge({
+              id: `edge-${fromNodeId}-${toNodeId}`,
+              source: fromNodeId,
+              target: toNodeId,
+            });
+          }
+
+          // Update local tracking
           setLiveEdges((prev) => {
             if (!prev.has(edgeKey)) {
               const updated = new Map(prev);
               updated.set(edgeKey, { from: fromNodeId, to: toNodeId });
-              addEdge({
-                id: `edge-${prev.size}`,
-                source: fromNodeId,
-                target: toNodeId,
-              });
               return updated;
             }
             return prev;
@@ -533,12 +607,12 @@ export default function VisualizationPage() {
       });
     });
 
-    // Create edges with node IDs
-    const edgeArray = Array.from(edges.values()).map((edge, i) => {
+    // Create edges with unique IDs based on source->target
+    const edgeArray = Array.from(edges.values()).map((edge) => {
       const sourceNode = nodeMap.get(edge.source);
       const targetNode = nodeMap.get(edge.target);
       return {
-        id: `edge-${i}`,
+        id: `edge-${sourceNode?.id || edge.source}-${targetNode?.id || edge.target}`,
         source: sourceNode?.id || '',
         target: targetNode?.id || '',
       };
@@ -630,6 +704,9 @@ export default function VisualizationPage() {
       clearGraph();
       setLiveTasks(new Map());
       setLiveEdges(new Map());
+      connectedExecutionsRef.current.clear();
+      workflowInputNodesRef.current.clear();
+      executionToWorkflowRef.current.clear();
     }
   }, [dataSource, initializeVisualization, clearGraph]);
 
@@ -733,10 +810,13 @@ export default function VisualizationPage() {
     if (dataSource === 'simulation') {
       initializeVisualization();
     } else {
-      // Reset live mode - clear discovered nodes/edges
+      // Reset live mode - clear discovered nodes/edges and tracking refs
       clearGraph();
       setLiveTasks(new Map());
       setLiveEdges(new Map());
+      connectedExecutionsRef.current.clear();
+      workflowInputNodesRef.current.clear();
+      executionToWorkflowRef.current.clear();
     }
   };
 

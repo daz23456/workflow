@@ -1,0 +1,46 @@
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: filterarray
+  namespace: test
+  labels:
+    workflow.io/generated-from: openapi
+    workflow.io/operation-id: FilterArray
+  annotations:
+    workflow.io/source-path: /api/arrays/filter
+    workflow.io/source-method: POST
+spec:
+  type: http
+  description: POST /api/arrays/filter
+  request:
+    url: http://localhost:5100/api/arrays/filter
+    method: POST
+    headers:
+      Accept: application/json
+      Content-Type: application/json
+    body: '{{input.body | toJson}}'
+  inputSchema:
+    type: object
+    properties:
+      body:
+        type: object
+        properties:
+          minValue:
+            type: integer
+            format: int32
+          maxValue:
+            type: integer
+            format: int32
+          category:
+            type: string
+        additionalProperties: false
+        description: Request body
+    required:
+      - body
+  outputSchema:
+    type: object
+    description: Response from the endpoint
+  timeout: 30s
+  retry:
+    maxAttempts: 3
+    backoffMs: 1000

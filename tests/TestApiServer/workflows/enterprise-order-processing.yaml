@@ -1,0 +1,279 @@
+apiVersion: workflow.example.com/v1
+kind: Workflow
+metadata:
+  name: enterprise-order-processing
+  namespace: test
+spec:
+  description: "Comprehensive 25-task enterprise order processing workflow demonstrating data chaining, conditions, parallelism, and transforms"
+  input:
+    userId:
+      type: string
+      required: true
+      description: "User ID placing the order"
+    orderId:
+      type: string
+      required: true
+      description: "Order ID to process"
+    requiresApproval:
+      type: boolean
+      required: false
+      description: "Whether order requires manager approval"
+    notifyUser:
+      type: boolean
+      required: false
+      description: "Whether to send notifications to user"
+    paymentMethod:
+      type: string
+      required: false
+      description: "Payment method: stripe, paypal, invoice"
+  tasks:
+    # ==========================================
+    # PHASE 1: Data Collection (Parallel)
+    # ==========================================
+
+    # Task 1: Fetch user details
+    - id: fetch-user
+      taskRef: getuser
+      input:
+        id: "{{input.userId}}"
+
+    # Task 2: Fetch user profile (parallel with fetch-user since only needs userId)
+    - id: fetch-user-profile
+      taskRef: getuserprofile
+      input:
+        id: "{{input.userId}}"
+
+    # Task 3: Fetch user preferences (parallel)
+    - id: fetch-user-preferences
+      taskRef: getuserpreferences
+      input:
+        id: "{{input.userId}}"
+
+    # Task 4: Fetch order details
+    - id: fetch-order
+      taskRef: getorder
+      input:
+        id: "{{input.orderId}}"
+
+    # Task 5: Fetch order invoice (depends on order existing)
+    - id: fetch-invoice
+      taskRef: getorderinvoice
+      input:
+        id: "{{input.orderId}}"
+      dependsOn: [fetch-order]
+
+    # ==========================================
+    # PHASE 2: Validation (Sequential)
+    # ==========================================
+
+    # Task 6: Validate user data is complete
+    - id: validate-user
+      taskRef: getuser
+      input:
+        id: "{{tasks.fetch-user.output.id}}"
+      dependsOn: [fetch-user]
+
+    # Task 7: Calculate order total with user context
+    - id: calculate-total
+      taskRef: calculateordertotal
+      input:
+        id: "{{input.orderId}}"
+      dependsOn: [fetch-order, fetch-user]
+
+    # ==========================================
+    # PHASE 3: Inventory & Stock (Parallel)
+    # ==========================================
+
+    # Task 8: Check inventory availability
+    - id: check-inventory
+      taskRef: checkinventory
+      input:
+        body: '{"productId": "{{tasks.fetch-order.output.productId}}", "quantity": 1}'
+      dependsOn: [fetch-order]
+
+    # Task 9: Get stock level details
+    - id: get-stock-level
+      taskRef: getstocklevel
+      input:
+        productId: "{{tasks.fetch-order.output.productId}}"
+      dependsOn: [fetch-order]
+
+    # Task 10: Get product pricing
+    - id: get-pricing
+      taskRef: getpricing
+      input:
+        productId: "{{tasks.fetch-order.output.productId}}"
+      dependsOn: [fetch-order]
+
+    # Task 11: Reserve stock for this order
+    - id: reserve-stock
+      taskRef: reservestock
+      input:
+        body: '{"productId": "{{tasks.fetch-order.output.productId}}", "quantity": 1, "orderId": "{{input.orderId}}"}'
+      dependsOn: [check-inventory, get-stock-level]
+
+    # ==========================================
+    # PHASE 4: Payment Processing
+    # ==========================================
+
+    # Task 12: Validate payment card (conditional - only if not invoice)
+    - id: validate-card
+      taskRef: validatecard
+      condition:
+        if: "{{input.paymentMethod}} != 'invoice'"
+      input:
+        body: '{"userId": "{{input.userId}}"}'
+      dependsOn: [fetch-user, calculate-total]
+
+    # Task 13: Authorize payment
+    - id: authorize-payment
+      taskRef: authorizepayment
+      condition:
+        if: "{{input.paymentMethod}} != 'invoice'"
+      input:
+        body: '{"orderId": "{{input.orderId}}", "amount": {{tasks.calculate-total.output.total}}, "userId": "{{input.userId}}"}'
+      dependsOn: [validate-card, reserve-stock]
+
+    # Task 14: Capture payment
+    - id: capture-payment
+      taskRef: capturepayment
+      condition:
+        if: "{{input.paymentMethod}} != 'invoice'"
+      input:
+        body: '{"authorizationId": "{{tasks.authorize-payment.output.authorizationId}}"}'
+      dependsOn: [authorize-payment]
+
+    # Task 15: Process payment (final step)
+    - id: process-payment
+      taskRef: processpayment
+      input:
+        body: '{"orderId": "{{input.orderId}}", "amount": {{tasks.calculate-total.output.total}}}'
+      dependsOn: [capture-payment]
+
+    # ==========================================
+    # PHASE 5: Order Fulfillment
+    # ==========================================
+
+    # Task 16: Update order status to processing
+    - id: update-order-processing
+      taskRef: updateorderstatus
+      input:
+        id: "{{input.orderId}}"
+        body: '{"status": "processing"}'
+      dependsOn: [process-payment]
+
+    # Task 17: Fulfill the order
+    - id: fulfill-order
+      taskRef: fulfillorder
+      input:
+        id: "{{input.orderId}}"
+      dependsOn: [update-order-processing]
+
+    # Task 18: Ship the order
+    - id: ship-order
+      taskRef: shiporder
+      input:
+        id: "{{input.orderId}}"
+        body: '{"carrier": "standard", "priority": "normal"}'
+      dependsOn: [fulfill-order]
+
+    # Task 19: Update order status to shipped
+    - id: update-order-shipped
+      taskRef: updateorderstatus
+      input:
+        id: "{{input.orderId}}"
+        body: '{"status": "shipped"}'
+      dependsOn: [ship-order]
+
+    # ==========================================
+    # PHASE 6: Notifications (Parallel, Conditional)
+    # ==========================================
+
+    # Task 20: Send email notification (conditional)
+    - id: send-email-notification
+      taskRef: sendemail
+      condition:
+        if: "{{input.notifyUser}} == true"
+      input:
+        body: '{"to": "{{tasks.fetch-user.output.email}}", "subject": "Order {{input.orderId}} shipped", "body": "Your order is on its way!"}'
+      dependsOn: [update-order-shipped, fetch-user]
+
+    # Task 21: Send SMS notification (conditional)
+    - id: send-sms-notification
+      taskRef: sendsms
+      condition:
+        if: "{{input.notifyUser}} == true"
+      input:
+        body: '{"to": "{{tasks.fetch-user-profile.output.phone}}", "message": "Order {{input.orderId}} shipped!"}'
+      dependsOn: [update-order-shipped, fetch-user-profile]
+
+    # Task 22: Send push notification (conditional)
+    - id: send-push-notification
+      taskRef: sendpush
+      condition:
+        if: "{{input.notifyUser}} == true"
+      input:
+        body: '{"userId": "{{input.userId}}", "title": "Order Shipped", "message": "Your order {{input.orderId}} is on its way!"}'
+      dependsOn: [update-order-shipped]
+
+    # ==========================================
+    # PHASE 7: Post-Processing
+    # ==========================================
+
+    # Task 23: Get notification history for audit
+    - id: get-notification-history
+      taskRef: getnotificationhistory
+      input:
+        userId: "{{input.userId}}"
+      dependsOn: [send-email-notification, send-sms-notification, send-push-notification]
+
+    # Task 24: Get user's updated order list
+    - id: get-user-orders
+      taskRef: getuserorders
+      input:
+        id: "{{input.userId}}"
+      dependsOn: [update-order-shipped]
+
+    # Task 25: Get final payment details for audit
+    - id: get-payment-details
+      taskRef: getpayment
+      input:
+        id: "{{tasks.process-payment.output.paymentId}}"
+      dependsOn: [process-payment]
+
+  output:
+    # User information
+    user: "{{tasks.fetch-user.output}}"
+    userProfile: "{{tasks.fetch-user-profile.output}}"
+    userPreferences: "{{tasks.fetch-user-preferences.output}}"
+
+    # Order information
+    order: "{{tasks.fetch-order.output}}"
+    invoice: "{{tasks.fetch-invoice.output}}"
+    calculatedTotal: "{{tasks.calculate-total.output}}"
+
+    # Inventory
+    inventoryCheck: "{{tasks.check-inventory.output}}"
+    stockLevel: "{{tasks.get-stock-level.output}}"
+    pricing: "{{tasks.get-pricing.output}}"
+    stockReservation: "{{tasks.reserve-stock.output}}"
+
+    # Payment
+    paymentAuthorization: "{{tasks.authorize-payment.output}}"
+    paymentCapture: "{{tasks.capture-payment.output}}"
+    paymentResult: "{{tasks.process-payment.output}}"
+    paymentDetails: "{{tasks.get-payment-details.output}}"
+
+    # Fulfillment
+    fulfillmentResult: "{{tasks.fulfill-order.output}}"
+    shippingResult: "{{tasks.ship-order.output}}"
+    finalOrderStatus: "{{tasks.update-order-shipped.output}}"
+
+    # Notifications
+    emailNotification: "{{tasks.send-email-notification.output}}"
+    smsNotification: "{{tasks.send-sms-notification.output}}"
+    pushNotification: "{{tasks.send-push-notification.output}}"
+    notificationHistory: "{{tasks.get-notification-history.output}}"
+
+    # Audit
+    userOrders: "{{tasks.get-user-orders.output}}"

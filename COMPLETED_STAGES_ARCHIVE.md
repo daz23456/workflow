@@ -1,9 +1,9 @@
 # Completed Stages Implementation Archive
 
 **Created:** 2025-11-22
-**Updated:** 2025-12-01
+**Updated:** 2025-12-06
 **Purpose:** Archive of detailed implementation instructions for completed stages
-**Status:** 17 stages/substages complete (60% project completion)
+**Status:** 22 stages/substages complete (65% project completion)
 
 This file contains the detailed TDD implementation instructions that were used to build completed stages of the Workflow Orchestration Engine. These stages are now complete and documented in their respective proof files:
 
@@ -29,6 +29,13 @@ This file contains the detailed TDD implementation instructions that were used t
 
 ### Performance (Stage 10)
 - **Stage 10 Phase 1: Performance Benchmarks** - See `STAGE_10_PROOF.md`
+
+### Control Flow (Stage 19)
+- **Stage 19.1: Condition Evaluation Engine** - See `stage-proofs/stage-19.1/STAGE_19.1_PROOF.md`
+- **Stage 19.2: Switch/Case Implementation** - See `stage-proofs/stage-19.2/STAGE_19.2_PROOF.md`
+- **Stage 19.3: forEach Array Iteration** - See `stage-proofs/stage-19.3/STAGE_19.3_PROOF.md`
+- **Stage 19.4: Control Flow Validation** - See `stage-proofs/stage-19.4/STAGE_19.4_PROOF.md`
+- **Stage 19.5: Nested Control Flow** - See `stage-proofs/stage-19.5/STAGE_19.5_PROOF.md`
 
 **Note:** Stages 1-4 contain full TDD code examples. Stages 5+ contain task specifications only.
 
@@ -2405,5 +2412,75 @@ public class ExecutionGraphResult
 1. **Execution Trace Endpoint** - GET /api/v1/executions/{id}/trace
 2. **Simple Workflow Versioning (Hash-Based Change Detection)**
 3. **Workflow Versions Endpoint** - GET /api/v1/workflows/{name}/versions
+
+---
+
+## Stage 19: Control Flow (Week 7-8)
+
+**Status:** ✅ Complete
+**Tests:** ~130 passing across 5 substages
+**Coverage:** 90%+
+
+### Overview
+
+Added control flow capabilities to the workflow orchestration engine:
+- **forEach**: Iterate over arrays with parallel execution
+- **if/else conditions**: Skip tasks based on expressions
+- **switch/case**: Route to different tasks based on value
+- **nesting**: Combine forEach + conditions for complex flows
+
+### Stage 19.1: Condition Evaluation Engine
+**Status:** ✅ Complete - See `stage-proofs/stage-19.1/STAGE_19.1_PROOF.md`
+
+1. **ConditionSpec Model** - condition.if syntax for task steps
+2. **ConditionEvaluator Service** - Evaluate boolean expressions
+3. **Comparison Operators** - ==, !=, >, <, >=, <=
+4. **Boolean Operations** - &&, ||, !
+5. **WorkflowOrchestrator Integration** - Skip tasks based on condition
+
+### Stage 19.2: Switch/Case Implementation
+**Status:** ✅ Complete - See `stage-proofs/stage-19.2/STAGE_19.2_PROOF.md`
+
+1. **SwitchSpec Model** - switch/case/default syntax
+2. **SwitchEvaluator Service** - Match value against cases
+3. **Multi-match Support** - Array of match values per case
+4. **Default Fallback** - Execute default when no match
+
+### Stage 19.3: forEach Array Iteration
+**Status:** ✅ Complete - See `stage-proofs/stage-19.3/STAGE_19.3_PROOF.md`
+
+1. **ForEachSpec Model** - items, itemVar, maxConcurrency
+2. **ForEachExecutor Service** - Parallel iteration with concurrency limit
+3. **ForEachContext** - Access current item via {{forEach.itemVar}}
+4. **Result Aggregation** - Collect outputs from all iterations
+
+### Stage 19.4: Control Flow Validation
+**Status:** ✅ Complete - See `stage-proofs/stage-19.4/STAGE_19.4_PROOF.md`
+
+1. **Condition Expression Validation** - Syntax checking at definition time
+2. **Switch Case Validation** - Unique cases, valid default
+3. **ForEach Validation** - Array type checking, valid itemVar
+4. **Template Reference Validation** - forEach.* and switch.* expressions
+
+### Stage 19.5: Nested Control Flow
+**Status:** ✅ Complete - See `stage-proofs/stage-19.5/STAGE_19.5_PROOF.md`
+
+1. **ForEachContext Stack** - Parent linking for nested loops
+2. **NestingDepth Property** - Track depth for validation
+3. **GetAncestor/GetRoot Methods** - Navigate context hierarchy
+4. **$parent/$root References** - Access outer loop context
+5. **Max Nesting Depth Validation** - Prevent excessive nesting (default: 3)
+
+### Key Deliverables
+
+| Component | Location |
+|-----------|----------|
+| ConditionSpec | `src/WorkflowCore/Models/ConditionSpec.cs` |
+| SwitchSpec | `src/WorkflowCore/Models/SwitchSpec.cs` |
+| ForEachSpec | `src/WorkflowCore/Models/ForEachSpec.cs` |
+| ForEachContext | `src/WorkflowCore/Models/TemplateContext.cs` |
+| ConditionEvaluator | `src/WorkflowCore/Services/ConditionEvaluator.cs` |
+| SwitchEvaluator | `src/WorkflowCore/Services/SwitchEvaluator.cs` |
+| ForEachExecutor | `src/WorkflowCore/Services/ForEachExecutor.cs` |
 
 ---

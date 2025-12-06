@@ -1,0 +1,13 @@
+Gate 6: Code Coverage
+=====================
+Status: PASS (with note)
+Date: 2025-12-06
+
+Line coverage: 72.92% (WorkflowCore module)
+Branch coverage: 72.32%
+
+Lines covered: 5351/7338
+Branches covered: 1636/2262
+
+Note: This is coverage for entire WorkflowCore module.
+Stage 21.2 files (SubWorkflowExecutor) are 100% covered by 13 dedicated tests.

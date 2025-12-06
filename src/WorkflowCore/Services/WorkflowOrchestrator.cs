@@ -12,6 +12,16 @@ public interface IWorkflowOrchestrator
         Dictionary<string, WorkflowTaskResource> availableTasks,
         Dictionary<string, object> inputs,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Execute a workflow with sub-workflow support (Stage 21.2).
+    /// </summary>
+    Task<WorkflowExecutionResult> ExecuteAsync(
+        WorkflowResource workflow,
+        Dictionary<string, WorkflowTaskResource> availableTasks,
+        Dictionary<string, WorkflowResource> availableWorkflows,
+        Dictionary<string, object> inputs,
+        CancellationToken cancellationToken = default);
 }
 
 public class WorkflowOrchestrator : IWorkflowOrchestrator
@@ -25,6 +35,9 @@ public class WorkflowOrchestrator : IWorkflowOrchestrator
     private readonly IConditionEvaluator? _conditionEvaluator;
     private readonly ISwitchEvaluator? _switchEvaluator;
     private readonly IForEachExecutor? _forEachExecutor;
+    private readonly ISubWorkflowExecutor? _subWorkflowExecutor;
+    private readonly IWorkflowRefResolver? _workflowRefResolver;
+    private readonly ICircuitBreakerRegistry? _circuitBreakerRegistry;
     private readonly SemaphoreSlim _semaphore;
 
     public WorkflowOrchestrator(
@@ -37,7 +50,10 @@ public class WorkflowOrchestrator : IWorkflowOrchestrator
         IWorkflowEventNotifier? eventNotifier = null,
         IConditionEvaluator? conditionEvaluator = null,
         ISwitchEvaluator? switchEvaluator = null,
-        IForEachExecutor? forEachExecutor = null)
+        IForEachExecutor? forEachExecutor = null,
+        ISubWorkflowExecutor? subWorkflowExecutor = null,
+        IWorkflowRefResolver? workflowRefResolver = null,
+        ICircuitBreakerRegistry? circuitBreakerRegistry = null)
     {
         _graphBuilder = graphBuilder ?? throw new ArgumentNullException(nameof(graphBuilder));
         _httpTaskExecutor = httpTaskExecutor ?? throw new ArgumentNullException(nameof(httpTaskExecutor));
@@ -48,6 +64,9 @@ public class WorkflowOrchestrator : IWorkflowOrchestrator
         _conditionEvaluator = conditionEvaluator;
         _switchEvaluator = switchEvaluator;
         _forEachExecutor = forEachExecutor;
+        _subWorkflowExecutor = subWorkflowExecutor;
+        _workflowRefResolver = workflowRefResolver;
+        _circuitBreakerRegistry = circuitBreakerRegistry;
 
         if (maxConcurrentTasks <= 0)
         {
@@ -57,9 +76,20 @@ public class WorkflowOrchestrator : IWorkflowOrchestrator
         _semaphore = new SemaphoreSlim(maxConcurrentTasks, maxConcurrentTasks);
     }
 
+    public Task<WorkflowExecutionResult> ExecuteAsync(
+        WorkflowResource workflow,
+        Dictionary<string, WorkflowTaskResource> availableTasks,
+        Dictionary<string, object> inputs,
+        CancellationToken cancellationToken = default)
+    {
+        // Delegate to the new overload with empty availableWorkflows for backward compatibility
+        return ExecuteAsync(workflow, availableTasks, new Dictionary<string, WorkflowResource>(), inputs, cancellationToken);
+    }
+
     public async Task<WorkflowExecutionResult> ExecuteAsync(
         WorkflowResource workflow,
         Dictionary<string, WorkflowTaskResource> availableTasks,
+        Dictionary<string, WorkflowResource> availableWorkflows,
         Dictionary<string, object> inputs,
         CancellationToken cancellationToken = default)
     {
@@ -378,7 +408,66 @@ public class WorkflowOrchestrator : IWorkflowOrchestrator
                         }
 
                         // Route based on task type
-                        if (taskSpec.Type == "transform")
+                        // First check for sub-workflow (workflowRef) - Stage 21.2
+                        if (!string.IsNullOrEmpty(taskStep.WorkflowRef))
+                        {
+                            if (_subWorkflowExecutor == null || _workflowRefResolver == null)
+                            {
+                                var errorTime = DateTime.UtcNow;
+                                taskResult = new TaskExecutionResult
+                                {
+                                    Success = false,
+                                    Errors = new List<string> { "Sub-workflow executor not available" },
+                                    StartedAt = actualStartTime,
+                                    CompletedAt = errorTime
+                                };
+                            }
+                            else
+                            {
+                                try
+                                {
+                                    // Resolve the workflowRef to a WorkflowResource
+                                    var parentNamespace = workflow.Metadata?.Namespace ?? "default";
+                                    var resolutionResult = _workflowRefResolver.Resolve(taskStep.WorkflowRef, availableWorkflows, parentNamespace);
+
+                                    if (!resolutionResult.IsSuccess || resolutionResult.Workflow == null)
+                                    {
+                                        var resolveErrorTime = DateTime.UtcNow;
+                                        taskResult = new TaskExecutionResult
+                                        {
+                                            Success = false,
+                                            Errors = new List<string> { resolutionResult.Error ?? $"Failed to resolve workflowRef: {taskStep.WorkflowRef}" },
+                                            StartedAt = actualStartTime,
+                                            CompletedAt = resolveErrorTime
+                                        };
+                                    }
+                                    else
+                                    {
+                                        // Execute the sub-workflow with input mappings
+                                        taskResult = await _subWorkflowExecutor.ExecuteAsync(
+                                            resolutionResult.Workflow,
+                                            availableTasks,
+                                            availableWorkflows,
+                                            context,
+                                            taskStep.Input ?? new Dictionary<string, string>(),
+                                            taskStep.Timeout,
+                                            cancellationToken);
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    var errorTime = DateTime.UtcNow;
+                                    taskResult = new TaskExecutionResult
+                                    {
+                                        Success = false,
+                                        Errors = new List<string> { $"Failed to execute sub-workflow: {ex.Message}" },
+                                        StartedAt = actualStartTime,
+                                        CompletedAt = errorTime
+                                    };
+                                }
+                            }
+                        }
+                        else if (taskSpec.Type == "transform")
                         {
                             if (_transformTaskExecutor == null)
                             {

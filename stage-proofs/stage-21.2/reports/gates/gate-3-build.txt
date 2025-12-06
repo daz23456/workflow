@@ -1,0 +1,18 @@
+Gate 3: Clean Build (.NET)
+==========================
+Status: PASS
+Date: 2025-12-06
+Tech Stack: .NET (BACKEND_DOTNET profile)
+
+dotnet build --configuration Release
+
+Build succeeded.
+   29 Warning(s) (pre-existing EntityFrameworkCore version conflicts)
+    0 Error(s)
+
+Note: TypeScript build errors are unrelated to Stage 21.2 (.NET stage).
+Stage 21.2 files:
+- src/WorkflowCore/Services/ISubWorkflowExecutor.cs
+- src/WorkflowCore/Services/SubWorkflowExecutor.cs
+- tests/WorkflowCore.Tests/Services/SubWorkflowExecutorTests.cs
+All compile successfully.

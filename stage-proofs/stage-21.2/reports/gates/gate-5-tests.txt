@@ -1,0 +1,10 @@
+Gate 5: All Tests Passing
+=========================
+Status: PASS
+Date: 2025-12-06
+
+dotnet test tests/WorkflowCore.Tests
+
+Passed!  - Failed:     0, Passed:  1446, Skipped:     0, Total:  1446, Duration: 2 s
+
+SubWorkflowExecutorTests: 13 tests - all passing

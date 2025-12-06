@@ -5,24 +5,28 @@ namespace WorkflowCore.Services;
 /// <summary>
 /// Executes sub-workflows with context isolation.
 /// Stage 21.2: Sub-Workflow Execution
+/// Stage 21.3: Cycle Detection & Limits
 /// </summary>
 public class SubWorkflowExecutor : ISubWorkflowExecutor
 {
     private readonly IWorkflowOrchestrator _orchestrator;
     private readonly IWorkflowRefResolver _resolver;
     private readonly ITemplateResolver _templateResolver;
+    private readonly IWorkflowCycleDetector _cycleDetector;
 
     public SubWorkflowExecutor(
         IWorkflowOrchestrator orchestrator,
-        IWorkflowRefResolver resolver)
+        IWorkflowRefResolver resolver,
+        IWorkflowCycleDetector cycleDetector)
     {
         _orchestrator = orchestrator ?? throw new ArgumentNullException(nameof(orchestrator));
         _resolver = resolver ?? throw new ArgumentNullException(nameof(resolver));
+        _cycleDetector = cycleDetector ?? throw new ArgumentNullException(nameof(cycleDetector));
         _templateResolver = new TemplateResolver();
     }
 
     /// <summary>
-    /// Execute a sub-workflow with context isolation.
+    /// Execute a sub-workflow with context isolation and cycle detection.
     /// </summary>
     public async Task<TaskExecutionResult> ExecuteAsync(
         WorkflowResource subWorkflow,
@@ -31,6 +35,7 @@ public class SubWorkflowExecutor : ISubWorkflowExecutor
         TemplateContext parentContext,
         Dictionary<string, string> inputMappings,
         string? timeout,
+        WorkflowCallStack? callStack = null,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(subWorkflow);
@@ -38,6 +43,29 @@ public class SubWorkflowExecutor : ISubWorkflowExecutor
         cancellationToken.ThrowIfCancellationRequested();
 
         var startedAt = DateTime.UtcNow;
+        var workflowName = subWorkflow.Metadata.Name;
+
+        // Initialize call stack if not provided (root sub-workflow call)
+        callStack ??= new WorkflowCallStack();
+
+        // Check for cycles and depth limits before execution
+        var cycleCheck = _cycleDetector.CheckBeforeExecution(workflowName, callStack);
+        if (!cycleCheck.CanProceed)
+        {
+            var completedAt = DateTime.UtcNow;
+            return new TaskExecutionResult
+            {
+                Success = false,
+                Errors = new List<string> { cycleCheck.Error! },
+                Output = new Dictionary<string, object>(),
+                StartedAt = startedAt,
+                CompletedAt = completedAt,
+                Duration = completedAt - startedAt
+            };
+        }
+
+        // Push this workflow onto the call stack
+        callStack.Push(workflowName);
 
         try
         {
@@ -105,6 +133,11 @@ public class SubWorkflowExecutor : ISubWorkflowExecutor
                 CompletedAt = completedAt,
                 Duration = completedAt - startedAt
             };
+        }
+        finally
+        {
+            // Always pop workflow from call stack when execution completes
+            callStack.Pop();
         }
     }
 

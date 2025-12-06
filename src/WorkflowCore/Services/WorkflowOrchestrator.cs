@@ -319,6 +319,80 @@ public class WorkflowOrchestrator : IWorkflowOrchestrator
 
                     var taskSpec = availableTasks[effectiveTaskRef].Spec;
 
+                    // Circuit breaker check - Stage 28.1
+                    ICircuitBreaker? circuitBreaker = null;
+                    CircuitState? circuitState = null;
+                    if (taskStep.CircuitBreaker != null && _circuitBreakerRegistry != null)
+                    {
+                        var options = CircuitBreakerOptionsParser.ConvertToOptions(taskStep.CircuitBreaker);
+                        circuitBreaker = _circuitBreakerRegistry.GetOrCreate(effectiveTaskRef, options);
+                        circuitState = circuitBreaker.GetState().State;
+
+                        if (!circuitBreaker.CanExecute())
+                        {
+                            // Circuit is open - check for fallback
+                            if (taskStep.Fallback != null && !string.IsNullOrEmpty(taskStep.Fallback.TaskRef))
+                            {
+                                // Execute fallback task
+                                if (availableTasks.TryGetValue(taskStep.Fallback.TaskRef, out var fallbackTaskResource))
+                                {
+                                    var fallbackStartTime = DateTime.UtcNow;
+                                    var fallbackSpec = fallbackTaskResource.Spec;
+
+                                    // Execute fallback with HTTP task executor
+                                    var fallbackContext = context;
+                                    if (taskStep.Fallback.Input != null && taskStep.Fallback.Input.Count > 0)
+                                    {
+                                        var mergedInput = new Dictionary<string, object>(context.Input);
+                                        foreach (var (key, value) in taskStep.Fallback.Input)
+                                        {
+                                            var resolvedValue = await _templateResolver.ResolveAsync(value, context);
+                                            mergedInput[key] = resolvedValue;
+                                        }
+                                        fallbackContext = new TemplateContext
+                                        {
+                                            Input = mergedInput,
+                                            TaskOutputs = context.TaskOutputs
+                                        };
+                                    }
+
+                                    var fallbackResult = await _httpTaskExecutor.ExecuteAsync(fallbackSpec, fallbackContext, cancellationToken);
+                                    var fallbackEndTime = DateTime.UtcNow;
+
+                                    return (taskId, new TaskExecutionResult
+                                    {
+                                        Success = fallbackResult.Success,
+                                        Output = fallbackResult.Output,
+                                        Errors = fallbackResult.Errors,
+                                        StartedAt = fallbackStartTime,
+                                        CompletedAt = fallbackEndTime,
+                                        Duration = fallbackEndTime - fallbackStartTime,
+                                        CircuitState = CircuitState.Open,
+                                        UsedFallback = true,
+                                        FallbackTaskRef = taskStep.Fallback.TaskRef
+                                    });
+                                }
+                            }
+
+                            // No fallback - return circuit open error
+                            var errorTime = DateTime.UtcNow;
+                            return (taskId, new TaskExecutionResult
+                            {
+                                Success = false,
+                                Errors = new List<string> { $"Circuit breaker open for task '{effectiveTaskRef}'" },
+                                StartedAt = errorTime,
+                                CompletedAt = errorTime,
+                                CircuitState = CircuitState.Open,
+                                ErrorInfo = new TaskErrorInfo
+                                {
+                                    ErrorType = TaskErrorType.CircuitBreakerOpen,
+                                    ErrorMessage = $"Circuit breaker is open for task '{effectiveTaskRef}'. The service has experienced too many recent failures.",
+                                    Suggestion = "Wait for the circuit breaker to transition to half-open state, or configure a fallback task."
+                                }
+                            });
+                        }
+                    }
+
                     // Execute task with concurrency control
                     await _semaphore.WaitAsync(cancellationToken);
                     try
@@ -451,6 +525,7 @@ public class WorkflowOrchestrator : IWorkflowOrchestrator
                                             context,
                                             taskStep.Input ?? new Dictionary<string, string>(),
                                             taskStep.Timeout,
+                                            null, // callStack
                                             cancellationToken);
                                     }
                                 }
@@ -595,6 +670,20 @@ public class WorkflowOrchestrator : IWorkflowOrchestrator
                         taskResult.StartedAt = actualStartTime;
                         taskResult.CompletedAt = actualCompletionTime;
                         taskResult.Duration = actualCompletionTime - actualStartTime;
+
+                        // Record result to circuit breaker - Stage 28.1
+                        if (circuitBreaker != null)
+                        {
+                            if (taskResult.Success)
+                            {
+                                circuitBreaker.RecordSuccess();
+                            }
+                            else
+                            {
+                                circuitBreaker.RecordFailure();
+                            }
+                            taskResult.CircuitState = circuitBreaker.GetState().State;
+                        }
 
                         return (taskId, taskResult);
                     }

@@ -1,0 +1,20 @@
+
+The following sources were used:
+   https://api.nuget.org/v3/index.json
+
+The given project `WorkflowCore` has no vulnerable packages given the current sources.
+The given project `WorkflowCore.Tests` has no vulnerable packages given the current sources.
+The given project `WorkflowOperator` has no vulnerable packages given the current sources.
+The given project `WorkflowOperator.Tests` has no vulnerable packages given the current sources.
+Project `WorkflowGateway` has the following vulnerable packages
+   [net8.0]: 
+   Transitive Package      Resolved   Severity   Advisory URL                                     
+   > Newtonsoft.Json       11.0.2     High       https://github.com/advisories/GHSA-5crp-9r3c-p9vr
+
+Project `WorkflowGateway.Tests` has the following vulnerable packages
+   [net8.0]: 
+   Transitive Package                    Resolved   Severity   Advisory URL                                     
+   > System.Net.Http                     4.3.0      High       https://github.com/advisories/GHSA-7jgj-8wvc-jh57
+   > System.Text.RegularExpressions      4.3.0      High       https://github.com/advisories/GHSA-cmhx-cq75-c4mj
+
+Project `WorkflowCore.IntegrationTests` has the following vulnerable packages

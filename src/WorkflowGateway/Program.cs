@@ -231,6 +231,23 @@ builder.Services.AddHostedService<BaselineRefreshService>();
 builder.Services.AddScoped<IAnomalyDetector, ZScoreAnomalyDetector>();
 builder.Services.AddScoped<AnomalyEvaluationService>();
 
+// Register alert routing services (Stage 27.3)
+builder.Services.AddMemoryCache();
+builder.Services.Configure<WorkflowCore.Services.AlertChannels.WebhookAlertChannelOptions>(
+    builder.Configuration.GetSection(WorkflowCore.Services.AlertChannels.WebhookAlertChannelOptions.SectionName));
+builder.Services.Configure<WorkflowCore.Services.AlertChannels.SlackAlertChannelOptions>(
+    builder.Configuration.GetSection(WorkflowCore.Services.AlertChannels.SlackAlertChannelOptions.SectionName));
+builder.Services.Configure<WorkflowCore.Services.AlertChannels.PagerDutyAlertChannelOptions>(
+    builder.Configuration.GetSection(WorkflowCore.Services.AlertChannels.PagerDutyAlertChannelOptions.SectionName));
+builder.Services.Configure<WorkflowCore.Services.AlertChannels.EmailAlertChannelOptions>(
+    builder.Configuration.GetSection(WorkflowCore.Services.AlertChannels.EmailAlertChannelOptions.SectionName));
+
+builder.Services.AddScoped<IAlertChannel, WorkflowCore.Services.AlertChannels.WebhookAlertChannel>();
+builder.Services.AddScoped<IAlertChannel, WorkflowCore.Services.AlertChannels.SlackAlertChannel>();
+builder.Services.AddScoped<IAlertChannel, WorkflowCore.Services.AlertChannels.PagerDutyAlertChannel>();
+builder.Services.AddScoped<IAlertChannel, WorkflowCore.Services.AlertChannels.EmailAlertChannel>();
+builder.Services.AddScoped<IAlertRouter, AlertRouter>();
+
 var app = builder.Build();
 
 // Apply database migrations on startup (only if connection string configured and using relational database)

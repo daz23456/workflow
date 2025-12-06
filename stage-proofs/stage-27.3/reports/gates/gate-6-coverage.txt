@@ -1,0 +1,5 @@
+Gate 6: Code Coverage - PASS
+AlertRouter: 98.8% coverage
+AlertSendResult: 100% coverage
+AlertRoutingResult: 100% coverage
+See ./reports/coverage/Summary.txt for full report.

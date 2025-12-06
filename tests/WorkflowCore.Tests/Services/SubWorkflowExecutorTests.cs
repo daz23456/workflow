@@ -11,13 +11,21 @@ public class SubWorkflowExecutorTests
 {
     private readonly Mock<IWorkflowOrchestrator> _mockOrchestrator;
     private readonly Mock<IWorkflowRefResolver> _mockResolver;
+    private readonly Mock<IWorkflowCycleDetector> _mockCycleDetector;
     private readonly SubWorkflowExecutor _executor;
 
     public SubWorkflowExecutorTests()
     {
         _mockOrchestrator = new Mock<IWorkflowOrchestrator>();
         _mockResolver = new Mock<IWorkflowRefResolver>();
-        _executor = new SubWorkflowExecutor(_mockOrchestrator.Object, _mockResolver.Object);
+        _mockCycleDetector = new Mock<IWorkflowCycleDetector>();
+
+        // Default: allow execution (no cycles)
+        _mockCycleDetector
+            .Setup(x => x.CheckBeforeExecution(It.IsAny<string>(), It.IsAny<WorkflowCallStack>()))
+            .Returns(CycleDetectionResult.Success());
+
+        _executor = new SubWorkflowExecutor(_mockOrchestrator.Object, _mockResolver.Object, _mockCycleDetector.Object);
     }
 
     // ========== BASIC EXECUTION TESTS ==========
@@ -67,6 +75,7 @@ public class SubWorkflowExecutorTests
             parentContext,
             inputMappings,
             timeout: null,
+            callStack: null,
             CancellationToken.None);
 
         // Assert
@@ -117,6 +126,7 @@ public class SubWorkflowExecutorTests
             parentContext,
             inputMappings,
             timeout: null,
+            callStack: null,
             CancellationToken.None);
 
         // Assert
@@ -173,6 +183,7 @@ public class SubWorkflowExecutorTests
             parentContext,
             inputMappings,
             timeout: null,
+            callStack: null,
             CancellationToken.None);
 
         // Assert
@@ -227,6 +238,7 @@ public class SubWorkflowExecutorTests
             parentContext,
             new Dictionary<string, string>(),
             timeout: null,
+            callStack: null,
             CancellationToken.None);
 
         // Assert - Parent context should not have sub-workflow's task outputs
@@ -271,6 +283,7 @@ public class SubWorkflowExecutorTests
             parentContext,
             new Dictionary<string, string>(),
             timeout: null,
+            callStack: null,
             CancellationToken.None);
 
         // Assert
@@ -309,6 +322,7 @@ public class SubWorkflowExecutorTests
             parentContext,
             new Dictionary<string, string>(),
             timeout: null,
+            callStack: null,
             CancellationToken.None);
 
         // Assert
@@ -338,6 +352,7 @@ public class SubWorkflowExecutorTests
             parentContext,
             inputMappings,
             timeout: null,
+            callStack: null,
             CancellationToken.None);
 
         // Assert
@@ -372,6 +387,7 @@ public class SubWorkflowExecutorTests
             parentContext,
             new Dictionary<string, string>(),
             timeout: "30s",
+            callStack: null,
             CancellationToken.None);
 
         // Assert
@@ -412,6 +428,7 @@ public class SubWorkflowExecutorTests
             parentContext,
             new Dictionary<string, string>(),
             timeout: "100ms",
+            callStack: null,
             CancellationToken.None);
 
         // Assert
@@ -448,6 +465,7 @@ public class SubWorkflowExecutorTests
             parentContext,
             new Dictionary<string, string>(),
             timeout: null,
+            callStack: null,
             CancellationToken.None);
 
         var afterExecution = DateTime.UtcNow;
@@ -486,6 +504,7 @@ public class SubWorkflowExecutorTests
             parentContext,
             new Dictionary<string, string>(), // Empty
             timeout: null,
+            callStack: null,
             CancellationToken.None);
 
         // Assert
@@ -509,6 +528,7 @@ public class SubWorkflowExecutorTests
                 parentContext,
                 new Dictionary<string, string>(),
                 timeout: null,
+                callStack: null,
                 CancellationToken.None));
     }
 
@@ -535,7 +555,239 @@ public class SubWorkflowExecutorTests
                 parentContext,
                 new Dictionary<string, string>(),
                 timeout: null,
+                callStack: null,
                 cts.Token));
+    }
+
+    // ========== CYCLE DETECTION TESTS ==========
+
+    [Fact]
+    public async Task ExecuteAsync_CycleDetected_ShouldReturnError()
+    {
+        // Arrange
+        var subWorkflow = CreateWorkflow("workflow-a");
+        var availableTasks = new Dictionary<string, WorkflowTaskResource>();
+        var availableWorkflows = new Dictionary<string, WorkflowResource>();
+        var parentContext = new TemplateContext { Input = new Dictionary<string, object>() };
+
+        _mockCycleDetector
+            .Setup(x => x.CheckBeforeExecution("workflow-a", It.IsAny<WorkflowCallStack>()))
+            .Returns(CycleDetectionResult.CycleDetected("workflow-a → workflow-b → workflow-a", "workflow-a"));
+
+        // Act
+        var result = await _executor.ExecuteAsync(
+            subWorkflow,
+            availableTasks,
+            availableWorkflows,
+            parentContext,
+            new Dictionary<string, string>(),
+            timeout: null,
+            callStack: null,
+            CancellationToken.None);
+
+        // Assert
+        result.Success.Should().BeFalse();
+        result.Errors.Should().Contain(e => e.Contains("Cycle detected"));
+        _mockOrchestrator.Verify(x => x.ExecuteAsync(
+            It.IsAny<WorkflowResource>(),
+            It.IsAny<Dictionary<string, WorkflowTaskResource>>(),
+            It.IsAny<Dictionary<string, object>>(),
+            It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_MaxDepthExceeded_ShouldReturnError()
+    {
+        // Arrange
+        var subWorkflow = CreateWorkflow("workflow-d");
+        var availableTasks = new Dictionary<string, WorkflowTaskResource>();
+        var availableWorkflows = new Dictionary<string, WorkflowResource>();
+        var parentContext = new TemplateContext { Input = new Dictionary<string, object>() };
+
+        _mockCycleDetector
+            .Setup(x => x.CheckBeforeExecution("workflow-d", It.IsAny<WorkflowCallStack>()))
+            .Returns(CycleDetectionResult.MaxDepthExceeded(5, "a → b → c → d → e → workflow-d"));
+
+        // Act
+        var result = await _executor.ExecuteAsync(
+            subWorkflow,
+            availableTasks,
+            availableWorkflows,
+            parentContext,
+            new Dictionary<string, string>(),
+            timeout: null,
+            callStack: null,
+            CancellationToken.None);
+
+        // Assert
+        result.Success.Should().BeFalse();
+        result.Errors.Should().Contain(e => e.Contains("Maximum nesting depth"));
+        _mockOrchestrator.Verify(x => x.ExecuteAsync(
+            It.IsAny<WorkflowResource>(),
+            It.IsAny<Dictionary<string, WorkflowTaskResource>>(),
+            It.IsAny<Dictionary<string, object>>(),
+            It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_NoCycle_ShouldExecuteWorkflow()
+    {
+        // Arrange
+        var subWorkflow = CreateWorkflow("workflow-c");
+        var availableTasks = new Dictionary<string, WorkflowTaskResource>();
+        var availableWorkflows = new Dictionary<string, WorkflowResource>();
+        var parentContext = new TemplateContext { Input = new Dictionary<string, object>() };
+
+        _mockCycleDetector
+            .Setup(x => x.CheckBeforeExecution("workflow-c", It.IsAny<WorkflowCallStack>()))
+            .Returns(CycleDetectionResult.Success());
+
+        _mockOrchestrator
+            .Setup(x => x.ExecuteAsync(
+                subWorkflow,
+                availableTasks,
+                It.IsAny<Dictionary<string, object>>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new WorkflowExecutionResult { Success = true });
+
+        // Act
+        var result = await _executor.ExecuteAsync(
+            subWorkflow,
+            availableTasks,
+            availableWorkflows,
+            parentContext,
+            new Dictionary<string, string>(),
+            timeout: null,
+            callStack: null,
+            CancellationToken.None);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        _mockOrchestrator.Verify(x => x.ExecuteAsync(
+            subWorkflow,
+            availableTasks,
+            It.IsAny<Dictionary<string, object>>(),
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithExistingCallStack_ShouldPassToDetector()
+    {
+        // Arrange
+        var subWorkflow = CreateWorkflow("workflow-b");
+        var availableTasks = new Dictionary<string, WorkflowTaskResource>();
+        var availableWorkflows = new Dictionary<string, WorkflowResource>();
+        var parentContext = new TemplateContext { Input = new Dictionary<string, object>() };
+
+        var existingCallStack = new WorkflowCallStack();
+        existingCallStack.Push("workflow-a");
+
+        WorkflowCallStack? capturedCallStack = null;
+        _mockCycleDetector
+            .Setup(x => x.CheckBeforeExecution("workflow-b", It.IsAny<WorkflowCallStack>()))
+            .Callback<string, WorkflowCallStack>((_, stack) => capturedCallStack = stack)
+            .Returns(CycleDetectionResult.Success());
+
+        _mockOrchestrator
+            .Setup(x => x.ExecuteAsync(
+                subWorkflow,
+                availableTasks,
+                It.IsAny<Dictionary<string, object>>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new WorkflowExecutionResult { Success = true });
+
+        // Act
+        await _executor.ExecuteAsync(
+            subWorkflow,
+            availableTasks,
+            availableWorkflows,
+            parentContext,
+            new Dictionary<string, string>(),
+            timeout: null,
+            callStack: existingCallStack,
+            CancellationToken.None);
+
+        // Assert
+        capturedCallStack.Should().NotBeNull();
+        capturedCallStack!.WorkflowNames.Should().Contain("workflow-a");
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_CallStackPopAfterExecution_ShouldRestore()
+    {
+        // Arrange
+        var subWorkflow = CreateWorkflow("workflow-b");
+        var availableTasks = new Dictionary<string, WorkflowTaskResource>();
+        var availableWorkflows = new Dictionary<string, WorkflowResource>();
+        var parentContext = new TemplateContext { Input = new Dictionary<string, object>() };
+
+        var callStack = new WorkflowCallStack();
+        callStack.Push("workflow-a");
+
+        _mockOrchestrator
+            .Setup(x => x.ExecuteAsync(
+                subWorkflow,
+                availableTasks,
+                It.IsAny<Dictionary<string, object>>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new WorkflowExecutionResult { Success = true });
+
+        // Act
+        await _executor.ExecuteAsync(
+            subWorkflow,
+            availableTasks,
+            availableWorkflows,
+            parentContext,
+            new Dictionary<string, string>(),
+            timeout: null,
+            callStack: callStack,
+            CancellationToken.None);
+
+        // Assert - Call stack should be back to just workflow-a
+        callStack.CurrentDepth.Should().Be(1);
+        callStack.WorkflowNames.Should().ContainSingle()
+            .Which.Should().Be("workflow-a");
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_CallStackPopAfterFailure_ShouldStillRestore()
+    {
+        // Arrange
+        var subWorkflow = CreateWorkflow("workflow-b");
+        var availableTasks = new Dictionary<string, WorkflowTaskResource>();
+        var availableWorkflows = new Dictionary<string, WorkflowResource>();
+        var parentContext = new TemplateContext { Input = new Dictionary<string, object>() };
+
+        var callStack = new WorkflowCallStack();
+        callStack.Push("workflow-a");
+
+        _mockOrchestrator
+            .Setup(x => x.ExecuteAsync(
+                subWorkflow,
+                availableTasks,
+                It.IsAny<Dictionary<string, object>>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new WorkflowExecutionResult
+            {
+                Success = false,
+                Errors = new List<string> { "Some error" }
+            });
+
+        // Act
+        await _executor.ExecuteAsync(
+            subWorkflow,
+            availableTasks,
+            availableWorkflows,
+            parentContext,
+            new Dictionary<string, string>(),
+            timeout: null,
+            callStack: callStack,
+            CancellationToken.None);
+
+        // Assert - Call stack should be restored even after failure
+        callStack.CurrentDepth.Should().Be(1);
+        callStack.WorkflowNames.Should().ContainSingle()
+            .Which.Should().Be("workflow-a");
     }
 
     // ========== HELPER METHODS ==========

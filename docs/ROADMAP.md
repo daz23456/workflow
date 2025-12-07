@@ -1678,6 +1678,7 @@ These can be added to existing stages or as mini-stages:
 ## Phase 3: Developer Experience & Reliability
 | Stage | Name | Tests | Priority | Status |
 |-------|------|-------|----------|--------|
+| **17** | Test API Server (17.1-17.3) | 153 | P1 | ✅ Complete |
 | **25** | Local Development CLI | ~80 | P1 | ✅ Complete |
 | **26** | VS Code Extension | ~50 | P1 | ✅ Complete |
 | **28** | Circuit Breaker | ~65 | P1 | ✅ Complete |

@@ -23,6 +23,10 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddSingleton<IChaosService, ChaosService>();
 builder.Services.AddSingleton<IChaosStatsService, ChaosStatsService>();
 
+// Register retry/failure services
+builder.Services.AddSingleton<IRetryCounterService, RetryCounterService>();
+builder.Services.AddSingleton<IFailureStateService, FailureStateService>();
+
 var app = builder.Build();
 
 // Always enable Swagger (not just in Development)

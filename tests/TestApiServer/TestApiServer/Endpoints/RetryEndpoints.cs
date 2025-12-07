@@ -1,28 +1,25 @@
+using TestApiServer.Services;
+
 namespace TestApiServer.Endpoints;
 
 /// <summary>
 /// Retry testing endpoints - fail-once, fail-n-times, intermittent, slow responses
+/// Uses IRetryCounterService for stateful retry patterns
 /// </summary>
 public static class RetryEndpoints
 {
-    private static readonly Dictionary<string, int> _failCounters = new();
-    private static readonly Dictionary<string, int> _callCounters = new();
-
     public static void MapRetryEndpoints(this WebApplication app)
     {
         var group = app.MapGroup("/api/retry")
             .WithTags("Retry Testing");
 
         // POST /api/retry/fail-once - Fails first time, succeeds after
-        group.MapPost("/fail-once", (FailOnceRequest? request) =>
+        group.MapPost("/fail-once", (FailOnceRequest? request, IRetryCounterService counterService) =>
         {
-            var key = request?.Key ?? "default";
-            if (!_failCounters.ContainsKey(key))
-                _failCounters[key] = 0;
+            var key = $"fail-once:{request?.Key ?? "default"}";
+            var count = counterService.IncrementAndGet(key);
 
-            _failCounters[key]++;
-
-            if (_failCounters[key] == 1)
+            if (count == 1)
             {
                 return Results.Problem(
                     detail: "Service temporarily unavailable (first attempt)",
@@ -34,7 +31,7 @@ public static class RetryEndpoints
             return Results.Ok(new
             {
                 success = true,
-                attempts = _failCounters[key],
+                attempts = count,
                 message = "Request succeeded on retry"
             });
         })
@@ -42,18 +39,15 @@ public static class RetryEndpoints
             .WithOpenApi();
 
         // POST /api/retry/fail-n-times - Fails N times, then succeeds
-        group.MapPost("/fail-n-times", (FailNTimesRequest request) =>
+        group.MapPost("/fail-n-times", (FailNTimesRequest request, IRetryCounterService counterService) =>
         {
-            var key = request.Key ?? "default";
-            if (!_failCounters.ContainsKey(key))
-                _failCounters[key] = 0;
+            var key = $"fail-n:{request.Key ?? "default"}";
+            var count = counterService.IncrementAndGet(key);
 
-            _failCounters[key]++;
-
-            if (_failCounters[key] <= request.FailCount)
+            if (count <= request.FailCount)
             {
                 return Results.Problem(
-                    detail: $"Service unavailable (attempt {_failCounters[key]} of {request.FailCount})",
+                    detail: $"Service unavailable (attempt {count} of {request.FailCount})",
                     statusCode: 503,
                     title: "Service Unavailable"
                 );
@@ -62,7 +56,7 @@ public static class RetryEndpoints
             return Results.Ok(new
             {
                 success = true,
-                attempts = _failCounters[key],
+                attempts = count,
                 configuredFailures = request.FailCount,
                 message = $"Request succeeded after {request.FailCount} failures"
             });
@@ -144,58 +138,66 @@ public static class RetryEndpoints
             .WithOpenApi();
 
         // POST /api/retry/reset - Reset all counters
-        group.MapPost("/reset", (ResetCountersRequest? request) =>
+        group.MapPost("/reset", (ResetCountersRequest? request, IRetryCounterService counterService) =>
         {
             if (string.IsNullOrEmpty(request?.Key))
             {
-                _failCounters.Clear();
-                _callCounters.Clear();
+                counterService.ResetAll();
                 return Results.Ok(new { message = "All counters reset" });
             }
 
-            _failCounters.Remove(request.Key);
-            _callCounters.Remove(request.Key);
+            // Reset counters for this key (both fail-once and fail-n variants)
+            counterService.Reset($"fail-once:{request.Key}");
+            counterService.Reset($"fail-n:{request.Key}");
+            counterService.Reset($"circuit:{request.Key}");
+            counterService.Reset($"flaky:{request.Key}");
             return Results.Ok(new { message = $"Counter '{request.Key}' reset" });
         })
             .WithName("ResetRetryCounters")
             .WithOpenApi();
 
         // GET /api/retry/counters - Get current counter values
-        group.MapGet("/counters", () =>
+        group.MapGet("/counters", (IRetryCounterService counterService) =>
         {
+            var allCounters = counterService.GetAllCounters();
+
+            // Group by type for better readability
+            var failOnce = allCounters.Where(kv => kv.Key.StartsWith("fail-once:")).ToDictionary(kv => kv.Key, kv => kv.Value);
+            var failN = allCounters.Where(kv => kv.Key.StartsWith("fail-n:")).ToDictionary(kv => kv.Key, kv => kv.Value);
+            var circuit = allCounters.Where(kv => kv.Key.StartsWith("circuit:")).ToDictionary(kv => kv.Key, kv => kv.Value);
+            var flaky = allCounters.Where(kv => kv.Key.StartsWith("flaky:")).ToDictionary(kv => kv.Key, kv => kv.Value);
+
             return Results.Ok(new
             {
-                failCounters = _failCounters,
-                callCounters = _callCounters
+                failCounters = failOnce.Concat(failN).ToDictionary(kv => kv.Key, kv => kv.Value),
+                callCounters = circuit.Concat(flaky).ToDictionary(kv => kv.Key, kv => kv.Value),
+                total = allCounters
             });
         })
             .WithName("GetRetryCounters")
             .WithOpenApi();
 
         // POST /api/retry/circuit-breaker - Simulates circuit breaker pattern
-        group.MapPost("/circuit-breaker", (CircuitBreakerRequest request) =>
+        group.MapPost("/circuit-breaker", (CircuitBreakerRequest request, IRetryCounterService counterService) =>
         {
-            var key = request.Key ?? "default";
-            if (!_callCounters.ContainsKey(key))
-                _callCounters[key] = 0;
-
-            _callCounters[key]++;
+            var key = $"circuit:{request.Key ?? "default"}";
+            var count = counterService.IncrementAndGet(key);
 
             // After threshold failures, "open" the circuit for cooldown period
-            if (_callCounters[key] > request.Threshold && _callCounters[key] <= request.Threshold + request.CooldownCalls)
+            if (count > request.Threshold && count <= request.Threshold + request.CooldownCalls)
             {
                 return Results.Problem(
-                    detail: $"Circuit breaker OPEN (call {_callCounters[key]}, cooling down for {request.CooldownCalls} more calls)",
+                    detail: $"Circuit breaker OPEN (call {count}, cooling down for {request.CooldownCalls} more calls)",
                     statusCode: 503,
                     title: "Circuit Open"
                 );
             }
 
             // First threshold calls fail
-            if (_callCounters[key] <= request.Threshold)
+            if (count <= request.Threshold)
             {
                 return Results.Problem(
-                    detail: $"Service error (call {_callCounters[key]} of {request.Threshold} until circuit opens)",
+                    detail: $"Service error (call {count} of {request.Threshold} until circuit opens)",
                     statusCode: 500,
                     title: "Internal Server Error"
                 );
@@ -205,7 +207,7 @@ public static class RetryEndpoints
             return Results.Ok(new
             {
                 success = true,
-                calls = _callCounters[key],
+                calls = count,
                 threshold = request.Threshold,
                 cooldownCalls = request.CooldownCalls,
                 message = "Circuit breaker recovered, request succeeded"
@@ -220,7 +222,7 @@ public static class RetryEndpoints
             return Results.Problem(
                 detail: request?.Message ?? $"Simulated {statusCode} error",
                 statusCode: statusCode,
-                title: request?.Title ?? "Simulated Error"
+                title: request?.Title ?? GetErrorTitle(statusCode)
             );
         })
             .WithName("ErrorSimulation")
@@ -244,19 +246,16 @@ public static class RetryEndpoints
             .WithOpenApi();
 
         // POST /api/retry/flaky - Alternates between success and failure
-        group.MapPost("/flaky", (FlakyRequest? request) =>
+        group.MapPost("/flaky", (FlakyRequest? request, IRetryCounterService counterService) =>
         {
-            var key = request?.Key ?? "default";
-            if (!_callCounters.ContainsKey(key))
-                _callCounters[key] = 0;
-
-            _callCounters[key]++;
+            var key = $"flaky:{request?.Key ?? "default"}";
+            var count = counterService.IncrementAndGet(key);
 
             // Odd calls fail, even calls succeed
-            if (_callCounters[key] % 2 == 1)
+            if (count % 2 == 1)
             {
                 return Results.Problem(
-                    detail: $"Flaky failure (call {_callCounters[key]})",
+                    detail: $"Flaky failure (call {count})",
                     statusCode: 500,
                     title: "Flaky Error"
                 );
@@ -265,13 +264,31 @@ public static class RetryEndpoints
             return Results.Ok(new
             {
                 success = true,
-                attempt = _callCounters[key],
+                attempt = count,
                 message = "Flaky endpoint succeeded on this attempt"
             });
         })
             .WithName("FlakyEndpoint")
             .WithOpenApi();
     }
+
+    /// <summary>
+    /// Gets the standard HTTP error title for a status code
+    /// </summary>
+    private static string GetErrorTitle(int statusCode) => statusCode switch
+    {
+        400 => "Bad Request",
+        401 => "Unauthorized",
+        403 => "Forbidden",
+        404 => "Not Found",
+        408 => "Request Timeout",
+        429 => "Too Many Requests",
+        500 => "Internal Server Error",
+        502 => "Bad Gateway",
+        503 => "Service Unavailable",
+        504 => "Gateway Timeout",
+        _ => "Error"
+    };
 }
 
 // Retry request models

@@ -44,8 +44,15 @@ This file contains the detailed TDD implementation instructions that were used t
 ### AI-Powered Generation (Stage 13)
 - **Stage 13: MCP Server for Claude** - See `stage-proofs/stage-13/STAGE_13_PROOF.md`
 
-### OpenAPI Integration (Stage 16)
+### OpenAPI Integration (Stage 16) ✅ COMPLETE
 - **Stage 16.1: OpenAPI Parser** - See `stage-proofs/stage-16.1/STAGE_16.1_PROOF.md`
+- **Stage 16.2: Task Generator** - 46 tests
+- **Stage 16.3: Sample Workflow Generator** - 15 tests
+- **Stage 16.4: Version Management** - 14 tests
+- **Stage 16.5: CLI Integration** - 15 tests
+- **Stage 16.6: CI/CD Integration** - See `stage-proofs/stage-16.6/STAGE_16.6_PROOF.md`
+- **Stage 16.7: Field-Level Usage Tracking** - See `stage-proofs/stage-16.7/STAGE_16.7_PROOF.md`
+- **Stage 16.8: Contract Verification** - See `stage-proofs/stage-16.8/STAGE_16.8_PROOF.md`
 
 ### Test Infrastructure (Stage 17)
 - **Stage 17.1-17.2: Test API Server** - See `stage-proofs/stage-17.2/STAGE_17.2_PROOF.md`

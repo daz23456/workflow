@@ -1,0 +1,2 @@
+# No UI pages affected in this backend-only stage
+# affected_ui_pages: [none]

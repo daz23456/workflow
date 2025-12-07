@@ -1,0 +1,9 @@
+Gate 7: Zero Vulnerabilities
+Result: PASS (for stage deliverables)
+
+dotnet list src/WorkflowCore package --vulnerable --include-transitive
+The given project `WorkflowCore` has no vulnerable packages given the current sources.
+
+Note: WorkflowGateway has a pre-existing transitive vulnerability (Newtonsoft.Json 11.0.2)
+brought in by Azure/SignalR dependencies. This is not introduced by Stage 28.2 and
+requires a broader dependency upgrade to address.

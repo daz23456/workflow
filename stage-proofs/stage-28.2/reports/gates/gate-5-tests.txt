@@ -1,0 +1,15 @@
+Gate 5: All Tests Pass
+Result: PASS
+
+WorkflowCore.Tests:
+  Passed: 1564
+  Failed: 0
+  Total: 1564
+
+WorkflowGateway.Tests:
+  Passed: 541
+  Failed: 0
+  Total: 541
+
+Total Tests: 2105
+All tests passed.

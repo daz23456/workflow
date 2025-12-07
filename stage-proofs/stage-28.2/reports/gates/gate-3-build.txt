@@ -1,0 +1,10 @@
+Gate 3: Build Succeeds
+Result: PASS
+
+dotnet build --configuration Release
+
+Build succeeded.
+    62 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:53.60

@@ -121,10 +121,10 @@ function OperationNode({ data }: {
       }}
       tabIndex={0}
       className={cn(
-        'relative px-3 py-2 border-2 rounded-lg bg-white cursor-pointer transition-all min-w-[140px]',
+        'relative px-3 py-2 border-2 rounded-lg bg-white dark:bg-gray-700 cursor-pointer transition-all min-w-[140px]',
         'hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500',
-        isSelected ? 'border-blue-500 bg-blue-50 shadow-md' : 'border-gray-300',
-        !data.isConfigured && 'border-orange-400 bg-orange-50'
+        isSelected ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 shadow-md' : 'border-gray-300 dark:border-gray-600',
+        !data.isConfigured && 'border-orange-400 bg-orange-50 dark:bg-orange-900/30'
       )}
       role="button"
       aria-label={`Operation: ${data.label}`}
@@ -146,7 +146,7 @@ function OperationNode({ data }: {
           ) : (
             <AlertCircle className="w-4 h-4 text-orange-500 flex-shrink-0" />
           )}
-          <span className="font-medium text-sm text-gray-900 capitalize">{data.label}</span>
+          <span className="font-medium text-sm text-gray-900 dark:text-gray-100 capitalize">{data.label}</span>
         </div>
 
         {/* Action buttons - only show when selected */}
@@ -349,7 +349,7 @@ export function PipelineBuilder() {
     <div
       className={cn(
         'h-full w-full transition-colors',
-        isDragOver && 'bg-blue-50 ring-2 ring-blue-400 ring-inset'
+        isDragOver && 'bg-blue-50 dark:bg-blue-900/30 ring-2 ring-blue-400 ring-inset'
       )}
       aria-label="Transform pipeline canvas"
       onDragOver={handleDragOver}
@@ -372,15 +372,16 @@ export function PipelineBuilder() {
           animated: true,
         }}
         proOptions={{ hideAttribution: true }}
+        className="dark:bg-gray-900"
       >
-        <Background gap={20} size={1} />
-        <Controls showInteractive={false} className="!shadow-none !border-gray-200" />
+        <Background gap={20} size={1} className="dark:bg-gray-900" />
+        <Controls showInteractive={false} className="!shadow-none !border-gray-200 dark:!border-gray-700 dark:!bg-gray-800" />
 
         {/* Empty State */}
         {pipeline.length === 0 && (
           <Panel position="top-center">
-            <div className="bg-white border border-dashed border-gray-300 rounded-lg px-4 py-3 shadow-sm">
-              <p className="text-gray-500 text-sm">Drag operations here</p>
+            <div className="bg-white dark:bg-gray-800 border border-dashed border-gray-300 dark:border-gray-600 rounded-lg px-4 py-3 shadow-sm">
+              <p className="text-gray-500 dark:text-gray-400 text-sm">Drag operations here</p>
             </div>
           </Panel>
         )}

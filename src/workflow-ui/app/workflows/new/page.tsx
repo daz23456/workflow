@@ -376,19 +376,19 @@ export default function WorkflowBuilderPage() {
   return (
     <div
       data-testid="workflow-builder-page"
-      className={cn('h-[calc(100vh-57px)] flex flex-col bg-gray-50', isMobile && 'flex-col')}
+      className={cn('h-[calc(100vh-57px)] flex flex-col bg-gray-50 dark:bg-gray-900', isMobile && 'flex-col')}
     >
       {/* Header Bar - Spans all columns */}
-      <div className="h-14 bg-white border-b border-gray-200 grid grid-cols-[256px_1fr_320px] shrink-0">
+      <div className="h-14 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 grid grid-cols-[256px_1fr_320px] shrink-0">
         {/* Left: Tasks header */}
-        <div className="flex items-center justify-between px-5 border-r border-gray-200">
-          <span className="font-semibold text-gray-900">Tasks</span>
+        <div className="flex items-center justify-between px-5 border-r border-gray-200 dark:border-gray-700">
+          <span className="font-semibold text-gray-900 dark:text-gray-100">Tasks</span>
         </div>
 
         {/* Center: Toolbar */}
         <div className="flex items-center justify-center gap-3 px-6">
           {/* Workflow Name - Always visible */}
-          <label htmlFor="workflow-name" className="text-sm font-medium text-gray-600">
+          <label htmlFor="workflow-name" className="text-sm font-medium text-gray-600 dark:text-gray-400">
             Workflow:
           </label>
           <input
@@ -399,15 +399,15 @@ export default function WorkflowBuilderPage() {
             onBlur={handleNameBlur}
             placeholder="my-workflow-name"
             className={cn(
-              'w-40 px-3 py-1.5 text-sm border rounded-md focus:outline-none focus:ring-2',
+              'w-40 px-3 py-1.5 text-sm border rounded-md focus:outline-none focus:ring-2 dark:bg-gray-700 dark:text-gray-100',
               nameError
-                ? 'border-red-300 focus:ring-red-500 bg-red-50'
-                : 'border-gray-300 focus:ring-blue-500'
+                ? 'border-red-300 focus:ring-red-500 bg-red-50 dark:bg-red-900/30'
+                : 'border-gray-300 dark:border-gray-600 focus:ring-blue-500'
             )}
             title={nameError || 'Workflow name'}
           />
 
-          <div className="w-px h-6 bg-gray-200" />
+          <div className="w-px h-6 bg-gray-200 dark:bg-gray-600" />
 
           {/* AI Generation Input */}
           {showAiInput ? (
@@ -481,11 +481,11 @@ export default function WorkflowBuilderPage() {
             </button>
           )}
 
-          <div className="w-px h-6 bg-gray-200" />
+          <div className="w-px h-6 bg-gray-200 dark:bg-gray-600" />
 
           <button
             onClick={handleLoad}
-            className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md"
+            className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
             aria-label="Load workflow from file"
             title="Load"
           >
@@ -505,7 +505,7 @@ export default function WorkflowBuilderPage() {
             <Code className="w-4 h-4" />
           </button>
 
-          <div className="w-px h-6 bg-gray-200" />
+          <div className="w-px h-6 bg-gray-200 dark:bg-gray-600" />
 
           <button
             onClick={() => setShowTestRunModal(true)}
@@ -537,7 +537,7 @@ export default function WorkflowBuilderPage() {
           </button>
           <button
             onClick={handleCancel}
-            className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md"
+            className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
             aria-label="Cancel and go back"
             title="Cancel"
           >
@@ -546,10 +546,10 @@ export default function WorkflowBuilderPage() {
 
           {/* Status indicator */}
           {saveStatus === 'success' && (
-            <span className="text-sm text-green-600 font-medium">Saved!</span>
+            <span className="text-sm text-green-600 dark:text-green-400 font-medium">Saved!</span>
           )}
           {aiSuccess && (
-            <span className="text-sm text-purple-600 font-medium flex items-center gap-1">
+            <span className="text-sm text-purple-600 dark:text-purple-400 font-medium flex items-center gap-1">
               <Sparkles className="w-3 h-3" />
               {aiSuccess}
             </span>
@@ -557,8 +557,8 @@ export default function WorkflowBuilderPage() {
         </div>
 
         {/* Right: Panel header */}
-        <div className="flex items-center justify-between px-5 border-l border-gray-200">
-          <span className="font-semibold text-gray-900">
+        <div className="flex items-center justify-between px-5 border-l border-gray-200 dark:border-gray-700">
+          <span className="font-semibold text-gray-900 dark:text-gray-100">
             {activePanel === 'input' ? 'Input Schema' : activePanel === 'output' ? 'Output Mapping' : 'Properties'}
           </span>
         </div>
@@ -566,17 +566,17 @@ export default function WorkflowBuilderPage() {
 
       {/* Mobile Panel Toggles */}
       {isMobile && (
-        <div className="bg-white border-b border-gray-200 px-4 py-2 flex gap-2">
+        <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-2 flex gap-2">
           <button
             onClick={() => setShowTaskPalette(!showTaskPalette)}
-            className="px-3 py-1 text-sm bg-gray-100 rounded hover:bg-gray-200"
+            className="px-3 py-1 text-sm bg-gray-100 dark:bg-gray-700 dark:text-gray-200 rounded hover:bg-gray-200 dark:hover:bg-gray-600"
             aria-label="Toggle tasks panel"
           >
             {showTaskPalette ? 'Hide' : 'Show'} Tasks
           </button>
           <button
             onClick={() => setShowPropertiesPanel(!showPropertiesPanel)}
-            className="px-3 py-1 text-sm bg-gray-100 rounded hover:bg-gray-200"
+            className="px-3 py-1 text-sm bg-gray-100 dark:bg-gray-700 dark:text-gray-200 rounded hover:bg-gray-200 dark:hover:bg-gray-600"
             aria-label="Toggle properties panel"
           >
             {showPropertiesPanel ? 'Hide' : 'Show'} Properties
@@ -620,12 +620,12 @@ export default function WorkflowBuilderPage() {
       {/* Unsaved Changes Dialog */}
       {showUnsavedDialog && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
             <div className="flex items-start gap-3 mb-4">
               <AlertTriangle className="w-6 h-6 text-yellow-500 flex-shrink-0" />
               <div>
-                <h2 className="text-lg font-semibold text-gray-900 mb-2">Unsaved Changes</h2>
-                <p className="text-sm text-gray-600">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Unsaved Changes</h2>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
                   You have unsaved changes. Are you sure you want to leave? Your changes will be
                   lost.
                 </p>
@@ -634,7 +634,7 @@ export default function WorkflowBuilderPage() {
             <div className="flex gap-3 justify-end">
               <button
                 onClick={handleKeepEditing}
-                className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50"
+                className="px-4 py-2 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-50 dark:hover:bg-gray-600"
                 aria-label="Keep editing workflow"
               >
                 Keep Editing
@@ -671,19 +671,19 @@ export default function WorkflowBuilderPage() {
       {/* AI Generation Error Modal */}
       {aiError && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 max-w-lg w-full mx-4 shadow-2xl">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-lg w-full mx-4 shadow-2xl">
             <div className="flex items-start gap-4 mb-4">
-              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
-                <AlertTriangle className="w-6 h-6 text-red-600" />
+              <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center flex-shrink-0">
+                <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-400" />
               </div>
               <div className="flex-1">
-                <h2 className="text-lg font-semibold text-gray-900 mb-1">Cannot Generate Workflow</h2>
-                <p className="text-sm text-red-600 font-medium">{aiError}</p>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">Cannot Generate Workflow</h2>
+                <p className="text-sm text-red-600 dark:text-red-400 font-medium">{aiError}</p>
               </div>
             </div>
             {errorMessage && (
-              <div className="bg-gray-50 rounded-lg p-4 mb-4 max-h-64 overflow-auto">
-                <p className="text-sm text-gray-700 whitespace-pre-wrap">{errorMessage}</p>
+              <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 mb-4 max-h-64 overflow-auto">
+                <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{errorMessage}</p>
               </div>
             )}
             <div className="flex justify-end">
@@ -692,7 +692,7 @@ export default function WorkflowBuilderPage() {
                   setAiError('');
                   setErrorMessage('');
                 }}
-                className="px-4 py-2 text-white bg-gray-900 rounded-lg hover:bg-gray-800 font-medium"
+                className="px-4 py-2 text-white bg-gray-900 dark:bg-gray-700 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-600 font-medium"
               >
                 Got it
               </button>

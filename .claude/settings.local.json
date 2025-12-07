@@ -39,7 +39,13 @@
       "Bash(BASELINE_RATE=3 SPIKE_MULTIPLIER=5 k6 run:*)",
       "Bash(time curl -s -X POST http://localhost:5001/api/v1/workflows/slow-parallel/execute -H \"Content-Type: application/json\" -d '{\"\"\"\"input\"\"\"\": {}}')",
       "Bash(time curl -s -X POST http://localhost:5001/api/v1/workflows/large-payload-parallel/execute -H \"Content-Type: application/json\" -d '{\"\"\"\"input\"\"\"\": {}}')",
-      "Bash(time curl -s -X POST http://localhost:5001/api/v1/workflows/stress-mixed/execute -H \"Content-Type: application/json\" -d '{\"\"\"\"input\"\"\"\": {}}')"
+      "Bash(time curl -s -X POST http://localhost:5001/api/v1/workflows/stress-mixed/execute -H \"Content-Type: application/json\" -d '{\"\"\"\"input\"\"\"\": {}}')",
+      "Bash(pnpm test:coverage:*)",
+      "Bash(pnpm run build)",
+      "Bash(xargs -I {} sh -c 'echo \"\"\"\"=== {} ===\"\"\"\" && head -20 {}')",
+      "Bash(find:*)",
+      "Bash(pnpm turbo:*)",
+      "Bash(npx tsx:*)"
     ],
     "deny": [],
     "ask": []

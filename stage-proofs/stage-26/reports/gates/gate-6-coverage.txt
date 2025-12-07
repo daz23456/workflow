@@ -1,0 +1,23 @@
+
+> workflow-vscode-server@0.1.0 test:coverage /Users/darren/dev/workflow/src/vscode-extension/server
+> jest --coverage
+
+PASS src/hoverProvider.test.ts
+PASS src/snippetProvider.test.ts (5.099 s)
+PASS src/diagnosticsProvider.test.ts (5.274 s)
+PASS src/completionProvider.test.ts (5.303 s)
+------------------------|---------|----------|---------|---------|-----------------------------------------
+File                    | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s                       
+------------------------|---------|----------|---------|---------|-----------------------------------------
+All files               |   92.45 |    79.46 |     100 |   92.53 |                                         
+ completionProvider.ts  |   87.36 |    77.08 |     100 |    87.5 | 109,124-128,145,160,196-199,207,211,240 
+ diagnosticsProvider.ts |   96.03 |    80.32 |     100 |   95.91 | 49,184,224,243                          
+ hoverProvider.ts       |     100 |      100 |     100 |     100 |                                         
+ snippetProvider.ts     |     100 |      100 |     100 |     100 |                                         
+------------------------|---------|----------|---------|---------|-----------------------------------------
+
+Test Suites: 4 passed, 4 total
+Tests:       48 passed, 48 total
+Snapshots:   0 total
+Time:        6.713 s
+Ran all test suites.

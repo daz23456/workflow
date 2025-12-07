@@ -1,0 +1,6 @@
+[
+  { "deptId": 101, "name": "Engineering", "budget": 500000 },
+  { "deptId": 102, "name": "Marketing", "budget": 300000 },
+  { "deptId": 103, "name": "Sales", "budget": 400000 },
+  { "deptId": 104, "name": "HR", "budget": 200000 }
+]

@@ -191,7 +191,7 @@ export function WorkflowDetailTabs({
     selectedTask !== null || selectedExecution !== null || executionResult !== null;
 
   return (
-    <div className="flex h-screen flex-col bg-gray-50">
+    <div className="flex h-screen flex-col bg-gray-50 dark:bg-gray-900">
       {/* Header */}
       <WorkflowDetailHeader
         workflow={workflow}
@@ -221,7 +221,7 @@ export function WorkflowDetailTabs({
         {/* Left Side: Tabs and Content */}
         <div className={`flex flex-1 flex-col ${isSidePanelOpen ? 'mr-96' : ''}`}>
           {/* Tab Navigation */}
-          <div className="border-b border-gray-200 bg-white">
+          <div className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
             <nav className="flex px-6" role="tablist">
               <button
                 role="tab"
@@ -230,7 +230,7 @@ export function WorkflowDetailTabs({
                 className={`border-b-2 px-4 py-3 text-sm font-medium transition-colors ${
                   activeTab === 'overview'
                     ? 'border-blue-600 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600 hover:text-gray-700 dark:hover:text-gray-300'
                 }`}
               >
                 Overview
@@ -242,7 +242,7 @@ export function WorkflowDetailTabs({
                 className={`border-b-2 px-4 py-3 text-sm font-medium transition-colors ${
                   activeTab === 'history'
                     ? 'border-blue-600 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600 hover:text-gray-700 dark:hover:text-gray-300'
                 }`}
               >
                 History
@@ -254,7 +254,7 @@ export function WorkflowDetailTabs({
                 className={`border-b-2 px-4 py-3 text-sm font-medium transition-colors ${
                   activeTab === 'analytics'
                     ? 'border-blue-600 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600 hover:text-gray-700 dark:hover:text-gray-300'
                 }`}
               >
                 Analytics
@@ -266,7 +266,7 @@ export function WorkflowDetailTabs({
                 className={`border-b-2 px-4 py-3 text-sm font-medium transition-colors flex items-center gap-1.5 ${
                   activeTab === 'yaml'
                     ? 'border-blue-600 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600 hover:text-gray-700 dark:hover:text-gray-300'
                 }`}
               >
                 <Code className="w-4 h-4" />
@@ -362,7 +362,7 @@ export function WorkflowDetailTabs({
 
         {/* Right Side: Detail Panels */}
         {isSidePanelOpen && (
-          <div className="fixed right-0 top-0 bottom-0 w-96 border-l border-gray-200 bg-white shadow-lg">
+          <div className="fixed right-0 top-0 bottom-0 w-96 border-l border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg">
             {selectedTask && (
               <TaskDetailPanel task={selectedTask as TaskDetail} onClose={closeTaskDetail} />
             )}

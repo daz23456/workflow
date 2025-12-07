@@ -8,7 +8,7 @@
  *   npx ts-node scripts/take-screenshots.ts --stage 19.3 --states default,feature
  */
 
-import { chromium, Page } from '@playwright/test';
+import { chromium, type Page } from 'playwright';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
@@ -44,6 +44,7 @@ interface Options {
   routes?: string[];
   states?: ScreenshotState[];
   baseUrl?: string;
+  darkMode?: boolean;
 }
 
 function parseArgs(): Options {
@@ -68,6 +69,9 @@ function parseArgs(): Options {
         break;
       case '--base-url':
         options.baseUrl = args[++i];
+        break;
+      case '--dark-mode':
+        options.darkMode = true;
         break;
       case '--help':
         console.log(`
@@ -97,10 +101,17 @@ Examples:
 }
 
 function getOutputDir(options: Options): string {
+  let baseDir: string;
   if (options.stage) {
-    return join(PROJECT_ROOT, `stage-proofs/stage-${options.stage}/screenshots`);
+    baseDir = join(PROJECT_ROOT, `stage-proofs/stage-${options.stage}/screenshots`);
+  } else {
+    baseDir = DOCS_SCREENSHOTS_DIR;
   }
-  return DOCS_SCREENSHOTS_DIR;
+  // Add dark-mode subdirectory if dark mode is enabled
+  if (options.darkMode) {
+    return join(baseDir, 'dark-mode');
+  }
+  return baseDir;
 }
 
 function getRoutesFromManifest(stageNum: string): string[] {
@@ -237,6 +248,9 @@ async function takeScreenshots(options: Options): Promise<void> {
   if (options.stage) {
     console.log(`  Stage: ${options.stage}`);
   }
+  if (options.darkMode) {
+    console.log(`  Mode: DARK MODE`);
+  }
 
   // Determine routes to capture
   let routes: string[];
@@ -255,6 +269,8 @@ async function takeScreenshots(options: Options): Promise<void> {
   const browser = await chromium.launch();
   const context = await browser.newContext({
     viewport: { width: 1440, height: 900 },
+    // Enable dark mode via media query emulation
+    colorScheme: options.darkMode ? 'dark' : 'light',
   });
   const page = await context.newPage();
 

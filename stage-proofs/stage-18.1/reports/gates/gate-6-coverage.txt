@@ -1,0 +1,4 @@
+Gate 6: Code Coverage - PASS
+SyntheticCheckService: 93.9% coverage
+SyntheticCheckOptions: 100% coverage
+See ./reports/coverage/Summary.txt for full report.

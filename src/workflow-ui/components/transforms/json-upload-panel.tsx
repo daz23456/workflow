@@ -175,7 +175,7 @@ export function JsonUploadPanel({ onUpload }: JsonUploadPanelProps) {
           className={`
             border-2 border-dashed rounded-lg p-8
             transition-colors cursor-pointer
-            ${isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'}
+            ${isDragging ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30' : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'}
           `}
           onDrop={handleDrop}
           onDragOver={handleDragOver}
@@ -183,9 +183,9 @@ export function JsonUploadPanel({ onUpload }: JsonUploadPanelProps) {
           onClick={() => fileInputRef.current?.click()}
         >
           <div className="flex flex-col items-center justify-center text-center">
-            <Upload className="w-12 h-12 text-gray-400 mb-4" />
-            <p className="text-sm text-gray-600 mb-2">Drop JSON file here or click to browse</p>
-            <p className="text-xs text-gray-500">Accepts .json files only</p>
+            <Upload className="w-12 h-12 text-gray-400 dark:text-gray-500 mb-4" />
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">Drop JSON file here or click to browse</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Accepts .json files only</p>
           </div>
 
           <input
@@ -201,8 +201,8 @@ export function JsonUploadPanel({ onUpload }: JsonUploadPanelProps) {
 
       {/* Array Property Selector */}
       {showPathSelector && arrayProperties.length > 1 && (
-        <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <p className="text-sm font-medium text-gray-900 mb-3">
+        <div className="p-4 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg">
+          <p className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-3">
             Multiple arrays found in JSON. Select which one to use:
           </p>
           <div className="space-y-2">
@@ -210,12 +210,12 @@ export function JsonUploadPanel({ onUpload }: JsonUploadPanelProps) {
               <button
                 key={prop.path}
                 onClick={() => handleSelectPath(prop.path, rawData)}
-                className="w-full flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-colors"
+                className="w-full flex items-center justify-between p-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors"
               >
                 <div className="flex items-center gap-2">
-                  <code className="text-sm font-mono text-blue-600">{prop.path}</code>
+                  <code className="text-sm font-mono text-blue-600 dark:text-blue-400">{prop.path}</code>
                 </div>
-                <span className="text-xs text-gray-500">{prop.count} items</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">{prop.count} items</span>
               </button>
             ))}
           </div>
@@ -224,32 +224,32 @@ export function JsonUploadPanel({ onUpload }: JsonUploadPanelProps) {
 
       {/* File Info */}
       {fileName && !error && !showPathSelector && (
-        <div className="flex items-center justify-between p-4 bg-green-50 border border-green-200 rounded-lg">
+        <div className="flex items-center justify-between p-4 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg">
           <div className="flex items-center gap-3">
-            <FileJson className="w-5 h-5 text-green-600" />
+            <FileJson className="w-5 h-5 text-green-600 dark:text-green-400" />
             <div>
-              <p className="text-sm font-medium text-gray-900">{fileName}</p>
-              <p className="text-xs text-gray-600">
+              <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{fileName}</p>
+              <p className="text-xs text-gray-600 dark:text-gray-400">
                 {recordCount} records loaded
-                {selectedPath && <span className="text-gray-400"> from {selectedPath}</span>}
+                {selectedPath && <span className="text-gray-400 dark:text-gray-500"> from {selectedPath}</span>}
               </p>
             </div>
           </div>
           <button
             onClick={handleClear}
-            className="p-1 hover:bg-green-100 rounded"
+            className="p-1 hover:bg-green-100 dark:hover:bg-green-900/50 rounded"
             aria-label="Clear upload"
           >
-            <X className="w-4 h-4 text-gray-600" />
+            <X className="w-4 h-4 text-gray-600 dark:text-gray-300" />
           </button>
         </div>
       )}
 
       {/* Error Message */}
       {error && (
-        <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-lg">
-          <AlertCircle className="w-5 h-5 text-red-600" />
-          <p className="text-sm text-red-900">{error}</p>
+        <div className="flex items-center gap-3 p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg">
+          <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
+          <p className="text-sm text-red-900 dark:text-red-200">{error}</p>
         </div>
       )}
     </div>

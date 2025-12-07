@@ -405,16 +405,17 @@ function WorkflowCanvasInner() {
         }}
         edgesFocusable
         edgesReconnectable={false}
+        className="bg-gray-50 dark:bg-gray-900"
       >
-        <Background color="#aaa" gap={16} />
-        <Controls />
+        <Background color="var(--dot-color, #d1d5db)" gap={16} className="dark:bg-gray-900" />
+        <Controls className="dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300" />
 
         {/* Empty state */}
         {nodes.length === 0 && (
           <Panel position="top-center">
-            <div className="bg-white rounded-lg shadow-lg p-6 text-center max-w-md">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Get Started</h3>
-              <p className="text-sm text-gray-600">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 text-center max-w-md">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Get Started</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
                 Drag and drop tasks from the palette on the left to create your workflow
               </p>
             </div>

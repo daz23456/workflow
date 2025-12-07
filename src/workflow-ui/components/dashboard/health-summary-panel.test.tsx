@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -385,7 +386,8 @@ describe('HealthSummaryPanel', () => {
     fireEvent.click(workflowRow);
 
     expect(screen.getByText('45ms')).toBeInTheDocument();
-    expect(screen.getByText('200')).toBeInTheDocument();
+    // Multiple tasks have status code 200, so use getAllByText
+    expect(screen.getAllByText('200').length).toBeGreaterThan(0);
   });
 
   it('should show error message for failed tasks', () => {

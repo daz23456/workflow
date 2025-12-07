@@ -1,0 +1,8 @@
+
+> @workflow/types@0.1.0 build
+> tsc
+
+
+> @workflow/types@0.1.0 type-check
+> tsc --noEmit
+

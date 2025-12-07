@@ -27,7 +27,7 @@ export function PropertiesPanel() {
 
   if (!selectedOperation) {
     return (
-      <div className="h-full flex items-center justify-center text-gray-500 p-4">
+      <div className="h-full flex items-center justify-center text-gray-500 dark:text-gray-400 p-4">
         <div className="text-center">
           <p className="text-sm">Click an operation in the pipeline to edit its properties</p>
         </div>

@@ -323,7 +323,7 @@ export function WorkflowGraphPanel({
   }
 
   return (
-    <div className="h-full w-full border border-gray-200 rounded-lg overflow-hidden">
+    <div className="h-full w-full border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden bg-white dark:bg-gray-900">
       <ReactFlowProvider>
         <ReactFlow
           nodes={nodes}
@@ -335,9 +335,10 @@ export function WorkflowGraphPanel({
           minZoom={0.1}
           maxZoom={2}
           proOptions={{ hideAttribution: true }}
+          className="bg-white dark:bg-gray-900"
         >
-          <Controls />
-          <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
+          <Controls className="dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300" />
+          <Background variant={BackgroundVariant.Dots} gap={12} size={1} className="dark:bg-gray-900" color="var(--dot-color, #d1d5db)" />
         </ReactFlow>
       </ReactFlowProvider>
     </div>

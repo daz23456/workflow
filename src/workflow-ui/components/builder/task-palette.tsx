@@ -138,12 +138,12 @@ export function TaskPalette() {
     return (
       <div
         data-testid="task-palette"
-        className="w-full h-full bg-white border-r border-gray-200 p-4"
+        className="w-full h-full bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 p-4"
         aria-label="Task palette"
       >
         <div data-testid="loading-skeleton" className="space-y-2">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-16 bg-gray-200 rounded animate-pulse" />
+            <div key={i} className="h-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
           ))}
         </div>
       </div>
@@ -155,12 +155,12 @@ export function TaskPalette() {
     return (
       <div
         data-testid="task-palette"
-        className="w-full h-full bg-white border-r border-gray-200 p-4"
+        className="w-full h-full bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 p-4"
         aria-label="Task palette"
       >
         <div className="flex flex-col items-center justify-center p-4 text-center">
           <AlertTriangle className="w-12 h-12 text-red-500 mb-2" />
-          <p className="text-sm text-red-600 mb-4">Failed to load tasks</p>
+          <p className="text-sm text-red-600 dark:text-red-400 mb-4">Failed to load tasks</p>
           <button
             onClick={() => refetch()}
             className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
@@ -176,15 +176,15 @@ export function TaskPalette() {
   return (
     <div
       data-testid="task-palette"
-      className={cn('w-full h-full bg-white border-r border-gray-200 flex flex-col overflow-hidden', isCollapsed && 'w-12')}
+      className={cn('w-full h-full bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col overflow-hidden', isCollapsed && 'w-12')}
       aria-label="Task palette"
     >
       {!isCollapsed && (
         <>
           {/* Search */}
-          <div className="p-4 border-b border-gray-200">
+          <div className="p-4 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center gap-1.5 mb-2">
-              <label className="text-sm font-medium text-gray-700">Search</label>
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Search</label>
               <HelpIcon topic={HELP_TOPICS.SEARCH_TASKS} />
             </div>
             <div className="relative">
@@ -194,7 +194,7 @@ export function TaskPalette() {
                 placeholder="Search tasks..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400"
                 aria-label="Search tasks"
               />
               {searchQuery && (
@@ -203,7 +203,7 @@ export function TaskPalette() {
                   className="absolute right-3 top-1/2 transform -translate-y-1/2"
                   aria-label="Clear search"
                 >
-                  <X className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+                  <X className="w-4 h-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" />
                 </button>
               )}
             </div>
@@ -211,12 +211,12 @@ export function TaskPalette() {
 
           {/* Namespace Filter */}
           {namespaces.length > 1 && (
-            <div className="px-4 py-2 border-b border-gray-200">
-              <label className="text-xs font-medium text-gray-500 mb-1 block">Namespace</label>
+            <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+              <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Namespace</label>
               <select
                 value={selectedNamespace || ''}
                 onChange={(e) => setSelectedNamespace(e.target.value || null)}
-                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                className="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 dark:text-gray-100"
                 aria-label="Filter by namespace"
               >
                 <option value="">All namespaces</option>
@@ -231,12 +231,12 @@ export function TaskPalette() {
 
           {/* Category Filter - Dropdown for compact display */}
           {categories.length > 1 && (
-            <div className="px-4 py-2 border-b border-gray-200">
-              <label className="text-xs font-medium text-gray-500 mb-1 block">Category</label>
+            <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+              <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Category</label>
               <select
                 value={selectedCategory || ''}
                 onChange={(e) => setSelectedCategory(e.target.value || null)}
-                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                className="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 dark:text-gray-100"
                 aria-label="Filter by category"
               >
                 <option value="">All categories ({tasks.length})</option>
@@ -255,7 +255,7 @@ export function TaskPalette() {
           {/* Task List */}
           <div className="flex-1 overflow-y-auto p-4">
             {filteredTasks.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                 <p className="text-sm">No tasks found</p>
               </div>
             ) : (
@@ -275,8 +275,8 @@ export function TaskPalette() {
                       data-dragging={isDragging}
                       className={cn(
                         'px-2 py-1.5 border rounded cursor-move transition-all text-sm',
-                        isDragging && 'opacity-50 border-blue-400 bg-blue-50',
-                        !isDragging && 'border-gray-200 hover:border-blue-400 hover:bg-blue-50'
+                        isDragging && 'opacity-50 border-blue-400 bg-blue-50 dark:bg-blue-900/30',
+                        !isDragging && 'border-gray-200 dark:border-gray-600 hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30'
                       )}
                       aria-label={`Drag ${task.displayName} to canvas`}
                       tabIndex={0}
@@ -287,24 +287,24 @@ export function TaskPalette() {
                       }}
                     >
                       {/* Compact Task Display */}
-                      <div className="font-medium text-gray-900 truncate">
+                      <div className="font-medium text-gray-900 dark:text-gray-100 truncate">
                         {task.displayName}
                       </div>
 
                       {/* Expanded Details - only show on click */}
                       {isExpanded && (
-                        <div className="mt-2 pt-2 border-t border-gray-200 text-xs">
-                          <p className="text-gray-600 mb-2">{task.description}</p>
+                        <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-600 text-xs">
+                          <p className="text-gray-600 dark:text-gray-400 mb-2">{task.description}</p>
                           <div className="space-y-2">
                             <div>
-                              <div className="font-semibold text-gray-700">Input:</div>
-                              <pre className="mt-1 p-1.5 bg-gray-50 rounded overflow-x-auto text-[10px]">
+                              <div className="font-semibold text-gray-700 dark:text-gray-300">Input:</div>
+                              <pre className="mt-1 p-1.5 bg-gray-50 dark:bg-gray-900 rounded overflow-x-auto text-[10px] dark:text-gray-300">
                                 {JSON.stringify(task.inputSchema, null, 2)}
                               </pre>
                             </div>
                             <div>
-                              <div className="font-semibold text-gray-700">Output:</div>
-                              <pre className="mt-1 p-1.5 bg-gray-50 rounded overflow-x-auto text-[10px]">
+                              <div className="font-semibold text-gray-700 dark:text-gray-300">Output:</div>
+                              <pre className="mt-1 p-1.5 bg-gray-50 dark:bg-gray-900 rounded overflow-x-auto text-[10px] dark:text-gray-300">
                                 {JSON.stringify(task.outputSchema, null, 2)}
                               </pre>
                             </div>

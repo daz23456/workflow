@@ -117,11 +117,11 @@ export function OperationPalette() {
   return (
     <div
       data-testid="operation-palette"
-      className="w-full h-full bg-white flex flex-col overflow-hidden"
+      className="w-full h-full bg-white dark:bg-gray-800 flex flex-col overflow-hidden"
       aria-label="Operation palette"
     >
       {/* Search - compact */}
-      <div className="flex-shrink-0 p-2 border-b border-gray-100">
+      <div className="flex-shrink-0 p-2 border-b border-gray-100 dark:border-gray-700">
         <div className="relative">
           <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-gray-400" />
           <input
@@ -129,7 +129,7 @@ export function OperationPalette() {
             placeholder="Search..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-7 pr-7 py-1.5 text-xs border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="w-full pl-7 pr-7 py-1.5 text-xs border border-gray-200 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white dark:bg-gray-700 dark:text-gray-100"
             aria-label="Search operations"
           />
           {searchQuery && (
@@ -138,7 +138,7 @@ export function OperationPalette() {
               className="absolute right-2 top-1/2 transform -translate-y-1/2"
               aria-label="Clear search"
             >
-              <X className="w-3 h-3 text-gray-400 hover:text-gray-600" />
+              <X className="w-3 h-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" />
             </button>
           )}
         </div>
@@ -147,7 +147,7 @@ export function OperationPalette() {
       {/* Operations List */}
       <div className="flex-1 overflow-y-auto p-2">
         {!hasResults ? (
-          <div className="text-center py-8 text-gray-500">
+          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
             <p className="text-sm">No operations found</p>
           </div>
         ) : (
@@ -159,7 +159,7 @@ export function OperationPalette() {
               return (
                 <div key={category}>
                   {/* Category Header */}
-                  <h3 className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5 px-1">
+                  <h3 className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1.5 px-1">
                     {category}
                   </h3>
 
@@ -179,19 +179,19 @@ export function OperationPalette() {
                           data-dragging={isDragging ? 'true' : 'false'}
                           className={cn(
                             'p-2 border rounded cursor-move transition-all',
-                            isDragging && 'opacity-50 border-blue-400 bg-blue-50',
-                            !isDragging && 'border-gray-100 hover:border-blue-400 hover:bg-blue-50 bg-white'
+                            isDragging && 'opacity-50 border-blue-400 bg-blue-50 dark:bg-blue-900/30',
+                            !isDragging && 'border-gray-100 dark:border-gray-600 hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 bg-white dark:bg-gray-700'
                           )}
                           aria-label={`Drag ${operation.label} operation to canvas`}
                           tabIndex={0}
                           role="button"
                         >
                           <div className="flex items-center gap-2">
-                            <div className="flex-shrink-0 p-1 bg-blue-50 rounded">
-                              <Icon className="w-3 h-3 text-blue-600" />
+                            <div className="flex-shrink-0 p-1 bg-blue-50 dark:bg-blue-900/50 rounded">
+                              <Icon className="w-3 h-3 text-blue-600 dark:text-blue-400" />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <div className="font-medium text-xs text-gray-900">
+                              <div className="font-medium text-xs text-gray-900 dark:text-gray-100">
                                 {operation.label}
                               </div>
                             </div>

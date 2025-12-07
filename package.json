@@ -7,7 +7,7 @@
   "scripts": {
     "build": "turbo run build",
     "build:packages": "turbo run build --filter='./packages/*'",
-    "clean": "turbo run clean",
+    "clean": "turbo run clean && find . -name '*.tsbuildinfo' -delete && rm -rf .turbo",
     "lint": "turbo run lint",
     "test": "jest",
     "test:schema": "jest tests/schema-validation.test.ts",

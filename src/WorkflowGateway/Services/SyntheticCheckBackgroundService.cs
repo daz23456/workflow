@@ -1,3 +1,4 @@
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using WorkflowCore.Models;
 using WorkflowCore.Services;
@@ -6,24 +7,22 @@ namespace WorkflowGateway.Services;
 
 /// <summary>
 /// Background service that periodically refreshes health checks for all workflows.
+/// Uses IServiceScopeFactory to resolve scoped services (ISyntheticCheckService depends on IExecutionRepository).
 /// </summary>
 public class SyntheticCheckBackgroundService : BackgroundService
 {
-    private readonly ISyntheticCheckService _checkService;
-    private readonly IWorkflowDiscoveryService _discoveryService;
+    private readonly IServiceScopeFactory _scopeFactory;
     private readonly SyntheticCheckOptions _options;
     private readonly ILogger<SyntheticCheckBackgroundService> _logger;
 
     private static readonly TimeSpan InitialDelay = TimeSpan.FromSeconds(30);
 
     public SyntheticCheckBackgroundService(
-        ISyntheticCheckService checkService,
-        IWorkflowDiscoveryService discoveryService,
+        IServiceScopeFactory scopeFactory,
         IOptions<SyntheticCheckOptions> options,
         ILogger<SyntheticCheckBackgroundService> logger)
     {
-        _checkService = checkService ?? throw new ArgumentNullException(nameof(checkService));
-        _discoveryService = discoveryService ?? throw new ArgumentNullException(nameof(discoveryService));
+        _scopeFactory = scopeFactory ?? throw new ArgumentNullException(nameof(scopeFactory));
         _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
@@ -77,8 +76,13 @@ public class SyntheticCheckBackgroundService : BackgroundService
     {
         _logger.LogDebug("Starting synthetic health check cycle");
 
+        // Create a scope to resolve scoped services
+        using var scope = _scopeFactory.CreateScope();
+        var discoveryService = scope.ServiceProvider.GetRequiredService<IWorkflowDiscoveryService>();
+        var checkService = scope.ServiceProvider.GetRequiredService<ISyntheticCheckService>();
+
         // Get all known workflows
-        var workflows = await _discoveryService.DiscoverWorkflowsAsync();
+        var workflows = await discoveryService.DiscoverWorkflowsAsync();
 
         if (workflows.Count == 0)
         {
@@ -95,7 +99,7 @@ public class SyntheticCheckBackgroundService : BackgroundService
             {
                 try
                 {
-                    var result = await _checkService.CheckWorkflowHealthAsync(w.Metadata!.Name, ct);
+                    var result = await checkService.CheckWorkflowHealthAsync(w.Metadata!.Name, ct);
 
                     if (result.OverallHealth == HealthState.Unhealthy)
                     {

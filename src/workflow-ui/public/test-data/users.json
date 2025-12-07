@@ -1,0 +1,7 @@
+[
+  { "id": 1, "name": "Alice", "departmentId": 101 },
+  { "id": 2, "name": "Bob", "departmentId": 102 },
+  { "id": 3, "name": "Charlie", "departmentId": 101 },
+  { "id": 4, "name": "Diana", "departmentId": 103 },
+  { "id": 5, "name": "Eve", "departmentId": 102 }
+]

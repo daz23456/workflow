@@ -1,0 +1,1 @@
+Gate 1: No Template Files - PASS

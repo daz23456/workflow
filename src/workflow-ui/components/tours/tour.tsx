@@ -118,19 +118,28 @@ export function Tour({
       if (position) {
         setTooltipPosition(position);
       }
-
-      // Scroll target into view if needed
-      targetElement.scrollIntoView({
-        behavior: 'smooth',
-        block: 'center',
-        inline: 'center',
-      });
     };
 
-    // Initial position
-    setTimeout(updatePosition, 100); // Small delay to ensure DOM is ready
+    // Scroll target into view only once on step change (not on scroll events)
+    const scrollToTarget = () => {
+      const targetElement = document.querySelector(currentStep.target);
+      if (targetElement) {
+        targetElement.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center',
+          inline: 'center',
+        });
+      }
+    };
 
-    // Update on resize
+    // Initial scroll and position
+    setTimeout(() => {
+      scrollToTarget();
+      // Update position after scroll animation completes
+      setTimeout(updatePosition, 300);
+    }, 100);
+
+    // Update position on resize and scroll (without re-scrolling)
     window.addEventListener('resize', updatePosition);
     window.addEventListener('scroll', updatePosition, true);
 

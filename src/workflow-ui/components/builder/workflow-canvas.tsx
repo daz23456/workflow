@@ -29,6 +29,7 @@ import '@xyflow/react/dist/style.css';
 import { TaskNode } from './task-node';
 import { InputNode } from './input-node';
 import { OutputNode } from './output-node';
+import { SubWorkflowNode } from './sub-workflow-node';
 import { useWorkflowBuilderStore } from '@/lib/stores/workflow-builder-store';
 import type { WorkflowBuilderNode, WorkflowBuilderEdge } from '@/lib/types/workflow-builder';
 
@@ -37,6 +38,7 @@ const nodeTypes = {
   task: TaskNode,
   input: InputNode,
   output: OutputNode,
+  subworkflow: SubWorkflowNode,
 } as any; // Type assertion to handle React 19 type incompatibility
 
 function WorkflowCanvasInner() {
@@ -74,8 +76,8 @@ function WorkflowCanvasInner() {
 
   // Create Input/Output nodes and enhanced node list with edges
   const { displayNodes, displayEdges } = useMemo(() => {
-    // Filter to only task nodes (exclude any existing input/output nodes)
-    const taskNodes = nodes.filter((n) => n.type === 'task');
+    // Filter to only task/subworkflow nodes (exclude any existing input/output nodes)
+    const taskNodes = nodes.filter((n) => n.type === 'task' || n.type === 'subworkflow');
 
     if (taskNodes.length === 0) {
       // No task nodes - just return original nodes/edges with selection

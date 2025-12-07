@@ -2,16 +2,35 @@
  * JSON Upload Panel Component
  *
  * Handles JSON file uploads with drag-and-drop support.
- * Validates JSON format and ensures data is an array.
+ * Supports both arrays and objects with array properties.
+ * Auto-detects array properties in objects for easy selection.
  */
 
 'use client';
 
 import { useState, useCallback, useRef } from 'react';
-import { Upload, X, FileJson, AlertCircle } from 'lucide-react';
+import { Upload, X, FileJson, AlertCircle, ChevronDown } from 'lucide-react';
+
+interface ArrayProperty {
+  path: string;
+  count: number;
+}
 
 interface JsonUploadPanelProps {
-  onUpload?: (data: unknown[]) => void;
+  onUpload?: (data: unknown[], inputPath?: string) => void;
+}
+
+/**
+ * Find all array properties in an object (one level deep)
+ */
+function findArrayProperties(obj: Record<string, unknown>): ArrayProperty[] {
+  const arrays: ArrayProperty[] = [];
+  for (const [key, value] of Object.entries(obj)) {
+    if (Array.isArray(value)) {
+      arrays.push({ path: `$.${key}`, count: value.length });
+    }
+  }
+  return arrays;
 }
 
 export function JsonUploadPanel({ onUpload }: JsonUploadPanelProps) {
@@ -19,11 +38,33 @@ export function JsonUploadPanel({ onUpload }: JsonUploadPanelProps) {
   const [recordCount, setRecordCount] = useState<number>(0);
   const [error, setError] = useState<string>('');
   const [isDragging, setIsDragging] = useState(false);
+  const [rawData, setRawData] = useState<unknown>(null);
+  const [arrayProperties, setArrayProperties] = useState<ArrayProperty[]>([]);
+  const [selectedPath, setSelectedPath] = useState<string>('');
+  const [showPathSelector, setShowPathSelector] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleSelectPath = useCallback(
+    (path: string, data: unknown) => {
+      setSelectedPath(path);
+      setShowPathSelector(false);
+
+      // Extract the array from the object
+      const key = path.replace('$.', '');
+      const arrayData = (data as Record<string, unknown>)[key] as unknown[];
+      setRecordCount(arrayData.length);
+      onUpload?.(arrayData, path);
+    },
+    [onUpload]
+  );
 
   const processFile = useCallback(
     (file: File) => {
       setError('');
+      setArrayProperties([]);
+      setSelectedPath('');
+      setShowPathSelector(false);
+      setRawData(null);
 
       const reader = new FileReader();
 
@@ -32,15 +73,40 @@ export function JsonUploadPanel({ onUpload }: JsonUploadPanelProps) {
           const text = event.target?.result as string;
           const data = JSON.parse(text);
 
-          if (!Array.isArray(data)) {
-            setError('JSON must be an array of records');
+          // Case 1: Direct array - use as-is
+          if (Array.isArray(data)) {
+            setFileName(file.name);
+            setRecordCount(data.length);
+            setRawData(data);
+            onUpload?.(data);
             return;
           }
 
-          setFileName(file.name);
-          setRecordCount(data.length);
+          // Case 2: Object - look for array properties
+          if (typeof data === 'object' && data !== null) {
+            const arrays = findArrayProperties(data as Record<string, unknown>);
 
-          onUpload?.(data);
+            if (arrays.length === 0) {
+              setError('No array properties found in JSON object. Expected an array or an object with array properties (e.g., { "data": [...] })');
+              return;
+            }
+
+            setFileName(file.name);
+            setRawData(data);
+            setArrayProperties(arrays);
+
+            // Auto-select if only one array property
+            if (arrays.length === 1) {
+              handleSelectPath(arrays[0].path, data);
+            } else {
+              // Show selector for multiple options
+              setShowPathSelector(true);
+              setRecordCount(0);
+            }
+            return;
+          }
+
+          setError('Invalid JSON: Expected an array or object');
         } catch (err) {
           setError('Invalid JSON file');
         }
@@ -52,7 +118,7 @@ export function JsonUploadPanel({ onUpload }: JsonUploadPanelProps) {
 
       reader.readAsText(file);
     },
-    [onUpload]
+    [onUpload, handleSelectPath]
   );
 
   const handleFileChange = useCallback(
@@ -91,6 +157,10 @@ export function JsonUploadPanel({ onUpload }: JsonUploadPanelProps) {
     setFileName('');
     setRecordCount(0);
     setError('');
+    setRawData(null);
+    setArrayProperties([]);
+    setSelectedPath('');
+    setShowPathSelector(false);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -129,14 +199,40 @@ export function JsonUploadPanel({ onUpload }: JsonUploadPanelProps) {
         </div>
       )}
 
+      {/* Array Property Selector */}
+      {showPathSelector && arrayProperties.length > 1 && (
+        <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <p className="text-sm font-medium text-gray-900 mb-3">
+            Multiple arrays found in JSON. Select which one to use:
+          </p>
+          <div className="space-y-2">
+            {arrayProperties.map((prop) => (
+              <button
+                key={prop.path}
+                onClick={() => handleSelectPath(prop.path, rawData)}
+                className="w-full flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  <code className="text-sm font-mono text-blue-600">{prop.path}</code>
+                </div>
+                <span className="text-xs text-gray-500">{prop.count} items</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* File Info */}
-      {fileName && !error && (
+      {fileName && !error && !showPathSelector && (
         <div className="flex items-center justify-between p-4 bg-green-50 border border-green-200 rounded-lg">
           <div className="flex items-center gap-3">
             <FileJson className="w-5 h-5 text-green-600" />
             <div>
               <p className="text-sm font-medium text-gray-900">{fileName}</p>
-              <p className="text-xs text-gray-600">{recordCount} records loaded</p>
+              <p className="text-xs text-gray-600">
+                {recordCount} records loaded
+                {selectedPath && <span className="text-gray-400"> from {selectedPath}</span>}
+              </p>
             </div>
           </div>
           <button

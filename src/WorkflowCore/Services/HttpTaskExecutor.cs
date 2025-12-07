@@ -128,7 +128,9 @@ public class HttpTaskExecutor : IHttpTaskExecutor
                                 stopwatch.Elapsed,
                                 startTime),
                             RetryCount = attemptNumber - 1,
-                            Duration = stopwatch.Elapsed
+                            Duration = stopwatch.Elapsed,
+                            ResolvedUrl = resolvedUrl,
+                            HttpMethod = httpMethod ?? "GET"
                         };
                     }
 
@@ -144,7 +146,9 @@ public class HttpTaskExecutor : IHttpTaskExecutor
                         Success = true,
                         Output = output,
                         RetryCount = attemptNumber - 1,
-                        Duration = stopwatch.Elapsed
+                        Duration = stopwatch.Elapsed,
+                        ResolvedUrl = resolvedUrl,
+                        HttpMethod = httpMethod ?? "GET"
                     };
                 }
                 catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or OperationCanceledException)
@@ -180,7 +184,9 @@ public class HttpTaskExecutor : IHttpTaskExecutor
                     stopwatch.Elapsed,
                     startTime),
                 RetryCount = attemptNumber - 1,
-                Duration = stopwatch.Elapsed
+                Duration = stopwatch.Elapsed,
+                ResolvedUrl = resolvedUrl,
+                HttpMethod = httpMethod ?? "GET"
             };
         }
         finally

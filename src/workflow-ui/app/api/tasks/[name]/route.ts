@@ -17,8 +17,19 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   } catch (error) {
     console.error('Error fetching task detail:', error);
 
-    // Handle errors
+    // Handle errors - check for 404/not found
     if (error instanceof Error) {
+      const isNotFound =
+        error.message.includes('404') ||
+        error.message.toLowerCase().includes('not found');
+
+      if (isNotFound) {
+        return NextResponse.json(
+          { error: 'Task not found', message: error.message },
+          { status: 404 }
+        );
+      }
+
       return NextResponse.json(
         { error: 'Failed to fetch task detail', message: error.message },
         { status: 500 }

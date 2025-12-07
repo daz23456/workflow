@@ -4,7 +4,7 @@
 
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useTransformBuilderStore } from '@/lib/stores/transform-builder-store';
 import type { FilterOperation, Condition } from '@/lib/types/transform-dsl';
 
@@ -12,15 +12,54 @@ interface FilterNodeProps {
   operationIndex: number;
 }
 
+/**
+ * Extract field names from an object, handling nested objects
+ */
+function extractFieldPaths(obj: unknown, prefix = '$'): string[] {
+  if (typeof obj !== 'object' || obj === null) {
+    return [];
+  }
+
+  const paths: string[] = [];
+  for (const [key, value] of Object.entries(obj)) {
+    const path = `${prefix}.${key}`;
+    paths.push(path);
+
+    if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+      for (const nestedKey of Object.keys(value)) {
+        paths.push(`${path}.${nestedKey}`);
+      }
+    }
+  }
+  return paths;
+}
+
 export function FilterNode({ operationIndex }: FilterNodeProps) {
-  const { pipeline, updateOperation } = useTransformBuilderStore();
+  const { pipeline, updateOperation, inputData } = useTransformBuilderStore();
   const operation = pipeline[operationIndex] as FilterOperation | undefined;
+
+  // Extract available fields from input data
+  const availableFields = useMemo(() => {
+    if (inputData.length === 0) return [];
+    return extractFieldPaths(inputData[0]);
+  }, [inputData]);
 
   const handleUpdate = useCallback(
     (updates: Partial<Condition>) => {
       if (!operation) return;
       updateOperation(operationIndex, {
         condition: { ...operation.condition, ...updates },
+      });
+    },
+    [operation, operationIndex, updateOperation]
+  );
+
+  // Quick select a field from available fields
+  const handleQuickSelectField = useCallback(
+    (fieldPath: string) => {
+      if (!operation) return;
+      updateOperation(operationIndex, {
+        condition: { ...operation.condition, field: fieldPath },
       });
     },
     [operation, operationIndex, updateOperation]
@@ -41,6 +80,33 @@ export function FilterNode({ operationIndex }: FilterNodeProps) {
         <p className="text-sm text-gray-600">Keep only records matching a condition</p>
       </div>
 
+      {/* Available Fields - Quick Select */}
+      {availableFields.length > 0 && (
+        <div className="bg-blue-50 rounded-lg p-3">
+          <p className="text-xs font-medium text-blue-800 mb-2">
+            Available fields ({availableFields.length}):
+          </p>
+          <div className="flex flex-wrap gap-1">
+            {availableFields.map((field) => {
+              const isSelected = operation.condition.field === field;
+              return (
+                <button
+                  key={field}
+                  onClick={() => handleQuickSelectField(field)}
+                  className={`px-2 py-1 text-xs font-mono rounded transition-colors ${
+                    isSelected
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-white text-blue-700 hover:bg-blue-100 border border-blue-200'
+                  }`}
+                >
+                  {field.replace('$.', '')}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-3 gap-2">
         <div>
           <label
@@ -54,7 +120,7 @@ export function FilterNode({ operationIndex }: FilterNodeProps) {
             type="text"
             value={operation.condition.field}
             onChange={(e) => handleUpdate({ field: e.target.value })}
-            className="w-full px-2 py-1 border border-gray-300 rounded-md font-mono text-sm"
+            className="w-full px-2 py-1 border border-gray-300 rounded-md font-mono text-sm text-gray-900"
             placeholder="$.field"
           />
         </div>
@@ -97,7 +163,7 @@ export function FilterNode({ operationIndex }: FilterNodeProps) {
             type="text"
             value={String(operation.condition.value ?? '')}
             onChange={(e) => handleUpdate({ value: e.target.value })}
-            className="w-full px-2 py-1 border border-gray-300 rounded-md text-sm"
+            className="w-full px-2 py-1 border border-gray-300 rounded-md text-sm text-gray-900"
             aria-label="Value"
           />
         </div>

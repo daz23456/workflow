@@ -442,6 +442,79 @@ describe('WorkflowCanvas', () => {
       // This is verified by the nodeTypes prop passed to ReactFlow
       expect(screen.getByTestId('react-flow-canvas')).toBeInTheDocument();
     });
+
+    it('should render subworkflow nodes', () => {
+      mockStoreState.graph.nodes = [
+        {
+          id: 'subworkflow-1',
+          type: 'subworkflow',
+          position: { x: 100, y: 100 },
+          data: {
+            label: 'Order Processing',
+            workflowRef: 'order-processing',
+            taskCount: 3,
+          },
+        },
+      ] as WorkflowBuilderNode[];
+
+      render(<WorkflowCanvas />);
+
+      expect(screen.getByTestId('node-subworkflow-1')).toBeInTheDocument();
+      expect(screen.getByText('Order Processing')).toBeInTheDocument();
+    });
+
+    it('should render mixed task and subworkflow nodes', () => {
+      mockStoreState.graph.nodes = [
+        {
+          id: 'task-1',
+          type: 'task',
+          position: { x: 100, y: 100 },
+          data: { label: 'Validate', taskRef: 'validate-order' },
+        },
+        {
+          id: 'subworkflow-1',
+          type: 'subworkflow',
+          position: { x: 300, y: 100 },
+          data: {
+            label: 'Process Order',
+            workflowRef: 'process-order',
+            taskCount: 5,
+          },
+        },
+        {
+          id: 'task-2',
+          type: 'task',
+          position: { x: 500, y: 100 },
+          data: { label: 'Notify', taskRef: 'send-notification' },
+        },
+      ] as WorkflowBuilderNode[];
+
+      render(<WorkflowCanvas />);
+
+      expect(screen.getByTestId('node-task-1')).toBeInTheDocument();
+      expect(screen.getByTestId('node-subworkflow-1')).toBeInTheDocument();
+      expect(screen.getByTestId('node-task-2')).toBeInTheDocument();
+    });
+
+    it('should create Input/Output edges for subworkflow nodes', () => {
+      mockStoreState.graph.nodes = [
+        {
+          id: 'subworkflow-1',
+          type: 'subworkflow',
+          position: { x: 100, y: 100 },
+          data: {
+            label: 'Process Order',
+            workflowRef: 'process-order',
+          },
+        },
+      ] as WorkflowBuilderNode[];
+
+      render(<WorkflowCanvas />);
+
+      // Should have virtual Input and Output nodes connected
+      expect(screen.getByTestId('node-__input__')).toBeInTheDocument();
+      expect(screen.getByTestId('node-__output__')).toBeInTheDocument();
+    });
   });
 
   describe('Accessibility', () => {

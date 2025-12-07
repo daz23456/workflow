@@ -13,42 +13,180 @@ import {
   ReactFlow,
   Background,
   Controls,
-  MiniMap,
   Panel,
   Node,
   Edge,
+  Handle,
+  Position,
   useReactFlow,
   type NodeTypes,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
+import { Trash2, ChevronUp, ChevronDown, CheckCircle2, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTransformBuilderStore } from '@/lib/stores/transform-builder-store';
-import type { TransformOperation } from '@/lib/types/transform-dsl';
+import type { TransformOperation, SelectOperation, MapOperation, FilterOperation } from '@/lib/types/transform-dsl';
+
+/**
+ * Check if an operation is properly configured
+ */
+function isOperationConfigured(operation: TransformOperation): boolean {
+  switch (operation.operation) {
+    case 'select': {
+      const op = operation as SelectOperation;
+      return Object.keys(op.fields || {}).length > 0;
+    }
+    case 'map': {
+      const op = operation as MapOperation;
+      return Object.keys(op.mappings || {}).length > 0;
+    }
+    case 'filter': {
+      const op = operation as FilterOperation;
+      return !!(op.condition?.field && op.condition?.operator);
+    }
+    case 'limit':
+    case 'skip':
+      return true; // Always valid with defaults
+    case 'sortBy':
+      return !!(operation as any).field;
+    case 'groupBy':
+      return !!(operation as any).key;
+    case 'flatMap':
+      return !!(operation as any).path;
+    case 'aggregate':
+      return Object.keys((operation as any).aggregations || {}).length > 0;
+    case 'enrich':
+      return Object.keys((operation as any).fields || {}).length > 0;
+    case 'join':
+      return !!(
+        (operation as any).leftKey &&
+        (operation as any).rightKey &&
+        (operation as any).rightData?.length > 0
+      );
+    default:
+      return false;
+  }
+}
 
 /**
  * Custom node component for transform operations
  */
-function OperationNode({ data }: { data: { label: string; index: number } }) {
-  const { selectOperation } = useTransformBuilderStore();
+function OperationNode({ data }: {
+  data: {
+    label: string;
+    index: number;
+    isFirst: boolean;
+    isLast: boolean;
+    isConfigured: boolean;
+    totalCount: number;
+  }
+}) {
+  const { selectOperation, selection, deleteOperation, moveOperation } = useTransformBuilderStore();
+  const isSelected = selection.operationIndex === data.index;
 
-  const handleClick = useCallback(() => {
+  const handleClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
     selectOperation(data.index);
   }, [data.index, selectOperation]);
+
+  const handleDelete = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    deleteOperation(data.index);
+  }, [data.index, deleteOperation]);
+
+  const handleMoveUp = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (data.index > 0) {
+      moveOperation(data.index, data.index - 1);
+    }
+  }, [data.index, moveOperation]);
+
+  const handleMoveDown = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (data.index < data.totalCount - 1) {
+      moveOperation(data.index, data.index + 1);
+    }
+  }, [data.index, data.totalCount, moveOperation]);
 
   return (
     <div
       onClick={handleClick}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
-          handleClick();
+          selectOperation(data.index);
+        }
+        if (e.key === 'Delete') {
+          deleteOperation(data.index);
         }
       }}
       tabIndex={0}
-      className="px-4 py-2 border-2 border-gray-300 rounded-lg bg-white cursor-pointer hover:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+      className={cn(
+        'relative px-3 py-2 border-2 rounded-lg bg-white cursor-pointer transition-all min-w-[140px]',
+        'hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500',
+        isSelected ? 'border-blue-500 bg-blue-50 shadow-md' : 'border-gray-300',
+        !data.isConfigured && 'border-orange-400 bg-orange-50'
+      )}
       role="button"
       aria-label={`Operation: ${data.label}`}
     >
-      <div className="font-medium text-gray-900">{data.label}</div>
+      {/* Input handle (top) - not shown for first node */}
+      {!data.isFirst && (
+        <Handle
+          type="target"
+          position={Position.Top}
+          className="!bg-gray-400 !w-2 !h-2"
+        />
+      )}
+
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          {/* Status indicator */}
+          {data.isConfigured ? (
+            <CheckCircle2 className="w-4 h-4 text-green-600 flex-shrink-0" />
+          ) : (
+            <AlertCircle className="w-4 h-4 text-orange-500 flex-shrink-0" />
+          )}
+          <span className="font-medium text-sm text-gray-900 capitalize">{data.label}</span>
+        </div>
+
+        {/* Action buttons - only show when selected */}
+        {isSelected && (
+          <div className="flex items-center gap-0.5">
+            <button
+              onClick={handleMoveUp}
+              disabled={data.isFirst}
+              className="p-0.5 text-gray-500 hover:text-blue-600 disabled:opacity-30 disabled:cursor-not-allowed"
+              aria-label="Move up"
+            >
+              <ChevronUp className="w-4 h-4" />
+            </button>
+            <button
+              onClick={handleMoveDown}
+              disabled={data.isLast}
+              className="p-0.5 text-gray-500 hover:text-blue-600 disabled:opacity-30 disabled:cursor-not-allowed"
+              aria-label="Move down"
+            >
+              <ChevronDown className="w-4 h-4" />
+            </button>
+            <button
+              onClick={handleDelete}
+              className="p-0.5 text-gray-500 hover:text-red-600"
+              aria-label="Delete operation"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Output handle (bottom) - not shown for last node */}
+      {!data.isLast && (
+        <Handle
+          type="source"
+          position={Position.Bottom}
+          className="!bg-blue-500 !w-2 !h-2"
+        />
+      )}
     </div>
   );
 }
@@ -103,10 +241,14 @@ export function PipelineBuilder() {
     return pipeline.map((operation, index) => ({
       id: `operation-${index}`,
       type: 'operation',
-      position: { x: 250, y: index * 150 + 50 },
+      position: { x: 100, y: index * 80 + 30 },
       data: {
         label: operation.operation,
         index,
+        isFirst: index === 0,
+        isLast: index === pipeline.length - 1,
+        isConfigured: isOperationConfigured(operation),
+        totalCount: pipeline.length,
       },
       selected: selection.operationIndex === index,
     }));
@@ -220,22 +362,25 @@ export function PipelineBuilder() {
         nodeTypes={nodeTypes}
         onPaneClick={handlePaneClick}
         fitView
-        minZoom={0.1}
-        maxZoom={2}
+        minZoom={0.5}
+        maxZoom={1.5}
+        panOnDrag
+        zoomOnScroll={false}
+        preventScrolling={false}
         defaultEdgeOptions={{
           type: 'smoothstep',
           animated: true,
         }}
+        proOptions={{ hideAttribution: true }}
       >
-        <Background />
-        <Controls />
-        <MiniMap />
+        <Background gap={20} size={1} />
+        <Controls showInteractive={false} className="!shadow-none !border-gray-200" />
 
         {/* Empty State */}
         {pipeline.length === 0 && (
           <Panel position="top-center">
-            <div className="bg-white border border-gray-300 rounded-lg px-6 py-4 shadow-sm">
-              <p className="text-gray-600 text-sm">Drag operations here to build your pipeline</p>
+            <div className="bg-white border border-dashed border-gray-300 rounded-lg px-4 py-3 shadow-sm">
+              <p className="text-gray-500 text-sm">Drag operations here</p>
             </div>
           </Panel>
         )}

@@ -453,6 +453,41 @@ export interface SlowestWorkflow {
 }
 
 // ============================================================================
+// Health Check Types
+// ============================================================================
+
+export type HealthState = 'Healthy' | 'Degraded' | 'Unhealthy' | 'Unknown';
+
+export interface TaskHealthStatus {
+  taskId: string;
+  taskRef: string;
+  status: HealthState;
+  url?: string;
+  latencyMs: number;
+  reachable: boolean;
+  statusCode?: number;
+  errorMessage?: string;
+}
+
+export interface WorkflowHealthStatus {
+  workflowName: string;
+  overallHealth: HealthState;
+  tasks: TaskHealthStatus[];
+  checkedAt: string;
+  durationMs: number;
+}
+
+export interface HealthSummary {
+  totalWorkflows: number;
+  healthyCount: number;
+  degradedCount: number;
+  unhealthyCount: number;
+  unknownCount: number;
+  workflows: WorkflowHealthStatus[];
+  generatedAt: string;
+}
+
+// ============================================================================
 // API Error Types
 // ============================================================================
 

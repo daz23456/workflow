@@ -6,7 +6,7 @@
 
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Trash2, Plus } from 'lucide-react';
 import { useTransformBuilderStore } from '@/lib/stores/transform-builder-store';
 import type { AggregateOperation, Aggregation } from '@/lib/types/transform-dsl';
@@ -15,10 +15,41 @@ interface AggregateNodeProps {
   operationIndex: number;
 }
 
+/**
+ * Extract field names from an object, handling nested objects
+ */
+function extractFieldPaths(obj: unknown, prefix = '$'): string[] {
+  if (typeof obj !== 'object' || obj === null) {
+    return [];
+  }
+
+  const paths: string[] = [];
+  for (const [key, value] of Object.entries(obj)) {
+    const path = `${prefix}.${key}`;
+    paths.push(path);
+
+    if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+      for (const nestedKey of Object.keys(value)) {
+        paths.push(`${path}.${nestedKey}`);
+      }
+    }
+  }
+  return paths;
+}
+
 export function AggregateNode({ operationIndex }: AggregateNodeProps) {
-  const { pipeline, updateOperation } = useTransformBuilderStore();
+  const { pipeline, updateOperation, inputData } = useTransformBuilderStore();
 
   const operation = pipeline[operationIndex] as AggregateOperation | undefined;
+
+  // Extract available fields from input data
+  const availableFields = useMemo(() => {
+    if (inputData.length === 0) return [];
+    return extractFieldPaths(inputData[0]);
+  }, [inputData]);
+
+  // Track which aggregation is being edited for field quick-select
+  const [activeAggKey, setActiveAggKey] = useState<string | null>(null);
 
   const handleAddAggregation = useCallback(() => {
     if (!operation) return;
@@ -78,6 +109,40 @@ export function AggregateNode({ operationIndex }: AggregateNodeProps) {
           Apply aggregation functions (sum, avg, min, max, count)
         </p>
       </div>
+
+      {/* Available Fields - Quick Select */}
+      {availableFields.length > 0 && (
+        <div className="bg-blue-50 rounded-lg p-3">
+          <p className="text-xs font-medium text-blue-800 mb-2">
+            Available fields ({availableFields.length}):
+          </p>
+          <div className="flex flex-wrap gap-1">
+            {availableFields.map((field) => (
+              <button
+                key={field}
+                onClick={() => {
+                  // If there's an active aggregation being edited, update its field
+                  if (activeAggKey && operation) {
+                    handleUpdateAggregation(activeAggKey, { field });
+                  }
+                }}
+                className={`px-2 py-1 text-xs font-mono rounded transition-colors ${
+                  activeAggKey
+                    ? 'bg-white text-blue-700 hover:bg-blue-100 border border-blue-200'
+                    : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                }`}
+                disabled={!activeAggKey}
+                title={activeAggKey ? `Set field for ${activeAggKey}` : 'Click an aggregation field first'}
+              >
+                {field.replace('$.', '')}
+              </button>
+            ))}
+          </div>
+          {!activeAggKey && (
+            <p className="text-xs text-blue-600 mt-1">Click a field input below to enable quick selection</p>
+          )}
+        </div>
+      )}
 
       {/* Aggregations List */}
       <div className="space-y-3">
@@ -142,8 +207,12 @@ export function AggregateNode({ operationIndex }: AggregateNodeProps) {
                   id={`agg-field-${operationIndex}-${key}`}
                   value={aggregation.field}
                   onChange={(e) => handleUpdateAggregation(key, { field: e.target.value })}
+                  onFocus={() => setActiveAggKey(key)}
+                  onBlur={() => setActiveAggKey(null)}
                   placeholder="$.fieldName"
-                  className="w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
+                  className={`w-full px-2 py-1 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-gray-900 ${
+                    activeAggKey === key ? 'border-blue-400 bg-blue-50' : 'border-gray-300'
+                  }`}
                   aria-label="Field (JSONPath)"
                 />
               </div>

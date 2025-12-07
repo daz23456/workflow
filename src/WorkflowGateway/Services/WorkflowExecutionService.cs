@@ -214,7 +214,10 @@ public class WorkflowExecutionService : IWorkflowExecutionService
                 RetryCount = result.RetryCount,
                 // Use actual timestamps from TaskExecutionResult (set by orchestrator)
                 StartedAt = result.StartedAt,
-                CompletedAt = result.CompletedAt
+                CompletedAt = result.CompletedAt,
+                // Capture resolved URL and HTTP method for health checks
+                ResolvedUrl = result.ResolvedUrl,
+                HttpMethod = result.HttpMethod
             });
         }
 

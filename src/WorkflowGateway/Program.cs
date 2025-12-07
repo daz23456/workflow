@@ -248,6 +248,14 @@ builder.Services.AddScoped<IAlertChannel, WorkflowCore.Services.AlertChannels.Pa
 builder.Services.AddScoped<IAlertChannel, WorkflowCore.Services.AlertChannels.EmailAlertChannel>();
 builder.Services.AddScoped<IAlertRouter, AlertRouter>();
 
+// Register synthetic health check services (Stage 18.1)
+builder.Services.Configure<SyntheticCheckOptions>(
+    builder.Configuration.GetSection(SyntheticCheckOptions.SectionName));
+
+// SyntheticCheckService needs a dedicated HttpClient for health checks
+builder.Services.AddHttpClient<ISyntheticCheckService, SyntheticCheckService>();
+builder.Services.AddHostedService<SyntheticCheckBackgroundService>();
+
 var app = builder.Build();
 
 // Apply database migrations on startup (only if connection string configured and using relational database)

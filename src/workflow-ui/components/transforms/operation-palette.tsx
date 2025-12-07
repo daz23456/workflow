@@ -117,41 +117,41 @@ export function OperationPalette() {
   return (
     <div
       data-testid="operation-palette"
-      className="w-full h-full bg-white border-r border-gray-200 flex flex-col overflow-hidden"
+      className="w-full h-full bg-white flex flex-col overflow-hidden"
       aria-label="Operation palette"
     >
-      {/* Search */}
-      <div className="p-4 border-b border-gray-200">
+      {/* Search - compact */}
+      <div className="flex-shrink-0 p-2 border-b border-gray-100">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-gray-400" />
           <input
             type="text"
-            placeholder="Search operations..."
+            placeholder="Search..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full pl-7 pr-7 py-1.5 text-xs border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
             aria-label="Search operations"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2"
+              className="absolute right-2 top-1/2 transform -translate-y-1/2"
               aria-label="Clear search"
             >
-              <X className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+              <X className="w-3 h-3 text-gray-400 hover:text-gray-600" />
             </button>
           )}
         </div>
       </div>
 
       {/* Operations List */}
-      <div className="flex-1 overflow-y-auto p-4">
+      <div className="flex-1 overflow-y-auto p-2">
         {!hasResults ? (
           <div className="text-center py-8 text-gray-500">
             <p className="text-sm">No operations found</p>
           </div>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-3">
             {CATEGORIES.map((category) => {
               const operations = operationsByCategory[category];
               if (!operations || operations.length === 0) return null;
@@ -159,12 +159,12 @@ export function OperationPalette() {
               return (
                 <div key={category}>
                   {/* Category Header */}
-                  <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                  <h3 className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5 px-1">
                     {category}
                   </h3>
 
-                  {/* Operation Cards */}
-                  <div className="space-y-2">
+                  {/* Operation Cards - compact */}
+                  <div className="space-y-1">
                     {operations.map((operation) => {
                       const Icon = operation.icon;
                       const isDragging = draggingOperation === operation.type;
@@ -178,24 +178,21 @@ export function OperationPalette() {
                           onDragEnd={handleDragEnd}
                           data-dragging={isDragging ? 'true' : 'false'}
                           className={cn(
-                            'p-3 border rounded-lg cursor-move transition-all',
+                            'p-2 border rounded cursor-move transition-all',
                             isDragging && 'opacity-50 border-blue-400 bg-blue-50',
-                            !isDragging && 'border-gray-200 hover:border-blue-400 hover:shadow-md bg-white'
+                            !isDragging && 'border-gray-100 hover:border-blue-400 hover:bg-blue-50 bg-white'
                           )}
                           aria-label={`Drag ${operation.label} operation to canvas`}
                           tabIndex={0}
                           role="button"
                         >
-                          <div className="flex items-start gap-3">
-                            <div className="flex-shrink-0 p-2 bg-blue-50 rounded-lg">
-                              <Icon className="w-4 h-4 text-blue-600" />
+                          <div className="flex items-center gap-2">
+                            <div className="flex-shrink-0 p-1 bg-blue-50 rounded">
+                              <Icon className="w-3 h-3 text-blue-600" />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <div className="font-medium text-sm text-gray-900">
+                              <div className="font-medium text-xs text-gray-900">
                                 {operation.label}
-                              </div>
-                              <div className="text-xs text-gray-500 mt-0.5">
-                                {operation.description}
                               </div>
                             </div>
                           </div>

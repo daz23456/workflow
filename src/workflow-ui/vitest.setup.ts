@@ -1,9 +1,12 @@
-import '@testing-library/jest-dom/vitest';
+import * as matchers from '@testing-library/jest-dom/matchers';
 import { cleanup } from '@testing-library/react';
 import { afterEach, beforeAll, afterAll, vi, expect } from 'vitest';
 import { server } from './lib/mocks/server';
 import { toHaveNoViolations } from 'jest-axe';
 import type React from 'react';
+
+// Extend Vitest expect with jest-dom matchers
+expect.extend(matchers);
 
 // Extend Vitest expect with jest-axe matchers
 expect.extend(toHaveNoViolations);

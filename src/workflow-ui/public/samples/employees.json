@@ -1,0 +1,13 @@
+{
+  "metadata": {
+    "total": 4,
+    "page": 1,
+    "timestamp": "2024-01-15T10:30:00Z"
+  },
+  "data": [
+    {"name": "Alice", "age": 30, "dept": "Engineering", "salary": 95000},
+    {"name": "Bob", "age": 25, "dept": "Marketing", "salary": 65000},
+    {"name": "Carol", "age": 35, "dept": "Engineering", "salary": 120000},
+    {"name": "Dave", "age": 28, "dept": "Engineering", "salary": 85000}
+  ]
+}

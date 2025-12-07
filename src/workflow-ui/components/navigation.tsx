@@ -171,6 +171,10 @@ export function Navigation() {
             <Link href="/playground" className={linkClasses('/playground')}>
               Playground
             </Link>
+
+            <Link href="/transforms" className={linkClasses('/transforms')}>
+              Transforms
+            </Link>
           </div>
 
           <div className="flex items-center gap-1">

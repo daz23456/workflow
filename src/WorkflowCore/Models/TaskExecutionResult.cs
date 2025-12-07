@@ -57,4 +57,14 @@ public class TaskExecutionResult
     /// Reference to the fallback task that was executed, if UsedFallback is true.
     /// </summary>
     public string? FallbackTaskRef { get; set; }
+
+    /// <summary>
+    /// The resolved URL after template substitution. Used for health checks.
+    /// </summary>
+    public string? ResolvedUrl { get; set; }
+
+    /// <summary>
+    /// The HTTP method used for this task (GET, POST, PUT, DELETE, etc.).
+    /// </summary>
+    public string? HttpMethod { get; set; }
 }

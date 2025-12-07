@@ -102,6 +102,9 @@ export const queryKeys = {
   workflowsMetrics: ['metrics', 'workflows'] as const,
   workflowHistory: (name: string, range: string) => ['metrics', 'workflows', name, 'history', range] as const,
   slowestWorkflows: (limit: number) => ['metrics', 'slowest', limit] as const,
+  // Health
+  healthSummary: () => ['health', 'summary'] as const,
+  workflowHealth: (name: string) => ['health', 'workflow', name] as const,
 };
 
 // ============================================================================
@@ -835,5 +838,68 @@ export function useSlowestWorkflows(limit: number = 10) {
     staleTime: 30000,
     gcTime: 60000,
     refetchInterval: 30000,
+  });
+}
+
+// ============================================================================
+// HEALTH CHECK QUERIES
+// ============================================================================
+
+import type { HealthSummary, WorkflowHealthStatus } from './types';
+
+/**
+ * Fetch health summary for all workflows
+ */
+export function useHealthSummary() {
+  return useQuery({
+    queryKey: queryKeys.healthSummary(),
+    queryFn: async () => {
+      const data = await fetchJson<HealthSummary>(`${API_BASE_URL}/health/summary`);
+      return data;
+    },
+    staleTime: 30000, // 30 seconds
+    gcTime: 60000, // 1 minute
+    refetchInterval: 60000, // Auto-refresh every minute
+  });
+}
+
+/**
+ * Fetch health status for a specific workflow
+ */
+export function useWorkflowHealth(name: string, options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: queryKeys.workflowHealth(name),
+    queryFn: async () => {
+      const data = await fetchJson<WorkflowHealthStatus>(
+        `${API_BASE_URL}/workflows/${encodeURIComponent(name)}/health-status`
+      );
+      return data;
+    },
+    staleTime: 30000,
+    gcTime: 60000,
+    enabled: options?.enabled ?? true,
+  });
+}
+
+/**
+ * Trigger a health check for a specific workflow
+ */
+export function useRunHealthCheck() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (name: string) => {
+      const data = await fetchJson<WorkflowHealthStatus>(
+        `${API_BASE_URL}/workflows/${encodeURIComponent(name)}/health-check`,
+        { method: 'POST' }
+      );
+      return data;
+    },
+    onSuccess: () => {
+      // Invalidate health summary to reflect new check
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.healthSummary(),
+      });
+    },
   });
 }

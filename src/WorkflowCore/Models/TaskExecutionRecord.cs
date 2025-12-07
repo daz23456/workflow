@@ -67,6 +67,16 @@ public class TaskExecutionRecord
     public DateTime? CompletedAt { get; set; }
 
     /// <summary>
+    /// The resolved URL after template substitution. Used for health checks.
+    /// </summary>
+    public string? ResolvedUrl { get; set; }
+
+    /// <summary>
+    /// The HTTP method used for this task (GET, POST, PUT, DELETE, etc.).
+    /// </summary>
+    public string? HttpMethod { get; set; }
+
+    /// <summary>
     /// Navigation property to the parent ExecutionRecord.
     /// </summary>
     public ExecutionRecord? ExecutionRecord { get; set; }

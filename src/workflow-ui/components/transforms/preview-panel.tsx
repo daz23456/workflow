@@ -1,5 +1,7 @@
 /**
  * Preview Panel Component
+ *
+ * Side-by-side comparison of original input data vs transformed output data.
  */
 
 'use client';
@@ -7,89 +9,93 @@
 import { useState } from 'react';
 import { AlertCircle, AlertTriangle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTransformBuilderStore } from '@/lib/stores/transform-builder-store';
+import { cn } from '@/lib/utils';
+
+type ViewMode = 'split' | 'input' | 'output';
 
 export function PreviewPanel() {
-  const { inputData, outputData, validation } = useTransformBuilderStore();
+  const { inputData, outputData, validation, pipeline } = useTransformBuilderStore();
   const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(10);
+  const [viewMode, setViewMode] = useState<ViewMode>('split');
 
-  // Use inputData for "records loaded" count, outputData for actual preview
-  const loadedCount = inputData.length;
-  const totalRecords = outputData.length;
+  const pageSize = 3; // Fixed smaller page size for side-by-side
+  const totalRecords = Math.max(inputData.length, outputData.length);
   const totalPages = Math.ceil(totalRecords / pageSize);
   const startIdx = page * pageSize;
   const endIdx = Math.min(startIdx + pageSize, totalRecords);
-  const pageData = outputData.slice(startIdx, endIdx);
+
+  const inputPage = inputData.slice(startIdx, endIdx);
+  const outputPage = outputData.slice(startIdx, endIdx);
+
+  const hasTransforms = pipeline.length > 0;
 
   return (
-    <div className="h-full flex flex-col space-y-4">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-lg font-semibold text-gray-900">3. Preview</h3>
-          <p className="text-sm text-gray-600">
-            {loadedCount} records loaded
-          </p>
+    <div className="h-full flex flex-col">
+      {/* Header with view toggle */}
+      <div className="flex-shrink-0 flex items-center justify-between mb-2">
+        <div className="flex gap-1 bg-gray-100 p-0.5 rounded-lg">
+          <button
+            onClick={() => setViewMode('split')}
+            className={cn(
+              'px-2 py-1 text-xs font-medium rounded transition-colors',
+              viewMode === 'split' ? 'bg-white shadow text-gray-900' : 'text-gray-600 hover:text-gray-900'
+            )}
+          >
+            Split
+          </button>
+          <button
+            onClick={() => setViewMode('input')}
+            className={cn(
+              'px-2 py-1 text-xs font-medium rounded transition-colors',
+              viewMode === 'input' ? 'bg-white shadow text-gray-900' : 'text-gray-600 hover:text-gray-900'
+            )}
+          >
+            Input
+          </button>
+          <button
+            onClick={() => setViewMode('output')}
+            className={cn(
+              'px-2 py-1 text-xs font-medium rounded transition-colors',
+              viewMode === 'output' ? 'bg-white shadow text-gray-900' : 'text-gray-600 hover:text-gray-900'
+            )}
+          >
+            Output
+          </button>
         </div>
 
-        {/* Pagination Controls */}
-        {totalRecords > 0 && (
-          <div className="flex items-center gap-2">
-            <label htmlFor="page-size" className="text-sm text-gray-700">
-              Page size:
-            </label>
-            <select
-              id="page-size"
-              value={pageSize}
-              onChange={(e) => {
-                setPageSize(Number(e.target.value));
-                setPage(0);
-              }}
-              className="px-2 py-1 border border-gray-300 rounded text-sm"
-              aria-label="Page size"
+        {/* Pagination */}
+        {totalRecords > pageSize && (
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setPage((p) => Math.max(0, p - 1))}
+              disabled={page === 0}
+              className="p-1 rounded hover:bg-gray-100 disabled:opacity-50"
+              aria-label="Previous"
             >
-              <option value="10">10</option>
-              <option value="25">25</option>
-              <option value="50">50</option>
-              <option value="100">100</option>
-            </select>
-
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => setPage((p) => Math.max(0, p - 1))}
-                disabled={page === 0}
-                className="p-1 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                aria-label="Previous"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-
-              <span className="text-sm text-gray-700 px-2">
-                Showing {startIdx + 1}-{endIdx} of {totalRecords}
-              </span>
-
-              <button
-                onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
-                disabled={page >= totalPages - 1}
-                className="p-1 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                aria-label="Next"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
+              <ChevronLeft className="w-3 h-3" />
+            </button>
+            <span className="text-xs text-gray-600">
+              {startIdx + 1}-{endIdx}/{totalRecords}
+            </span>
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+              disabled={page >= totalPages - 1}
+              className="p-1 rounded hover:bg-gray-100 disabled:opacity-50"
+              aria-label="Next"
+            >
+              <ChevronRight className="w-3 h-3" />
+            </button>
           </div>
         )}
       </div>
 
       {/* Errors */}
       {validation.errors.length > 0 && (
-        <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
-          <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-          <div className="flex-1">
+        <div className="flex-shrink-0 flex items-start gap-2 p-2 mb-2 bg-red-50 border border-red-200 rounded-lg">
+          <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
+          <div className="flex-1 text-xs text-red-900">
             {validation.errors.map((error, idx) => (
-              <p key={idx} className="text-sm text-red-900">
-                {error}
-              </p>
+              <p key={idx}>{error}</p>
             ))}
           </div>
         </div>
@@ -97,28 +103,72 @@ export function PreviewPanel() {
 
       {/* Warnings */}
       {validation.warnings.length > 0 && (
-        <div className="flex items-start gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-          <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-          <div className="flex-1">
+        <div className="flex-shrink-0 flex items-start gap-2 p-2 mb-2 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <AlertTriangle className="w-4 h-4 text-yellow-600 flex-shrink-0 mt-0.5" />
+          <div className="flex-1 text-xs text-yellow-900">
             {validation.warnings.map((warning, idx) => (
-              <p key={idx} className="text-sm text-yellow-900">
-                {warning}
-              </p>
+              <p key={idx}>{warning}</p>
             ))}
           </div>
         </div>
       )}
 
-      {/* Output Data */}
-      <div className="flex-1 overflow-auto">
+      {/* Data comparison */}
+      <div className="flex-1 overflow-hidden">
         {totalRecords === 0 ? (
-          <div className="h-full flex items-center justify-center text-gray-500">
-            <p>No preview data available</p>
+          <div className="h-full flex items-center justify-center text-gray-500 text-sm">
+            <p>No data loaded</p>
+          </div>
+        ) : viewMode === 'split' ? (
+          <div className="h-full grid grid-cols-2 gap-2">
+            {/* Input column */}
+            <div className="flex flex-col overflow-hidden">
+              <div className="flex-shrink-0 text-xs font-medium text-gray-500 mb-1 px-1">
+                Input ({inputData.length} records)
+              </div>
+              <div className="flex-1 bg-gray-50 rounded p-2 overflow-auto">
+                <pre className="text-xs font-mono text-gray-700 whitespace-pre-wrap">
+                  {JSON.stringify(inputPage, null, 2)}
+                </pre>
+              </div>
+            </div>
+            {/* Output column */}
+            <div className="flex flex-col overflow-hidden">
+              <div className="flex-shrink-0 text-xs font-medium text-gray-500 mb-1 px-1">
+                Output {hasTransforms ? `(${outputData.length} records)` : '(no transforms)'}
+              </div>
+              <div className={cn(
+                'flex-1 rounded p-2 overflow-auto',
+                hasTransforms ? 'bg-green-50' : 'bg-gray-50'
+              )}>
+                <pre className="text-xs font-mono text-gray-700 whitespace-pre-wrap">
+                  {hasTransforms
+                    ? JSON.stringify(outputPage, null, 2)
+                    : 'Add transforms to see output'
+                  }
+                </pre>
+              </div>
+            </div>
           </div>
         ) : (
-          <pre className="bg-gray-50 rounded-lg p-4 text-sm font-mono overflow-auto">
-            {JSON.stringify(pageData, null, 2)}
-          </pre>
+          <div className="h-full flex flex-col overflow-hidden">
+            <div className="flex-shrink-0 text-xs font-medium text-gray-500 mb-1 px-1">
+              {viewMode === 'input' ? `Input (${inputData.length} records)` : `Output (${outputData.length} records)`}
+            </div>
+            <div className={cn(
+              'flex-1 rounded p-2 overflow-auto',
+              viewMode === 'output' && hasTransforms ? 'bg-green-50' : 'bg-gray-50'
+            )}>
+              <pre className="text-xs font-mono text-gray-700 whitespace-pre-wrap">
+                {viewMode === 'input'
+                  ? JSON.stringify(inputPage, null, 2)
+                  : hasTransforms
+                    ? JSON.stringify(outputPage, null, 2)
+                    : 'Add transforms to see output'
+                }
+              </pre>
+            </div>
+          </div>
         )}
       </div>
     </div>

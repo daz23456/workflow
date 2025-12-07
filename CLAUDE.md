@@ -117,7 +117,7 @@ workflow-operator/
 
 ## Completed Stages
 
-**Status:** 45 stages/substages complete - Stage 8 SKIPPED (architectural decision)
+**Status:** 52 stages/substages complete - Stage 8 SKIPPED (architectural decision)
 *Note:* Stage breakdown refined - original 11 stages expanded to focused substages
 *Note:* Stage 8 skipped as it's designed for async workflows, not synchronous execution model
 
@@ -466,18 +466,21 @@ For proof of completion and actual results, see the respective `STAGE_X_PROOF.md
 - Trigger configuration models
 - Timezone support
 
-### Stage 21.1-21.2: Sub-Workflow Composition ✅
-**Status:** Complete (2 substages)
-**Proof:** `stage-proofs/stage-21.2/STAGE_21.2_PROOF.md`
-**Metrics:** 1285/1285 tests, 100% line coverage (new code)
+### Stage 21.1-21.4: Sub-Workflow Composition ✅
+**Status:** Complete (4 substages)
+**Proof:** `stage-proofs/stage-21.4/STAGE_21.4_PROOF.md`
+**Metrics:** 1564/1564 tests, 100% coverage (new code)
 
 **Deliverables:**
 - WorkflowRef resolution (by name/version)
 - Sub-workflow execution with context isolation
-- Cycle detection and max depth enforcement
-- Input/output mapping between workflows
+- Cycle detection with WorkflowCallStack and WorkflowCycleDetector
+- Max depth enforcement (configurable, default: 5)
+- SubWorkflowNode component for visual builder
+- SubWorkflowExpander panel with nested graph view
+- SubWorkflowBreadcrumb navigation for nested workflows
 
-**Value Delivered:** Modular workflow composition for reusability!
+**Value Delivered:** Modular workflow composition with visual nesting support!
 
 ### Stage 25-25.1: Local Development CLI ✅
 **Status:** Complete (2 substages)
@@ -507,18 +510,20 @@ For proof of completion and actual results, see the respective `STAGE_X_PROOF.md
 
 **Value Delivered:** IDE integration with IntelliSense and validation!
 
-### Stage 27.1-27.2: Anomaly Detection ✅
-**Status:** Complete (2 substages)
-**Proof:** `stage-proofs/stage-27.2/STAGE_27.2_PROOF.md`
-**Metrics:** 77/77 tests, ~91% coverage, 0 vulnerabilities
+### Stage 27.1-27.3: Anomaly Detection & Alerting ✅
+**Status:** Complete (3 substages)
+**Proof:** `stage-proofs/stage-27.3/STAGE_27.3_PROOF.md`
+**Metrics:** 2105/2105 tests, 98.8% coverage (AlertRouter), 0 vulnerabilities
 
 **Deliverables:**
 - Metrics collection and baseline calculation
-- Z-score anomaly detection
+- Z-score anomaly detection with trend analysis
 - AnomalyEvaluationService for runtime detection
-- Trend detection for early warning
+- AlertRouter with pattern-based rule matching
+- Multi-channel alert support (Slack, PagerDuty, Webhook, Email)
+- Severity filtering and cooldown logic to prevent alert storms
 
-**Value Delivered:** Proactive detection of performance issues!
+**Value Delivered:** Proactive anomaly detection with intelligent alerting!
 
 ### Stage 28: Circuit Breaker & Resilience ✅
 **Status:** Complete (2 substages)
@@ -565,6 +570,20 @@ For proof of completion and actual results, see the respective `STAGE_X_PROOF.md
 - IMemoryCache-based result caching
 
 **Value Delivered:** Catch broken endpoints before users do - proactive failure detection!
+
+### Stage 18.2: Dashboard Health Widget ✅
+**Status:** Complete
+**Proof:** `stage-proofs/stage-18.2/STAGE_18.2_PROOF.md`
+**Metrics:** 20/20 tests, ~93% coverage, 0 vulnerabilities
+
+**Deliverables:**
+- HealthSummaryPanel component with health indicators
+- Expandable workflow list with task-level health details
+- Color-coded status (Healthy, Degraded, Unhealthy, Unknown)
+- Auto-refresh every 60 seconds
+- Storybook stories for all visual states
+
+**Value Delivered:** Visual health dashboard - see endpoint status at a glance!
 
 ---
 
@@ -894,20 +913,16 @@ LLM: "Here's the profile for user 3:
 **Value:** **Any chatbot can now be a workflow executor** - democratize access beyond technical users!
 
 ### Stage 16: OpenAPI Task Generator CLI (Complete Contract Testing Platform)
+**Stage 16.1: OpenAPI Parser ✅ COMPLETE**
+*See Completed Stages section above for details.*
+
+**Remaining substages (16.2-16.8):**
 *Scope:* Auto-generate WorkflowTask CRDs from OpenAPI/Swagger specifications - **replaces PACT testing**
-*Deliverables:* 8 substages
-*Tests:* ~140 tests
+*Deliverables:* 7 remaining substages
+*Tests:* ~120 tests remaining
 *Dependencies:* Stage 6 (WorkflowTask CRD model)
 *Package:* `packages/workflow-cli` (new CLI tool)
 *Value:* "Point at an API spec, get all tasks instantly" - eliminate manual task creation
-
-*Philosophy:* Integrating with external APIs shouldn't require manual YAML writing. Import an OpenAPI spec and get production-ready WorkflowTask definitions in seconds. No separate PACT broker needed.
-
-**Stage 16.1: OpenAPI Parser**
-- OpenAPI 2.0 (Swagger) and 3.x auto-detection and parsing
-- Schema resolution ($ref handling, circular reference detection)
-- Endpoint extraction (parameters, request/response schemas, security schemes)
-- 18+ tests
 
 **Stage 16.2: Task Generator**
 - WorkflowTask CRD generation from endpoints
@@ -993,144 +1008,45 @@ error:
 
 **Value:** **Complete PACT replacement with zero broker infrastructure** - contract testing built into the workflow system with automatic field usage tracking!
 
-### Stage 17: Test API Server (Testing Infrastructure)
-*Scope:* Standalone HTTP test server with 100 endpoints for orchestration service capability testing
-*Deliverables:* 3 substages
-*Tests:* ~100 tests
-*Dependencies:* Stage 7 (API Gateway), Stage 5 (Workflow Execution)
-*Location:* `tests/TestApiServer`
-*Value:* "Comprehensive testing infrastructure with real-world scenarios" - validate auto-transforms, error handling, and retry logic
+### Stage 17: Test API Server ✅ COMPLETE
+*See Completed Stages section above for details (Stage 17.1-17.2).*
 
-*Philosophy:* A dedicated test server that returns content in various shapes and forms, enabling thorough testing of orchestration capabilities. Mix of structural endpoints (schema testing) and business domain endpoints (real-world scenarios).
-
-**Stage 17.1: Core Infrastructure & Structural Endpoints**
-- Project setup (`.NET Minimal API`, test dependencies)
-- Middleware: DelayMiddleware, FailureSimulationMiddleware
-- Primitive endpoints (10): string, integer, decimal, boolean, guid, datetime, echo, null
-- Array endpoints (10): strings, numbers, nested, large (1000/10000 items), mixed types
-- 20 WorkflowTask CRDs in `test` namespace
-- 25+ tests
-
-**Stage 17.2: Business Domain Endpoints**
-- Orders endpoints (15): full order lifecycle, calculate totals, shipping, invoices
-- Inventory endpoints (10): product catalog, availability, reservations, pricing
-- Payments endpoints (15): process, refund, validate card, auth/capture flow
-- Users & Auth endpoints (15): profiles, preferences, login/logout, JWT validation
-- Notifications endpoints (10): email, SMS, push, templates, bulk send
-- 65 WorkflowTask CRDs in `test` namespace
-- 50+ tests
-
-**Stage 17.3: Error Handling, Retry & Sample Workflows**
+**Stage 17.3: Error Handling, Retry & Sample Workflows** (Remaining)
 - Error simulation (10): HTTP status codes 400-503, configurable, random
 - Retry endpoints (5): fail-once, fail-n-times, intermittent, slow responses
-- FailureStateService, RetryCounterService
-- Sample workflows (5):
-  - Order processing (create → inventory → payment → notify)
-  - User onboarding (register → verify → preferences → welcome)
-  - Payment retry (authorize → capture with retry)
-  - Bulk notifications (parallel sends)
-  - Inventory check (multi-product availability)
+- Sample workflows (5): order processing, user onboarding, payment retry, bulk notifications, inventory check
 - 25+ tests
 
-**Success Metrics:**
-- Total endpoints: 100 (structural + business domain)
-- WorkflowTask CRDs: 100 in `test` namespace
-- Sample workflows: 5 realistic business scenarios
-- Test coverage: ≥90%
+### Stage 18: Synthetic Health Checks ✅ COMPLETE
+*See Completed Stages section above for details (Stage 18.1-18.2).*
+- Proactive endpoint health monitoring with service account tokens
+- Dashboard health widget with color-coded status indicators
+- Auto-refresh and manual health check triggers
 
-**Value:** **Comprehensive testing infrastructure** - validate orchestration capabilities against realistic API behavior including failures, timeouts, and complex nested responses!
+### Stage 19: Control Flow ✅ COMPLETE
+*See Completed Stages section above for details (Stage 19.1-19.5).*
+- Condition evaluation engine, switch/case, forEach, nested control flow
 
-### Stage 18: Synthetic Health Checks (Proactive Monitoring)
-*Scope:* Proactive endpoint health monitoring - replay GET requests from previous executions to verify services are up
-*Deliverables:* 2 substages
-*Tests:* ~40 tests
-*Dependencies:* Stage 7 (API Gateway), Stage 7.8 (Execution History), Stage 10.2 (Dashboard)
-*Value:* "Catch broken endpoints before users do" - full end-to-end validation including DB connectivity on target services
+### Stage 20: Workflow Triggers ✅ COMPLETE
+*See Completed Stages section above for details (Stage 20.1-20.2).*
+- Schedule triggers (cron), webhook triggers with HMAC validation
 
-*Philosophy:* Don't wait for users to discover that an external API is down. Replay GET requests from the last successful execution using a service account token. This validates the full path: DNS, TLS, service health, database connectivity, and response format.
+### Stage 21: Sub-Workflow Composition ✅ COMPLETE
+*See Completed Stages section above for details (Stage 21.1-21.4).*
+- WorkflowRef resolution, sub-workflow execution, cycle detection, visual nesting UI
 
-**Stage 18.1: Backend Health Check Service**
-- Configuration for service account token:
-  ```yaml
-  # appsettings.json
-  SyntheticCheck:
-    Enabled: true
-    IntervalMinutes: 5
-    TimeoutSeconds: 10
-    ServiceAccountToken: "${HEALTH_CHECK_TOKEN}"  # From env/secret
-  ```
-- `ISyntheticCheckService` / `SyntheticCheckService`:
-  - Find last successful execution for workflow
-  - Extract GET requests with resolved URLs from execution history
-  - Replay each GET request with service account token
-  - Expect 2xx response (full validation)
-  - Run checks in parallel (Task.WhenAll)
-  - Record: reachable, latencyMs, statusCode, responseValid
-- `SyntheticCheckBackgroundService` (IHostedService):
-  - Configurable interval (default: 5 min)
-  - Check all workflows with execution history
-  - Cache results in memory
-  - Log warnings on failures
-- API endpoints:
-  - `POST /api/v1/workflows/{name}/health-check` (run now)
-  - `GET /api/v1/workflows/{name}/health-status` (cached result)
-  - `GET /api/v1/health/summary` (all workflows overview)
-- Profile: `BACKEND_DOTNET`, Gates: 1-8
-- 25+ tests
+### Stage 25-26: Developer Tools ✅ COMPLETE
+*See Completed Stages section above for details.*
+- Local Development CLI (Stage 25-25.1)
+- VS Code Extension with LSP (Stage 26)
 
-**What gets validated:**
-- DNS resolution ✓
-- TLS/SSL certificates ✓
-- Service is running ✓
-- Database connectivity (service can query) ✓
-- Response format matches expected ✓
+### Stage 27: Anomaly Detection & Alerting ✅ COMPLETE
+*See Completed Stages section above for details (Stage 27.1-27.3).*
+- Metrics collection, baseline learning, anomaly detection, multi-channel alerting
 
-**Stage 18.2: Dashboard Health Widget & UI**
-- Health status widget on dashboard:
-  - Green/yellow/red indicators per workflow
-  - Click for task-level breakdown
-  - "Run Check Now" button
-- Health summary panel showing:
-  - Workflows by health status
-  - Last check timestamp
-  - Degraded/unhealthy count
-- Integration with existing dashboard layout
-- Profile: `FRONTEND_TS`, Gates: 1-8, 14, 15
-- 15+ tests
-
-**Response Model:**
-```json
-{
-  "workflow": "order-processing",
-  "overallHealth": "healthy",
-  "tasks": [
-    {
-      "taskId": "fetch-user",
-      "taskRef": "get-user",
-      "status": "healthy",
-      "checkType": "healthEndpoint",
-      "latencyMs": 45,
-      "reachable": true
-    }
-  ],
-  "checkedAt": "2024-01-15T10:30:00Z",
-  "durationMs": 234
-}
-```
-
-**TDD Targets:**
-- 40+ tests across service, background worker, and UI
-- Integration tests with mock HTTP endpoints
-- E2E test: trigger check → verify dashboard updates
-- Maintain ≥90% coverage
-
-**Success Metrics:**
-- Health check latency: <5s for 10-task workflow
-- Background check interval: configurable (1-60 min)
-- Dashboard update: <1s after check completes
-- Zero false positives (reliable connectivity detection)
-
-**Value:** **Proactive failure detection** - know about broken endpoints before your users do!
+### Stage 28: Circuit Breaker & Resilience ✅ COMPLETE
+*See Completed Stages section above for details (Stage 28, 28.1-28.2).*
+- Circuit breaker state machine, registry, API endpoints for manual control
 
 ---
 

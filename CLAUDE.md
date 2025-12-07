@@ -117,7 +117,7 @@ workflow-operator/
 
 ## Completed Stages
 
-**Status:** 44 stages/substages complete - Stage 8 SKIPPED (architectural decision)
+**Status:** 45 stages/substages complete - Stage 8 SKIPPED (architectural decision)
 *Note:* Stage breakdown refined - original 11 stages expanded to focused substages
 *Note:* Stage 8 skipped as it's designed for async workflows, not synchronous execution model
 
@@ -520,17 +520,51 @@ For proof of completion and actual results, see the respective `STAGE_X_PROOF.md
 
 **Value Delivered:** Proactive detection of performance issues!
 
-### Stage 28: Circuit Breaker ✅
-**Status:** Complete
-**Proof:** `stage-proofs/stage-28/STAGE_28_PROOF.md`
+### Stage 28: Circuit Breaker & Resilience ✅
+**Status:** Complete (2 substages)
+
+**Stage 28.1: Circuit Breaker Orchestrator Integration ✅**
+**Proof:** `stage-proofs/stage-28.1/STAGE_28.1_PROOF.md`
+**Metrics:** 541/541 tests, 97%+ coverage
 
 **Deliverables:**
 - Circuit breaker state machine (Closed/Open/Half-Open)
+- CircuitBreakerRegistry for managing multiple circuits
+- ICircuitStateStore interface with InMemory and Redis implementations
+- CircuitBreakerOptionsParser for YAML configuration
+- Fallback task execution in WorkflowOrchestrator
 - Sliding window failure counter
-- Fallback task execution
-- Integration with orchestrator
 
-**Value Delivered:** Prevent cascade failures with resilience patterns!
+**Stage 28.2: Circuit Breaker API ✅**
+**Proof:** `stage-proofs/stage-28.2/STAGE_28.2_PROOF.md`
+**Metrics:** 2105/2105 tests, 100% coverage (stage deliverables)
+
+**Deliverables:**
+- CircuitBreakerController with 6 REST endpoints
+- GET /api/v1/circuits - List all circuits
+- GET /api/v1/circuits/{serviceName} - Get circuit state
+- POST /api/v1/circuits/{serviceName}/open - Force open
+- POST /api/v1/circuits/{serviceName}/close - Force close
+- POST /api/v1/circuits/{serviceName}/reset - Reset circuit
+- GET /api/v1/circuits/health - Health check
+- CircuitBreakerModels (response models)
+
+**Value Delivered:** Prevent cascade failures with resilience patterns and manual circuit control!
+
+### Stage 18.1: Backend Health Check Service ✅
+**Status:** Complete
+**Proof:** `stage-proofs/stage-18.1/STAGE_18.1_PROOF.md`
+**Metrics:** 1580/1580 tests (16 new), 93.9% coverage, 0 vulnerabilities
+
+**Deliverables:**
+- SyntheticCheckService for proactive endpoint health monitoring
+- Background health check poller with configurable intervals
+- Health status models (Healthy, Degraded, Unhealthy, Unknown)
+- HealthCheckController API endpoints
+- ResolvedUrl/HttpMethod capture in task execution records
+- IMemoryCache-based result caching
+
+**Value Delivered:** Catch broken endpoints before users do - proactive failure detection!
 
 ---
 

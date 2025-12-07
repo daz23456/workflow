@@ -1062,8 +1062,7 @@ spec:
 
 # Stage 28: Circuit Breaker & Resilience ✅ COMPLETE
 
-**Status:** Complete
-**Proof:** `stage-proofs/stage-28/STAGE_28_PROOF.md`
+**Status:** Complete (2 substages)
 
 ## Overview
 
@@ -1111,25 +1110,40 @@ tasks:
    - Different thresholds per external service
    - Shared circuit state across workflow executions
 
+5. **Manual Circuit Control API**
+   - List all circuit states
+   - Force open/close circuits
+   - Reset circuits
+   - Health check endpoint
+
 ## Substages
 
-### 28.1: Circuit Breaker Core
-- State machine implementation
+### 28.1: Circuit Breaker Orchestrator Integration ✅
+**Proof:** `stage-proofs/stage-28.1/STAGE_28.1_PROOF.md`
+**Metrics:** 541/541 tests, 97%+ coverage
+- State machine implementation (Closed/Open/Half-Open)
+- CircuitBreakerRegistry for managing multiple circuits
+- ICircuitStateStore interface (InMemory + Redis)
 - Sliding window failure counter
-- Thread-safe state transitions
-- **Tests**: ~25
+- Fallback task execution in orchestrator
+- **Tests**: ~35
 
-### 28.2: Integration with Orchestrator
-- Circuit check before task execution
-- Fallback task execution
-- Circuit state in execution trace
-- **Tests**: ~20
+### 28.2: Circuit Breaker API ✅
+**Proof:** `stage-proofs/stage-28.2/STAGE_28.2_PROOF.md`
+**Metrics:** 2105/2105 tests, 100% coverage (stage deliverables)
+- CircuitBreakerController with 6 REST endpoints
+- GET /api/v1/circuits - List all circuits
+- GET /api/v1/circuits/{serviceName} - Get circuit state
+- POST /api/v1/circuits/{serviceName}/open - Force open
+- POST /api/v1/circuits/{serviceName}/close - Force close
+- POST /api/v1/circuits/{serviceName}/reset - Reset circuit
+- GET /api/v1/circuits/health - Health check
+- **Tests**: ~9
 
-### 28.3: Shared Circuit State
-- Redis-backed circuit state (multi-instance)
-- Circuit metrics and monitoring
-- Manual circuit control API
-- **Tests**: ~20
+### 28.3: Circuit Breaker Dashboard (Future)
+- UI for circuit visualization
+- Real-time circuit state monitoring
+- **Tests**: ~15
 
 ---
 
@@ -1668,6 +1682,8 @@ These can be added to existing stages or as mini-stages:
 | **26** | VS Code Extension | ~50 | P1 | ✅ Complete |
 | **28** | Circuit Breaker | ~65 | P1 | ✅ Complete |
 | **27** | Anomaly Detection | ~70 | P1 | ✅ Complete |
+| **18.1** | Synthetic Health Checks (Backend) | ~25 | P1 | ✅ Complete |
+| **18.2** | Synthetic Health Checks (UI) | ~15 | P1 | Pending |
 | **32** | Data Management (CR Persistence + Retention) | ~140 | P1 | Pending |
 | **30** | Dead Letter Queue | ~55 | P1 | Pending |
 

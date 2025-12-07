@@ -301,6 +301,37 @@ describe('HealthSummaryPanel', () => {
     expect(screen.getByText('No workflows with health data')).toBeInTheDocument();
   });
 
+  it('should show no tasks message when workflow has empty tasks array', () => {
+    const workflowWithNoTasks: WorkflowHealthStatus = {
+      workflowName: 'empty-workflow',
+      overallHealth: 'Unknown',
+      tasks: [],
+      checkedAt: '2024-01-15T10:30:00Z',
+      durationMs: 0,
+    };
+
+    mockUseHealthSummary.mockReturnValue({
+      data: { ...mockHealthSummary, workflows: [workflowWithNoTasks] },
+      isLoading: false,
+      isFetching: false,
+      refetch: vi.fn(),
+    } as any);
+
+    render(
+      <TestWrapper>
+        <HealthSummaryPanel />
+      </TestWrapper>
+    );
+
+    // Expand the workflow row
+    const workflowRow = screen.getByTestId('workflow-row-empty-workflow');
+    fireEvent.click(workflowRow);
+
+    // Should show the "no tasks" message
+    expect(screen.getByTestId('no-tasks-message')).toBeInTheDocument();
+    expect(screen.getByText('No endpoints checked. Run a health check to see task details.')).toBeInTheDocument();
+  });
+
   it('should show +N more when workflows exceed maxItems', () => {
     const manyWorkflows = Array.from({ length: 8 }, (_, i) => ({
       ...mockHealthyWorkflow,

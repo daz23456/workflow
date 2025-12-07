@@ -102,11 +102,17 @@ function WorkflowHealthRow({ workflow, isExpanded, onToggle }: WorkflowHealthRow
         </span>
       </button>
 
-      {isExpanded && workflow.tasks.length > 0 && (
+      {isExpanded && (
         <div className="pl-8 pr-2 pb-2 space-y-1" data-testid={`task-list-${workflow.workflowName}`}>
-          {workflow.tasks.map((task) => (
-            <TaskHealthItem key={task.taskId} task={task} />
-          ))}
+          {workflow.tasks.length > 0 ? (
+            workflow.tasks.map((task) => (
+              <TaskHealthItem key={task.taskId} task={task} />
+            ))
+          ) : (
+            <p className="text-xs text-gray-500 dark:text-gray-400 py-2" data-testid="no-tasks-message">
+              No endpoints checked. Run a health check to see task details.
+            </p>
+          )}
         </div>
       )}
     </div>

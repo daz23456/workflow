@@ -93,6 +93,14 @@ const createUnknownWorkflow = (name: string): WorkflowHealthStatus => ({
   durationMs: 0,
 });
 
+const createWorkflowWithNoTasks = (name: string): WorkflowHealthStatus => ({
+  workflowName: name,
+  overallHealth: 'Unknown',
+  tasks: [],
+  checkedAt: new Date().toISOString(),
+  durationMs: 0,
+});
+
 // Create mock health summary data
 const createMockHealthData = (
   healthy: number,
@@ -226,4 +234,26 @@ export const Loading: Story = {
       <HealthSummaryPanelSkeleton />
     </div>
   ),
+};
+
+/**
+ * Workflows with no tasks (empty tasks array).
+ * Click to expand and see the "No endpoints checked" message.
+ */
+export const WorkflowsWithNoTasks: Story = {
+  args: {
+    data: {
+      healthyCount: 0,
+      degradedCount: 0,
+      unhealthyCount: 0,
+      unknownCount: 3,
+      workflows: [
+        createWorkflowWithNoTasks('new-workflow-1'),
+        createWorkflowWithNoTasks('new-workflow-2'),
+        createWorkflowWithNoTasks('unchecked-workflow'),
+      ],
+      generatedAt: new Date().toISOString(),
+    },
+    isFetching: false,
+  },
 };

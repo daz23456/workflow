@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("WorkflowCore.Tests")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d60c5357ea58503dd4e9e51c40d19a754597538d")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f8ee86be00b40ea611b41ebfa7977dc389966523")]
 [assembly: System.Reflection.AssemblyProductAttribute("WorkflowCore.Tests")]
 [assembly: System.Reflection.AssemblyTitleAttribute("WorkflowCore.Tests")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

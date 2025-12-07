@@ -695,10 +695,34 @@ This roadmap transforms the workflow engine into a **world-class, enterprise-rea
 
 ---
 
+# Advanced Stages (33+)
+
+> **Detailed specifications in:** `docs/FUTURE_STAGES.md`
+
+| Stage | Name | Focus | Priority |
+|-------|------|-------|----------|
+| 11 | Cloud Deployment | Helm charts, GKE/AKS, production hardening | P1 |
+| 14 | Optimization Engine | Static analysis, transform equivalence, historical replay | P2 |
+| 15 | MCP Consumer | External chatbot workflow discovery & execution | P2 |
+| 33 | AI-Native Workflows | LLM task type, prompt management, guardrails | P3 |
+| 34 | Cost-Aware Execution | Cost tracking, estimation, budgets | P2 |
+| 35 | Marketplace | Pre-built connectors (Stripe, Twilio, etc.) | P2 |
+| 36 | Time-Travel Debugging | State capture, replay with modifications | P1 |
+| 37 | Collaborative Dev | Real-time editing, comments, approvals | P3 |
+| 38 | Zero-Config Observability | OpenTelemetry, Prometheus, structured logs | P0 |
+| 39 | Smart Caching | Task-level caching, stale-while-revalidate | P0 |
+| 40 | Compliance Built-In | PII handling, audit logs, GDPR/HIPAA | P2 |
+| 41 | Edge Execution | Low-latency edge nodes | P4 |
+| 42 | Traffic Splitting | Canary deployments, A/B testing | P2 |
+| 43 | Label Management | Tags, categories, bulk operations | P2 |
+| 44 | Training Curriculum | 8 new lessons (11-18) | P2 |
+
+---
+
 # Ready to Start?
 
-Begin with **Stage 19.1: Condition Evaluation Engine** using:
+Begin with the next pending stage using the Stage Execution Framework:
 
 ```bash
-./scripts/init-stage.sh --stage 19.1 --name "Condition Evaluation" --profile BACKEND_DOTNET
+./scripts/init-stage.sh --stage <X.Y> --name "<Stage Name>" --profile <PROFILE>
 ```

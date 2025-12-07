@@ -117,7 +117,7 @@ workflow-operator/
 
 ## Completed Stages
 
-**Status:** 52 stages/substages complete - Stage 8 SKIPPED (architectural decision)
+**Status:** 57 stages/substages complete - Stage 8 SKIPPED (architectural decision)
 
 For detailed deliverables and TDD instructions, see `COMPLETED_STAGES_ARCHIVE.md`.
 For proof of completion, see the respective `STAGE_X_PROOF.md` files or `stage-proofs/` directory.
@@ -159,6 +159,7 @@ For proof of completion, see the respective `STAGE_X_PROOF.md` files or `stage-p
 | 27.1-27.3 | Anomaly Detection & Alerting | 2105 | 98.8% | stage-proofs/stage-27.3/ |
 | 28.1 | Circuit Breaker Integration | 541 | 97.0% | stage-proofs/stage-28.1/ |
 | 28.2 | Circuit Breaker API | 2105 | 100% | stage-proofs/stage-28.2/ |
+| 15.1-15.5 | MCP Consumer (External) | 77 | 98.4% | stage-proofs/stage-15.5/ |
 
 ---
 
@@ -248,9 +249,9 @@ dotnet run -c Release --project tests/WorkflowCore.PerformanceTests
 |-------|------|--------|
 | 11 | Cloud Deployment & Production Hardening | Not Started |
 | 14 | Workflow Optimization Engine | Not Started |
-| 15 | MCP Server for External Consumption | Not Started |
 | 16.2-16.8 | OpenAPI Task Generator (remaining) | Not Started |
 | 17.3 | Error Handling, Retry & Sample Workflows | Not Started |
+| 32.1-32.5 | Workflow & Task Label Management | Not Started |
 
 ### Stage 8: SKIPPED
 **Architectural Decision:** Stage 8 (pause/resume, state recovery) is designed for async workflows but this engine is synchronous with 30s max execution. All valuable features already delivered in Stages 7.8-7.9.

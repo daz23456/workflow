@@ -51,6 +51,69 @@ public class WorkflowSpec
     [YamlMember(Alias = "triggers")]
     [JsonPropertyName("triggers")]
     public List<TriggerSpec>? Triggers { get; set; }
+
+    /// <summary>
+    /// Categories for workflow discoverability (e.g., ["orders", "payments"]).
+    /// Used by MCP consumer tools for filtering and search.
+    /// Stage 15: MCP Server for External Workflow Consumption
+    /// </summary>
+    [YamlMember(Alias = "categories")]
+    [JsonPropertyName("categories")]
+    public List<string>? Categories { get; set; }
+
+    /// <summary>
+    /// Tags for workflow metadata (e.g., ["v2", "production", "critical"]).
+    /// Used by MCP consumer tools for filtering and search.
+    /// Stage 15: MCP Server for External Workflow Consumption
+    /// </summary>
+    [YamlMember(Alias = "tags")]
+    [JsonPropertyName("tags")]
+    public List<string>? Tags { get; set; }
+
+    /// <summary>
+    /// Example inputs and expected outputs for the workflow.
+    /// Used by MCP consumer tools to help LLMs understand usage patterns.
+    /// Stage 15: MCP Server for External Workflow Consumption
+    /// </summary>
+    [YamlMember(Alias = "examples")]
+    [JsonPropertyName("examples")]
+    public List<WorkflowExample>? Examples { get; set; }
+}
+
+/// <summary>
+/// Example input and expected output for a workflow.
+/// Used by MCP consumer tools to help LLMs understand usage patterns.
+/// Stage 15: MCP Server for External Workflow Consumption
+/// </summary>
+public class WorkflowExample
+{
+    /// <summary>
+    /// Name of the example (e.g., "Happy path order").
+    /// </summary>
+    [YamlMember(Alias = "name")]
+    [JsonPropertyName("name")]
+    public string Name { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Optional description of what this example demonstrates.
+    /// </summary>
+    [YamlMember(Alias = "description")]
+    [JsonPropertyName("description")]
+    public string? Description { get; set; }
+
+    /// <summary>
+    /// Example input values for the workflow.
+    /// </summary>
+    [YamlMember(Alias = "input")]
+    [JsonPropertyName("input")]
+    public Dictionary<string, object> Input { get; set; } = new();
+
+    /// <summary>
+    /// Optional expected output from the workflow.
+    /// </summary>
+    [YamlMember(Alias = "expectedOutput")]
+    [JsonPropertyName("expectedOutput")]
+    public Dictionary<string, object>? ExpectedOutput { get; set; }
 }
 
 public class WorkflowInputParameter

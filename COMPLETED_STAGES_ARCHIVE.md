@@ -1,11 +1,15 @@
 # Completed Stages Implementation Archive
 
 **Created:** 2025-11-22
-**Updated:** 2025-12-06
+**Updated:** 2025-12-07
 **Purpose:** Archive of detailed implementation instructions for completed stages
-**Status:** 22 stages/substages complete (65% project completion)
+**Status:** 52 stages/substages complete
 
-This file contains the detailed TDD implementation instructions that were used to build completed stages of the Workflow Orchestration Engine. These stages are now complete and documented in their respective proof files:
+This file contains the detailed TDD implementation instructions that were used to build completed stages of the Workflow Orchestration Engine. These stages are now complete and documented in their respective proof files.
+
+---
+
+## Stage Index
 
 ### Backend Core (Stages 1-7.9)
 - **Stage 1: Foundation** - See `STAGE_1_PROOF.md`
@@ -23,12 +27,32 @@ This file contains the detailed TDD implementation instructions that were used t
 
 ### Developer Experience (Stage 9.x)
 - **Stage 9.1: Visual Workflow Builder** - See `stage-proofs/stage-9.1/STAGE_9.1_PROOF.md`
+- **Stage 9.2: Workflow Templates Library** - See `stage-proofs/stage-9.2/STAGE_9.2_PROOF.md`
 - **Stage 9.3: WebSocket API** - See `stage-proofs/stage-9.3/STAGE_9.3_PROOF.md`
 - **Stage 9.4: Enhanced Debugging Tools** - See `stage-proofs/stage-9.4/STAGE_9.4_PROOF.md`
+- **Stage 9.5: Interactive Documentation** - See `stage-proofs/stage-9.5/STAGE_9.5_PROOF.md`
 - **Stage 9.6.1: Transform DSL Backend** - See `stage-proofs/stage-9.6.1/STAGE_9.6.1_PROOF.md`
+- **Stage 9.6.2: Transform DSL Frontend** - See `stage-proofs/stage-9.6.2/STAGE_9.6.2_PROOF.md`
 
-### Performance (Stage 10)
+### Performance & Observability (Stage 10)
 - **Stage 10 Phase 1: Performance Benchmarks** - See `STAGE_10_PROOF.md`
+- **Stage 10.2: Observability Dashboard** - See `stage-proofs/stage-10.2/STAGE_10.2_PROOF.md`
+
+### Neural Visualization (Stage 12)
+- **Stage 12.1-12.5: Neural Visualization** - See `stage-proofs/stage-12.5/STAGE_12.5_PROOF.md`
+
+### AI-Powered Generation (Stage 13)
+- **Stage 13: MCP Server for Claude** - See `stage-proofs/stage-13/STAGE_13_PROOF.md`
+
+### OpenAPI Integration (Stage 16)
+- **Stage 16.1: OpenAPI Parser** - See `stage-proofs/stage-16.1/STAGE_16.1_PROOF.md`
+
+### Test Infrastructure (Stage 17)
+- **Stage 17.1-17.2: Test API Server** - See `stage-proofs/stage-17.2/STAGE_17.2_PROOF.md`
+
+### Health Checks (Stage 18)
+- **Stage 18.1: Backend Health Check Service** - See `stage-proofs/stage-18.1/STAGE_18.1_PROOF.md`
+- **Stage 18.2: Dashboard Health Widget** - See `stage-proofs/stage-18.2/STAGE_18.2_PROOF.md`
 
 ### Control Flow (Stage 19)
 - **Stage 19.1: Condition Evaluation Engine** - See `stage-proofs/stage-19.1/STAGE_19.1_PROOF.md`
@@ -37,7 +61,26 @@ This file contains the detailed TDD implementation instructions that were used t
 - **Stage 19.4: Control Flow Validation** - See `stage-proofs/stage-19.4/STAGE_19.4_PROOF.md`
 - **Stage 19.5: Nested Control Flow** - See `stage-proofs/stage-19.5/STAGE_19.5_PROOF.md`
 
-**Note:** Stages 1-4 contain full TDD code examples. Stages 5+ contain task specifications only.
+### Workflow Triggers (Stage 20)
+- **Stage 20.1-20.2: Schedule & Webhook Triggers** - See `stage-proofs/stage-20.2/STAGE_20.2_PROOF.md`
+
+### Sub-Workflow Composition (Stage 21)
+- **Stage 21.1-21.4: Sub-Workflow Composition** - See `stage-proofs/stage-21.4/STAGE_21.4_PROOF.md`
+
+### Developer Tools (Stages 25-26)
+- **Stage 25-25.1: Local Development CLI** - See `stage-proofs/stage-25.1/STAGE_25.1_PROOF.md`
+- **Stage 26: VS Code Extension** - See `stage-proofs/stage-26/STAGE_26_PROOF.md`
+
+### Anomaly Detection & Alerting (Stage 27)
+- **Stage 27.1-27.3: Anomaly Detection & Alerting** - See `stage-proofs/stage-27.3/STAGE_27.3_PROOF.md`
+
+### Resilience (Stage 28)
+- **Stage 28.1: Circuit Breaker Orchestrator Integration** - See `stage-proofs/stage-28.1/STAGE_28.1_PROOF.md`
+- **Stage 28.2: Circuit Breaker API** - See `stage-proofs/stage-28.2/STAGE_28.2_PROOF.md`
+
+---
+
+**Note:** Stages 1-4 below contain full TDD code examples. Stages 5+ contain task specifications only.
 
 ---
 

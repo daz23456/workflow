@@ -48,6 +48,33 @@ public class WorkflowTaskSpec
     [JsonPropertyName("type")]
     public string Type { get; set; } = string.Empty;
 
+    /// <summary>
+    /// Human-readable description of what this task does.
+    /// Used by MCP consumer tools to help LLMs understand task purpose.
+    /// Stage 15: MCP Server for External Workflow Consumption
+    /// </summary>
+    [YamlMember(Alias = "description")]
+    [JsonPropertyName("description")]
+    public string? Description { get; set; }
+
+    /// <summary>
+    /// Category of the task (e.g., "http", "transform", "notification").
+    /// Used by MCP consumer tools for filtering and search.
+    /// Stage 15: MCP Server for External Workflow Consumption
+    /// </summary>
+    [YamlMember(Alias = "category")]
+    [JsonPropertyName("category")]
+    public string? Category { get; set; }
+
+    /// <summary>
+    /// Tags for task metadata (e.g., ["external-api", "idempotent", "cacheable"]).
+    /// Used by MCP consumer tools for filtering and search.
+    /// Stage 15: MCP Server for External Workflow Consumption
+    /// </summary>
+    [YamlMember(Alias = "tags")]
+    [JsonPropertyName("tags")]
+    public List<string>? Tags { get; set; }
+
     [YamlMember(Alias = "inputSchema")]
     [JsonPropertyName("inputSchema")]
     public SchemaDefinition? InputSchema { get; set; }

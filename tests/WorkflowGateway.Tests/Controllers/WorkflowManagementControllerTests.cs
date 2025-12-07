@@ -18,6 +18,7 @@ public class WorkflowManagementControllerTests
     private readonly Mock<IWorkflowVersionRepository> _versionRepositoryMock;
     private readonly Mock<IExecutionRepository> _executionRepositoryMock;
     private readonly Mock<IHttpTaskExecutor> _taskExecutorMock;
+    private readonly Mock<IWorkflowInputValidator> _inputValidatorMock;
     private readonly WorkflowManagementController _controller;
 
     public WorkflowManagementControllerTests()
@@ -27,6 +28,7 @@ public class WorkflowManagementControllerTests
         _versionRepositoryMock = new Mock<IWorkflowVersionRepository>();
         _executionRepositoryMock = new Mock<IExecutionRepository>();
         _taskExecutorMock = new Mock<IHttpTaskExecutor>();
+        _inputValidatorMock = new Mock<IWorkflowInputValidator>();
 
         // Setup default mock returns for statistics methods
         _executionRepositoryMock
@@ -55,7 +57,8 @@ public class WorkflowManagementControllerTests
             _endpointServiceMock.Object,
             _versionRepositoryMock.Object,
             _executionRepositoryMock.Object,
-            _taskExecutorMock.Object);
+            _taskExecutorMock.Object,
+            _inputValidatorMock.Object);
     }
 
     [Fact]
@@ -67,7 +70,8 @@ public class WorkflowManagementControllerTests
             _endpointServiceMock.Object,
             _versionRepositoryMock.Object,
             _executionRepositoryMock.Object,
-            _taskExecutorMock.Object));
+            _taskExecutorMock.Object,
+            _inputValidatorMock.Object));
     }
 
     [Fact]
@@ -79,7 +83,8 @@ public class WorkflowManagementControllerTests
             null!,
             _versionRepositoryMock.Object,
             _executionRepositoryMock.Object,
-            _taskExecutorMock.Object));
+            _taskExecutorMock.Object,
+            _inputValidatorMock.Object));
     }
 
     [Fact]
@@ -91,7 +96,8 @@ public class WorkflowManagementControllerTests
             _endpointServiceMock.Object,
             null!,
             _executionRepositoryMock.Object,
-            _taskExecutorMock.Object));
+            _taskExecutorMock.Object,
+            _inputValidatorMock.Object));
     }
 
     [Fact]
@@ -103,7 +109,21 @@ public class WorkflowManagementControllerTests
             _endpointServiceMock.Object,
             _versionRepositoryMock.Object,
             null!,
-            _taskExecutorMock.Object));
+            _taskExecutorMock.Object,
+            _inputValidatorMock.Object));
+    }
+
+    [Fact]
+    public void Constructor_WithNullInputValidator_ShouldThrowArgumentNullException()
+    {
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() => new WorkflowManagementController(
+            _discoveryServiceMock.Object,
+            _endpointServiceMock.Object,
+            _versionRepositoryMock.Object,
+            _executionRepositoryMock.Object,
+            _taskExecutorMock.Object,
+            null!));
     }
 
     [Fact]

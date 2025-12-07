@@ -16,19 +16,22 @@ public class WorkflowManagementController : ControllerBase
     private readonly IWorkflowVersionRepository _versionRepository;
     private readonly IExecutionRepository _executionRepository;
     private readonly IHttpTaskExecutor _taskExecutor;
+    private readonly IWorkflowInputValidator _inputValidator;
 
     public WorkflowManagementController(
         IWorkflowDiscoveryService discoveryService,
         IDynamicEndpointService endpointService,
         IWorkflowVersionRepository versionRepository,
         IExecutionRepository executionRepository,
-        IHttpTaskExecutor taskExecutor)
+        IHttpTaskExecutor taskExecutor,
+        IWorkflowInputValidator inputValidator)
     {
         _discoveryService = discoveryService ?? throw new ArgumentNullException(nameof(discoveryService));
         _endpointService = endpointService ?? throw new ArgumentNullException(nameof(endpointService));
         _versionRepository = versionRepository ?? throw new ArgumentNullException(nameof(versionRepository));
         _executionRepository = executionRepository ?? throw new ArgumentNullException(nameof(executionRepository));
         _taskExecutor = taskExecutor ?? throw new ArgumentNullException(nameof(taskExecutor));
+        _inputValidator = inputValidator ?? throw new ArgumentNullException(nameof(inputValidator));
     }
 
     /// <summary>
@@ -588,5 +591,37 @@ public class WorkflowManagementController : ControllerBase
         };
 
         return Ok(response);
+    }
+
+    /// <summary>
+    /// Validate input for a workflow without executing it.
+    /// Useful for MCP consumers to check if they have all required inputs.
+    /// Stage 15: MCP Server for External Workflow Consumption
+    /// </summary>
+    /// <param name="workflowName">Name of the workflow</param>
+    /// <param name="request">Input validation request containing the input to validate</param>
+    /// <param name="namespace">Optional namespace (defaults to 'default')</param>
+    /// <returns>Validation result with missing/invalid inputs and suggested prompt</returns>
+    [HttpPost("workflows/{workflowName}/validate-input")]
+    [ProducesResponseType(typeof(InputValidationResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ValidateWorkflowInput(
+        string workflowName,
+        [FromBody] ValidateInputRequest request,
+        [FromQuery] string? @namespace = null)
+    {
+        var ns = @namespace ?? "default";
+
+        // Check if workflow exists
+        var workflow = await _discoveryService.GetWorkflowByNameAsync(workflowName, ns);
+        if (workflow == null)
+        {
+            return NotFound(new { message = $"Workflow '{workflowName}' not found in namespace '{ns}'" });
+        }
+
+        // Validate input
+        var result = _inputValidator.ValidateInput(workflow, request.Input);
+
+        return Ok(result);
     }
 }

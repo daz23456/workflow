@@ -188,6 +188,7 @@ builder.Services.AddSingleton<IWorkflowDiscoveryService>(sp =>
 builder.Services.AddSingleton<ITemplateDiscoveryService, TemplateDiscoveryService>();
 builder.Services.AddSingleton<IDynamicEndpointService, DynamicEndpointService>();
 builder.Services.AddScoped<IInputValidationService, InputValidationService>();
+builder.Services.AddSingleton<IWorkflowInputValidator, WorkflowInputValidator>();
 builder.Services.AddSingleton<IWorkflowYamlParser, WorkflowYamlParser>();
 
 // Note: IWorkflowVersionRepository is already registered in database services section above (line 31)

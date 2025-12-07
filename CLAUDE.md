@@ -249,8 +249,22 @@ dotnet run -c Release --project tests/WorkflowCore.PerformanceTests
 |-------|------|--------|
 | 11 | Cloud Deployment & Production Hardening | Not Started |
 | 14 | Workflow Optimization Engine | Not Started |
-| 16.2-16.8 | OpenAPI Task Generator (remaining) | Not Started |
 | 32.1-32.5 | Workflow & Task Label Management | Not Started |
+
+### Stage 16: OpenAPI Task Generator CLI ✅ COMPLETE
+**Completed:** 2025-12-07
+**Tests:** 248 new tests across all substages
+**Value:** Complete PACT replacement with zero broker infrastructure
+
+| Substage | Name | Tests |
+|----------|------|-------|
+| 16.2 | Task Generator | 46 |
+| 16.3 | Sample Workflow Generator | 15 |
+| 16.4 | Version Management | 14 |
+| 16.5 | CLI Integration | 15 |
+| 16.6 | CI/CD Integration | 39 |
+| 16.7 | Field-Level Usage Tracking | 53 |
+| 16.8 | Contract Verification | 66 |
 
 ### Stage 8: SKIPPED
 **Architectural Decision:** Stage 8 (pause/resume, state recovery) is designed for async workflows but this engine is synchronous with 30s max execution. All valuable features already delivered in Stages 7.8-7.9.

@@ -220,6 +220,24 @@ builder.Services.AddHostedService(sp => sp.GetRequiredService<ScheduleTriggerSer
 // Register anomaly baseline service
 builder.Services.AddScoped<IAnomalyBaselineService, AnomalyBaselineService>();
 
+// Register optimization services (Stage 14)
+builder.Services.AddScoped<IWorkflowAnalyzer, WorkflowAnalyzer>();
+builder.Services.AddScoped<ITransformEquivalenceChecker, TransformEquivalenceChecker>();
+builder.Services.AddScoped<IHistoricalReplayEngine, HistoricalReplayEngine>();
+
+// Register CI/CD integration services (Stage 16.6)
+builder.Services.AddSingleton<ITaskDependencyTracker, TaskDependencyTracker>();
+builder.Services.AddSingleton<ITaskLifecycleManager, TaskLifecycleManager>();
+
+// Register field usage tracking services (Stage 16.7)
+builder.Services.AddSingleton<IFieldUsageAnalyzer, FieldUsageAnalyzer>();
+builder.Services.AddSingleton<IConsumerContractValidator, ConsumerContractValidator>();
+
+// Register contract verification services (Stage 16.8)
+builder.Services.AddSingleton<IInteractionRecorder, InteractionRecorder>();
+builder.Services.AddSingleton<IContractVerificationService, ContractVerificationService>();
+builder.Services.AddSingleton<IDeploymentMatrixService, DeploymentMatrixService>();
+
 // Register baseline refresh background service
 builder.Services.Configure<BaselineRefreshOptions>(options =>
 {

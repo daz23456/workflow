@@ -250,7 +250,6 @@ dotnet run -c Release --project tests/WorkflowCore.PerformanceTests
 | 11 | Cloud Deployment & Production Hardening | Not Started |
 | 14 | Workflow Optimization Engine | Not Started |
 | 16.2-16.8 | OpenAPI Task Generator (remaining) | Not Started |
-| 17.3 | Error Handling, Retry & Sample Workflows | Not Started |
 | 32.1-32.5 | Workflow & Task Label Management | Not Started |
 
 ### Stage 8: SKIPPED

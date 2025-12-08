@@ -1,0 +1,70 @@
+
+> workflow-root@1.0.0 clean
+> turbo run clean && find . -name '*.tsbuildinfo' -delete && rm -rf .turbo
+
+turbo 2.6.1
+
+ WARNING  Unable to calculate transitive closures: Workspace 'packages/workflow-mcp-consumer' not found in lockfile.
+• Packages in scope: @workflow/api-client, @workflow/cli, @workflow/graph, @workflow/mcp-consumer, @workflow/mcp-server, @workflow/types, @workflow/ui-components, @workflow/validation, workflow-ui, workflow-vscode-client, workflow-vscode-server
+• Running clean in 11 packages
+• Remote caching disabled
+@workflow/api-client:clean: cache bypass, force executing 133691efe7430b93
+@workflow/graph:clean: cache bypass, force executing affa06074ac57329
+@workflow/types:clean: cache bypass, force executing 82ad919ddf2af30f
+@workflow/cli:clean: cache bypass, force executing 65fc77b8857f14a0
+workflow-vscode-server:clean: cache bypass, force executing b0342c0611b2ea11
+workflow-vscode-client:clean: cache bypass, force executing 2576dba1084857d4
+workflow-ui:clean: cache bypass, force executing 46a04ece1b858486
+@workflow/ui-components:clean: cache bypass, force executing 3874a65d19c97e24
+@workflow/mcp-consumer:clean: cache bypass, force executing 7632b76ae3841879
+@workflow/mcp-server:clean: cache bypass, force executing 8ee9b0d3f48c53dd
+@workflow/mcp-server:clean: 
+@workflow/mcp-server:clean: > @workflow/mcp-server@0.1.0 clean /Users/darren/dev/workflow/packages/workflow-mcp-server
+@workflow/mcp-server:clean: > rm -rf dist coverage
+@workflow/mcp-server:clean: 
+@workflow/api-client:clean: 
+@workflow/api-client:clean: > @workflow/api-client@0.1.0 clean /Users/darren/dev/workflow/packages/workflow-api-client
+@workflow/api-client:clean: > rm -rf dist
+@workflow/api-client:clean: 
+workflow-ui:clean: 
+workflow-ui:clean: > workflow-ui@0.1.0 clean /Users/darren/dev/workflow/src/workflow-ui
+workflow-ui:clean: > rm -rf .next out
+workflow-ui:clean: 
+workflow-vscode-client:clean: 
+workflow-vscode-client:clean: > workflow-vscode-client@0.1.0 clean /Users/darren/dev/workflow/src/vscode-extension/client
+workflow-vscode-client:clean: > rm -rf dist
+workflow-vscode-client:clean: 
+@workflow/types:clean: 
+@workflow/types:clean: > @workflow/types@0.1.0 clean /Users/darren/dev/workflow/packages/workflow-types
+@workflow/types:clean: > rm -rf dist
+@workflow/types:clean: 
+@workflow/mcp-consumer:clean: 
+@workflow/mcp-consumer:clean: > @workflow/mcp-consumer@0.1.0 clean /Users/darren/dev/workflow/packages/workflow-mcp-consumer
+@workflow/mcp-consumer:clean: > rm -rf dist coverage
+@workflow/mcp-consumer:clean: 
+@workflow/cli:clean: 
+@workflow/cli:clean: > @workflow/cli@0.1.0 clean /Users/darren/dev/workflow/packages/workflow-cli
+@workflow/cli:clean: > rm -rf dist coverage
+@workflow/cli:clean: 
+@workflow/graph:clean: 
+@workflow/graph:clean: > @workflow/graph@0.1.0 clean /Users/darren/dev/workflow/packages/workflow-graph
+@workflow/graph:clean: > rm -rf dist
+@workflow/graph:clean: 
+workflow-vscode-server:clean: 
+workflow-vscode-server:clean: > workflow-vscode-server@0.1.0 clean /Users/darren/dev/workflow/src/vscode-extension/server
+workflow-vscode-server:clean: > rm -rf dist
+workflow-vscode-server:clean: 
+@workflow/ui-components:clean: 
+@workflow/ui-components:clean: > @workflow/ui-components@0.1.0 clean /Users/darren/dev/workflow/packages/workflow-ui-components
+@workflow/ui-components:clean: > rm -rf dist
+@workflow/ui-components:clean: 
+@workflow/validation:clean: cache bypass, force executing 8694ba2b8ec49efb
+@workflow/validation:clean: 
+@workflow/validation:clean: > @workflow/validation@0.1.0 clean /Users/darren/dev/workflow/packages/workflow-validation
+@workflow/validation:clean: > rm -rf dist
+@workflow/validation:clean: 
+
+ Tasks:    11 successful, 11 total
+Cached:    0 cached, 11 total
+  Time:    1.59s 
+

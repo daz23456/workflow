@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "$comment": "Example Claude Desktop MCP configuration for workflow-mcp-consumer",
+  "mcpServers": {
+    "workflow-consumer": {
+      "command": "node",
+      "args": ["packages/workflow-mcp-consumer/dist/index.js"],
+      "env": {
+        "WORKFLOW_GATEWAY_URL": "http://localhost:5001"
+      }
+    }
+  }
+}

@@ -43,7 +43,7 @@ describe('WorkflowsPage', () => {
     it('should have proper styling classes', () => {
       render(<WorkflowsPage />);
       const button = screen.getByRole('link', { name: /create.*workflow/i });
-      expect(button).toHaveClass('bg-blue-600');
+      expect(button).toHaveClass('theme-button');
     });
 
     it('should be keyboard accessible', () => {

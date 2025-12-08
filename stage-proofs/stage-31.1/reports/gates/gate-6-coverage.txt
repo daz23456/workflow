@@ -1,0 +1,433 @@
+
+> workflow-root@1.0.0 test:coverage
+> turbo run test:coverage
+
+turbo 2.6.1
+
+• Packages in scope: @workflow/api-client, @workflow/cli, @workflow/graph, @workflow/mcp-consumer, @workflow/mcp-server, @workflow/types, @workflow/ui-components, @workflow/validation, workflow-ui, workflow-vscode-client, workflow-vscode-server
+• Running test:coverage in 11 packages
+• Remote caching disabled
+@workflow/mcp-server:build: cache miss, executing 680f956153484eaa
+@workflow/mcp-consumer:build: cache miss, executing 312d1577efe4975e
+@workflow/api-client:build: cache miss, executing 5d625db2f5bad94c
+@workflow/cli:build: cache miss, executing ed8c5fa21a3b46fc
+@workflow/types:build: cache miss, executing f05ff5688f19ae22
+workflow-ui:build: cache hit, replaying logs fd078f5523f48aa7
+workflow-ui:build: 
+workflow-ui:build: > workflow-ui@0.1.0 build /Users/darren/dev/workflow/src/workflow-ui
+workflow-ui:build: > next build
+workflow-ui:build: 
+workflow-ui:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+workflow-ui:build:  ⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+workflow-ui:build:  We detected multiple lockfiles and selected the directory of /Users/darren/package-lock.json as the root directory.
+workflow-ui:build:  To silence this warning, set `turbopack.root` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+workflow-ui:build:    See https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory for more information.
+workflow-ui:build:  Detected additional lockfiles: 
+workflow-ui:build:    * /Users/darren/dev/workflow/src/workflow-ui/package-lock.json
+workflow-ui:build:    * /Users/darren/dev/workflow/pnpm-lock.yaml
+workflow-ui:build: 
+workflow-ui:build:    ▲ Next.js 16.0.3 (Turbopack)
+workflow-ui:build:    - Environments: .env.local
+workflow-ui:build: 
+workflow-ui:build:    Creating an optimized production build ...
+workflow-ui:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+workflow-ui:build:  ✓ Compiled successfully in 20.1s
+workflow-ui:build:    Running TypeScript ...
+workflow-ui:build:    Collecting page data using 15 workers ...
+workflow-ui:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+workflow-ui:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+workflow-ui:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+workflow-ui:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+workflow-ui:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+workflow-ui:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+workflow-ui:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+workflow-ui:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+workflow-ui:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+workflow-ui:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+workflow-ui:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+workflow-ui:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+workflow-ui:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+workflow-ui:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+workflow-ui:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+workflow-ui:build:    Generating static pages using 15 workers (0/19) ...
+workflow-ui:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+workflow-ui:build:    Generating static pages using 15 workers (4/19) 
+workflow-ui:build:    Generating static pages using 15 workers (9/19) 
+workflow-ui:build:    Generating static pages using 15 workers (14/19) 
+workflow-ui:build:  ✓ Generating static pages using 15 workers (19/19) in 1928.6ms
+workflow-ui:build:    Finalizing page optimization ...
+workflow-ui:build: 
+workflow-ui:build: Route (app)
+workflow-ui:build: ┌ ○ /
+workflow-ui:build: ├ ○ /_not-found
+workflow-ui:build: ├ ƒ /api/executions/[id]
+workflow-ui:build: ├ ƒ /api/executions/[id]/trace
+workflow-ui:build: ├ ƒ /api/generate-workflow
+workflow-ui:build: ├ ƒ /api/tasks
+workflow-ui:build: ├ ƒ /api/tasks/[name]
+workflow-ui:build: ├ ƒ /api/tasks/[name]/duration-trends
+workflow-ui:build: ├ ƒ /api/tasks/[name]/execute
+workflow-ui:build: ├ ƒ /api/tasks/[name]/executions
+workflow-ui:build: ├ ƒ /api/tasks/[name]/usage
+workflow-ui:build: ├ ƒ /api/templates
+workflow-ui:build: ├ ƒ /api/templates/[name]
+workflow-ui:build: ├ ƒ /api/workflows
+workflow-ui:build: ├ ƒ /api/workflows/[name]
+workflow-ui:build: ├ ƒ /api/workflows/[name]/duration-trends
+workflow-ui:build: ├ ƒ /api/workflows/[name]/execute
+workflow-ui:build: ├ ƒ /api/workflows/[name]/executions
+workflow-ui:build: ├ ƒ /api/workflows/[name]/test
+workflow-ui:build: ├ ƒ /api/workflows/[name]/versions
+workflow-ui:build: ├ ○ /dashboard
+workflow-ui:build: ├ ƒ /executions/[id]/debug
+workflow-ui:build: ├ ○ /playground
+workflow-ui:build: ├ ƒ /playground/[lessonId]
+workflow-ui:build: ├ ○ /tasks
+workflow-ui:build: ├ ƒ /tasks/[name]
+workflow-ui:build: ├ ○ /templates
+workflow-ui:build: ├ ○ /transforms
+workflow-ui:build: ├ ○ /visualization
+workflow-ui:build: ├ ○ /visualization/galaxy
+workflow-ui:build: ├ ○ /visualization/traffic
+workflow-ui:build: ├ ○ /visualization/tube
+workflow-ui:build: ├ ○ /workflows
+workflow-ui:build: ├ ƒ /workflows/[name]
+workflow-ui:build: └ ○ /workflows/new
+workflow-ui:build: 
+workflow-ui:build: 
+workflow-ui:build: ○  (Static)   prerendered as static content
+workflow-ui:build: ƒ  (Dynamic)  server-rendered on demand
+workflow-ui:build: 
+workflow-ui:test:coverage: cache miss, executing 054dc5d367b47481
+@workflow/api-client:build: 
+@workflow/api-client:build: > @workflow/api-client@0.1.0 build /Users/darren/dev/workflow/packages/workflow-api-client
+@workflow/api-client:build: > tsc
+@workflow/api-client:build: 
+@workflow/types:build: 
+@workflow/types:build: > @workflow/types@0.1.0 build /Users/darren/dev/workflow/packages/workflow-types
+@workflow/types:build: > tsc
+@workflow/types:build: 
+@workflow/mcp-server:build: 
+@workflow/mcp-server:build: > @workflow/mcp-server@0.1.0 build /Users/darren/dev/workflow/packages/workflow-mcp-server
+@workflow/mcp-server:build: > tsc
+@workflow/mcp-server:build: 
+@workflow/cli:build: 
+@workflow/cli:build: > @workflow/cli@0.1.0 build /Users/darren/dev/workflow/packages/workflow-cli
+@workflow/cli:build: > tsc
+@workflow/cli:build: 
+@workflow/mcp-consumer:build: 
+@workflow/mcp-consumer:build: > @workflow/mcp-consumer@0.1.0 build /Users/darren/dev/workflow/packages/workflow-mcp-consumer
+@workflow/mcp-consumer:build: > tsc
+@workflow/mcp-consumer:build: 
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: > workflow-ui@0.1.0 test:coverage /Users/darren/dev/workflow/src/workflow-ui
+workflow-ui:test:coverage: > vitest run --coverage
+workflow-ui:test:coverage: 
+@workflow/validation:build: cache miss, executing f353b29ff9219c24
+workflow-ui:test:coverage: 
+workflow-ui:test:coverage: [1m[46m RUN [49m[22m [36mv4.0.14 [39m[90m/Users/darren/dev/workflow/src/workflow-ui[39m
+workflow-ui:test:coverage:       [2mCoverage enabled with [22m[33mv8[39m
+workflow-ui:test:coverage: 
+@workflow/validation:build: 
+@workflow/validation:build: > @workflow/validation@0.1.0 build /Users/darren/dev/workflow/packages/workflow-validation
+@workflow/validation:build: > tsc
+@workflow/validation:build: 
+@workflow/cli:test:coverage: cache miss, executing 412a50617de632b9
+@workflow/mcp-server:test:coverage: cache miss, executing 247d44c764a4e786
+@workflow/mcp-consumer:test:coverage: cache miss, executing 46917cbbb7d6dd3c
+@workflow/cli:test:coverage: 
+@workflow/cli:test:coverage: > @workflow/cli@0.1.0 test:coverage /Users/darren/dev/workflow/packages/workflow-cli
+@workflow/cli:test:coverage: > vitest run --coverage
+@workflow/cli:test:coverage: 
+@workflow/mcp-server:test:coverage: 
+@workflow/mcp-server:test:coverage: > @workflow/mcp-server@0.1.0 test:coverage /Users/darren/dev/workflow/packages/workflow-mcp-server
+@workflow/mcp-server:test:coverage: > vitest run --coverage
+@workflow/mcp-server:test:coverage: 
+@workflow/graph:build: cache miss, executing 75de8c020acffc08
+@workflow/mcp-consumer:test:coverage: 
+@workflow/mcp-consumer:test:coverage: > @workflow/mcp-consumer@0.1.0 test:coverage /Users/darren/dev/workflow/packages/workflow-mcp-consumer
+@workflow/mcp-consumer:test:coverage: > vitest run --coverage
+@workflow/mcp-consumer:test:coverage: 
+@workflow/graph:build: 
+@workflow/graph:build: > @workflow/graph@0.1.0 build /Users/darren/dev/workflow/packages/workflow-graph
+@workflow/graph:build: > tsc
+@workflow/graph:build: 
+@workflow/cli:test:coverage: 
+@workflow/cli:test:coverage:  RUN  v2.1.9 /Users/darren/dev/workflow/packages/workflow-cli
+@workflow/cli:test:coverage:       Coverage enabled with v8
+@workflow/cli:test:coverage: 
+@workflow/mcp-server:test:coverage: 
+@workflow/mcp-server:test:coverage:  RUN  v2.1.9 /Users/darren/dev/workflow/packages/workflow-mcp-server
+@workflow/mcp-server:test:coverage:       Coverage enabled with v8
+@workflow/mcp-server:test:coverage: 
+@workflow/mcp-consumer:test:coverage: 
+@workflow/mcp-consumer:test:coverage:  RUN  v2.1.9 /Users/darren/dev/workflow/packages/workflow-mcp-consumer
+@workflow/mcp-consumer:test:coverage:       Coverage enabled with v8
+@workflow/mcp-consumer:test:coverage: 
+@workflow/mcp-server:test:coverage:  ✓ tests/tools/dry-run-workflow.test.ts (7 tests) 39ms
+@workflow/mcp-server:test:coverage:  ✓ tests/tools/execute-workflow.test.ts (8 tests) 40ms
+@workflow/mcp-server:test:coverage:  ✓ tests/tools/validate-workflow.test.ts (10 tests) 45ms
+@workflow/mcp-server:test:coverage:  ✓ tests/prompts/system-prompt.test.ts (7 tests) 56ms
+@workflow/mcp-server:test:coverage:  ✓ tests/prompts/few-shot-examples.test.ts (10 tests) 35ms
+@workflow/mcp-server:test:coverage:  ✓ tests/prompts/error-fixing.test.ts (24 tests) 78ms
+@workflow/mcp-consumer:test:coverage:  ✓ src/__tests__/search-workflows.test.ts (9 tests) 60ms
+@workflow/mcp-consumer:test:coverage:  ✓ src/__tests__/get-workflow-details.test.ts (7 tests) 55ms
+@workflow/mcp-consumer:test:coverage:  ✓ src/__tests__/execute-workflow.test.ts (14 tests) 127ms
+@workflow/mcp-consumer:test:coverage:  ✓ src/__tests__/list-workflows.test.ts (10 tests) 46ms
+@workflow/mcp-consumer:test:coverage:  ✓ src/__tests__/prompts.test.ts (15 tests) 59ms
+@workflow/mcp-server:test:coverage:  ✓ tests/tools/list-tasks.test.ts (10 tests) 22ms
+@workflow/mcp-server:test:coverage:  ✓ tests/services/llm-service.test.ts (9 tests) 68ms
+@workflow/mcp-consumer:test:coverage:  ✓ src/__tests__/e2e.test.ts (11 tests) 73ms
+@workflow/mcp-consumer:test:coverage:  ✓ src/__tests__/resources.test.ts (11 tests) 57ms
+@workflow/mcp-server:test:coverage:  ❯ tests/services/refinement-service.test.ts (15 tests | 4 failed) 358ms
+@workflow/mcp-server:test:coverage:    × RefinementService > termination: max_iterations > should stop after max iterations 58ms
+@workflow/mcp-server:test:coverage:      → expected 'oscillation_detected' to be 'max_iterations' // Object.is equality
+@workflow/mcp-server:test:coverage:    × RefinementService > termination: max_iterations > should respect custom max iterations 6ms
+@workflow/mcp-server:test:coverage:      → expected 'no_progress' to be 'max_iterations' // Object.is equality
+@workflow/mcp-server:test:coverage:    × RefinementService > termination: oscillation_detected > should detect oscillation when same errors reappear 5ms
+@workflow/mcp-server:test:coverage:      → expected 'no_progress' to be 'oscillation_detected' // Object.is equality
+@workflow/mcp-server:test:coverage:    × RefinementService > history tracking > should track each iteration in history 116ms
+@workflow/mcp-server:test:coverage:      → expected [ { iteration: 1, …(2) } ] to have a length of 2 but got 1
+@workflow/mcp-server:test:coverage:  ❯ tests/services/gateway-client.test.ts (18 tests | 3 failed) 217ms
+@workflow/mcp-server:test:coverage:    × GatewayClient > validateWorkflow > should validate a workflow successfully 24ms
+@workflow/mcp-server:test:coverage:      → expected "spy" to be called with arguments: [ …(2) ]
+@workflow/mcp-server:test:coverage: 
+@workflow/mcp-server:test:coverage: Received: 
+@workflow/mcp-server:test:coverage: 
+@workflow/mcp-server:test:coverage:   1st spy call:
+@workflow/mcp-server:test:coverage: 
+@workflow/mcp-server:test:coverage:   Array [
+@workflow/mcp-server:test:coverage:     "http://localhost:5000/api/v1/workflows/test-execute",
+@workflow/mcp-server:test:coverage:     Object {
+@workflow/mcp-server:test:coverage: -     "body": "name: test-workflow
+@workflow/mcp-server:test:coverage: - tasks: []",
+@workflow/mcp-server:test:coverage: +     "body": "{\"workflowYaml\":\"name: test-workflow\\ntasks: []\",\"input\":{}}",
+@workflow/mcp-server:test:coverage:       "headers": Object {
+@workflow/mcp-server:test:coverage: -       "Content-Type": "application/x-yaml",
+@workflow/mcp-server:test:coverage: +       "Content-Type": "application/json",
+@workflow/mcp-server:test:coverage:       },
+@workflow/mcp-server:test:coverage:       "method": "POST",
+@workflow/mcp-server:test:coverage:     },
+@workflow/mcp-server:test:coverage:   ]
+@workflow/mcp-server:test:coverage: 
+@workflow/mcp-server:test:coverage: 
+@workflow/mcp-server:test:coverage: Number of calls: 1
+@workflow/mcp-server:test:coverage: 
+@workflow/mcp-server:test:coverage:    × GatewayClient > validateWorkflow > should handle validation errors from API 7ms
+@workflow/mcp-server:test:coverage:      → expected true to be false // Object.is equality
+@workflow/mcp-server:test:coverage:    × GatewayClient > validateWorkflow > should handle API errors during validation 9ms
+@workflow/mcp-server:test:coverage:      → expected [Function] to throw error including 'Failed to validate workflow: 400 Bad …' but got 'response.json is not a function'
+@workflow/mcp-server:test:coverage: stderr | tests/tools/generate-workflow.test.ts > generateWorkflow tool > generateWorkflow > should fall back to template when LLM fails
+@workflow/mcp-server:test:coverage: LLM generation failed, falling back to template: Error: API error
+@workflow/mcp-server:test:coverage:     at t.<anonymous> (/Users/darren/dev/workflow/packages/workflow-mcp-server/tests/tools/generate-workflow.test.ts:323:55)
+@workflow/mcp-server:test:coverage:     at new mockCall (file:///Users/darren/dev/workflow/node_modules/.pnpm/@vitest+spy@2.1.9/node_modules/@vitest/spy/dist/index.js:61:17)
+@workflow/mcp-server:test:coverage:     at new spy (file:///Users/darren/dev/workflow/node_modules/.pnpm/tinyspy@3.0.2/node_modules/tinyspy/dist/index.js:45:34)
+@workflow/mcp-server:test:coverage:     at new LlmService (/Users/darren/dev/workflow/packages/workflow-mcp-server/src/services/llm-service.ts:21:21)
+@workflow/mcp-server:test:coverage:     at getLlmService (/Users/darren/dev/workflow/packages/workflow-mcp-server/src/tools/generate-workflow.ts:217:18)
+@workflow/mcp-server:test:coverage:     at generateWorkflow (/Users/darren/dev/workflow/packages/workflow-mcp-server/src/tools/generate-workflow.ts:256:19)
+@workflow/mcp-server:test:coverage:     at processTicksAndRejections (node:internal/process/task_queues:105:5)
+@workflow/mcp-server:test:coverage:     at /Users/darren/dev/workflow/packages/workflow-mcp-server/tests/tools/generate-workflow.test.ts:334:22
+@workflow/mcp-server:test:coverage:     at file:///Users/darren/dev/workflow/node_modules/.pnpm/@vitest+runner@2.1.9/node_modules/@vitest/runner/dist/index.js:533:5
+@workflow/mcp-server:test:coverage:     at runTest (file:///Users/darren/dev/workflow/node_modules/.pnpm/@vitest+runner@2.1.9/node_modules/@vitest/runner/dist/index.js:1056:11)
+@workflow/mcp-server:test:coverage:  ✓ tests/tools/generate-workflow.test.ts (22 tests) 283ms
+@workflow/mcp-server:test:coverage: 
+@workflow/cli:test:coverage:  ✓ tests/services/debugger.test.ts (21 tests) 31ms
+@workflow/cli:test:coverage:  ✓ tests/services/mock-executor.test.ts (15 tests) 133ms
+@workflow/cli:test:coverage:  ✓ tests/workflow-generator/dependency-analyzer.test.ts (9 tests) 31ms
+@workflow/cli:test:coverage:  ✓ tests/openapi-parser.test.ts (20 tests) 127ms
+@workflow/cli:test:coverage:  ✓ tests/commands/init.test.ts (18 tests) 277ms
+@workflow/cli:test:coverage:  ✓ tests/services/gateway-client.test.ts (23 tests) 330ms
+@workflow/mcp-consumer:test:coverage: 
+@workflow/mcp-consumer:test:coverage:  Test Files  7 passed (7)
+@workflow/mcp-consumer:test:coverage:       Tests  77 passed (77)
+@workflow/mcp-consumer:test:coverage:    Start at  22:44:35
+@workflow/mcp-consumer:test:coverage:    Duration  10.72s (transform 4.07s, setup 0ms, collect 7.60s, tests 476ms, environment 6ms, prepare 14.17s)
+@workflow/mcp-consumer:test:coverage: 
+@workflow/cli:test:coverage:  ✓ tests/commands/run.test.ts (14 tests) 86ms
+@workflow/mcp-consumer:test:coverage:  % Coverage report from v8
+@workflow/cli:test:coverage:  ✓ tests/commands/validate.test.ts (17 tests) 172ms
+@workflow/cli:test:coverage:  ✓ tests/commands/explain.test.ts (20 tests) 204ms
+@workflow/cli:test:coverage:  ✓ tests/commands/tasks.test.ts (20 tests) 347ms
+@workflow/cli:test:coverage:  ✓ tests/commands/debug.test.ts (21 tests) 320ms
+@workflow/cli:test:coverage:  ✓ tests/config.test.ts (21 tests) 333ms
+@workflow/cli:test:coverage:  ✓ tests/loaders.test.ts (18 tests) 631ms
+@workflow/mcp-consumer:test:coverage: -------------------|---------|----------|---------|---------|-------------------
+@workflow/mcp-consumer:test:coverage: File               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+@workflow/mcp-consumer:test:coverage: -------------------|---------|----------|---------|---------|-------------------
+@workflow/mcp-consumer:test:coverage: All files          |   98.39 |    86.12 |     100 |   98.39 |                   
+@workflow/cli:test:coverage:  ✓ tests/commands/test.test.ts (16 tests) 321ms
+@workflow/mcp-consumer:test:coverage:  prompts           |   98.87 |    85.18 |     100 |   98.87 |                   
+@workflow/mcp-consumer:test:coverage:   ...ow-prompts.ts |   98.87 |    85.18 |     100 |   98.87 | 114               
+@workflow/mcp-consumer:test:coverage:  resources         |     100 |    93.75 |     100 |     100 |                   
+@workflow/mcp-consumer:test:coverage:   ...w-resource.ts |     100 |    93.75 |     100 |     100 | 74                
+@workflow/mcp-consumer:test:coverage:  tools             |   97.87 |    85.38 |     100 |   97.87 |                   
+@workflow/mcp-consumer:test:coverage:   ...e-workflow.ts |     100 |    84.78 |     100 |     100 | ...-66,87,151-152 
+@workflow/mcp-consumer:test:coverage:   ...ow-details.ts |     100 |    81.81 |     100 |     100 | 25,49             
+@workflow/mcp-consumer:test:coverage:   ...-workflows.ts |    98.3 |    76.19 |     100 |    98.3 | 28                
+@workflow/mcp-consumer:test:coverage:   ...-workflows.ts |   94.49 |    90.38 |     100 |   94.49 | 34-35,52-53,84-85 
+@workflow/mcp-consumer:test:coverage: -------------------|---------|----------|---------|---------|-------------------
+@workflow/mcp-server:test:coverage: 
+@workflow/mcp-server:test:coverage: ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+@workflow/mcp-server:test:coverage: 
+@workflow/mcp-server:test:coverage:  FAIL  tests/services/gateway-client.test.ts > GatewayClient > validateWorkflow > should validate a workflow successfully
+@workflow/mcp-server:test:coverage: AssertionError: expected "spy" to be called with arguments: [ …(2) ]
+@workflow/mcp-server:test:coverage: 
+@workflow/mcp-server:test:coverage: Received: 
+@workflow/mcp-server:test:coverage: 
+@workflow/mcp-server:test:coverage:   1st spy call:
+@workflow/mcp-server:test:coverage: 
+@workflow/mcp-server:test:coverage:   Array [
+@workflow/mcp-server:test:coverage:     "http://localhost:5000/api/v1/workflows/test-execute",
+@workflow/mcp-server:test:coverage:     Object {
+@workflow/mcp-server:test:coverage: -     "body": "name: test-workflow
+@workflow/mcp-server:test:coverage: - tasks: []",
+@workflow/mcp-server:test:coverage: +     "body": "{\"workflowYaml\":\"name: test-workflow\\ntasks: []\",\"input\":{}}",
+@workflow/mcp-server:test:coverage:       "headers": Object {
+@workflow/mcp-server:test:coverage: -       "Content-Type": "application/x-yaml",
+@workflow/mcp-server:test:coverage: +       "Content-Type": "application/json",
+@workflow/mcp-server:test:coverage:       },
+@workflow/mcp-server:test:coverage:       "method": "POST",
+@workflow/mcp-server:test:coverage:     },
+@workflow/mcp-server:test:coverage:   ]
+@workflow/mcp-server:test:coverage: 
+@workflow/mcp-server:test:coverage: 
+@workflow/mcp-server:test:coverage: Number of calls: 1
+@workflow/mcp-server:test:coverage: 
+@workflow/mcp-server:test:coverage:  ❯ tests/services/gateway-client.test.ts:118:25
+@workflow/mcp-server:test:coverage:     116|       const result = await client.validateWorkflow(yaml);
+@workflow/mcp-server:test:coverage:     117| 
+@workflow/mcp-server:test:coverage:     118|       expect(mockFetch).toHaveBeenCalledWith('http://localhost:5000/ap…
+@workflow/mcp-server:test:coverage:        |                         ^
+@workflow/mcp-server:test:coverage:     119|         method: 'POST',
+@workflow/mcp-server:test:coverage:     120|         headers: { 'Content-Type': 'application/x-yaml' },
+@workflow/mcp-server:test:coverage: 
+@workflow/mcp-server:test:coverage: ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+@workflow/mcp-server:test:coverage: 
+@workflow/mcp-server:test:coverage:  FAIL  tests/services/gateway-client.test.ts > GatewayClient > validateWorkflow > should handle validation errors from API
+@workflow/mcp-server:test:coverage: AssertionError: expected true to be false // Object.is equality
+@workflow/mcp-server:test:coverage: 
+@workflow/mcp-server:test:coverage: - Expected
+@workflow/mcp-server:test:coverage: + Received
+@workflow/mcp-server:test:coverage: 
+@workflow/mcp-server:test:coverage: - false
+@workflow/mcp-server:test:coverage: + true
+@workflow/mcp-server:test:coverage: 
+@workflow/mcp-server:test:coverage:  ❯ tests/services/gateway-client.test.ts:142:28
+@workflow/mcp-server:test:coverage:     140|       const result = await client.validateWorkflow(yaml);
+@workflow/mcp-server:test:coverage:     141| 
+@workflow/mcp-server:test:coverage:     142|       expect(result.valid).toBe(false);
+@workflow/mcp-server:test:coverage:        |                            ^
+@workflow/mcp-server:test:coverage:     143|       expect(result.errors).toHaveLength(1);
+@workflow/mcp-server:test:coverage:     144|     });
+@workflow/mcp-server:test:coverage: 
+@workflow/mcp-server:test:coverage: ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+@workflow/mcp-server:test:coverage: 
+@workflow/mcp-server:test:coverage:  FAIL  tests/services/gateway-client.test.ts > GatewayClient > validateWorkflow > should handle API errors during validation
+@workflow/mcp-server:test:coverage: AssertionError: expected [Function] to throw error including 'Failed to validate workflow: 400 Bad …' but got 'response.json is not a function'
+@workflow/mcp-server:test:coverage: 
+@workflow/mcp-server:test:coverage: Expected: "Failed to validate workflow: 400 Bad Request"
+@workflow/mcp-server:test:coverage: Received: "response.json is not a function"
+@workflow/mcp-server:test:coverage: 
+@workflow/mcp-server:test:coverage:  ❯ tests/services/gateway-client.test.ts:153:7
+@workflow/mcp-server:test:coverage:     151|       });
+@workflow/mcp-server:test:coverage:     152| 
+@workflow/mcp-server:test:coverage:     153|       await expect(client.validateWorkflow('invalid yaml')).rejects.to…
+@workflow/mcp-server:test:coverage:        |       ^
+@workflow/mcp-server:test:coverage:     154|     });
+@workflow/mcp-server:test:coverage:     155|   });
+@workflow/mcp-server:test:coverage: 
+@workflow/mcp-server:test:coverage: ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+@workflow/mcp-server:test:coverage: 
+@workflow/mcp-server:test:coverage:  FAIL  tests/services/refinement-service.test.ts > RefinementService > termination: max_iterations > should stop after max iterations
+@workflow/mcp-server:test:coverage: AssertionError: expected 'oscillation_detected' to be 'max_iterations' // Object.is equality
+@workflow/mcp-server:test:coverage: 
+@workflow/mcp-server:test:coverage: Expected: "max_iterations"
+@workflow/mcp-server:test:coverage: Received: "oscillation_detected"
+@workflow/mcp-server:test:coverage: 
+@workflow/mcp-server:test:coverage:  ❯ tests/services/refinement-service.test.ts:87:40
+@workflow/mcp-server:test:coverage:      85| 
+@workflow/mcp-server:test:coverage:      86|       expect(result.valid).toBe(false);
+@workflow/mcp-server:test:coverage:      87|       expect(result.terminationReason).toBe('max_iterations');
+@workflow/mcp-server:test:coverage:        |                                        ^
+@workflow/mcp-server:test:coverage:      88|       expect(result.history.length).toBeLessThanOrEqual(2);
+@workflow/mcp-server:test:coverage:      89|     });
+@workflow/mcp-server:test:coverage: 
+@workflow/mcp-server:test:coverage: ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+@workflow/mcp-server:test:coverage: 
+@workflow/mcp-server:test:coverage:  FAIL  tests/services/refinement-service.test.ts > RefinementService > termination: max_iterations > should respect custom max iterations
+@workflow/mcp-server:test:coverage: AssertionError: expected 'no_progress' to be 'max_iterations' // Object.is equality
+@workflow/mcp-server:test:coverage: 
+@workflow/mcp-server:test:coverage: Expected: "max_iterations"
+@workflow/mcp-server:test:coverage: Received: "no_progress"
+@workflow/mcp-server:test:coverage: 
+@workflow/mcp-server:test:coverage:  ❯ tests/services/refinement-service.test.ts:105:40
+@workflow/mcp-server:test:coverage:     103|       const result = await service.refineWorkflow('name: test', mockTa…
+@workflow/mcp-server:test:coverage:     104| 
+@workflow/mcp-server:test:coverage:     105|       expect(result.terminationReason).toBe('max_iterations');
+@workflow/mcp-server:test:coverage:        |                                        ^
+@workflow/mcp-server:test:coverage:     106|       expect(callCount).toBe(5);
+@workflow/mcp-server:test:coverage:     107|     });
+@workflow/mcp-server:test:coverage: 
+@workflow/mcp-server:test:coverage: ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯
+@workflow/mcp-server:test:coverage: 
+@workflow/mcp-server:test:coverage:  FAIL  tests/services/refinement-service.test.ts > RefinementService > termination: oscillation_detected > should detect oscillation when same errors reappear
+@workflow/mcp-server:test:coverage: AssertionError: expected 'no_progress' to be 'oscillation_detected' // Object.is equality
+@workflow/mcp-server:test:coverage: 
+@workflow/mcp-server:test:coverage: Expected: "oscillation_detected"
+@workflow/mcp-server:test:coverage: Received: "no_progress"
+@workflow/mcp-server:test:coverage: 
+@workflow/mcp-server:test:coverage:  ❯ tests/services/refinement-service.test.ts:133:40
+@workflow/mcp-server:test:coverage:     131| 
+@workflow/mcp-server:test:coverage:     132|       expect(result.valid).toBe(false);
+@workflow/mcp-server:test:coverage:     133|       expect(result.terminationReason).toBe('oscillation_detected');
+@workflow/mcp-server:test:coverage:        |                                        ^
+@workflow/mcp-server:test:coverage:     134|     });
+@workflow/mcp-server:test:coverage:     135| 
+@workflow/mcp-server:test:coverage: 
+@workflow/mcp-server:test:coverage: ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯
+@workflow/mcp-server:test:coverage: 
+@workflow/mcp-server:test:coverage:  FAIL  tests/services/refinement-service.test.ts > RefinementService > history tracking > should track each iteration in history
+@workflow/mcp-server:test:coverage: AssertionError: expected [ { iteration: 1, …(2) } ] to have a length of 2 but got 1
+@workflow/mcp-server:test:coverage: 
+@workflow/mcp-server:test:coverage: - Expected
+@workflow/mcp-server:test:coverage: + Received
+@workflow/mcp-server:test:coverage: 
+@workflow/mcp-server:test:coverage: - 2
+@workflow/mcp-server:test:coverage: + 1
+@workflow/mcp-server:test:coverage: 
+@workflow/mcp-server:test:coverage:  ❯ tests/services/refinement-service.test.ts:323:30
+@workflow/mcp-server:test:coverage:     321|       const result = await service.refineWorkflow('name: test', mockTa…
+@workflow/mcp-server:test:coverage:     322| 
+@workflow/mcp-server:test:coverage:     323|       expect(result.history).toHaveLength(2);
+@workflow/mcp-server:test:coverage:        |                              ^
+@workflow/mcp-server:test:coverage:     324|       expect(result.history[0].iteration).toBe(1);
+@workflow/mcp-server:test:coverage:     325|       expect(result.history[1].iteration).toBe(2);
+@workflow/mcp-server:test:coverage: 
+@workflow/mcp-server:test:coverage: ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/7]⎯
+@workflow/mcp-server:test:coverage: 
+@workflow/mcp-server:test:coverage:  Test Files  2 failed | 9 passed (11)
+@workflow/mcp-server:test:coverage:       Tests  7 failed | 133 passed (140)
+@workflow/mcp-server:test:coverage:    Start at  22:44:35
+@workflow/mcp-server:test:coverage:    Duration  13.55s (transform 13.92s, setup 0ms, collect 24.25s, tests 1.24s, environment 32ms, prepare 55.17s)
+@workflow/mcp-server:test:coverage: 
+@workflow/cli:test:coverage:  ✓ tests/crd-generator.test.ts (24 tests) 595ms
+@workflow/cli:test:coverage:  ✓ tests/generators/output-schema-generator.test.ts (8 tests) 39ms
+@workflow/mcp-server:test:coverage:  ELIFECYCLE  Command failed with exit code 1.
+@workflow/cli:test:coverage:  ✓ tests/generators/http-config-generator.test.ts (9 tests) 17ms
+@workflow/cli:test:coverage:  ✓ tests/generators/input-schema-generator.test.ts (8 tests) 20ms
+@workflow/cli:test:coverage:  ✓ tests/versioning/change-detector.test.ts (8 tests) 15ms
+@workflow/cli:test:coverage:  ✓ tests/workflow-generator/workflow-scaffolder.test.ts (6 tests) 25ms
+@workflow/ui-components:build: cache miss, executing c475988baada1373
+workflow-vscode-client:build: cache miss, executing 26751eb2ad162195
+workflow-vscode-server:build: cache miss, executing 10f2cec8c9e8bc8f
+@workflow/mcp-server:test:coverage: ERROR: command finished with error: command (/Users/darren/dev/workflow/packages/workflow-mcp-server) /usr/local/bin/pnpm run test:coverage exited (1)
+@workflow/cli:test:coverage:  ELIFECYCLE  Command failed.
+workflow-ui:test:coverage:  ELIFECYCLE  Command failed with exit code 130.
+@workflow/mcp-server#test:coverage: command (/Users/darren/dev/workflow/packages/workflow-mcp-server) /usr/local/bin/pnpm run test:coverage exited (1)
+
+ Tasks:    9 successful, 15 total
+Cached:    1 cached, 15 total
+  Time:    33.546s 
+Failed:    @workflow/mcp-server#test:coverage
+
+ ERROR  run failed: command  exited (1)

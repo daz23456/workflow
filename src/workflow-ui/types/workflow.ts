@@ -5,6 +5,8 @@ export interface WorkflowListItem {
   taskCount: number;
   inputSchemaPreview: string;
   endpoint: string;
+  tags?: string[];
+  categories?: string[];
   stats?: {
     // ← Made optional - backend may not provide stats yet
     totalExecutions?: number;

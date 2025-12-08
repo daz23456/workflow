@@ -1,0 +1,4 @@
+
+> @workflow/cli@0.1.0 clean
+> rm -rf dist coverage
+

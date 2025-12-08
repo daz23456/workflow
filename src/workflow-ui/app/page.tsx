@@ -484,10 +484,10 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Stage 14: Workflow Optimizer */}
-          <div className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/30 dark:to-teal-900/30 p-6 rounded-lg border border-emerald-200 dark:border-emerald-800">
+          {/* Stage 39: Smart Caching */}
+          <div className="bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-900/30 dark:to-yellow-900/30 p-6 rounded-lg border border-amber-200 dark:border-amber-800">
             <div className="flex items-start gap-4">
-              <div className="w-10 h-10 bg-emerald-600 rounded-lg flex items-center justify-center flex-shrink-0">
+              <div className="w-10 h-10 bg-amber-600 rounded-lg flex items-center justify-center flex-shrink-0">
                 <svg
                   className="w-6 h-6 text-white"
                   fill="none"
@@ -498,23 +498,23 @@ export default function Home() {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
-                    d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                    d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"
                   />
                 </svg>
               </div>
               <div>
-                <h3 className="font-semibold text-lg mb-2 text-gray-900 dark:text-white">Workflow Optimizer</h3>
+                <h3 className="font-semibold text-lg mb-2 text-gray-900 dark:text-white">Smart Caching</h3>
                 <p className="text-gray-600 dark:text-gray-300 text-sm">
-                  Automatic performance tuning with algebraic transforms - proven safe by replaying past executions
+                  Intelligent task caching with TTL - reduce API costs by 50-90%
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Stage 15: MCP Server */}
-          <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/30 dark:to-pink-900/30 p-6 rounded-lg border border-purple-200 dark:border-purple-800">
+          {/* Stage 38: Zero-Config Observability */}
+          <div className="bg-gradient-to-br from-indigo-50 to-violet-50 dark:from-indigo-900/30 dark:to-violet-900/30 p-6 rounded-lg border border-indigo-200 dark:border-indigo-800">
             <div className="flex items-start gap-4">
-              <div className="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
+              <div className="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center flex-shrink-0">
                 <svg
                   className="w-6 h-6 text-white"
                   fill="none"
@@ -525,20 +525,101 @@ export default function Home() {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
-                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
                   />
                 </svg>
               </div>
               <div>
-                <h3 className="font-semibold text-lg mb-2 text-gray-900 dark:text-white">MCP Workflow Server</h3>
+                <h3 className="font-semibold text-lg mb-2 text-gray-900 dark:text-white">Zero-Config Observability</h3>
                 <p className="text-gray-600 dark:text-gray-300 text-sm">
-                  Let any chatbot discover and execute workflows via Model Context Protocol
+                  OpenTelemetry traces, Prometheus metrics, and structured logging out of the box
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Stage 16: OpenAPI Task Generator */}
+          {/* Stage 36: Time-Travel Debugging */}
+          <div className="bg-gradient-to-br from-fuchsia-50 to-pink-50 dark:from-fuchsia-900/30 dark:to-pink-900/30 p-6 rounded-lg border border-fuchsia-200 dark:border-fuchsia-800">
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 bg-fuchsia-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                <svg
+                  className="w-6 h-6 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-semibold text-lg mb-2 text-gray-900 dark:text-white">Time-Travel Debugging</h3>
+                <p className="text-gray-600 dark:text-gray-300 text-sm">
+                  See exact state at every step, then replay with modified inputs
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Stage 35: Marketplace & Connectors */}
+          <div className="bg-gradient-to-br from-lime-50 to-green-50 dark:from-lime-900/30 dark:to-green-900/30 p-6 rounded-lg border border-lime-200 dark:border-lime-800">
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 bg-lime-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                <svg
+                  className="w-6 h-6 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"
+                  />
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-semibold text-lg mb-2 text-gray-900 dark:text-white">Marketplace & Connectors</h3>
+                <p className="text-gray-600 dark:text-gray-300 text-sm">
+                  Pre-built tasks for Stripe, Twilio, SendGrid - from days to minutes
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Stage 40: Compliance Built-In */}
+          <div className="bg-gradient-to-br from-slate-50 to-gray-50 dark:from-slate-900/30 dark:to-gray-900/30 p-6 rounded-lg border border-slate-200 dark:border-slate-800">
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 bg-slate-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                <svg
+                  className="w-6 h-6 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                  />
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-semibold text-lg mb-2 text-gray-900 dark:text-white">Compliance Built-In</h3>
+                <p className="text-gray-600 dark:text-gray-300 text-sm">
+                  PII detection, audit logging, and HIPAA/SOC2 compliance reports
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Stage 42: Traffic Splitting */}
           <div className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/30 dark:to-red-900/30 p-6 rounded-lg border border-orange-200 dark:border-orange-800">
             <div className="flex items-start gap-4">
               <div className="w-10 h-10 bg-orange-600 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -552,68 +633,14 @@ export default function Home() {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
-                    d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"
+                    d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
                   />
                 </svg>
               </div>
               <div>
-                <h3 className="font-semibold text-lg mb-2 text-gray-900 dark:text-white">OpenAPI Task Generator</h3>
+                <h3 className="font-semibold text-lg mb-2 text-gray-900 dark:text-white">Traffic Splitting</h3>
                 <p className="text-gray-600 dark:text-gray-300 text-sm">
-                  Auto-generate WorkflowTask CRDs from OpenAPI specs - complete PACT replacement
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Stage 17: Test API Server */}
-          <div className="bg-gradient-to-br from-cyan-50 to-teal-50 dark:from-cyan-900/30 dark:to-teal-900/30 p-6 rounded-lg border border-cyan-200 dark:border-cyan-800">
-            <div className="flex items-start gap-4">
-              <div className="w-10 h-10 bg-cyan-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                <svg
-                  className="w-6 h-6 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
-                  />
-                </svg>
-              </div>
-              <div>
-                <h3 className="font-semibold text-lg mb-2 text-gray-900 dark:text-white">Test API Server</h3>
-                <p className="text-gray-600 dark:text-gray-300 text-sm">
-                  100 endpoints for testing orchestration - validates transforms, errors, and retries
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Stage 18: Synthetic Health Checks */}
-          <div className="bg-gradient-to-br from-rose-50 to-pink-50 dark:from-rose-900/30 dark:to-pink-900/30 p-6 rounded-lg border border-rose-200 dark:border-rose-800">
-            <div className="flex items-start gap-4">
-              <div className="w-10 h-10 bg-rose-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                <svg
-                  className="w-6 h-6 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                  />
-                </svg>
-              </div>
-              <div>
-                <h3 className="font-semibold text-lg mb-2 text-gray-900 dark:text-white">Synthetic Health Checks</h3>
-                <p className="text-gray-600 dark:text-gray-300 text-sm">
-                  Proactive endpoint monitoring - catch broken APIs before users do
+                  Canary deployments and A/B testing - deploy with confidence
                 </p>
               </div>
             </div>

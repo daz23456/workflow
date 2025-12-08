@@ -5,10 +5,12 @@ import { usePrefetchWorkflowDetail } from '@/lib/api/queries';
 interface WorkflowCardProps {
   workflow: WorkflowListItem;
   onClick?: (name: string) => void;
+  onTagClick?: (tag: string) => void;
+  onCategoryClick?: (category: string) => void;
 }
 
-export function WorkflowCard({ workflow, onClick }: WorkflowCardProps) {
-  const { name, namespace, description, taskCount, stats } = workflow;
+export function WorkflowCard({ workflow, onClick, onTagClick, onCategoryClick }: WorkflowCardProps) {
+  const { name, namespace, description, taskCount, stats, tags, categories } = workflow;
   const prefetchWorkflow = usePrefetchWorkflowDetail();
 
   const handleMouseEnter = () => {
@@ -20,6 +22,8 @@ export function WorkflowCard({ workflow, onClick }: WorkflowCardProps) {
       name={name}
       namespace={namespace}
       description={description}
+      tags={tags}
+      categories={categories}
       stats={
         stats
           ? {
@@ -39,6 +43,8 @@ export function WorkflowCard({ workflow, onClick }: WorkflowCardProps) {
       }}
       onClick={onClick}
       onMouseEnter={handleMouseEnter}
+      onTagClick={onTagClick}
+      onCategoryClick={onCategoryClick}
     />
   );
 }

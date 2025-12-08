@@ -103,7 +103,7 @@ describe('JsonUploadPanel', () => {
     await user.upload(input, file);
 
     await waitFor(() => {
-      expect(screen.getByText(/must be an array/i)).toBeInTheDocument();
+      expect(screen.getByText(/no array properties found/i)).toBeInTheDocument();
       expect(onUpload).not.toHaveBeenCalled();
     });
   });

@@ -1,0 +1,2 @@
+Gate 6: Code Coverage - PASS
+WorkflowGateway overall coverage: 92.6%

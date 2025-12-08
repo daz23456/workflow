@@ -1,0 +1,43 @@
+
+> @workflow/cli@0.1.0 test
+> vitest run
+
+
+ RUN  v2.1.9 /Users/darren/dev/workflow/packages/workflow-cli
+
+ ✓ tests/workflow-generator/dependency-analyzer.test.ts (9 tests) 13ms
+ ✓ tests/openapi-parser.test.ts (20 tests) 24ms
+ ✓ tests/services/debugger.test.ts (21 tests) 23ms
+ ✓ tests/services/gateway-client.test.ts (23 tests) 40ms
+ ✓ tests/commands/init.test.ts (18 tests) 35ms
+ ✓ tests/services/mock-executor.test.ts (15 tests) 125ms
+ ✓ tests/commands/validate.test.ts (17 tests) 30ms
+ ✓ tests/commands/test.test.ts (16 tests) 24ms
+ ✓ tests/commands/explain.test.ts (20 tests) 33ms
+ ✓ tests/commands/debug.test.ts (21 tests) 38ms
+ ✓ tests/config.test.ts (21 tests) 56ms
+ ✓ tests/commands/tasks.test.ts (20 tests) 58ms
+ ✓ tests/commands/run.test.ts (14 tests) 24ms
+ ✓ tests/loaders.test.ts (18 tests) 83ms
+ ✓ tests/crd-generator.test.ts (24 tests) 121ms
+ ✓ tests/generators/output-schema-generator.test.ts (8 tests) 20ms
+ ✓ tests/generators/input-schema-generator.test.ts (8 tests) 53ms
+ ✓ tests/generators/http-config-generator.test.ts (9 tests) 16ms
+ ✓ tests/versioning/change-detector.test.ts (8 tests) 18ms
+ ✓ tests/generators/permission-label-generator.test.ts (7 tests) 13ms
+ ✓ tests/generators/task-name-generator.test.ts (9 tests) 16ms
+ ✓ tests/workflow-generator/workflow-scaffolder.test.ts (6 tests) 23ms
+ ✓ tests/workflow-generator/permission-check-generator.test.ts (3 tests) 12ms
+ ✓ tests/versioning/task-hash-calculator.test.ts (4 tests) 13ms
+ ✓ tests/versioning/migration-generator.test.ts (4 tests) 29ms
+ ✓ tests/commands/check-changes.test.ts (4 tests) 14ms
+ ✓ tests/commands/generate-workflow.test.ts (4 tests) 59ms
+ ✓ tests/generators/task-yaml-writer.test.ts (5 tests) 41ms
+ ✓ tests/e2e/petstore-integration.test.ts (3 tests) 73ms
+ ✓ tests/versioning/version-manager.test.ts (9 tests) 17ms
+
+ Test Files  30 passed (30)
+      Tests  368 passed (368)
+   Start at  22:37:08
+   Duration  3.05s (transform 4.48s, setup 0ms, collect 9.04s, tests 1.14s, environment 19ms, prepare 10.27s)
+

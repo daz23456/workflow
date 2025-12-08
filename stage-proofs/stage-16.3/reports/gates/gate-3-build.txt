@@ -1,0 +1,79 @@
+
+> workflow-root@1.0.0 build
+> turbo run build
+
+turbo 2.6.1
+
+ WARNING  Unable to calculate transitive closures: Workspace 'packages/workflow-mcp-consumer' not found in lockfile.
+• Packages in scope: @workflow/api-client, @workflow/cli, @workflow/graph, @workflow/mcp-consumer, @workflow/mcp-server, @workflow/types, @workflow/ui-components, @workflow/validation, workflow-ui, workflow-vscode-client, workflow-vscode-server
+• Running build in 11 packages
+• Remote caching disabled
+@workflow/mcp-server:build: cache miss, executing 84e53fb041ec8f18
+@workflow/mcp-consumer:build: cache miss, executing d7a9f53bec0ad2fd
+@workflow/api-client:build: cache miss, executing 7fffa11234b29fdf
+@workflow/cli:build: cache miss, executing dc4b244437fc0b1b
+@workflow/types:build: cache miss, executing 7e6c162a96c81db5
+workflow-ui:build: cache miss, executing 5d76ddf183a8ec31
+@workflow/mcp-server:build: 
+@workflow/mcp-server:build: > @workflow/mcp-server@0.1.0 build /Users/darren/dev/workflow/packages/workflow-mcp-server
+@workflow/mcp-server:build: > tsc
+@workflow/mcp-server:build: 
+@workflow/api-client:build: 
+@workflow/api-client:build: > @workflow/api-client@0.1.0 build /Users/darren/dev/workflow/packages/workflow-api-client
+@workflow/api-client:build: > tsc
+@workflow/api-client:build: 
+@workflow/mcp-consumer:build: 
+@workflow/mcp-consumer:build: > @workflow/mcp-consumer@0.1.0 build /Users/darren/dev/workflow/packages/workflow-mcp-consumer
+@workflow/mcp-consumer:build: > tsc
+@workflow/mcp-consumer:build: 
+@workflow/cli:build: 
+@workflow/cli:build: > @workflow/cli@0.1.0 build /Users/darren/dev/workflow/packages/workflow-cli
+@workflow/cli:build: > tsc
+@workflow/cli:build: 
+@workflow/types:build: 
+@workflow/types:build: > @workflow/types@0.1.0 build /Users/darren/dev/workflow/packages/workflow-types
+@workflow/types:build: > tsc
+@workflow/types:build: 
+workflow-ui:build: 
+workflow-ui:build: > workflow-ui@0.1.0 build /Users/darren/dev/workflow/src/workflow-ui
+workflow-ui:build: > next build
+workflow-ui:build: 
+workflow-ui:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+@workflow/validation:build: cache miss, executing e867d4d786979a39
+workflow-ui:build:  ⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+workflow-ui:build:  We detected multiple lockfiles and selected the directory of /Users/darren/package-lock.json as the root directory.
+workflow-ui:build:  To silence this warning, set `turbopack.root` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+workflow-ui:build:    See https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory for more information.
+workflow-ui:build:  Detected additional lockfiles: 
+workflow-ui:build:    * /Users/darren/dev/workflow/src/workflow-ui/package-lock.json
+workflow-ui:build:    * /Users/darren/dev/workflow/pnpm-lock.yaml
+workflow-ui:build: 
+workflow-ui:build:    ▲ Next.js 16.0.3 (Turbopack)
+workflow-ui:build:    - Environments: .env.local
+workflow-ui:build: 
+@workflow/validation:build: 
+@workflow/validation:build: > @workflow/validation@0.1.0 build /Users/darren/dev/workflow/packages/workflow-validation
+@workflow/validation:build: > tsc
+@workflow/validation:build: 
+workflow-ui:build:    Creating an optimized production build ...
+workflow-ui:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+@workflow/mcp-consumer:build: src/index.ts(8,27): error TS2307: Cannot find module '@modelcontextprotocol/sdk/server/mcp.js' or its corresponding type declarations.
+@workflow/mcp-consumer:build: src/index.ts(9,38): error TS2307: Cannot find module '@modelcontextprotocol/sdk/server/stdio.js' or its corresponding type declarations.
+@workflow/mcp-consumer:build: src/index.ts(10,19): error TS2307: Cannot find module 'zod' or its corresponding type declarations.
+@workflow/mcp-consumer:build: src/index.ts(56,10): error TS7006: Parameter 'params' implicitly has an 'any' type.
+@workflow/mcp-consumer:build: src/index.ts(93,10): error TS7006: Parameter 'params' implicitly has an 'any' type.
+@workflow/mcp-consumer:build: src/index.ts(155,10): error TS7006: Parameter 'params' implicitly has an 'any' type.
+@workflow/mcp-consumer:build:  ELIFECYCLE  Command failed with exit code 2.
+@workflow/mcp-consumer:build:  WARN   Local package.json exists, but node_modules missing, did you mean to install?
+@workflow/mcp-consumer:build: ERROR: command finished with error: command (/Users/darren/dev/workflow/packages/workflow-mcp-consumer) /usr/local/bin/pnpm run build exited (2)
+@workflow/validation:build:  ELIFECYCLE  Command failed.
+@workflow/mcp-server:build:  ELIFECYCLE  Command failed.
+workflow-ui:build:  ELIFECYCLE  Command failed with exit code 130.
+@workflow/mcp-consumer#build: command (/Users/darren/dev/workflow/packages/workflow-mcp-consumer) /usr/local/bin/pnpm run build exited (2)
+
+ Tasks:    2 successful, 7 total
+Cached:    0 cached, 7 total
+  Time:    6.653s 
+Failed:    @workflow/mcp-consumer#build
+
+ ERROR  run failed: command  exited (2)

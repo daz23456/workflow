@@ -41,12 +41,40 @@ export interface ParsedResponse {
   description?: string;
 }
 
+export interface SecurityScheme {
+  type: 'apiKey' | 'http' | 'oauth2' | 'openIdConnect';
+  name?: string;
+  in?: 'header' | 'query' | 'cookie';
+  scheme?: string;
+  bearerFormat?: string;
+  flows?: {
+    authorizationCode?: {
+      authorizationUrl: string;
+      tokenUrl: string;
+      scopes: Record<string, string>;
+    };
+    clientCredentials?: {
+      tokenUrl: string;
+      scopes: Record<string, string>;
+    };
+    implicit?: {
+      authorizationUrl: string;
+      scopes: Record<string, string>;
+    };
+    password?: {
+      tokenUrl: string;
+      scopes: Record<string, string>;
+    };
+  };
+}
+
 export interface ParsedSpec {
   title: string;
   version: string;
   baseUrl: string;
   endpoints: ParsedEndpoint[];
   schemas: Record<string, JsonSchema>;
+  securitySchemes: Record<string, SecurityScheme>;
 }
 
 /**
@@ -82,14 +110,82 @@ function parseDocument(spec: OpenAPIV3.Document): ParsedSpec {
   const baseUrl = getBaseUrl(spec);
   const schemas = extractSchemas(spec);
   const endpoints = extractEndpoints(spec, schemas);
+  const securitySchemes = extractSecuritySchemes(spec);
 
   return {
     title: spec.info.title,
     version: spec.info.version,
     baseUrl,
     endpoints,
-    schemas
+    schemas,
+    securitySchemes
   };
+}
+
+/**
+ * Extract security schemes from components
+ */
+function extractSecuritySchemes(spec: OpenAPIV3.Document): Record<string, SecurityScheme> {
+  const schemes: Record<string, SecurityScheme> = {};
+  const componentSecuritySchemes = spec.components?.securitySchemes;
+
+  if (componentSecuritySchemes) {
+    for (const [name, scheme] of Object.entries(componentSecuritySchemes)) {
+      const s = scheme as OpenAPIV3.SecuritySchemeObject;
+      schemes[name] = convertSecurityScheme(s);
+    }
+  }
+
+  return schemes;
+}
+
+/**
+ * Convert OpenAPI security scheme to our format
+ */
+function convertSecurityScheme(scheme: OpenAPIV3.SecuritySchemeObject): SecurityScheme {
+  const result: SecurityScheme = {
+    type: scheme.type as SecurityScheme['type']
+  };
+
+  if (scheme.type === 'apiKey') {
+    const apiKeyScheme = scheme as OpenAPIV3.ApiKeySecurityScheme;
+    result.name = apiKeyScheme.name;
+    result.in = apiKeyScheme.in as 'header' | 'query' | 'cookie';
+  } else if (scheme.type === 'http') {
+    const httpScheme = scheme as OpenAPIV3.HttpSecurityScheme;
+    result.scheme = httpScheme.scheme;
+    result.bearerFormat = httpScheme.bearerFormat;
+  } else if (scheme.type === 'oauth2') {
+    const oauth2Scheme = scheme as OpenAPIV3.OAuth2SecurityScheme;
+    result.flows = {};
+    if (oauth2Scheme.flows.authorizationCode) {
+      result.flows.authorizationCode = {
+        authorizationUrl: oauth2Scheme.flows.authorizationCode.authorizationUrl,
+        tokenUrl: oauth2Scheme.flows.authorizationCode.tokenUrl,
+        scopes: oauth2Scheme.flows.authorizationCode.scopes
+      };
+    }
+    if (oauth2Scheme.flows.clientCredentials) {
+      result.flows.clientCredentials = {
+        tokenUrl: oauth2Scheme.flows.clientCredentials.tokenUrl,
+        scopes: oauth2Scheme.flows.clientCredentials.scopes
+      };
+    }
+    if (oauth2Scheme.flows.implicit) {
+      result.flows.implicit = {
+        authorizationUrl: oauth2Scheme.flows.implicit.authorizationUrl,
+        scopes: oauth2Scheme.flows.implicit.scopes
+      };
+    }
+    if (oauth2Scheme.flows.password) {
+      result.flows.password = {
+        tokenUrl: oauth2Scheme.flows.password.tokenUrl,
+        scopes: oauth2Scheme.flows.password.scopes
+      };
+    }
+  }
+
+  return result;
 }
 
 /**
@@ -164,7 +260,7 @@ function parseOperation(
     parameters: parseParameters(operation.parameters as OpenAPIV3.ParameterObject[] || [], componentSchemas),
     requestBody: parseRequestBody(operation.requestBody as OpenAPIV3.RequestBodyObject | undefined, componentSchemas),
     responses: parseResponses(operation.responses as OpenAPIV3.ResponsesObject, componentSchemas),
-    security: extractSecuritySchemes(operation.security)
+    security: extractOperationSecurityNames(operation.security)
   };
 }
 
@@ -267,9 +363,9 @@ function parseResponses(
 }
 
 /**
- * Extract security scheme names
+ * Extract security scheme names from operation
  */
-function extractSecuritySchemes(security: OpenAPIV3.SecurityRequirementObject[] | undefined): string[] {
+function extractOperationSecurityNames(security: OpenAPIV3.SecurityRequirementObject[] | undefined): string[] {
   if (!security) return [];
   return security.flatMap(req => Object.keys(req));
 }

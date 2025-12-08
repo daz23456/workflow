@@ -1,0 +1,10 @@
+  11:3  error  'MockTaskResult' is defined but never used  @typescript-eslint/no-unused-vars
+  10:8  error  'ChangeResult' is defined but never used  @typescript-eslint/no-unused-vars
+  11:8  error  'ChangeType' is defined but never used    @typescript-eslint/no-unused-vars
+  10:8  error  'MigrationSpec' is defined but never used  @typescript-eslint/no-unused-vars
+  11:8  error  'VersionInfo' is defined but never used  @typescript-eslint/no-unused-vars
+  12:8  error  'CompatibilityResult' is defined but never used  @typescript-eslint/no-unused-vars
+  13:8  error  'TaskChain' is defined but never used            @typescript-eslint/no-unused-vars
+  11:8  error  'WorkflowScaffold' is defined but never used  @typescript-eslint/no-unused-vars
+  12:8  error  'TaskRef' is defined but never used           @typescript-eslint/no-unused-vars
+✖ 62 problems (28 errors, 34 warnings)

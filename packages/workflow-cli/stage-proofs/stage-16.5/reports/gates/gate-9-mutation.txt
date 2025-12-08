@@ -1,0 +1,30 @@
+node:internal/modules/cjs/loader:1386
+  throw err;
+  ^
+
+Error: Cannot find module 'rx'
+Require stack:
+- /Users/darren/.npm/_npx/49301fa88e4fa3d5/node_modules/stryker/src/process/MutationTestExecutor.js
+- /Users/darren/.npm/_npx/49301fa88e4fa3d5/node_modules/stryker/src/Stryker.js
+- /Users/darren/.npm/_npx/49301fa88e4fa3d5/node_modules/stryker/src/stryker-cli.js
+- /Users/darren/.npm/_npx/49301fa88e4fa3d5/node_modules/stryker/bin/stryker
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1383:15)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1025:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1030:22)
+    at Function._load (node:internal/modules/cjs/loader:1192:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:237:24)
+    at Module.require (node:internal/modules/cjs/loader:1463:12)
+    at require (node:internal/modules/helpers:147:16)
+    at Object.<anonymous> (/Users/darren/.npm/_npx/49301fa88e4fa3d5/node_modules/stryker/src/process/MutationTestExecutor.js:4:12)
+    at Module._compile (node:internal/modules/cjs/loader:1706:14) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/darren/.npm/_npx/49301fa88e4fa3d5/node_modules/stryker/src/process/MutationTestExecutor.js',
+    '/Users/darren/.npm/_npx/49301fa88e4fa3d5/node_modules/stryker/src/Stryker.js',
+    '/Users/darren/.npm/_npx/49301fa88e4fa3d5/node_modules/stryker/src/stryker-cli.js',
+    '/Users/darren/.npm/_npx/49301fa88e4fa3d5/node_modules/stryker/bin/stryker'
+  ]
+}
+
+Node.js v22.19.0

@@ -47,6 +47,13 @@ public class HistoricalReplayEngine : IHistoricalReplayEngine
         CancellationToken cancellationToken = default)
     {
         options ??= new ReplayOptions();
+
+        // Dry-run mode: static structure comparison only (no HTTP execution)
+        if (options.DryRun)
+        {
+            return await Task.FromResult(CompareWorkflowStructure(originalWorkflow, optimizedWorkflow));
+        }
+
         var workflowName = originalWorkflow.Metadata?.Name ?? string.Empty;
 
         // Fetch historical successful executions
@@ -126,6 +133,123 @@ public class HistoricalReplayEngine : IHistoricalReplayEngine
             MatchingOutputs: matchingOutputs,
             Mismatches: mismatches,
             AverageTimeDelta: averageTimeDelta);
+    }
+
+    /// <summary>
+    /// Compares workflow structure without execution (dry-run mode).
+    /// Validates DAG structure, dependencies, and task configuration.
+    /// </summary>
+    private static ReplayResult CompareWorkflowStructure(
+        WorkflowResource original,
+        WorkflowResource optimized)
+    {
+        var mismatches = new List<ReplayMismatch>();
+        var originalTasks = original.Spec.Tasks;
+        var optimizedTasks = optimized.Spec.Tasks;
+
+        // Build task lookup for both workflows
+        var originalTaskMap = originalTasks.ToDictionary(t => t.Id, t => t);
+        var optimizedTaskMap = optimizedTasks.ToDictionary(t => t.Id, t => t);
+
+        // Check for removed tasks (may break dependencies)
+        foreach (var origTask in originalTasks)
+        {
+            if (!optimizedTaskMap.ContainsKey(origTask.Id))
+            {
+                // Task removed - check if it was used by other tasks
+                var dependents = originalTasks
+                    .Where(t => t.DependsOn?.Contains(origTask.Id) == true)
+                    .Select(t => t.Id)
+                    .ToList();
+
+                if (dependents.Count > 0)
+                {
+                    mismatches.Add(new ReplayMismatch(
+                        "structure",
+                        origTask.Id,
+                        $"Task removed but has dependents: {string.Join(", ", dependents)}"));
+                }
+            }
+        }
+
+        // Check for dependency changes that could affect semantics
+        foreach (var optTask in optimizedTasks)
+        {
+            if (!originalTaskMap.TryGetValue(optTask.Id, out var origTask))
+            {
+                // New task added - that's generally safe
+                continue;
+            }
+
+            // Check if task references the same underlying task
+            if (origTask.TaskRef != optTask.TaskRef && origTask.WorkflowRef != optTask.WorkflowRef)
+            {
+                mismatches.Add(new ReplayMismatch(
+                    "structure",
+                    optTask.Id,
+                    $"Task reference changed: {origTask.TaskRef ?? origTask.WorkflowRef} -> {optTask.TaskRef ?? optTask.WorkflowRef}"));
+            }
+
+            // Check for broken dependencies
+            var origDeps = origTask.DependsOn ?? new List<string>();
+            var optDeps = optTask.DependsOn ?? new List<string>();
+
+            // New dependencies added - could change execution order
+            var addedDeps = optDeps.Except(origDeps).ToList();
+            if (addedDeps.Count > 0)
+            {
+                mismatches.Add(new ReplayMismatch(
+                    "structure",
+                    optTask.Id,
+                    $"New dependencies added (may change execution order): {string.Join(", ", addedDeps)}"));
+            }
+        }
+
+        // Check input/output schema compatibility
+        if (!AreInputSchemasCompatible(original.Spec.Input, optimized.Spec.Input))
+        {
+            mismatches.Add(new ReplayMismatch(
+                "structure",
+                "workflow-input",
+                "Workflow input schema changed"));
+        }
+
+        if (!AreOutputSchemasCompatible(original.Spec.Output, optimized.Spec.Output))
+        {
+            mismatches.Add(new ReplayMismatch(
+                "structure",
+                "workflow-output",
+                "Workflow output schema changed"));
+        }
+
+        // Calculate confidence: 1.0 if no mismatches, scaled down by mismatch count
+        var totalChecks = originalTasks.Count + optimizedTasks.Count + 2; // +2 for input/output
+        var passedChecks = totalChecks - mismatches.Count;
+        var matchingOutputs = mismatches.Count == 0 ? 1 : 0;
+
+        return new ReplayResult(
+            TotalReplays: 1,  // Structure comparison counts as 1 "replay"
+            MatchingOutputs: matchingOutputs,
+            Mismatches: mismatches,
+            AverageTimeDelta: TimeSpan.Zero);  // No execution, no time delta
+    }
+
+    private static bool AreInputSchemasCompatible(object? original, object? optimized)
+    {
+        // For now, simple null check - schemas should match
+        if (original == null && optimized == null) return true;
+        if (original == null || optimized == null) return false;
+        // Deep comparison could be added here
+        return true;
+    }
+
+    private static bool AreOutputSchemasCompatible(object? original, object? optimized)
+    {
+        // For now, simple null check - schemas should match
+        if (original == null && optimized == null) return true;
+        if (original == null || optimized == null) return false;
+        // Deep comparison could be added here
+        return true;
     }
 
     private static Dictionary<string, object> DeserializeInputSnapshot(string? inputSnapshot)

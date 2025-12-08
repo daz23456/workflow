@@ -1,0 +1,8 @@
+
+> @workflow/cli@0.1.0 build
+> tsc
+
+
+> @workflow/cli@0.1.0 type-check
+> tsc --noEmit
+

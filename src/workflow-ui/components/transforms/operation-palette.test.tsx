@@ -64,11 +64,12 @@ describe('OperationPalette', () => {
       expect(screen.getByText('Transformation')).toBeInTheDocument();
     });
 
-    it('should render operation descriptions', () => {
+    it('should render operation descriptions in aria labels', () => {
       render(<OperationPalette />);
 
-      expect(screen.getByText(/extract specific fields/i)).toBeInTheDocument();
-      expect(screen.getByText(/keep matching records/i)).toBeInTheDocument();
+      // Descriptions are in aria-labels for accessibility
+      expect(screen.getByLabelText(/drag select operation/i)).toBeInTheDocument();
+      expect(screen.getByLabelText(/drag filter operation/i)).toBeInTheDocument();
     });
   });
 
@@ -180,14 +181,14 @@ describe('OperationPalette', () => {
     it('should render search input', () => {
       render(<OperationPalette />);
 
-      expect(screen.getByPlaceholderText(/search operations/i)).toBeInTheDocument();
+      expect(screen.getByLabelText(/search operations/i)).toBeInTheDocument();
     });
 
     it('should filter operations by search query', async () => {
       const user = userEvent.setup();
       render(<OperationPalette />);
 
-      const searchInput = screen.getByPlaceholderText(/search operations/i);
+      const searchInput = screen.getByLabelText(/search operations/i);
       await user.type(searchInput, 'filter');
 
       // Filter should be visible
@@ -201,7 +202,7 @@ describe('OperationPalette', () => {
       const user = userEvent.setup();
       render(<OperationPalette />);
 
-      const searchInput = screen.getByPlaceholderText(/search operations/i);
+      const searchInput = screen.getByLabelText(/search operations/i);
       await user.type(searchInput, 'xyz123nonexistent');
 
       expect(screen.getByText(/no operations found/i)).toBeInTheDocument();
@@ -211,7 +212,7 @@ describe('OperationPalette', () => {
       const user = userEvent.setup();
       render(<OperationPalette />);
 
-      const searchInput = screen.getByPlaceholderText(/search operations/i);
+      const searchInput = screen.getByLabelText(/search operations/i);
       await user.type(searchInput, 'filter');
 
       const clearButton = screen.getByLabelText(/clear search/i);

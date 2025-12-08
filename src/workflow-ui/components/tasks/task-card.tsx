@@ -5,10 +5,12 @@ import { usePrefetchTaskDetail } from '@/lib/api/queries';
 interface TaskCardProps {
   task: Task;
   onClick?: (name: string) => void;
+  onTagClick?: (tag: string) => void;
+  onCategoryClick?: (category: string) => void;
 }
 
-export function TaskCard({ task, onClick }: TaskCardProps) {
-  const { name, namespace, description } = task;
+export function TaskCard({ task, onClick, onTagClick, onCategoryClick }: TaskCardProps) {
+  const { name, namespace, description, tags, category } = task;
   const prefetchTask = usePrefetchTaskDetail();
 
   // Handle missing stats gracefully
@@ -23,6 +25,8 @@ export function TaskCard({ task, onClick }: TaskCardProps) {
       name={name}
       namespace={namespace}
       description={description}
+      tags={tags}
+      categories={category ? [category] : undefined}
       stats={
         hasStats
           ? {
@@ -41,6 +45,8 @@ export function TaskCard({ task, onClick }: TaskCardProps) {
       }}
       onClick={onClick}
       onMouseEnter={handleMouseEnter}
+      onTagClick={onTagClick}
+      onCategoryClick={onCategoryClick}
     />
   );
 }

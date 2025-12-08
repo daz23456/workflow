@@ -110,6 +110,8 @@ describe('WorkflowFilters', () => {
         search: '',
         namespace: 'production',
         sort: 'name',
+        tags: [],
+        categories: [],
       });
     });
 
@@ -133,6 +135,8 @@ describe('WorkflowFilters', () => {
         search: '',
         namespace: undefined,
         sort: 'name',
+        tags: [],
+        categories: [],
       });
     });
   });
@@ -152,6 +156,8 @@ describe('WorkflowFilters', () => {
         search: '',
         namespace: undefined,
         sort: 'success-rate',
+        tags: [],
+        categories: [],
       });
     });
 
@@ -194,6 +200,83 @@ describe('WorkflowFilters', () => {
       expect(screen.getByPlaceholderText(/search workflows/i)).not.toBeDisabled();
       expect(screen.getByLabelText(/namespace/i)).not.toBeDisabled();
       expect(screen.getByLabelText(/sort by/i)).not.toBeDisabled();
+    });
+  });
+
+  describe('Label Filtering', () => {
+    it('renders label filter when tags are available', () => {
+      render(
+        <WorkflowFilters
+          namespaces={mockNamespaces}
+          onFilterChange={mockOnFilterChange}
+          availableTags={['orders', 'payments']}
+          availableCategories={['commerce']}
+        />
+      );
+
+      expect(screen.getByText('Labels')).toBeInTheDocument();
+    });
+
+    it('does not render label filter when no tags/categories available', () => {
+      render(
+        <WorkflowFilters
+          namespaces={mockNamespaces}
+          onFilterChange={mockOnFilterChange}
+          availableTags={[]}
+          availableCategories={[]}
+        />
+      );
+
+      expect(screen.queryByText('Labels')).not.toBeInTheDocument();
+    });
+
+    it('can hide label filters with showLabelFilters=false', () => {
+      render(
+        <WorkflowFilters
+          namespaces={mockNamespaces}
+          onFilterChange={mockOnFilterChange}
+          availableTags={['orders']}
+          showLabelFilters={false}
+        />
+      );
+
+      expect(screen.queryByText('Labels')).not.toBeInTheDocument();
+    });
+
+    it('applies default tag values', () => {
+      render(
+        <WorkflowFilters
+          namespaces={mockNamespaces}
+          onFilterChange={mockOnFilterChange}
+          availableTags={['orders', 'payments']}
+          defaultValues={{ tags: ['orders'] }}
+        />
+      );
+
+      // Should call onFilterChange with the default tags
+      expect(mockOnFilterChange).toHaveBeenCalledWith(
+        expect.objectContaining({
+          tags: ['orders'],
+        })
+      );
+    });
+
+    it('applies default category values', () => {
+      render(
+        <WorkflowFilters
+          namespaces={mockNamespaces}
+          onFilterChange={mockOnFilterChange}
+          availableCategories={['commerce', 'auth']}
+          defaultValues={{ categories: ['commerce'] }}
+        />
+      );
+
+      // Should call onFilterChange with the default categories
+      expect(mockOnFilterChange).toHaveBeenCalledWith(
+        expect.objectContaining({
+          categories: ['commerce'],
+        })
+      );
     });
   });
 

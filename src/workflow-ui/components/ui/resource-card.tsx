@@ -1,4 +1,5 @@
 import { formatDuration, getSuccessRateVariant, cn } from '@/lib/utils';
+import { TagBadge, CategoryBadge } from '@/components/labels';
 
 export interface ResourceCardStats {
   totalExecutions?: number;
@@ -12,6 +13,8 @@ export interface ResourceCardProps {
   name: string;
   namespace?: string;
   description?: string;
+  tags?: string[];
+  categories?: string[];
   stats?: ResourceCardStats;
   // Fourth stat - either task count or workflow count
   secondaryStat: {
@@ -22,16 +25,22 @@ export interface ResourceCardProps {
   };
   onClick?: (name: string) => void;
   onMouseEnter?: () => void;
+  onTagClick?: (tag: string) => void;
+  onCategoryClick?: (category: string) => void;
 }
 
 export function ResourceCard({
   name,
   namespace,
   description,
+  tags,
+  categories,
   stats,
   secondaryStat,
   onClick,
   onMouseEnter,
+  onTagClick,
+  onCategoryClick,
 }: ResourceCardProps) {
   // Handle missing stats gracefully
   const hasStats = stats !== undefined;
@@ -116,6 +125,30 @@ export function ResourceCard({
           {description || <span className="text-gray-400 dark:text-gray-500 italic">No description</span>}
         </p>
       </div>
+
+      {/* Labels */}
+      {((tags && tags.length > 0) || (categories && categories.length > 0)) && (
+        <div className="flex flex-wrap gap-1.5 mb-3" data-testid="resource-labels">
+          {categories?.map((category) => (
+            <CategoryBadge
+              key={`cat-${category}`}
+              category={category}
+              showIcon={false}
+              onClick={onCategoryClick}
+              className="text-[10px] px-1.5 py-0"
+            />
+          ))}
+          {tags?.map((tag) => (
+            <TagBadge
+              key={`tag-${tag}`}
+              tag={tag}
+              showIcon={false}
+              onClick={onTagClick}
+              className="text-[10px] px-1.5 py-0"
+            />
+          ))}
+        </div>
+      )}
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 gap-4 border-t border-gray-100 dark:border-gray-700 pt-4 pb-3 flex-grow">

@@ -50,11 +50,11 @@ describe('TransformsPage', () => {
 
     render(<TransformsPage />);
 
-    expect(screen.getByRole('heading', { name: /data transform assistant/i })).toBeInTheDocument();
-    // After data upload, shows 3-column builder layout
+    // After data upload, shows 4-column builder layout with section headers
     expect(screen.getByRole('heading', { name: /^operations$/i, level: 2 })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: /2\. build pipeline/i, level: 2 })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: /3\. preview/i, level: 3 })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /^pipeline$/i, level: 2 })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /^configure$/i, level: 2 })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /^preview$/i, level: 2 })).toBeInTheDocument();
   });
 
   it('should show upload section initially', () => {
@@ -74,7 +74,7 @@ describe('TransformsPage', () => {
     await user.upload(input, file);
 
     await waitFor(() => {
-      expect(screen.getByText(/1 records loaded/i)).toBeInTheDocument();
+      expect(screen.getByText(/input \(1 record/i)).toBeInTheDocument();
     });
   });
 

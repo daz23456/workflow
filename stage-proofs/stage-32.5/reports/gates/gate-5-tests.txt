@@ -1,0 +1,763 @@
+
+> workflow-root@1.0.0 test
+> jest
+
+  console.warn
+    unknown format "date-time" ignored in schema at path "#/definitions/WorkflowStatus/properties/lastExecuted"
+
+      19 |   describe('Workflow Schema', () => {
+      20 |     const schema = JSON.parse(readFileSync('schemas/workflow.schema.json', 'utf-8'));
+    > 21 |     const validate = ajv.compile(schema);
+         |                          ^
+      22 |
+      23 |     it('should validate user-activity-analysis.yaml', () => {
+      24 |       const yaml = readFileSync('demo/workflows/workflow-user-activity-analysis.yaml', 'utf-8');
+
+      at unknownFormat (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/format/format.ts:84:23)
+      at validateFormat (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/format/format.ts:75:9)
+      at Object.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/format/format.ts:40:10)
+      at keywordCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:532:9)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:265:9
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at iterateKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:262:7)
+      at groupKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:241:7)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:233:38
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at schemaKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:232:7)
+      at typeAndKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:161:3)
+      at subSchemaObjCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:147:3)
+      at subschemaCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:124:7)
+      at KeywordCxt.subschema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:500:5)
+      at applyPropertySchema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/applicator/properties.ts:45:11)
+      at Object.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/applicator/properties.ts:32:9)
+      at keywordCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:532:9)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:265:9
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at iterateKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:262:7)
+      at groupKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:241:7)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:233:38
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at schemaKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:232:7)
+      at typeAndKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:161:3)
+      at subSchemaObjCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:147:3)
+      at subschemaCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:124:7)
+      at KeywordCxt.subschema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:500:5)
+      at inlineRefSchema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/core/ref.ts:40:26)
+      at Object.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/core/ref.ts:21:12)
+      at keywordCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:532:9)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:228:21
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at schemaKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:228:9)
+      at typeAndKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:161:3)
+      at subSchemaObjCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:147:3)
+      at subschemaCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:124:7)
+      at KeywordCxt.subschema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:500:5)
+      at applyPropertySchema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/applicator/properties.ts:45:11)
+      at Object.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/applicator/properties.ts:32:9)
+      at keywordCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:532:9)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:265:9
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at iterateKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:262:7)
+      at groupKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:241:7)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:233:38
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at schemaKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:232:7)
+      at typeAndKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:161:3)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:100:5
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:61:45
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.func (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:719:24)
+      at validateFunction (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:60:9)
+      at topSchemaObjCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:94:3)
+      at validateFunctionCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:42:7)
+      at Ajv.compileSchema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/index.ts:163:25)
+      at Ajv._compileSchemaEnv (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/core.ts:737:24)
+      at Ajv.compile (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/core.ts:389:34)
+      at tests/schema-validation.test.ts:21:26
+      at tests/schema-validation.test.ts:19:3
+      at Object.<anonymous> (tests/schema-validation.test.ts:18:1)
+
+  console.warn
+    unknown format "date-time" ignored in schema at path "#/definitions/WorkflowStatus/properties/lastExecuted"
+
+      19 |   describe('Workflow Schema', () => {
+      20 |     const schema = JSON.parse(readFileSync('schemas/workflow.schema.json', 'utf-8'));
+    > 21 |     const validate = ajv.compile(schema);
+         |                          ^
+      22 |
+      23 |     it('should validate user-activity-analysis.yaml', () => {
+      24 |       const yaml = readFileSync('demo/workflows/workflow-user-activity-analysis.yaml', 'utf-8');
+
+      at unknownFormat (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/format/format.ts:84:23)
+      at validateFormat (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/format/format.ts:75:9)
+      at Object.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/format/format.ts:40:10)
+      at keywordCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:532:9)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:265:9
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at iterateKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:262:7)
+      at groupKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:241:7)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:233:38
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at schemaKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:232:7)
+      at typeAndKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:161:3)
+      at subSchemaObjCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:147:3)
+      at subschemaCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:124:7)
+      at KeywordCxt.subschema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:500:5)
+      at applyPropertySchema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/applicator/properties.ts:45:11)
+      at Object.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/applicator/properties.ts:32:9)
+      at keywordCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:532:9)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:265:9
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at iterateKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:262:7)
+      at groupKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:241:7)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:233:38
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at schemaKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:232:7)
+      at typeAndKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:161:3)
+      at subSchemaObjCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:147:3)
+      at subschemaCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:124:7)
+      at KeywordCxt.subschema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:500:5)
+      at inlineRefSchema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/core/ref.ts:40:26)
+      at Object.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/core/ref.ts:21:12)
+      at keywordCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:532:9)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:228:21
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at schemaKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:228:9)
+      at typeAndKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:161:3)
+      at subSchemaObjCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:147:3)
+      at subschemaCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:124:7)
+      at KeywordCxt.subschema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:500:5)
+      at applyPropertySchema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/applicator/properties.ts:45:11)
+      at Object.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/applicator/properties.ts:32:9)
+      at keywordCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:532:9)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:265:9
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at iterateKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:262:7)
+      at groupKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:241:7)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:233:38
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at schemaKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:232:7)
+      at typeAndKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:161:3)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:100:5
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:61:45
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.func (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:719:24)
+      at validateFunction (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:60:9)
+      at topSchemaObjCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:94:3)
+      at validateFunctionCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:42:7)
+      at Ajv.compileSchema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/index.ts:163:25)
+      at Ajv._compileSchemaEnv (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/core.ts:737:24)
+      at Ajv.compile (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/core.ts:389:34)
+      at tests/schema-validation.test.ts:21:26
+      at tests/schema-validation.test.ts:19:3
+      at Object.<anonymous> (tests/schema-validation.test.ts:18:1)
+
+  console.warn
+    unknown format "uri-template" ignored in schema at path "#/definitions/HttpRequestDefinition/properties/url"
+
+      at unknownFormat (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/format/format.ts:84:23)
+      at validateFormat (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/format/format.ts:75:9)
+      at Object.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/format/format.ts:40:10)
+      at keywordCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:532:9)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:265:9
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at iterateKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:262:7)
+      at groupKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:241:7)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:233:38
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at schemaKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:232:7)
+      at typeAndKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:161:3)
+      at subSchemaObjCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:147:3)
+      at subschemaCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:124:7)
+      at KeywordCxt.subschema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:500:5)
+      at applyPropertySchema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/applicator/properties.ts:45:11)
+      at Object.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/applicator/properties.ts:32:9)
+      at keywordCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:532:9)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:265:9
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at iterateKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:262:7)
+      at groupKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:241:7)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:233:38
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at schemaKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:232:7)
+      at typeAndKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:161:3)
+      at subSchemaObjCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:147:3)
+      at subschemaCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:124:7)
+      at KeywordCxt.subschema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:500:5)
+      at inlineRefSchema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/core/ref.ts:40:26)
+      at Object.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/core/ref.ts:21:12)
+      at keywordCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:532:9)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:228:21
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at schemaKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:228:9)
+      at typeAndKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:161:3)
+      at subSchemaObjCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:147:3)
+      at subschemaCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:124:7)
+      at KeywordCxt.subschema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:500:5)
+      at applyPropertySchema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/applicator/properties.ts:45:11)
+      at Object.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/applicator/properties.ts:32:9)
+      at keywordCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:532:9)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:265:9
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at iterateKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:262:7)
+      at groupKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:241:7)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:233:38
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at schemaKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:232:7)
+      at typeAndKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:161:3)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:100:5
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:61:45
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.func (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:719:24)
+      at validateFunction (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:60:9)
+      at topSchemaObjCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:94:3)
+      at validateFunctionCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:42:7)
+      at Ajv.compileSchema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/index.ts:163:25)
+      at Ajv.inlineOrCompile (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/index.ts:228:45)
+      at Ajv.resolveRef (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/index.ts:223:44)
+      at Object.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/core/ref.ts:18:33)
+      at keywordCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:532:9)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:228:21
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at schemaKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:228:9)
+      at typeAndKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:161:3)
+      at subSchemaObjCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:147:3)
+      at subschemaCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:124:7)
+      at KeywordCxt.subschema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:500:5)
+      at applyPropertySchema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/applicator/properties.ts:45:11)
+      at Object.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/applicator/properties.ts:32:9)
+      at keywordCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:532:9)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:265:9
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at iterateKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:262:7)
+      at groupKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:241:7)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:233:38
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at schemaKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:232:7)
+      at typeAndKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:161:3)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:100:5
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:61:45
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.func (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:719:24)
+      at validateFunction (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:60:9)
+
+  console.warn
+    unknown format "uri-template" ignored in schema at path "#/definitions/HttpRequestDefinition/properties/url"
+
+      at unknownFormat (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/format/format.ts:84:23)
+      at validateFormat (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/format/format.ts:75:9)
+      at Object.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/format/format.ts:40:10)
+      at keywordCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:532:9)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:265:9
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at iterateKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:262:7)
+      at groupKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:241:7)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:233:38
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at schemaKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:232:7)
+      at typeAndKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:161:3)
+      at subSchemaObjCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:147:3)
+      at subschemaCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:124:7)
+      at KeywordCxt.subschema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:500:5)
+      at applyPropertySchema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/applicator/properties.ts:45:11)
+      at Object.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/applicator/properties.ts:32:9)
+      at keywordCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:532:9)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:265:9
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at iterateKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:262:7)
+      at groupKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:241:7)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:233:38
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at schemaKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:232:7)
+      at typeAndKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:161:3)
+      at subSchemaObjCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:147:3)
+      at subschemaCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:124:7)
+      at KeywordCxt.subschema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:500:5)
+      at inlineRefSchema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/core/ref.ts:40:26)
+      at Object.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/core/ref.ts:21:12)
+      at keywordCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:532:9)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:228:21
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at schemaKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:228:9)
+      at typeAndKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:161:3)
+      at subSchemaObjCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:147:3)
+      at subschemaCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:124:7)
+      at KeywordCxt.subschema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:500:5)
+      at applyPropertySchema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/applicator/properties.ts:45:11)
+      at Object.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/applicator/properties.ts:32:9)
+      at keywordCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:532:9)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:265:9
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at iterateKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:262:7)
+      at groupKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:241:7)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:233:38
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at schemaKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:232:7)
+      at typeAndKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:161:3)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:100:5
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:61:45
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.func (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:719:24)
+      at validateFunction (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:60:9)
+      at topSchemaObjCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:94:3)
+      at validateFunctionCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:42:7)
+      at Ajv.compileSchema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/index.ts:163:25)
+      at Ajv.inlineOrCompile (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/index.ts:228:45)
+      at Ajv.resolveRef (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/index.ts:223:44)
+      at Object.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/core/ref.ts:18:33)
+      at keywordCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:532:9)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:228:21
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at schemaKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:228:9)
+      at typeAndKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:161:3)
+      at subSchemaObjCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:147:3)
+      at subschemaCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:124:7)
+      at KeywordCxt.subschema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:500:5)
+      at applyPropertySchema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/applicator/properties.ts:45:11)
+      at Object.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/applicator/properties.ts:32:9)
+      at keywordCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:532:9)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:265:9
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at iterateKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:262:7)
+      at groupKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:241:7)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:233:38
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at schemaKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:232:7)
+      at typeAndKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:161:3)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:100:5
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:61:45
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.func (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:719:24)
+      at validateFunction (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:60:9)
+
+  console.warn
+    unknown format "uri-template" ignored in schema at path "#/definitions/HttpRequestDefinition/properties/url"
+
+      at unknownFormat (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/format/format.ts:84:23)
+      at validateFormat (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/format/format.ts:75:9)
+      at Object.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/format/format.ts:40:10)
+      at keywordCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:532:9)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:265:9
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at iterateKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:262:7)
+      at groupKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:241:7)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:233:38
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at schemaKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:232:7)
+      at typeAndKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:161:3)
+      at subSchemaObjCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:147:3)
+      at subschemaCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:124:7)
+      at KeywordCxt.subschema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:500:5)
+      at applyPropertySchema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/applicator/properties.ts:45:11)
+      at Object.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/applicator/properties.ts:32:9)
+      at keywordCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:532:9)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:265:9
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at iterateKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:262:7)
+      at groupKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:241:7)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:233:38
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at schemaKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:232:7)
+      at typeAndKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:161:3)
+      at subSchemaObjCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:147:3)
+      at subschemaCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:124:7)
+      at KeywordCxt.subschema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:500:5)
+      at inlineRefSchema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/core/ref.ts:40:26)
+      at Object.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/core/ref.ts:21:12)
+      at keywordCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:532:9)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:228:21
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at schemaKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:228:9)
+      at typeAndKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:161:3)
+      at subSchemaObjCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:147:3)
+      at subschemaCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:124:7)
+      at KeywordCxt.subschema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:500:5)
+      at applyPropertySchema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/applicator/properties.ts:45:11)
+      at Object.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/applicator/properties.ts:32:9)
+      at keywordCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:532:9)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:265:9
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at iterateKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:262:7)
+      at groupKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:241:7)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:233:38
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at schemaKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:232:7)
+      at typeAndKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:161:3)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:100:5
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:61:45
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.func (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:719:24)
+      at validateFunction (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:60:9)
+      at topSchemaObjCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:94:3)
+      at validateFunctionCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:42:7)
+      at Ajv.compileSchema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/index.ts:163:25)
+      at Ajv.inlineOrCompile (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/index.ts:228:45)
+      at Ajv.resolveRef (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/index.ts:223:44)
+      at Object.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/core/ref.ts:18:33)
+      at keywordCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:532:9)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:228:21
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at schemaKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:228:9)
+      at typeAndKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:161:3)
+      at subSchemaObjCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:147:3)
+      at subschemaCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:124:7)
+      at KeywordCxt.subschema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:500:5)
+      at applyPropertySchema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/applicator/properties.ts:45:11)
+      at Object.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/applicator/properties.ts:32:9)
+      at keywordCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:532:9)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:265:9
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at iterateKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:262:7)
+      at groupKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:241:7)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:233:38
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at schemaKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:232:7)
+      at typeAndKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:161:3)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:100:5
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:61:45
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.func (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:719:24)
+      at validateFunction (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:60:9)
+
+  console.warn
+    unknown format "uri-template" ignored in schema at path "#/definitions/HttpRequestDefinition/properties/url"
+
+      at unknownFormat (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/format/format.ts:84:23)
+      at validateFormat (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/format/format.ts:75:9)
+      at Object.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/format/format.ts:40:10)
+      at keywordCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:532:9)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:265:9
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at iterateKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:262:7)
+      at groupKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:241:7)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:233:38
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at schemaKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:232:7)
+      at typeAndKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:161:3)
+      at subSchemaObjCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:147:3)
+      at subschemaCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:124:7)
+      at KeywordCxt.subschema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:500:5)
+      at applyPropertySchema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/applicator/properties.ts:45:11)
+      at Object.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/applicator/properties.ts:32:9)
+      at keywordCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:532:9)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:265:9
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at iterateKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:262:7)
+      at groupKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:241:7)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:233:38
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at schemaKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:232:7)
+      at typeAndKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:161:3)
+      at subSchemaObjCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:147:3)
+      at subschemaCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:124:7)
+      at KeywordCxt.subschema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:500:5)
+      at inlineRefSchema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/core/ref.ts:40:26)
+      at Object.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/core/ref.ts:21:12)
+      at keywordCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:532:9)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:228:21
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at schemaKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:228:9)
+      at typeAndKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:161:3)
+      at subSchemaObjCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:147:3)
+      at subschemaCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:124:7)
+      at KeywordCxt.subschema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:500:5)
+      at applyPropertySchema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/applicator/properties.ts:45:11)
+      at Object.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/applicator/properties.ts:32:9)
+      at keywordCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:532:9)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:265:9
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at iterateKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:262:7)
+      at groupKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:241:7)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:233:38
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at schemaKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:232:7)
+      at typeAndKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:161:3)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:100:5
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:61:45
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.func (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:719:24)
+      at validateFunction (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:60:9)
+      at topSchemaObjCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:94:3)
+      at validateFunctionCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:42:7)
+      at Ajv.compileSchema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/index.ts:163:25)
+      at Ajv.inlineOrCompile (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/index.ts:228:45)
+      at Ajv.resolveRef (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/index.ts:223:44)
+      at Object.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/core/ref.ts:18:33)
+      at keywordCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:532:9)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:228:21
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at schemaKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:228:9)
+      at typeAndKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:161:3)
+      at subSchemaObjCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:147:3)
+      at subschemaCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:124:7)
+      at KeywordCxt.subschema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:500:5)
+      at applyPropertySchema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/applicator/properties.ts:45:11)
+      at Object.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/applicator/properties.ts:32:9)
+      at keywordCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:532:9)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:265:9
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at iterateKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:262:7)
+      at groupKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:241:7)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:233:38
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at schemaKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:232:7)
+      at typeAndKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:161:3)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:100:5
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:61:45
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.func (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:719:24)
+      at validateFunction (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:60:9)
+
+  console.warn
+    unknown format "date-time" ignored in schema at path "#/definitions/WorkflowTaskStatus/properties/lastUpdated"
+
+      75 |   describe('WorkflowTask Schema', () => {
+      76 |     const schema = JSON.parse(readFileSync('schemas/workflow-task.schema.json', 'utf-8'));
+    > 77 |     const validate = ajv.compile(schema);
+         |                          ^
+      78 |
+      79 |     it('should validate task-fetch-user.yaml', () => {
+      80 |       const yaml = readFileSync('demo/tasks/task-fetch-user.yaml', 'utf-8');
+
+      at unknownFormat (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/format/format.ts:84:23)
+      at validateFormat (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/format/format.ts:75:9)
+      at Object.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/format/format.ts:40:10)
+      at keywordCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:532:9)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:265:9
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at iterateKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:262:7)
+      at groupKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:241:7)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:233:38
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at schemaKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:232:7)
+      at typeAndKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:161:3)
+      at subSchemaObjCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:147:3)
+      at subschemaCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:124:7)
+      at KeywordCxt.subschema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:500:5)
+      at applyPropertySchema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/applicator/properties.ts:45:11)
+      at Object.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/applicator/properties.ts:32:9)
+      at keywordCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:532:9)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:265:9
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at iterateKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:262:7)
+      at groupKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:241:7)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:233:38
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at schemaKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:232:7)
+      at typeAndKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:161:3)
+      at subSchemaObjCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:147:3)
+      at subschemaCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:124:7)
+      at KeywordCxt.subschema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:500:5)
+      at inlineRefSchema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/core/ref.ts:40:26)
+      at Object.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/core/ref.ts:21:12)
+      at keywordCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:532:9)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:228:21
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at schemaKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:228:9)
+      at typeAndKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:161:3)
+      at subSchemaObjCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:147:3)
+      at subschemaCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:124:7)
+      at KeywordCxt.subschema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:500:5)
+      at applyPropertySchema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/applicator/properties.ts:45:11)
+      at Object.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/applicator/properties.ts:32:9)
+      at keywordCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:532:9)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:265:9
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at iterateKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:262:7)
+      at groupKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:241:7)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:233:38
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at schemaKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:232:7)
+      at typeAndKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:161:3)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:100:5
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:61:45
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.func (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:719:24)
+      at validateFunction (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:60:9)
+      at topSchemaObjCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:94:3)
+      at validateFunctionCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:42:7)
+      at Ajv.compileSchema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/index.ts:163:25)
+      at Ajv._compileSchemaEnv (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/core.ts:737:24)
+      at Ajv.compile (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/core.ts:389:34)
+      at tests/schema-validation.test.ts:77:26
+      at tests/schema-validation.test.ts:75:3
+      at Object.<anonymous> (tests/schema-validation.test.ts:18:1)
+
+  console.warn
+    unknown format "date-time" ignored in schema at path "#/definitions/WorkflowTaskStatus/properties/lastUpdated"
+
+      75 |   describe('WorkflowTask Schema', () => {
+      76 |     const schema = JSON.parse(readFileSync('schemas/workflow-task.schema.json', 'utf-8'));
+    > 77 |     const validate = ajv.compile(schema);
+         |                          ^
+      78 |
+      79 |     it('should validate task-fetch-user.yaml', () => {
+      80 |       const yaml = readFileSync('demo/tasks/task-fetch-user.yaml', 'utf-8');
+
+      at unknownFormat (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/format/format.ts:84:23)
+      at validateFormat (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/format/format.ts:75:9)
+      at Object.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/format/format.ts:40:10)
+      at keywordCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:532:9)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:265:9
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at iterateKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:262:7)
+      at groupKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:241:7)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:233:38
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at schemaKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:232:7)
+      at typeAndKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:161:3)
+      at subSchemaObjCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:147:3)
+      at subschemaCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:124:7)
+      at KeywordCxt.subschema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:500:5)
+      at applyPropertySchema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/applicator/properties.ts:45:11)
+      at Object.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/applicator/properties.ts:32:9)
+      at keywordCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:532:9)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:265:9
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at iterateKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:262:7)
+      at groupKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:241:7)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:233:38
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at schemaKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:232:7)
+      at typeAndKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:161:3)
+      at subSchemaObjCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:147:3)
+      at subschemaCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:124:7)
+      at KeywordCxt.subschema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:500:5)
+      at inlineRefSchema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/core/ref.ts:40:26)
+      at Object.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/core/ref.ts:21:12)
+      at keywordCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:532:9)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:228:21
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at schemaKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:228:9)
+      at typeAndKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:161:3)
+      at subSchemaObjCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:147:3)
+      at subschemaCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:124:7)
+      at KeywordCxt.subschema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:500:5)
+      at applyPropertySchema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/applicator/properties.ts:45:11)
+      at Object.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/vocabularies/applicator/properties.ts:32:9)
+      at keywordCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:532:9)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:265:9
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at iterateKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:262:7)
+      at groupKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:241:7)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:233:38
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.block (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:700:20)
+      at schemaKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:232:7)
+      at typeAndKeywords (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:161:3)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:100:5
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:61:45
+      at CodeGen.code (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:545:33)
+      at CodeGen.func (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/codegen/index.ts:719:24)
+      at validateFunction (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:60:9)
+      at topSchemaObjCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:94:3)
+      at validateFunctionCode (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/validate/index.ts:42:7)
+      at Ajv.compileSchema (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/compile/index.ts:163:25)
+      at Ajv._compileSchemaEnv (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/core.ts:737:24)
+      at Ajv.compile (node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/lib/core.ts:389:34)
+      at tests/schema-validation.test.ts:77:26
+      at tests/schema-validation.test.ts:75:3
+      at Object.<anonymous> (tests/schema-validation.test.ts:18:1)
+
+PASS tests/schema-validation.test.ts
+  Schema Validation
+    Workflow Schema
+      ✓ should validate user-activity-analysis.yaml (17 ms)
+      ✓ should validate ecommerce-analytics.yaml (16 ms)
+      ✓ should reject workflow with missing required fields (2 ms)
+      ✓ should reject workflow with invalid apiVersion (1 ms)
+    WorkflowTask Schema
+      ✓ should validate task-fetch-user.yaml (7 ms)
+      ✓ should validate transform task (3 ms)
+      ✓ should reject task with invalid type (1 ms)
+    C# Model Compatibility
+      ✓ should have matching field names between schema and C# WorkflowResource (1 ms)
+      ✓ should have matching field names for WorkflowSpec (4 ms)
+      ✓ should have matching field names for WorkflowTaskStep (1 ms)
+    TypeScript Type Compatibility
+      ✓ should compile TypeScript code using generated types
+
+Test Suites: 1 passed, 1 total
+Tests:       11 passed, 11 total
+Snapshots:   0 total
+Time:        5.319 s
+Ran all test suites.

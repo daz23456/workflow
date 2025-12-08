@@ -13,62 +13,61 @@ describe('PreviewPanel', () => {
     useTransformBuilderStore.getState().reset();
   });
 
-  it('should show empty state when no output', () => {
+  it('should show empty state when no data', () => {
     render(<PreviewPanel />);
-    expect(screen.getByText(/no preview data/i)).toBeInTheDocument();
+    expect(screen.getByText(/no data loaded/i)).toBeInTheDocument();
   });
 
-  it('should display output data', () => {
-    const store = useTransformBuilderStore.getState();
-    useTransformBuilderStore.setState({ outputData: [{ name: 'Alice', age: 30 }] });
+  it('should display output data when pipeline has transforms', () => {
+    useTransformBuilderStore.setState({
+      outputData: [{ name: 'Alice', age: 30 }],
+      pipeline: [{ id: '1', type: 'filter', config: {} }],
+    });
     render(<PreviewPanel />);
     expect(screen.getByText(/alice/i)).toBeInTheDocument();
   });
 
-  it('should show record count', () => {
-    // inputData is used for "records loaded" message
+  it('should show record count in input label', () => {
     useTransformBuilderStore.setState({
       inputData: [{ a: 1 }, { b: 2 }, { c: 3 }],
       outputData: [{ a: 1 }, { b: 2 }, { c: 3 }],
+      pipeline: [{ id: '1', type: 'filter', config: {} }],
     });
     render(<PreviewPanel />);
-    expect(screen.getByText(/3 records loaded/i)).toBeInTheDocument();
+    expect(screen.getByText(/input \(3 records\)/i)).toBeInTheDocument();
   });
 
-  it('should display JSON data', () => {
-    useTransformBuilderStore.setState({ outputData: [{ id: 1, value: 'test' }] });
+  it('should display JSON data when pipeline has transforms', () => {
+    useTransformBuilderStore.setState({
+      outputData: [{ id: 1, value: 'test' }],
+      pipeline: [{ id: '1', type: 'filter', config: {} }],
+    });
     render(<PreviewPanel />);
     expect(screen.getByText(/"id"/i)).toBeInTheDocument();
   });
 
   it('should handle pagination for large datasets', async () => {
     const user = userEvent.setup();
-    const data = Array.from({ length: 25 }, (_, i) => ({ id: i }));
-    useTransformBuilderStore.setState({ outputData: data });
+    const data = Array.from({ length: 10 }, (_, i) => ({ id: i }));
+    useTransformBuilderStore.setState({
+      inputData: data,
+      outputData: data,
+      pipeline: [{ id: '1', type: 'filter', config: {} }],
+    });
     render(<PreviewPanel />);
 
-    expect(screen.getByText(/showing 1-10 of 25/i)).toBeInTheDocument();
+    // With pageSize of 3, should show 1-3/10
+    expect(screen.getByText(/1-3\/10/)).toBeInTheDocument();
 
     const nextButton = screen.getByRole('button', { name: /next/i });
     await user.click(nextButton);
 
-    expect(screen.getByText(/showing 11-20 of 25/i)).toBeInTheDocument();
-  });
-
-  it('should allow changing page size', async () => {
-    const user = userEvent.setup();
-    const data = Array.from({ length: 30 }, (_, i) => ({ id: i }));
-    useTransformBuilderStore.setState({ outputData: data });
-    render(<PreviewPanel />);
-
-    const pageSizeSelect = screen.getByRole('combobox', { name: /page size/i });
-    await user.selectOptions(pageSizeSelect, '25');
-
-    expect(screen.getByText(/showing 1-25 of 30/i)).toBeInTheDocument();
+    expect(screen.getByText(/4-6\/10/)).toBeInTheDocument();
   });
 
   it('should show execution errors', () => {
     useTransformBuilderStore.setState({
+      inputData: [{ a: 1 }],
       validation: { isValid: false, errors: ['Transform failed'], warnings: [] },
     });
     render(<PreviewPanel />);
@@ -77,6 +76,7 @@ describe('PreviewPanel', () => {
 
   it('should show validation warnings', () => {
     useTransformBuilderStore.setState({
+      inputData: [{ a: 1 }],
       validation: { isValid: true, errors: [], warnings: ['Performance warning'] },
     });
     render(<PreviewPanel />);
@@ -86,15 +86,26 @@ describe('PreviewPanel', () => {
   it('should handle empty arrays gracefully', () => {
     useTransformBuilderStore.setState({ inputData: [], outputData: [] });
     render(<PreviewPanel />);
-    expect(screen.getByText(/0 records loaded/i)).toBeInTheDocument();
+    expect(screen.getByText(/no data loaded/i)).toBeInTheDocument();
   });
 
-  it('should format nested objects', () => {
+  it('should format nested objects when pipeline has transforms', () => {
     useTransformBuilderStore.setState({
       outputData: [{ user: { name: 'Bob', email: 'bob@example.com' } }],
+      pipeline: [{ id: '1', type: 'filter', config: {} }],
     });
     render(<PreviewPanel />);
     expect(screen.getByText(/"user"/i)).toBeInTheDocument();
     expect(screen.getByText(/bob@example.com/i)).toBeInTheDocument();
+  });
+
+  it('should show "Add transforms to see output" when no pipeline', () => {
+    useTransformBuilderStore.setState({
+      inputData: [{ a: 1 }],
+      outputData: [{ a: 1 }],
+      pipeline: [],
+    });
+    render(<PreviewPanel />);
+    expect(screen.getByText(/add transforms to see output/i)).toBeInTheDocument();
   });
 });

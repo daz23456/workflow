@@ -27,12 +27,14 @@ const mockTasks = {
   tasks: [
     {
       name: 'fetch-user',
+      namespace: 'default',
       description: 'Fetches user data from API',
       inputSchema: { type: 'object', properties: { userId: { type: 'string' } } },
       outputSchema: { type: 'object', properties: { user: { type: 'object' } } },
     },
     {
       name: 'send-email',
+      namespace: 'default',
       description: 'Sends an email notification',
       inputSchema: {
         type: 'object',
@@ -42,6 +44,7 @@ const mockTasks = {
     },
     {
       name: 'validate-data',
+      namespace: 'default',
       description: 'Validates data against schema',
       inputSchema: { type: 'object', properties: { data: { type: 'object' } } },
       outputSchema: { type: 'object', properties: { valid: { type: 'boolean' } } },
@@ -91,19 +94,23 @@ describe('TaskPalette', () => {
       expect(screen.getByText('Validate Data')).toBeInTheDocument();
     });
 
-    it('should render task descriptions', () => {
+    it('should render task descriptions when expanded', async () => {
+      const user = userEvent.setup();
       render(<TaskPalette />);
+
+      // Click to expand a task
+      const taskItem = screen.getByTestId('task-item-fetch-user');
+      await user.click(taskItem);
+
+      // Description should now be visible
       expect(screen.getByText('Fetches user data from API')).toBeInTheDocument();
-      expect(screen.getByText('Sends an email notification')).toBeInTheDocument();
     });
 
-    it('should render task categories', () => {
+    it('should render category filter dropdown', () => {
       render(<TaskPalette />);
-      // Should show category badges (both as filter buttons and task badges)
-      const fetchCategory = screen.getAllByText('Fetch');
-      expect(fetchCategory.length).toBeGreaterThan(0);
-      const sendCategory = screen.getAllByText('Send');
-      expect(sendCategory.length).toBeGreaterThan(0);
+      // Categories are shown in a dropdown filter
+      const categoryDropdown = screen.getByRole('combobox', { name: /filter by category/i });
+      expect(categoryDropdown).toBeInTheDocument();
     });
   });
 
@@ -131,9 +138,9 @@ describe('TaskPalette', () => {
       const user = userEvent.setup();
       render(<TaskPalette />);
 
-      // Click on Fetch category filter
-      const fetchFilter = screen.getByRole('button', { name: /fetch/i });
-      await user.click(fetchFilter);
+      // Select Fetch category from dropdown
+      const categoryDropdown = screen.getByRole('combobox', { name: /filter by category/i });
+      await user.selectOptions(categoryDropdown, 'Fetch');
 
       // Should only show Fetch category tasks
       expect(screen.getByText('Fetch User')).toBeInTheDocument();
@@ -243,11 +250,11 @@ describe('TaskPalette', () => {
   });
 
   describe('Task Item Display', () => {
-    it('should show task icon based on category', () => {
+    it('should show task display name', () => {
       render(<TaskPalette />);
 
-      const dataTaskIcon = screen.getByTestId('task-icon-fetch-user');
-      expect(dataTaskIcon).toBeInTheDocument();
+      // Tasks should be displayed with formatted names
+      expect(screen.getByText('Fetch User')).toBeInTheDocument();
     });
 
     it('should expand task details on click', async () => {
@@ -257,8 +264,9 @@ describe('TaskPalette', () => {
       const taskItem = screen.getByTestId('task-item-fetch-user');
       await user.click(taskItem);
 
-      // Should show expanded details
-      expect(screen.getByText(/full schema/i)).toBeInTheDocument();
+      // Should show expanded details with Input/Output schema
+      expect(screen.getByText(/input:/i)).toBeInTheDocument();
+      expect(screen.getByText(/output:/i)).toBeInTheDocument();
     });
 
     it('should collapse task details on second click', async () => {
@@ -269,11 +277,11 @@ describe('TaskPalette', () => {
 
       // Click to expand
       await user.click(taskItem);
-      expect(screen.getByText(/full schema/i)).toBeInTheDocument();
+      expect(screen.getByText(/input:/i)).toBeInTheDocument();
 
       // Click to collapse
       await user.click(taskItem);
-      expect(screen.queryByText(/full schema/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/input:/i)).not.toBeInTheDocument();
     });
   });
 

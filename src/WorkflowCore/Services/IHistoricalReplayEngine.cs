@@ -78,4 +78,12 @@ public class ReplayOptions
     /// Default: true
     /// </summary>
     public bool IgnoreUuidValues { get; set; } = true;
+
+    /// <summary>
+    /// When true, performs static structure comparison only - no HTTP execution.
+    /// Compares workflow DAG structure, dependencies, and task configuration.
+    /// Safe for use with workflows containing POST/PUT/DELETE operations.
+    /// Default: false
+    /// </summary>
+    public bool DryRun { get; set; } = false;
 }

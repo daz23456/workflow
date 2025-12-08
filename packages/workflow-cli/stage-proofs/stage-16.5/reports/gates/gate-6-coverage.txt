@@ -1,0 +1,89 @@
+
+> @workflow/cli@0.1.0 test:coverage
+> vitest run --coverage
+
+
+ RUN  v2.1.9 /Users/darren/dev/workflow/packages/workflow-cli
+      Coverage enabled with v8
+
+ ✓ tests/services/debugger.test.ts (21 tests) 34ms
+ ✓ tests/workflow-generator/dependency-analyzer.test.ts (9 tests) 17ms
+ ✓ tests/openapi-parser.test.ts (20 tests) 51ms
+ ✓ tests/services/gateway-client.test.ts (23 tests) 56ms
+ ✓ tests/commands/init.test.ts (18 tests) 49ms
+ ✓ tests/services/mock-executor.test.ts (15 tests) 129ms
+ ✓ tests/commands/validate.test.ts (17 tests) 61ms
+ ✓ tests/commands/test.test.ts (16 tests) 51ms
+ ✓ tests/commands/explain.test.ts (20 tests) 75ms
+ ✓ tests/config.test.ts (21 tests) 97ms
+ ✓ tests/commands/run.test.ts (14 tests) 44ms
+ ✓ tests/commands/debug.test.ts (21 tests) 69ms
+ ✓ tests/loaders.test.ts (18 tests) 208ms
+ ✓ tests/commands/tasks.test.ts (20 tests) 110ms
+ ✓ tests/crd-generator.test.ts (24 tests) 235ms
+ ✓ tests/generators/output-schema-generator.test.ts (8 tests) 35ms
+ ✓ tests/generators/input-schema-generator.test.ts (8 tests) 24ms
+ ✓ tests/versioning/change-detector.test.ts (8 tests) 19ms
+ ✓ tests/generators/http-config-generator.test.ts (9 tests) 16ms
+ ✓ tests/workflow-generator/workflow-scaffolder.test.ts (6 tests) 24ms
+ ✓ tests/generators/task-name-generator.test.ts (9 tests) 16ms
+ ✓ tests/generators/permission-label-generator.test.ts (7 tests) 22ms
+ ✓ tests/versioning/migration-generator.test.ts (4 tests) 18ms
+ ✓ tests/commands/generate-workflow.test.ts (4 tests) 13ms
+ ✓ tests/commands/check-changes.test.ts (4 tests) 15ms
+ ✓ tests/versioning/task-hash-calculator.test.ts (4 tests) 14ms
+ ✓ tests/workflow-generator/permission-check-generator.test.ts (3 tests) 15ms
+ ✓ tests/generators/task-yaml-writer.test.ts (5 tests) 103ms
+ ✓ tests/e2e/petstore-integration.test.ts (3 tests) 46ms
+ ✓ tests/versioning/version-manager.test.ts (9 tests) 20ms
+
+ Test Files  30 passed (30)
+      Tests  368 passed (368)
+   Start at  22:36:51
+   Duration  3.36s (transform 3.10s, setup 0ms, collect 7.25s, tests 1.69s, environment 34ms, prepare 12.41s)
+
+ % Coverage report from v8
+-------------------|---------|----------|---------|---------|-------------------
+File               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+-------------------|---------|----------|---------|---------|-------------------
+All files          |   93.58 |    83.78 |   98.85 |   93.58 |                   
+ src               |    87.6 |    84.86 |   96.15 |    87.6 |                   
+  config.ts        |   98.82 |    95.65 |     100 |   98.82 | 119               
+  crd-generator.ts |     100 |      100 |     100 |     100 |                   
+  loaders.ts       |   92.45 |    91.66 |     100 |   92.45 | 128-129,157-158   
+  ...api-parser.ts |   80.07 |    77.77 |   93.75 |   80.07 | ...04-405,414-415 
+ src/commands      |   94.65 |    84.04 |   98.38 |   94.65 |                   
+  check-changes.ts |     100 |      100 |     100 |     100 |                   
+  debug.ts         |   84.06 |       65 |     100 |   84.06 | ...79-280,318-319 
+  explain.ts       |   98.52 |    81.25 |     100 |   98.52 | 67,119-120        
+  ...e-workflow.ts |   94.73 |    91.66 |     100 |   94.73 | 74-75             
+  index.ts         |       0 |        0 |       0 |       0 | 1                 
+  init.ts          |   96.51 |    89.47 |     100 |   96.51 | 94-127            
+  run.ts           |   91.08 |    68.42 |     100 |   91.08 | 116-123,137       
+  tasks.ts         |     100 |     92.3 |     100 |     100 | 113,152           
+  test.ts          |   95.75 |    88.52 |     100 |   95.75 | 126-133,147       
+  validate.ts      |   96.79 |    89.42 |     100 |   96.79 | ...,93-94,206-207 
+ src/generators    |   96.24 |       90 |     100 |   96.24 |                   
+  ...-generator.ts |     100 |       90 |     100 |     100 | 48                
+  index.ts         |     100 |      100 |     100 |     100 |                   
+  ...-generator.ts |     100 |      100 |     100 |     100 |                   
+  ...-generator.ts |     100 |      100 |     100 |     100 |                   
+  ...-generator.ts |   90.16 |    79.31 |     100 |   90.16 | ...05-106,108-109 
+  ...-generator.ts |    92.3 |    83.33 |     100 |    92.3 | 60-61             
+  ...aml-writer.ts |     100 |      100 |     100 |     100 |                   
+ src/services      |   93.01 |    78.26 |     100 |   93.01 |                   
+  debugger.ts      |   88.93 |    71.42 |     100 |   88.93 | ...03,413,427-430 
+  ...way-client.ts |     100 |    93.75 |     100 |     100 | 219,234           
+  mock-executor.ts |   93.54 |    77.27 |     100 |   93.54 | ...69,279,298-301 
+ src/versioning    |   97.93 |    90.38 |     100 |   97.93 |                   
+  ...e-detector.ts |     100 |    88.23 |     100 |     100 | 31,38             
+  index.ts         |     100 |      100 |     100 |     100 |                   
+  ...-generator.ts |   93.54 |       80 |     100 |   93.54 | 41-42,56-57       
+  ...calculator.ts |     100 |      100 |     100 |     100 |                   
+  ...on-manager.ts |     100 |      100 |     100 |     100 |                   
+ ...flow-generator |   96.62 |    80.32 |     100 |   96.62 |                   
+  ...y-analyzer.ts |      94 |    75.55 |     100 |      94 | ...,88-89,158-159 
+  index.ts         |     100 |      100 |     100 |     100 |                   
+  ...-generator.ts |     100 |      100 |     100 |     100 |                   
+  ...scaffolder.ts |     100 |    91.66 |     100 |     100 | 89                
+-------------------|---------|----------|---------|---------|-------------------

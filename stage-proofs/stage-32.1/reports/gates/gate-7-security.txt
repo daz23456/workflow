@@ -1,0 +1,4 @@
+Gate 7: Zero Vulnerabilities - PASS
+dotnet list package --vulnerable --include-transitive
+No vulnerable packages found.
+

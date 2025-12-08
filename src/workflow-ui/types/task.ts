@@ -14,6 +14,8 @@ export interface TaskListItem {
   description: string;
   endpoint: string;
   inputSchemaPreview?: string;
+  tags?: string[];
+  category?: string;
   stats: {
     usedByWorkflows: number; // Count of workflows using this task
     totalExecutions: number; // Total times executed across all workflows

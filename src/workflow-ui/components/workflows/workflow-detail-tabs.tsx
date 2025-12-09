@@ -110,16 +110,50 @@ export function WorkflowDetailTabs({
   // Handle workflow execution from modal
   const handleExecute = async (input: Record<string, any>) => {
     if (onExecute) {
-      const result = await onExecute(input);
-      setExecutionResult(result);
-      setSelectedTaskId(null); // Close task panel to show result
+      try {
+        const result = await onExecute(input);
+        setExecutionResult(result);
+        setSelectedTaskId(null); // Close task panel to show result
+      } catch (error) {
+        // Create an error result to display in the result panel
+        const errorMessage = error instanceof Error ? error.message : 'Execution failed';
+        setExecutionResult({
+          executionId: `error-${Date.now()}`,
+          workflowName: workflow.name,
+          success: false,
+          output: {},
+          executionTimeMs: 0,
+          startedAt: new Date().toISOString(),
+          error: errorMessage,
+        });
+        setSelectedTaskId(null); // Close task panel to show error result
+      }
     }
   };
 
   // Handle workflow test from modal
   const handleTest = async (input: Record<string, any>) => {
     if (onTest) {
-      await onTest(input);
+      try {
+        const result = await onTest(input);
+        if (result) {
+          setExecutionResult(result);
+          setSelectedTaskId(null);
+        }
+      } catch (error) {
+        // Create an error result to display in the result panel
+        const errorMessage = error instanceof Error ? error.message : 'Test failed';
+        setExecutionResult({
+          executionId: `test-error-${Date.now()}`,
+          workflowName: workflow.name,
+          success: false,
+          output: {},
+          executionTimeMs: 0,
+          startedAt: new Date().toISOString(),
+          error: errorMessage,
+        });
+        setSelectedTaskId(null);
+      }
     }
   };
 

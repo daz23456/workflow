@@ -57,12 +57,15 @@ export function ExecuteModal({
   if (!isOpen) return null;
 
   const handleSubmit = async (data: Record<string, any>) => {
+    // onExecute handles errors internally and shows result panel
+    // Just close modal after, whether success or error
     await onExecute(data);
     onClose();
   };
 
   const handleTest = async (data: Record<string, any>) => {
     if (onTest) {
+      // onTest handles errors internally and shows result panel
       await onTest(data);
       onClose();
     }

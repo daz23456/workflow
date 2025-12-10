@@ -75,7 +75,7 @@ async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
 // ============================================================================
 
 export const queryKeys = {
-  workflows: (filters?: { search?: string; namespace?: string; sort?: string }) =>
+  workflows: (filters?: { search?: string; namespace?: string; sort?: string; skip?: number; take?: number }) =>
     ['workflows', filters] as const,
   workflowDetail: (name: string) => ['workflows', name] as const,
   workflowExecutions: (
@@ -87,7 +87,8 @@ export const queryKeys = {
   workflowVersions: (name: string) => ['workflows', name, 'versions'] as const,
   executionDetail: (id: string) => ['executions', id] as const,
   executionTrace: (id: string) => ['executions', id, 'trace'] as const,
-  tasks: ['tasks'] as const,
+  tasks: (filters?: { search?: string; namespace?: string; skip?: number; take?: number }) =>
+    ['tasks', filters] as const,
   taskDetail: (name: string) => ['tasks', name] as const,
   taskUsage: (name: string, filters?: { skip?: number; take?: number }) =>
     ['tasks', name, 'usage', filters] as const,
@@ -114,7 +115,13 @@ export const queryKeys = {
 /**
  * Fetch all workflows with optional filters
  */
-export function useWorkflows(filters?: { search?: string; namespace?: string; sort?: string }) {
+export function useWorkflows(filters?: {
+  search?: string;
+  namespace?: string;
+  sort?: string;
+  skip?: number;
+  take?: number;
+}) {
   return useQuery({
     queryKey: queryKeys.workflows(filters),
     queryFn: async () => {
@@ -122,12 +129,19 @@ export function useWorkflows(filters?: { search?: string; namespace?: string; so
       if (filters?.search) params.append('search', filters.search);
       if (filters?.namespace) params.append('namespace', filters.namespace);
       if (filters?.sort) params.append('sort', filters.sort);
+      if (filters?.skip !== undefined) params.append('skip', String(filters.skip));
+      if (filters?.take !== undefined) params.append('take', String(filters.take));
 
       const url = params.toString()
         ? `${API_BASE_URL}/workflows?${params}`
         : `${API_BASE_URL}/workflows`;
 
-      const data = await fetchJson<{ workflows: WorkflowListItem[]; total: number }>(url);
+      const data = await fetchJson<{
+        workflows: WorkflowListItem[];
+        total: number;
+        skip: number;
+        take: number;
+      }>(url);
       return data;
     },
     staleTime: 30000, // Consider data fresh for 30 seconds
@@ -441,10 +455,25 @@ export function useDryRun(name: string) {
 /**
  * Fetch all available tasks
  */
-export function useTasks() {
+export function useTasks(filters?: {
+  search?: string;
+  namespace?: string;
+  skip?: number;
+  take?: number;
+}) {
   return useQuery({
-    queryKey: queryKeys.tasks,
+    queryKey: queryKeys.tasks(filters),
     queryFn: async () => {
+      const params = new URLSearchParams();
+      if (filters?.search) params.append('search', filters.search);
+      if (filters?.namespace) params.append('namespace', filters.namespace);
+      if (filters?.skip !== undefined) params.append('skip', String(filters.skip));
+      if (filters?.take !== undefined) params.append('take', String(filters.take));
+
+      const url = params.toString()
+        ? `${API_BASE_URL}/tasks?${params}`
+        : `${API_BASE_URL}/tasks`;
+
       const data = await fetchJson<{
         tasks: Array<{
           name: string;
@@ -452,12 +481,22 @@ export function useTasks() {
           description: string;
           inputSchema: unknown;
           outputSchema: unknown;
+          stats?: {
+            usedByWorkflows?: number;
+            totalExecutions?: number;
+            avgDurationMs?: number;
+            successRate?: number;
+            lastExecuted?: string;
+          };
         }>;
-      }>(`${API_BASE_URL}/tasks`);
+        total: number;
+        skip: number;
+        take: number;
+      }>(url);
       return data;
     },
-    staleTime: 300000, // 5 minutes (tasks don't change often)
-    gcTime: 600000, // 10 minutes
+    staleTime: 30000, // 30 seconds (refresh more often for pagination)
+    gcTime: 300000, // 5 minutes
   });
 }
 
@@ -658,7 +697,7 @@ export function useExecuteTask(name: string) {
       });
       // Invalidate tasks list to update overall stats
       queryClient.invalidateQueries({
-        queryKey: queryKeys.tasks,
+        queryKey: ['tasks'],
       });
     },
   });
@@ -901,5 +940,39 @@ export function useRunHealthCheck() {
         queryKey: queryKeys.healthSummary(),
       });
     },
+  });
+}
+
+// ============================================================================
+// BLAST RADIUS QUERIES
+// ============================================================================
+
+import type { BlastRadiusResponse } from './types';
+
+/**
+ * Fetch blast radius analysis for a task
+ * Shows what workflows and tasks are affected when this task changes
+ */
+export function useBlastRadius(
+  taskName: string,
+  options?: { depth?: number; enabled?: boolean }
+) {
+  const { depth = 1, enabled = true } = options || {};
+
+  return useQuery({
+    queryKey: ['tasks', taskName, 'blast-radius', { depth }] as const,
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      params.append('depth', String(depth));
+      params.append('format', 'both');
+
+      const data = await fetchJson<BlastRadiusResponse>(
+        `${API_BASE_URL}/tasks/${encodeURIComponent(taskName)}/blast-radius?${params}`
+      );
+      return data;
+    },
+    staleTime: 60000, // 1 minute (blast radius doesn't change frequently)
+    gcTime: 300000, // 5 minutes
+    enabled: enabled && !!taskName,
   });
 }

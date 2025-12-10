@@ -9,6 +9,12 @@ using WorkflowGateway.Services;
 
 namespace WorkflowGateway.Controllers;
 
+/// <summary>
+/// Core controller for workflow execution and testing.
+/// Provides endpoints to execute workflows synchronously, test workflows in dry-run mode,
+/// validate inputs, and retrieve workflow details. This is the primary API for interacting
+/// with deployed workflows.
+/// </summary>
 [ApiController]
 [Route("api/v1/workflows")]
 public class DynamicWorkflowController : ControllerBase
@@ -40,13 +46,25 @@ public class DynamicWorkflowController : ControllerBase
     }
 
     /// <summary>
-    /// Execute a workflow with the provided input
+    /// Execute a workflow synchronously with the provided input.
+    /// This is the primary endpoint for triggering workflow execution. The workflow runs
+    /// immediately and the response contains the complete execution result including
+    /// all task outputs and any errors encountered.
     /// </summary>
-    /// <param name="workflowName">Name of the workflow to execute</param>
-    /// <param name="request">Execution request with input data</param>
-    /// <param name="namespace">Optional namespace (defaults to 'default')</param>
-    /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>Workflow execution result</returns>
+    /// <param name="workflowName">Name of the workflow to execute (must exist in Kubernetes).</param>
+    /// <param name="request">Execution request containing the input data matching the workflow's input schema.</param>
+    /// <param name="namespace">Optional Kubernetes namespace. Defaults to 'default' if not specified.</param>
+    /// <param name="cancellationToken">Cancellation token to abort the execution.</param>
+    /// <returns>
+    /// On success (200): Complete execution result with outputs from all tasks.
+    /// On upstream failure (502): Execution failed due to task errors (includes partial results).
+    /// On not found (404): Workflow does not exist.
+    /// On validation error (400): Input does not match the workflow's schema.
+    /// </returns>
+    /// <remarks>
+    /// Execution is synchronous with a configurable timeout (default 30 seconds).
+    /// For long-running operations, consider using async patterns or webhooks.
+    /// </remarks>
     [HttpPost("{workflowName}/execute")]
     [ProducesResponseType(typeof(WorkflowExecutionResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(WorkflowExecutionResponse), StatusCodes.Status502BadGateway)]
@@ -98,12 +116,26 @@ public class DynamicWorkflowController : ControllerBase
     }
 
     /// <summary>
-    /// Test a workflow without executing it (dry-run mode)
+    /// Test a workflow in dry-run mode without actually executing it.
+    /// Validates the input against the workflow schema, builds the execution graph,
+    /// and returns a preview of what would be executed including template resolution.
     /// </summary>
-    /// <param name="workflowName">Name of the workflow to test</param>
-    /// <param name="request">Test request with input data</param>
-    /// <param name="namespace">Optional namespace (defaults to 'default')</param>
-    /// <returns>Validation results and execution plan</returns>
+    /// <param name="workflowName">Name of the workflow to test.</param>
+    /// <param name="request">Test request containing the input data to validate.</param>
+    /// <param name="namespace">Optional Kubernetes namespace. Defaults to 'default' if not specified.</param>
+    /// <returns>
+    /// Validation results including:
+    /// - Whether the input is valid
+    /// - Any validation errors
+    /// - The execution plan with parallel groups and task order
+    /// - Estimated duration based on historical data
+    /// - Template previews showing resolved values
+    /// - Graph build duration for performance monitoring
+    /// </returns>
+    /// <remarks>
+    /// Use this endpoint to preview workflow execution before committing,
+    /// validate inputs during development, or benchmark graph build performance.
+    /// </remarks>
     [HttpPost("{workflowName}/test")]
     [ProducesResponseType(typeof(WorkflowTestResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -257,14 +289,25 @@ public class DynamicWorkflowController : ControllerBase
     }
 
     /// <summary>
-    /// Test-execute a workflow definition without deploying it to Kubernetes.
-    /// This allows testing workflows directly from the builder before publishing.
-    /// Note: Referenced tasks (taskRef) must exist in Kubernetes.
+    /// Execute a workflow definition directly from YAML without deploying to Kubernetes.
+    /// Ideal for testing workflows during development before committing to version control.
+    /// The workflow is parsed, validated, and executed in a single request.
     /// </summary>
-    /// <param name="request">Request containing workflow YAML and input data</param>
-    /// <param name="namespace">Optional namespace for task discovery (defaults to 'default')</param>
-    /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>Full execution results including task outputs</returns>
+    /// <param name="request">Request containing the complete workflow YAML definition and input data.</param>
+    /// <param name="namespace">Optional namespace for task discovery. Defaults to 'default'. Required tasks must exist.</param>
+    /// <param name="cancellationToken">Cancellation token to abort the execution.</param>
+    /// <returns>
+    /// Full execution results including:
+    /// - Success/failure status
+    /// - Validation errors (if any)
+    /// - Task outputs and execution details
+    /// - Execution time in milliseconds
+    /// </returns>
+    /// <remarks>
+    /// Important: While the workflow definition doesn't need to be deployed,
+    /// all tasks referenced via taskRef must already exist in Kubernetes.
+    /// Use this for rapid iteration during workflow development.
+    /// </remarks>
     [HttpPost("test-execute")]
     [ProducesResponseType(typeof(TestExecuteResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(TestExecuteResponse), StatusCodes.Status400BadRequest)]
@@ -372,11 +415,20 @@ public class DynamicWorkflowController : ControllerBase
     }
 
     /// <summary>
-    /// Get details for a specific workflow
+    /// Get detailed information about a specific workflow including its input/output schemas and tasks.
+    /// Use this to discover what inputs a workflow requires and what outputs it produces.
     /// </summary>
-    /// <param name="workflowName">Name of the workflow</param>
-    /// <param name="namespace">Optional namespace filter</param>
-    /// <returns>Workflow details including schema and endpoints</returns>
+    /// <param name="workflowName">Name of the workflow to retrieve details for.</param>
+    /// <param name="namespace">Optional Kubernetes namespace. Defaults to 'default' if not specified.</param>
+    /// <returns>
+    /// Complete workflow details including:
+    /// - Name and namespace
+    /// - Input schema (required and optional parameters with types)
+    /// - Output schema (what the workflow produces)
+    /// - List of tasks with their configurations
+    /// - API endpoint URLs for execution and testing
+    /// Returns 404 if workflow not found.
+    /// </returns>
     [HttpGet("{workflowName}")]
     [ProducesResponseType(typeof(WorkflowDetailResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -431,14 +483,23 @@ public class DynamicWorkflowController : ControllerBase
     }
 
     /// <summary>
-    /// List executions for a specific workflow
+    /// List execution history for a specific workflow with filtering and pagination.
+    /// Returns a summary of past executions ordered by start time (most recent first).
     /// </summary>
-    /// <param name="workflowName">Name of the workflow</param>
-    /// <param name="namespace">Optional namespace filter</param>
-    /// <param name="status">Optional status filter (Running, Succeeded, Failed, Cancelled)</param>
-    /// <param name="skip">Number of executions to skip (pagination)</param>
-    /// <param name="take">Number of executions to return (page size, max 100)</param>
-    /// <returns>List of execution summaries with pagination info</returns>
+    /// <param name="workflowName">Name of the workflow to list executions for.</param>
+    /// <param name="namespace">Optional Kubernetes namespace filter.</param>
+    /// <param name="status">Optional status filter: Running, Succeeded, Failed, or Cancelled.</param>
+    /// <param name="skip">Number of records to skip for pagination. Default: 0.</param>
+    /// <param name="take">Number of records to return per page. Default: 50, Maximum: 100.</param>
+    /// <returns>
+    /// Paginated list of execution summaries including:
+    /// - Execution ID
+    /// - Status
+    /// - Start and completion timestamps
+    /// - Duration in milliseconds
+    /// Also includes total count and pagination info.
+    /// Returns 404 if workflow not found.
+    /// </returns>
     [HttpGet("{workflowName}/executions")]
     [ProducesResponseType(typeof(ExecutionListResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]

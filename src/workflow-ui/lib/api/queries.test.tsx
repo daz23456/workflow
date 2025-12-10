@@ -27,6 +27,7 @@ import {
   useWorkflowsMetrics,
   useWorkflowHistoryMetrics,
   useSlowestWorkflows,
+  useBlastRadius,
 } from './queries';
 
 /**
@@ -1320,6 +1321,110 @@ describe('TanStack Query Hooks', () => {
       });
 
       expect(result.current.data).toBeDefined();
+    });
+  });
+
+  // ============================================================================
+  // BLAST RADIUS QUERIES
+  // ============================================================================
+
+  describe('useBlastRadius', () => {
+    it('fetches blast radius successfully', async () => {
+      const { result } = renderHook(() => useBlastRadius('fetch-user'), {
+        wrapper: createWrapper(),
+      });
+
+      // Initially loading
+      expect(result.current.isLoading).toBe(true);
+
+      // Wait for data
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      expect(result.current.data).toBeDefined();
+      expect(result.current.data?.taskName).toBe('fetch-user');
+      expect(result.current.data?.analysisDepth).toBeDefined();
+    });
+
+    it('includes summary data', async () => {
+      const { result } = renderHook(() => useBlastRadius('fetch-user'), {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      expect(result.current.data?.summary).toBeDefined();
+      expect(result.current.data?.summary?.totalAffectedWorkflows).toBeGreaterThanOrEqual(0);
+      expect(result.current.data?.summary?.totalAffectedTasks).toBeGreaterThanOrEqual(0);
+      expect(result.current.data?.summary?.affectedWorkflows).toBeDefined();
+      expect(result.current.data?.summary?.affectedTasks).toBeDefined();
+    });
+
+    it('includes graph data', async () => {
+      const { result } = renderHook(() => useBlastRadius('fetch-user'), {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      expect(result.current.data?.graph).toBeDefined();
+      expect(result.current.data?.graph?.nodes).toBeDefined();
+      expect(result.current.data?.graph?.edges).toBeDefined();
+      expect(Array.isArray(result.current.data?.graph?.nodes)).toBe(true);
+      expect(Array.isArray(result.current.data?.graph?.edges)).toBe(true);
+    });
+
+    it('supports custom depth option', async () => {
+      const { result } = renderHook(() => useBlastRadius('fetch-user', { depth: 2 }), {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      expect(result.current.data?.analysisDepth).toBe(2);
+    });
+
+    it('includes truncatedAtDepth indicator', async () => {
+      const { result } = renderHook(() => useBlastRadius('fetch-user'), {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      expect(typeof result.current.data?.truncatedAtDepth).toBe('boolean');
+    });
+
+    it('can be disabled with enabled option', () => {
+      const { result } = renderHook(
+        () => useBlastRadius('fetch-user', { enabled: false }),
+        {
+          wrapper: createWrapper(),
+        }
+      );
+
+      expect(result.current.isPending).toBe(true);
+      expect(result.current.fetchStatus).toBe('idle');
+    });
+
+    it('handles task not found error', async () => {
+      const { result } = renderHook(() => useBlastRadius('non-existent-task'), {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(result.current.isError).toBe(true);
+      });
+
+      expect(result.current.error).toBeDefined();
     });
   });
 });

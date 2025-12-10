@@ -1,0 +1,38 @@
+# Shared Task: validate-user
+# This task is used by MULTIPLE workflows, making it a high-impact task
+# Changes to this task would affect: user-registration, user-login, password-reset, profile-update
+apiVersion: workflow.example.com/v1
+kind: WorkflowTask
+metadata:
+  name: validate-user
+  namespace: default
+  labels:
+    workflow.io/shared: "true"
+    workflow.io/demo: "blast-radius"
+spec:
+  description: "Validates user credentials and returns user profile - SHARED BY 4 WORKFLOWS"
+  type: http
+  request:
+    method: POST
+    url: "https://httpbin.org/post"
+    headers:
+      Content-Type: application/json
+    body: '{"email": "{{input.email}}", "context": "{{input.validationContext}}"}'
+  inputSchema:
+    type: object
+    properties:
+      email:
+        type: string
+      validationContext:
+        type: string
+  outputSchema:
+    type: object
+    properties:
+      userId:
+        type: string
+      isValid:
+        type: boolean
+  timeout: "10s"
+  retry:
+    maxAttempts: 2
+    backoffMs: 500

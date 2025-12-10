@@ -37,4 +37,9 @@ public interface ITaskDependencyTracker
     /// Get all workflows that use a specific field from a task's output.
     /// </summary>
     IReadOnlyList<string> GetWorkflowsUsingField(string taskName, string fieldName);
+
+    /// <summary>
+    /// Get all tasks used by a specific workflow.
+    /// </summary>
+    IReadOnlyList<string> GetTasksInWorkflow(string workflowName);
 }

@@ -8,8 +8,14 @@ namespace WorkflowGateway.Controllers;
 
 /// <summary>
 /// Controller for receiving webhook callbacks and triggering workflows.
-/// Supports HMAC signature validation for security.
+/// Webhooks allow external systems to trigger workflow execution via HTTP POST requests.
+/// Supports HMAC-SHA256 signature validation for secure webhook delivery.
 /// </summary>
+/// <remarks>
+/// Workflows can define webhook triggers in their specification with a unique path.
+/// When a POST request is received at that path, the matching workflow is executed
+/// with the webhook payload as input. Optional HMAC validation ensures authenticity.
+/// </remarks>
 [ApiController]
 [Route("api/v1/webhooks")]
 public class WebhookController : ControllerBase
@@ -33,11 +39,27 @@ public class WebhookController : ControllerBase
 
     /// <summary>
     /// Receives a webhook callback and triggers the matching workflow.
+    /// The system finds a workflow with a webhook trigger matching the provided path
+    /// and executes it with the payload as input.
     /// </summary>
-    /// <param name="path">The webhook path (without leading slash)</param>
-    /// <param name="payload">The JSON payload from the webhook</param>
-    /// <returns>Execution result or error</returns>
+    /// <param name="path">The webhook path (without leading slash). Must match a workflow's webhook trigger path.</param>
+    /// <param name="payload">The JSON payload from the webhook. Made available as 'payload' in workflow input.</param>
+    /// <returns>
+    /// On success (200): Execution ID, workflow name, and success status.
+    /// On not found (404): No workflow registered for the webhook path.
+    /// On unauthorized (401): HMAC signature validation failed (when configured).
+    /// On error (500): Internal server error during processing.
+    /// </returns>
+    /// <remarks>
+    /// If the workflow's webhook trigger has a secretRef configured, the request must include
+    /// an X-Webhook-Signature header with a valid HMAC-SHA256 signature of the request body.
+    /// Input mapping can be configured to extract specific fields from the payload.
+    /// </remarks>
     [HttpPost("{*path}")]
+    [ProducesResponseType(typeof(WebhookSuccessResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(WebhookErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(WebhookErrorResponse), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(WebhookErrorResponse), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> ReceiveWebhook(
         string path,
         [FromBody] JsonDocument payload)

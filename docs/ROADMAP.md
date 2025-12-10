@@ -703,10 +703,11 @@ This roadmap transforms the workflow engine into a **world-class, enterprise-rea
 |-------|------|-------|----------|
 | 11 | Cloud Deployment | Helm charts, GKE/AKS, production hardening | P1 |
 | 14 | Optimization Engine | Static analysis, transform equivalence, historical replay | P2 |
-| 15 | MCP Consumer | External chatbot workflow discovery & execution | P2 |
-| 33 | AI-Native Workflows | LLM task type, prompt management, guardrails | P3 |
-| 34 | Cost-Aware Execution | Cost tracking, estimation, budgets | P2 |
-| 35 | Marketplace | Pre-built connectors (Stripe, Twilio, etc.) | P2 |
+| 15 | MCP Consumer | External chatbot workflow discovery & execution | ✅ Complete |
+| 33 | Blast Radius Analysis | Transitive dependency analysis for task changes | P1 |
+| 34 | AI-Native Workflows | LLM task type, prompt management, guardrails | P3 |
+| 36 | Cost-Aware Execution | Cost tracking, estimation, budgets | P2 |
+| 37 | Marketplace | Pre-built connectors (Stripe, Twilio, etc.) | P2 |
 | 36 | Time-Travel Debugging | State capture, replay with modifications | P1 |
 | 37 | Collaborative Dev | Real-time editing, comments, approvals | P3 |
 | 38 | Zero-Config Observability | OpenTelemetry, Prometheus, structured logs | P0 |

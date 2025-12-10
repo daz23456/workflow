@@ -8,9 +8,18 @@ using WorkflowGateway.Services;
 namespace WorkflowGateway.Controllers;
 
 /// <summary>
-/// Controller for managing workflow and task labels (tags and categories).
-/// Stage 32.2 - Backend Label API
+/// Controller for managing workflow and task labels including tags and categories.
+/// Labels enable organization, filtering, and discovery of workflows and tasks
+/// across the system. Supports bulk operations and label statistics.
 /// </summary>
+/// <remarks>
+/// Part of Stage 32 - Label Management. Features:
+/// - Tags: Free-form labels for flexible categorization (e.g., "payment", "user-facing")
+/// - Categories: Structured groupings (e.g., "api-composition", "data-processing")
+/// - Filtering: Find workflows/tasks by tags or categories
+/// - Bulk updates: Apply labels to multiple items at once
+/// - Analytics: Track label usage and distribution
+/// </remarks>
 [ApiController]
 [Route("api/v1")]
 public class LabelsController : ControllerBase
@@ -33,8 +42,15 @@ public class LabelsController : ControllerBase
     }
 
     /// <summary>
-    /// Get all labels with usage counts.
+    /// Get all labels (tags and categories) with their usage counts.
+    /// Useful for building autocomplete/suggestion lists and understanding
+    /// the current label taxonomy in the system.
     /// </summary>
+    /// <returns>
+    /// All labels organized by type:
+    /// - Tags with workflow and task counts
+    /// - Categories with workflow counts
+    /// </returns>
     [HttpGet("labels")]
     [ProducesResponseType(typeof(LabelListResponse), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetLabels()
@@ -62,8 +78,15 @@ public class LabelsController : ControllerBase
     }
 
     /// <summary>
-    /// Get label statistics and analytics.
+    /// Get comprehensive label statistics and analytics.
+    /// Provides insights into label coverage and most commonly used labels.
     /// </summary>
+    /// <returns>
+    /// Statistics including:
+    /// - Total unique tags and categories
+    /// - Count of workflows/tasks with labels
+    /// - Top 10 most used tags and categories
+    /// </returns>
     [HttpGet("labels/stats")]
     [ProducesResponseType(typeof(LabelStatsResponse), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetLabelStats()
@@ -99,8 +122,21 @@ public class LabelsController : ControllerBase
     }
 
     /// <summary>
-    /// Update labels for a specific workflow.
+    /// Update labels (tags and categories) for a specific workflow.
+    /// Supports adding and removing labels in a single operation.
     /// </summary>
+    /// <param name="name">Name of the workflow to update.</param>
+    /// <param name="request">
+    /// Label changes to apply:
+    /// - AddTags: Tags to add (duplicates ignored)
+    /// - RemoveTags: Tags to remove (missing tags ignored)
+    /// - AddCategories: Categories to add
+    /// - RemoveCategories: Categories to remove
+    /// </param>
+    /// <returns>
+    /// Update result with current labels after changes.
+    /// Returns 404 if workflow not found.
+    /// </returns>
     [HttpPatch("workflows/{name}/labels")]
     [ProducesResponseType(typeof(UpdateLabelsResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -159,8 +195,20 @@ public class LabelsController : ControllerBase
     }
 
     /// <summary>
-    /// Update labels for a specific task.
+    /// Update labels (tags) for a specific task.
+    /// Supports adding and removing tags in a single operation.
     /// </summary>
+    /// <param name="name">Name of the task to update.</param>
+    /// <param name="request">
+    /// Label changes to apply:
+    /// - AddTags: Tags to add (duplicates ignored)
+    /// - RemoveTags: Tags to remove (missing tags ignored)
+    /// Note: Tasks support tags but not categories.
+    /// </param>
+    /// <returns>
+    /// Update result with current labels after changes.
+    /// Returns 404 if task not found.
+    /// </returns>
     [HttpPatch("tasks/{name}/labels")]
     [ProducesResponseType(typeof(UpdateLabelsResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -212,8 +260,20 @@ public class LabelsController : ControllerBase
     }
 
     /// <summary>
-    /// Bulk update labels for multiple workflows.
+    /// Apply label changes to multiple workflows in a single operation.
+    /// Useful for batch organization or migration of labels across workflows.
     /// </summary>
+    /// <param name="request">
+    /// Bulk update request containing:
+    /// - EntityNames: List of workflow names to update
+    /// - AddTags/RemoveTags: Tag changes to apply
+    /// - AddCategories/RemoveCategories: Category changes
+    /// - DryRun: If true, preview changes without saving
+    /// </param>
+    /// <returns>
+    /// Results showing changes applied to each workflow.
+    /// Returns 400 if no entity names or no operations specified.
+    /// </returns>
     [HttpPost("workflows/labels/bulk")]
     [ProducesResponseType(typeof(BulkLabelsResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -293,8 +353,19 @@ public class LabelsController : ControllerBase
     }
 
     /// <summary>
-    /// Bulk update labels for multiple tasks.
+    /// Apply tag changes to multiple tasks in a single operation.
+    /// Useful for batch organization or migration of tags across tasks.
     /// </summary>
+    /// <param name="request">
+    /// Bulk update request containing:
+    /// - EntityNames: List of task names to update
+    /// - AddTags/RemoveTags: Tag changes to apply
+    /// - DryRun: If true, preview changes without saving
+    /// </param>
+    /// <returns>
+    /// Results showing changes applied to each task.
+    /// Returns 400 if no entity names or no tag operations specified.
+    /// </returns>
     [HttpPost("tasks/labels/bulk")]
     [ProducesResponseType(typeof(BulkLabelsResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -358,8 +429,13 @@ public class LabelsController : ControllerBase
     }
 
     /// <summary>
-    /// Get workflows filtered by tags.
+    /// Find workflows that match specified tags.
+    /// Supports both ANY match (default) and ALL match modes.
     /// </summary>
+    /// <param name="tags">Comma-separated list of tags to filter by.</param>
+    /// <param name="matchAllTags">If true, workflows must have ALL tags. Default: false (any match).</param>
+    /// <param name="namespace">Optional namespace filter.</param>
+    /// <returns>List of workflows matching the tag criteria.</returns>
     [HttpGet("workflows/by-tags")]
     [ProducesResponseType(typeof(List<WorkflowLabelEntity>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetWorkflowsByTags(
@@ -376,8 +452,12 @@ public class LabelsController : ControllerBase
     }
 
     /// <summary>
-    /// Get workflows filtered by categories.
+    /// Find workflows that belong to any of the specified categories.
+    /// Categories are structured groupings like "api-composition" or "data-processing".
     /// </summary>
+    /// <param name="categories">Comma-separated list of categories to filter by.</param>
+    /// <param name="namespace">Optional namespace filter.</param>
+    /// <returns>List of workflows in any of the specified categories.</returns>
     [HttpGet("workflows/by-categories")]
     [ProducesResponseType(typeof(List<WorkflowLabelEntity>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetWorkflowsByCategories(
@@ -393,8 +473,13 @@ public class LabelsController : ControllerBase
     }
 
     /// <summary>
-    /// Get tasks filtered by tags.
+    /// Find tasks that match specified tags.
+    /// Supports both ANY match (default) and ALL match modes.
     /// </summary>
+    /// <param name="tags">Comma-separated list of tags to filter by.</param>
+    /// <param name="matchAllTags">If true, tasks must have ALL tags. Default: false (any match).</param>
+    /// <param name="namespace">Optional namespace filter.</param>
+    /// <returns>List of tasks matching the tag criteria.</returns>
     [HttpGet("tasks/by-tags")]
     [ProducesResponseType(typeof(List<TaskLabelEntity>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetTasksByTags(
@@ -411,8 +496,12 @@ public class LabelsController : ControllerBase
     }
 
     /// <summary>
-    /// Get tasks filtered by category.
+    /// Find tasks that belong to a specific category.
+    /// Unlike workflows, tasks have a single category assignment.
     /// </summary>
+    /// <param name="category">The category to filter by.</param>
+    /// <param name="namespace">Optional namespace filter.</param>
+    /// <returns>List of tasks in the specified category.</returns>
     [HttpGet("tasks/by-category")]
     [ProducesResponseType(typeof(List<TaskLabelEntity>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetTasksByCategory(

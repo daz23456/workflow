@@ -85,12 +85,18 @@ vi.mock('../analytics/workflow-duration-trends-section', () => ({
 }));
 
 // Mock useWorkflowVersions to avoid QueryClient dependency
+const mockUseWorkflowVersions = vi.fn();
 vi.mock('@/lib/api/queries', () => ({
-  useWorkflowVersions: () => ({
+  useWorkflowVersions: (...args: any[]) => mockUseWorkflowVersions(...args),
+}));
+
+// Default mock implementation
+beforeEach(() => {
+  mockUseWorkflowVersions.mockReturnValue({
     data: { versions: [] },
     isLoading: false,
-  }),
-}));
+  });
+});
 
 describe('WorkflowDetailTabs', () => {
   const mockWorkflow: WorkflowDetail = {
@@ -500,6 +506,447 @@ describe('WorkflowDetailTabs', () => {
       await user.keyboard('{Enter}');
 
       expect(screen.getByTestId('execution-history-panel')).toBeInTheDocument();
+    });
+  });
+
+  describe('YAML Tab', () => {
+    it('switches to YAML tab when clicked', async () => {
+      const user = userEvent.setup();
+      render(
+        <WorkflowDetailTabs
+          workflow={mockWorkflow}
+          stats={mockStats}
+          executionHistory={mockExecutionHistory}
+        />
+      );
+
+      await user.click(screen.getByRole('tab', { name: /yaml/i }));
+
+      expect(screen.queryByTestId('workflow-graph-panel')).not.toBeInTheDocument();
+    });
+
+    it('shows loading spinner when versions are loading', async () => {
+      mockUseWorkflowVersions.mockReturnValue({
+        data: null,
+        isLoading: true,
+      });
+
+      const user = userEvent.setup();
+      const { container } = render(
+        <WorkflowDetailTabs
+          workflow={mockWorkflow}
+          stats={mockStats}
+          executionHistory={mockExecutionHistory}
+        />
+      );
+
+      await user.click(screen.getByRole('tab', { name: /yaml/i }));
+
+      // Check for loading spinner
+      const spinner = container.querySelector('.animate-spin');
+      expect(spinner).toBeInTheDocument();
+    });
+
+    it('shows empty state when no YAML definition available', async () => {
+      mockUseWorkflowVersions.mockReturnValue({
+        data: { versions: [] },
+        isLoading: false,
+      });
+
+      const user = userEvent.setup();
+      render(
+        <WorkflowDetailTabs
+          workflow={mockWorkflow}
+          stats={mockStats}
+          executionHistory={mockExecutionHistory}
+        />
+      );
+
+      await user.click(screen.getByRole('tab', { name: /yaml/i }));
+
+      expect(screen.getByText('No YAML definition available')).toBeInTheDocument();
+    });
+
+    it('displays YAML content when available', async () => {
+      mockUseWorkflowVersions.mockReturnValue({
+        data: {
+          versions: [
+            {
+              definitionSnapshot: 'apiVersion: v1\nkind: Workflow\nmetadata:\n  name: test',
+              createdAt: '2025-01-01T10:00:00Z',
+            },
+          ],
+        },
+        isLoading: false,
+      });
+
+      const user = userEvent.setup();
+      render(
+        <WorkflowDetailTabs
+          workflow={mockWorkflow}
+          stats={mockStats}
+          executionHistory={mockExecutionHistory}
+        />
+      );
+
+      await user.click(screen.getByRole('tab', { name: /yaml/i }));
+
+      expect(screen.getByText(/apiVersion: v1/)).toBeInTheDocument();
+    });
+
+    it('shows last updated timestamp when version available', async () => {
+      mockUseWorkflowVersions.mockReturnValue({
+        data: {
+          versions: [
+            {
+              definitionSnapshot: 'apiVersion: v1',
+              createdAt: '2025-01-01T10:00:00Z',
+            },
+          ],
+        },
+        isLoading: false,
+      });
+
+      const user = userEvent.setup();
+      render(
+        <WorkflowDetailTabs
+          workflow={mockWorkflow}
+          stats={mockStats}
+          executionHistory={mockExecutionHistory}
+        />
+      );
+
+      await user.click(screen.getByRole('tab', { name: /yaml/i }));
+
+      expect(screen.getByText(/Last updated:/)).toBeInTheDocument();
+    });
+
+    it('has Copy button when YAML is available', async () => {
+      mockUseWorkflowVersions.mockReturnValue({
+        data: {
+          versions: [
+            {
+              definitionSnapshot: 'apiVersion: v1',
+              createdAt: '2025-01-01T10:00:00Z',
+            },
+          ],
+        },
+        isLoading: false,
+      });
+
+      const user = userEvent.setup();
+      render(
+        <WorkflowDetailTabs
+          workflow={mockWorkflow}
+          stats={mockStats}
+          executionHistory={mockExecutionHistory}
+        />
+      );
+
+      await user.click(screen.getByRole('tab', { name: /yaml/i }));
+
+      expect(screen.getByRole('button', { name: /copy/i })).toBeInTheDocument();
+    });
+
+    it('disables Copy button when no YAML is available', async () => {
+      mockUseWorkflowVersions.mockReturnValue({
+        data: { versions: [] },
+        isLoading: false,
+      });
+
+      const user = userEvent.setup();
+      render(
+        <WorkflowDetailTabs
+          workflow={mockWorkflow}
+          stats={mockStats}
+          executionHistory={mockExecutionHistory}
+        />
+      );
+
+      await user.click(screen.getByRole('tab', { name: /yaml/i }));
+
+      const copyButton = screen.getByRole('button', { name: /copy/i });
+      expect(copyButton).toBeDisabled();
+    });
+
+    it('Copy button is enabled when YAML is available', async () => {
+      mockUseWorkflowVersions.mockReturnValue({
+        data: {
+          versions: [
+            {
+              definitionSnapshot: 'apiVersion: v1\ntest: yaml',
+              createdAt: '2025-01-01T10:00:00Z',
+            },
+          ],
+        },
+        isLoading: false,
+      });
+
+      const user = userEvent.setup();
+      render(
+        <WorkflowDetailTabs
+          workflow={mockWorkflow}
+          stats={mockStats}
+          executionHistory={mockExecutionHistory}
+        />
+      );
+
+      await user.click(screen.getByRole('tab', { name: /yaml/i }));
+
+      const copyButton = screen.getByRole('button', { name: /copy/i });
+      expect(copyButton).not.toBeDisabled();
+    });
+  });
+
+  describe('Execution Error Handling', () => {
+    it('shows error result panel when execution fails', async () => {
+      const user = userEvent.setup();
+      const onExecute = vi.fn().mockRejectedValue(new Error('Network error'));
+
+      // Update execute modal mock to call onExecute directly
+      vi.doMock('./execute-modal', () => ({
+        ExecuteModal: ({ isOpen, onClose, onExecute }: any) =>
+          isOpen ? (
+            <div data-testid="execute-modal">
+              <button
+                onClick={async () => {
+                  await onExecute({ test: 'data' });
+                  onClose();
+                }}
+              >
+                Execute Modal Submit
+              </button>
+            </div>
+          ) : null,
+      }));
+
+      render(
+        <WorkflowDetailTabs
+          workflow={mockWorkflow}
+          stats={mockStats}
+          executionHistory={mockExecutionHistory}
+          onExecute={onExecute}
+        />
+      );
+
+      await user.click(screen.getByRole('button', { name: /^execute$/i }));
+      await user.click(screen.getByRole('button', { name: /execute modal submit/i }));
+
+      expect(onExecute).toHaveBeenCalled();
+    });
+
+    it('shows error result panel when test fails', async () => {
+      const user = userEvent.setup();
+      const onTest = vi.fn().mockRejectedValue(new Error('Test failed'));
+
+      render(
+        <WorkflowDetailTabs
+          workflow={mockWorkflow}
+          stats={mockStats}
+          executionHistory={mockExecutionHistory}
+          onTest={onTest}
+        />
+      );
+
+      // Click Test button in header
+      await user.click(screen.getByRole('button', { name: /^test$/i }));
+    });
+  });
+
+  describe('Execution History Error Handling', () => {
+    it('handles fetch execution error gracefully', async () => {
+      const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const user = userEvent.setup();
+      const onFetchExecution = vi.fn().mockRejectedValue(new Error('Fetch failed'));
+
+      render(
+        <WorkflowDetailTabs
+          workflow={mockWorkflow}
+          stats={mockStats}
+          executionHistory={mockExecutionHistory}
+          onFetchExecution={onFetchExecution}
+        />
+      );
+
+      await user.click(screen.getByRole('tab', { name: /history/i }));
+      await user.click(screen.getByRole('button', { name: /exec-1/i }));
+
+      expect(onFetchExecution).toHaveBeenCalledWith('exec-1');
+      // Error should be logged
+      await vi.waitFor(() => {
+        expect(consoleError).toHaveBeenCalled();
+      });
+
+      consoleError.mockRestore();
+    });
+  });
+
+  describe('Panel Interactions', () => {
+    it('closes task panel when selecting execution from history', async () => {
+      const user = userEvent.setup();
+      const mockResult = {
+        executionId: 'exec-1',
+        workflowName: 'user-signup',
+        success: true,
+        output: {},
+        tasks: [],
+        executionTimeMs: 1000,
+        startedAt: '2025-11-24T10:00:00Z',
+      };
+
+      const onFetchExecution = vi.fn().mockResolvedValue(mockResult);
+
+      render(
+        <WorkflowDetailTabs
+          workflow={mockWorkflow}
+          stats={mockStats}
+          executionHistory={mockExecutionHistory}
+          onFetchExecution={onFetchExecution}
+        />
+      );
+
+      // First, select a task
+      await user.click(screen.getByRole('button', { name: /validate email/i }));
+      expect(screen.getByTestId('task-detail-panel')).toBeInTheDocument();
+
+      // Then, switch to history tab and click an execution
+      await user.click(screen.getByRole('tab', { name: /history/i }));
+      await user.click(screen.getByRole('button', { name: /exec-1/i }));
+
+      // Wait for execution panel to appear
+      await screen.findByTestId('execution-result-panel');
+
+      // Task panel should be closed
+      expect(screen.queryByTestId('task-detail-panel')).not.toBeInTheDocument();
+    });
+
+    it('closes execution panel when selecting task from graph', async () => {
+      const user = userEvent.setup();
+
+      render(
+        <WorkflowDetailTabs
+          workflow={mockWorkflow}
+          stats={mockStats}
+          executionHistory={mockExecutionHistory}
+        />
+      );
+
+      // Select a task from graph
+      await user.click(screen.getByRole('button', { name: /validate email/i }));
+      expect(screen.getByTestId('task-detail-panel')).toBeInTheDocument();
+    });
+
+    it('closes execution result panel when close button clicked', async () => {
+      const user = userEvent.setup();
+      const mockResult = {
+        executionId: 'exec-1',
+        workflowName: 'user-signup',
+        success: true,
+        output: {},
+        tasks: [],
+        executionTimeMs: 1000,
+        startedAt: '2025-11-24T10:00:00Z',
+      };
+
+      const onFetchExecution = vi.fn().mockResolvedValue(mockResult);
+
+      render(
+        <WorkflowDetailTabs
+          workflow={mockWorkflow}
+          stats={mockStats}
+          executionHistory={mockExecutionHistory}
+          onFetchExecution={onFetchExecution}
+        />
+      );
+
+      await user.click(screen.getByRole('tab', { name: /history/i }));
+      await user.click(screen.getByRole('button', { name: /exec-1/i }));
+
+      await screen.findByTestId('execution-result-panel');
+
+      const closeButton = within(screen.getByTestId('execution-result-panel')).getByRole('button', {
+        name: /close/i,
+      });
+      await user.click(closeButton);
+
+      expect(screen.queryByTestId('execution-result-panel')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('Modal State', () => {
+    it('closes modal when close button clicked', async () => {
+      const user = userEvent.setup();
+
+      render(
+        <WorkflowDetailTabs
+          workflow={mockWorkflow}
+          stats={mockStats}
+          executionHistory={mockExecutionHistory}
+        />
+      );
+
+      // Open modal
+      await user.click(screen.getByRole('button', { name: /^execute$/i }));
+      expect(screen.getByTestId('execute-modal')).toBeInTheDocument();
+
+      // Close modal
+      await user.click(screen.getByRole('button', { name: /close modal/i }));
+      expect(screen.queryByTestId('execute-modal')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('Default Props', () => {
+    it('handles missing onExecute callback', async () => {
+      const user = userEvent.setup();
+
+      render(
+        <WorkflowDetailTabs
+          workflow={mockWorkflow}
+          stats={mockStats}
+          executionHistory={mockExecutionHistory}
+        />
+      );
+
+      // Should not throw when execute is clicked without callback
+      await user.click(screen.getByRole('button', { name: /^execute$/i }));
+      await user.click(screen.getByRole('button', { name: /execute modal submit/i }));
+    });
+
+    it('handles missing onFetchExecution callback', async () => {
+      const user = userEvent.setup();
+
+      render(
+        <WorkflowDetailTabs
+          workflow={mockWorkflow}
+          stats={mockStats}
+          executionHistory={mockExecutionHistory}
+        />
+      );
+
+      await user.click(screen.getByRole('tab', { name: /history/i }));
+      // Should not throw when clicking history item without callback
+      await user.click(screen.getByRole('button', { name: /exec-1/i }));
+    });
+  });
+
+  describe('Workflow Graph Fallback', () => {
+    it('handles workflow without graph', () => {
+      const workflowWithoutGraph = {
+        ...mockWorkflow,
+        graph: undefined,
+      };
+
+      render(
+        <WorkflowDetailTabs
+          workflow={workflowWithoutGraph}
+          stats={mockStats}
+          executionHistory={mockExecutionHistory}
+        />
+      );
+
+      // Should render with fallback empty graph
+      expect(screen.getByTestId('workflow-graph-panel')).toBeInTheDocument();
+      expect(screen.getByText('Nodes: 0')).toBeInTheDocument();
     });
   });
 });

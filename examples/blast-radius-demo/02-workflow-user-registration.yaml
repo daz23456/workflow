@@ -1,0 +1,29 @@
+# Workflow 1: User Registration
+# Uses shared task: validate-user
+apiVersion: workflow.example.com/v1
+kind: Workflow
+metadata:
+  name: user-registration
+  namespace: default
+  labels:
+    workflow.io/demo: "blast-radius"
+spec:
+  description: "New user registration flow - uses validate-user task"
+  input:
+    email:
+      type: string
+      required: true
+    password:
+      type: string
+      required: true
+    name:
+      type: string
+      required: true
+  tasks:
+    - id: validate
+      taskRef: validate-user
+      input:
+        email: "{{input.email}}"
+        validationContext: "registration"
+  output:
+    message: "Registration flow completed"

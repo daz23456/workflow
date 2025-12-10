@@ -7,6 +7,11 @@ using WorkflowGateway.Services;
 
 namespace WorkflowGateway.Controllers;
 
+/// <summary>
+/// Controller for accessing workflow execution history and traces.
+/// Provides detailed information about past executions including status, duration,
+/// task-level details, inputs/outputs, and execution traces for debugging.
+/// </summary>
 [ApiController]
 [Route("api/v1/executions")]
 public class ExecutionHistoryController : ControllerBase
@@ -25,7 +30,20 @@ public class ExecutionHistoryController : ControllerBase
         _traceService = traceService ?? throw new ArgumentNullException(nameof(traceService));
     }
 
+    /// <summary>
+    /// List execution history for a specific workflow with optional filtering and pagination.
+    /// Returns a summary of each execution including ID, status, timestamps, and duration.
+    /// </summary>
+    /// <param name="workflowName">The name of the workflow to list executions for.</param>
+    /// <param name="status">Optional status filter. Valid values: Running, Succeeded, Failed, Cancelled.</param>
+    /// <param name="skip">Number of records to skip for pagination. Default: 0.</param>
+    /// <param name="take">Number of records to return. Default: 20, Max: 100.</param>
+    /// <returns>
+    /// A paginated list of execution summaries for the specified workflow,
+    /// ordered by start time descending (most recent first).
+    /// </returns>
     [HttpGet("workflows/{workflowName}/list")]
+    [ProducesResponseType(typeof(ExecutionListResponse), StatusCodes.Status200OK)]
     public async Task<IActionResult> ListExecutions(
         string workflowName,
         [FromQuery] ExecutionStatus? status = null,
@@ -56,7 +74,19 @@ public class ExecutionHistoryController : ControllerBase
         return Ok(response);
     }
 
+    /// <summary>
+    /// Get detailed information about a specific workflow execution.
+    /// Includes complete task-level details with inputs, outputs, timing, and error information.
+    /// </summary>
+    /// <param name="id">The unique execution ID (GUID) returned when the workflow was executed.</param>
+    /// <returns>
+    /// Full execution details including workflow name, status, timestamps, duration,
+    /// graph build time, input snapshot, and detailed task execution records.
+    /// Returns 404 if execution not found.
+    /// </returns>
     [HttpGet("{id}")]
+    [ProducesResponseType(typeof(DetailedWorkflowExecutionResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetExecutionDetails(Guid id)
     {
         var execution = await _executionRepository.GetExecutionAsync(id);
@@ -161,7 +191,21 @@ public class ExecutionHistoryController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Get the execution trace for a workflow execution.
+    /// The trace provides a visual representation of the execution flow including
+    /// task dependencies, parallel execution groups, and timing information.
+    /// Useful for debugging and understanding workflow execution patterns.
+    /// </summary>
+    /// <param name="id">The unique execution ID (GUID) to get the trace for.</param>
+    /// <returns>
+    /// An execution trace containing nodes (tasks) and edges (dependencies),
+    /// with timing and status information for each task.
+    /// Returns 404 if execution or workflow definition not found.
+    /// </returns>
     [HttpGet("{id}/trace")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetTrace(Guid id)
     {
         var execution = await _executionRepository.GetExecutionAsync(id);

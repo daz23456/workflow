@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useWorkflows } from '@/lib/api/queries';
 import { WorkflowFilters } from './workflow-filters';
 import { WorkflowCard } from './workflow-card';
 import { WorkflowCardSkeleton } from './workflow-card-skeleton';
 import { EmptyState } from './empty-state';
+import { Pagination } from '@/components/ui/pagination';
 import { formatRelativeTime } from '@/lib/utils';
 
 interface WorkflowListProps {
@@ -17,6 +18,8 @@ interface WorkflowListProps {
   };
 }
 
+const DEFAULT_PAGE_SIZE = 25;
+
 export function WorkflowList({ defaultFilters }: WorkflowListProps) {
   const router = useRouter();
   const [filters, setFilters] = useState({
@@ -24,37 +27,46 @@ export function WorkflowList({ defaultFilters }: WorkflowListProps) {
     namespace: defaultFilters?.namespace,
     sort: defaultFilters?.sort || 'name',
   });
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [filterResetKey, setFilterResetKey] = useState(0);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  const { data, isLoading, error, dataUpdatedAt } = useWorkflows(filters);
+  // Debounce search to avoid too many API calls
+  const [debouncedSearch, setDebouncedSearch] = useState(filters.search);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(filters.search);
+      setPage(1); // Reset to first page on search
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [filters.search]);
+
+  // Reset page when namespace changes
+  useEffect(() => {
+    setPage(1);
+  }, [filters.namespace]);
+
+  const skip = (page - 1) * pageSize;
+
+  const { data, isLoading, error, dataUpdatedAt, isFetching } = useWorkflows({
+    search: debouncedSearch || undefined,
+    namespace: filters.namespace || undefined,
+    skip,
+    take: pageSize,
+  });
 
   const rawWorkflows = data?.workflows || [];
   const lastUpdated = dataUpdatedAt ? formatRelativeTime(dataUpdatedAt) : null;
 
-  // Client-side filtering (in case backend doesn't support search filtering)
+  // Client-side sorting (in case backend doesn't support sort parameter for all sort types)
   const workflows = useMemo(() => {
-    let filtered = rawWorkflows;
-
-    // Apply search filter on client side
-    if (filters.search) {
-      const searchLower = filters.search.toLowerCase();
-      filtered = filtered.filter(
-        (workflow) =>
-          workflow.name.toLowerCase().includes(searchLower) ||
-          workflow.description?.toLowerCase().includes(searchLower) ||
-          workflow.namespace?.toLowerCase().includes(searchLower)
-      );
-    }
-
-    // Apply namespace filter on client side
-    if (filters.namespace) {
-      filtered = filtered.filter((workflow) => workflow.namespace === filters.namespace);
-    }
+    let sorted = [...rawWorkflows];
 
     // Apply sorting on client side
     if (filters.sort) {
-      filtered = [...filtered].sort((a, b) => {
+      sorted = sorted.sort((a, b) => {
         switch (filters.sort) {
           case 'name':
             return a.name.localeCompare(b.name);
@@ -81,12 +93,17 @@ export function WorkflowList({ defaultFilters }: WorkflowListProps) {
       });
     }
 
-    return filtered;
-  }, [rawWorkflows, filters.search, filters.namespace, filters.sort]);
+    return sorted;
+  }, [rawWorkflows, filters.sort]);
 
-  // Extract unique namespaces from all workflows (before filtering)
-  const namespaces =
-    rawWorkflows.length > 0 ? Array.from(new Set(rawWorkflows.map((w) => w.namespace))).sort() : [];
+  const total = data?.total || 0;
+  const totalPages = Math.ceil(total / pageSize);
+
+  // Extract unique namespaces from current page
+  const namespaces = useMemo(() => {
+    if (!rawWorkflows.length) return [];
+    return Array.from(new Set(rawWorkflows.map((w) => w.namespace))).sort();
+  }, [rawWorkflows]);
 
   // Calculate active filter count (excluding default sort)
   const activeFilterCount =
@@ -100,14 +117,26 @@ export function WorkflowList({ defaultFilters }: WorkflowListProps) {
     router.push(`/workflows/${workflowName}`);
   };
 
-  const handleClearFilters = () => {
+  const handleClearFilters = useCallback(() => {
     setFilters({
       search: '',
       namespace: undefined,
       sort: 'name',
     });
+    setPage(1);
     // Force WorkflowFilters to reset by changing key
     setFilterResetKey((prev) => prev + 1);
+  }, []);
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+    // Scroll to top of list
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handlePageSizeChange = (newPageSize: number) => {
+    setPageSize(newPageSize);
+    setPage(1); // Reset to first page
   };
 
   // Keyboard shortcuts
@@ -140,7 +169,7 @@ export function WorkflowList({ defaultFilters }: WorkflowListProps) {
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, []);
+  }, [handleClearFilters]);
 
   if (error) {
     return (
@@ -191,14 +220,20 @@ export function WorkflowList({ defaultFilters }: WorkflowListProps) {
       )}
 
       {/* Workflow Count */}
-      {!isLoading && workflows.length > 0 && (
+      {!isLoading && total > 0 && (
         <div
           className="mb-4 text-sm text-gray-600"
           role="status"
           aria-live="polite"
           aria-atomic="true"
         >
-          Showing {workflows.length} {workflows.length === 1 ? 'workflow' : 'workflows'}
+          {isFetching ? (
+            <span className="text-gray-400">Loading...</span>
+          ) : (
+            <>
+              Showing {workflows.length} of {total} {total === 1 ? 'workflow' : 'workflows'}
+            </>
+          )}
         </div>
       )}
 
@@ -210,7 +245,7 @@ export function WorkflowList({ defaultFilters }: WorkflowListProps) {
       {/* Loading State - Skeleton Cards */}
       {isLoading && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {Array.from({ length: 6 }).map((_, index) => (
+          {Array.from({ length: pageSize > 8 ? 8 : pageSize }).map((_, index) => (
             <WorkflowCardSkeleton key={index} />
           ))}
         </div>
@@ -236,15 +271,30 @@ export function WorkflowList({ defaultFilters }: WorkflowListProps) {
 
       {/* Workflow Grid */}
       {!isLoading && workflows.length > 0 && (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {workflows.map((workflow) => (
-            <WorkflowCard
-              key={workflow.name}
-              workflow={workflow}
-              onClick={() => handleCardClick(workflow.name)}
+        <>
+          <div className={`grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 ${isFetching ? 'opacity-60' : ''}`}>
+            {workflows.map((workflow) => (
+              <WorkflowCard
+                key={workflow.name}
+                workflow={workflow}
+                onClick={() => handleCardClick(workflow.name)}
+              />
+            ))}
+          </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <Pagination
+              currentPage={page}
+              totalPages={totalPages}
+              totalItems={total}
+              pageSize={pageSize}
+              onPageChange={handlePageChange}
+              onPageSizeChange={handlePageSizeChange}
+              isLoading={isFetching}
             />
-          ))}
-        </div>
+          )}
+        </>
       )}
     </div>
   );

@@ -45,7 +45,13 @@
       "Bash(xargs -I {} sh -c 'echo \"\"\"\"=== {} ===\"\"\"\" && head -20 {}')",
       "Bash(find:*)",
       "Bash(pnpm turbo:*)",
-      "Bash(npx tsx:*)"
+      "Bash(npx tsx:*)",
+      "Bash(grep:*)",
+      "Bash(for:*)",
+      "Bash(do basename \"$f\")",
+      "Bash(do basename $f)",
+      "Bash(comm:*)",
+      "Bash(ls:*)"
     ],
     "deny": [],
     "ask": []

@@ -26,6 +26,14 @@ builder.Services.AddSwaggerGen(options =>
         Description = "Kubernetes-native workflow orchestration engine with dynamic workflow discovery"
     });
     options.DocumentFilter<WorkflowGateway.Swagger.DynamicWorkflowDocumentFilter>();
+
+    // Include XML comments for API documentation
+    var xmlFilename = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFilename);
+    if (File.Exists(xmlPath))
+    {
+        options.IncludeXmlComments(xmlPath);
+    }
 });
 
 // Configure CORS to allow frontend access
@@ -226,8 +234,12 @@ builder.Services.AddScoped<ITransformEquivalenceChecker, TransformEquivalenceChe
 builder.Services.AddScoped<IHistoricalReplayEngine, HistoricalReplayEngine>();
 
 // Register CI/CD integration services (Stage 16.6)
-builder.Services.AddSingleton<ITaskDependencyTracker, TaskDependencyTracker>();
+// Use Kubernetes-aware tracker that queries K8s directly for task-workflow relationships
+builder.Services.AddSingleton<ITaskDependencyTracker, KubernetesTaskDependencyTracker>();
 builder.Services.AddSingleton<ITaskLifecycleManager, TaskLifecycleManager>();
+
+// Register blast radius analysis service (Stage 33)
+builder.Services.AddSingleton<IBlastRadiusAnalyzer, BlastRadiusAnalyzer>();
 
 // Register field usage tracking services (Stage 16.7)
 builder.Services.AddSingleton<IFieldUsageAnalyzer, FieldUsageAnalyzer>();

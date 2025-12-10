@@ -2,6 +2,7 @@
 
 import { useTaskDetail, useTaskUsage, useTaskExecutions } from '@/lib/api/queries';
 import { TaskDurationTrendsSection } from '@/components/analytics/task-duration-trends-section';
+import { BlastRadiusPanel } from '@/components/tasks/blast-radius-panel';
 import { use } from 'react';
 import Link from 'next/link';
 
@@ -128,6 +129,11 @@ export default function TaskDetailPage({ params }: { params: Promise<{ name: str
             </Link>
           ))}
         </div>
+      </div>
+
+      {/* Blast Radius Analysis */}
+      <div className="mb-6">
+        <BlastRadiusPanel taskName={name} />
       </div>
 
       {/* Duration Trends */}

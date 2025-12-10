@@ -1,0 +1,25 @@
+# Workflow 4: Profile Update
+# Uses shared task: validate-user
+apiVersion: workflow.example.com/v1
+kind: Workflow
+metadata:
+  name: profile-update
+  namespace: default
+  labels:
+    workflow.io/demo: "blast-radius"
+spec:
+  description: "User profile update flow - uses validate-user task"
+  input:
+    email:
+      type: string
+      required: true
+    updates:
+      type: object
+  tasks:
+    - id: validate
+      taskRef: validate-user
+      input:
+        email: "{{input.email}}"
+        validationContext: "profile-update"
+  output:
+    message: "Profile update completed"

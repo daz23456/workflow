@@ -731,4 +731,101 @@ export const handlers = [
       version: '1.0.0',
     });
   }),
+
+  // ============================================================================
+  // BLAST RADIUS ENDPOINTS
+  // ============================================================================
+
+  // GET /api/tasks/:name/blast-radius - Get blast radius for a task
+  http.get(`${API_BASE}/tasks/:name/blast-radius`, async ({ params, request }) => {
+    await delay(200);
+    const { name } = params;
+    const url = new URL(request.url);
+    const depth = parseInt(url.searchParams.get('depth') || '1');
+    const format = url.searchParams.get('format') || 'both';
+
+    // Check if task exists
+    if (!mockTaskDetails[name as string]) {
+      return HttpResponse.json({ error: `Task "${name}" not found` }, { status: 404 });
+    }
+
+    // Mock blast radius response
+    const response: {
+      taskName: string;
+      analysisDepth: number;
+      truncatedAtDepth: boolean;
+      summary?: {
+        totalAffectedWorkflows: number;
+        totalAffectedTasks: number;
+        affectedWorkflows: string[];
+        affectedTasks: string[];
+        byDepth: Array<{
+          depth: number;
+          workflows: string[];
+          tasks: string[];
+        }>;
+      };
+      graph?: {
+        nodes: Array<{
+          id: string;
+          name: string;
+          type: string;
+          depth: number;
+          isSource: boolean;
+        }>;
+        edges: Array<{
+          source: string;
+          target: string;
+          relationship: string;
+        }>;
+      };
+    } = {
+      taskName: name as string,
+      analysisDepth: depth,
+      truncatedAtDepth: depth < 3,
+    };
+
+    // Add summary if format includes it
+    if (format === 'flat' || format === 'both') {
+      response.summary = {
+        totalAffectedWorkflows: 2,
+        totalAffectedTasks: 3,
+        affectedWorkflows: ['user-signup', 'user-onboarding'],
+        affectedTasks: ['create-user', 'send-welcome-email', 'update-profile'],
+        byDepth: [
+          {
+            depth: 1,
+            workflows: ['user-signup'],
+            tasks: ['create-user'],
+          },
+          {
+            depth: 2,
+            workflows: ['user-onboarding'],
+            tasks: ['send-welcome-email', 'update-profile'],
+          },
+        ],
+      };
+    }
+
+    // Add graph if format includes it
+    if (format === 'graph' || format === 'both') {
+      response.graph = {
+        nodes: [
+          { id: `task:${name}`, name: name as string, type: 'task', depth: 0, isSource: true },
+          { id: 'workflow:user-signup', name: 'user-signup', type: 'workflow', depth: 1, isSource: false },
+          { id: 'task:create-user', name: 'create-user', type: 'task', depth: 1, isSource: false },
+          { id: 'workflow:user-onboarding', name: 'user-onboarding', type: 'workflow', depth: 2, isSource: false },
+          { id: 'task:send-welcome-email', name: 'send-welcome-email', type: 'task', depth: 2, isSource: false },
+        ],
+        edges: [
+          { source: `task:${name}`, target: 'workflow:user-signup', relationship: 'usedBy' },
+          { source: 'workflow:user-signup', target: 'task:create-user', relationship: 'contains' },
+          { source: 'task:create-user', target: 'workflow:user-onboarding', relationship: 'usedBy' },
+          { source: 'workflow:user-onboarding', target: 'task:send-welcome-email', relationship: 'contains' },
+        ],
+      };
+    }
+
+    return HttpResponse.json(response);
+  }),
 ];

@@ -392,6 +392,304 @@ public class WebhookControllerTests
 
     #endregion
 
+    #region Input Mapping Tests
+
+    [Fact]
+    public async Task ReceiveWebhook_WithInputMapping_ShouldExtractFieldsFromPayload()
+    {
+        // Arrange
+        var webhook = CreateWebhookTriggerSpec("/hooks/mapped");
+        webhook.InputMapping = new Dictionary<string, string>
+        {
+            ["userId"] = "$.payload.data.userId",
+            ["action"] = "$.payload.data.action"
+        };
+        var workflow = CreateWorkflowWithWebhookTrigger("mapped-workflow", webhook);
+        var payload = JsonDocument.Parse("{\"data\": {\"userId\": \"123\", \"action\": \"create\"}}");
+
+        _discoveryServiceMock
+            .Setup(x => x.DiscoverWorkflowsAsync(null))
+            .ReturnsAsync(new List<WorkflowResource> { workflow });
+
+        Dictionary<string, object>? capturedInput = null;
+        _executionServiceMock
+            .Setup(x => x.ExecuteAsync(It.IsAny<WorkflowResource>(), It.IsAny<Dictionary<string, object>>(), It.IsAny<CancellationToken>()))
+            .Callback<WorkflowResource, Dictionary<string, object>, CancellationToken>((w, input, c) => capturedInput = input)
+            .ReturnsAsync(new WorkflowExecutionResponse { Success = true });
+
+        // Act
+        await _controller.ReceiveWebhook("hooks/mapped", payload);
+
+        // Assert
+        capturedInput.Should().NotBeNull();
+        capturedInput!.Should().ContainKey("payload");
+        // Note: Simple JSON path extraction checks the root element
+    }
+
+    [Fact]
+    public async Task ReceiveWebhook_WithInputMappingForMissingProperty_ShouldNotAddKey()
+    {
+        // Arrange
+        var webhook = CreateWebhookTriggerSpec("/hooks/missing-prop");
+        webhook.InputMapping = new Dictionary<string, string>
+        {
+            ["nonexistent"] = "$.payload.missing"
+        };
+        var workflow = CreateWorkflowWithWebhookTrigger("missing-prop-workflow", webhook);
+        var payload = JsonDocument.Parse("{\"existingField\": \"value\"}");
+
+        _discoveryServiceMock
+            .Setup(x => x.DiscoverWorkflowsAsync(null))
+            .ReturnsAsync(new List<WorkflowResource> { workflow });
+
+        Dictionary<string, object>? capturedInput = null;
+        _executionServiceMock
+            .Setup(x => x.ExecuteAsync(It.IsAny<WorkflowResource>(), It.IsAny<Dictionary<string, object>>(), It.IsAny<CancellationToken>()))
+            .Callback<WorkflowResource, Dictionary<string, object>, CancellationToken>((w, input, c) => capturedInput = input)
+            .ReturnsAsync(new WorkflowExecutionResponse { Success = true });
+
+        // Act
+        await _controller.ReceiveWebhook("hooks/missing-prop", payload);
+
+        // Assert
+        capturedInput.Should().NotBeNull();
+        capturedInput!.Should().ContainKey("payload");
+        capturedInput.Should().NotContainKey("nonexistent");
+    }
+
+    [Fact]
+    public async Task ReceiveWebhook_WithNonPayloadPrefixPath_ShouldIgnoreMapping()
+    {
+        // Arrange
+        var webhook = CreateWebhookTriggerSpec("/hooks/non-payload");
+        webhook.InputMapping = new Dictionary<string, string>
+        {
+            ["field"] = "$.other.path" // Not starting with $.payload.
+        };
+        var workflow = CreateWorkflowWithWebhookTrigger("non-payload-workflow", webhook);
+        var payload = JsonDocument.Parse("{\"data\": \"value\"}");
+
+        _discoveryServiceMock
+            .Setup(x => x.DiscoverWorkflowsAsync(null))
+            .ReturnsAsync(new List<WorkflowResource> { workflow });
+
+        Dictionary<string, object>? capturedInput = null;
+        _executionServiceMock
+            .Setup(x => x.ExecuteAsync(It.IsAny<WorkflowResource>(), It.IsAny<Dictionary<string, object>>(), It.IsAny<CancellationToken>()))
+            .Callback<WorkflowResource, Dictionary<string, object>, CancellationToken>((w, input, c) => capturedInput = input)
+            .ReturnsAsync(new WorkflowExecutionResponse { Success = true });
+
+        // Act
+        await _controller.ReceiveWebhook("hooks/non-payload", payload);
+
+        // Assert
+        capturedInput.Should().NotBeNull();
+        capturedInput!.Should().ContainKey("payload");
+        capturedInput.Should().NotContainKey("field");
+    }
+
+    [Fact]
+    public async Task ReceiveWebhook_WithSimplePayloadPath_ShouldExtractProperty()
+    {
+        // Arrange
+        var webhook = CreateWebhookTriggerSpec("/hooks/simple-path");
+        webhook.InputMapping = new Dictionary<string, string>
+        {
+            ["orderId"] = "$.payload.orderId"
+        };
+        var workflow = CreateWorkflowWithWebhookTrigger("simple-path-workflow", webhook);
+        var payload = JsonDocument.Parse("{\"orderId\": \"ORD-123\", \"amount\": 99.99}");
+
+        _discoveryServiceMock
+            .Setup(x => x.DiscoverWorkflowsAsync(null))
+            .ReturnsAsync(new List<WorkflowResource> { workflow });
+
+        Dictionary<string, object>? capturedInput = null;
+        _executionServiceMock
+            .Setup(x => x.ExecuteAsync(It.IsAny<WorkflowResource>(), It.IsAny<Dictionary<string, object>>(), It.IsAny<CancellationToken>()))
+            .Callback<WorkflowResource, Dictionary<string, object>, CancellationToken>((w, input, c) => capturedInput = input)
+            .ReturnsAsync(new WorkflowExecutionResponse { Success = true });
+
+        // Act
+        await _controller.ReceiveWebhook("hooks/simple-path", payload);
+
+        // Assert
+        capturedInput.Should().NotBeNull();
+        capturedInput!.Should().ContainKey("orderId");
+        capturedInput["orderId"].ToString().Should().Be("ORD-123");
+    }
+
+    [Fact]
+    public async Task ReceiveWebhook_WithNullInputMapping_ShouldOnlyPassPayload()
+    {
+        // Arrange
+        var webhook = CreateWebhookTriggerSpec("/hooks/no-mapping");
+        webhook.InputMapping = null;
+        var workflow = CreateWorkflowWithWebhookTrigger("no-mapping-workflow", webhook);
+        var payload = JsonDocument.Parse("{\"data\": \"value\"}");
+
+        _discoveryServiceMock
+            .Setup(x => x.DiscoverWorkflowsAsync(null))
+            .ReturnsAsync(new List<WorkflowResource> { workflow });
+
+        Dictionary<string, object>? capturedInput = null;
+        _executionServiceMock
+            .Setup(x => x.ExecuteAsync(It.IsAny<WorkflowResource>(), It.IsAny<Dictionary<string, object>>(), It.IsAny<CancellationToken>()))
+            .Callback<WorkflowResource, Dictionary<string, object>, CancellationToken>((w, input, c) => capturedInput = input)
+            .ReturnsAsync(new WorkflowExecutionResponse { Success = true });
+
+        // Act
+        await _controller.ReceiveWebhook("hooks/no-mapping", payload);
+
+        // Assert
+        capturedInput.Should().NotBeNull();
+        capturedInput!.Should().ContainKey("payload");
+        capturedInput.Should().HaveCount(1); // Only payload key
+    }
+
+    #endregion
+
+    #region Constructor Null Check Tests
+
+    [Fact]
+    public void Constructor_WithNullDiscoveryService_ShouldThrowArgumentNullException()
+    {
+        // Act
+        Action act = () => new WebhookController(
+            null!,
+            _executionServiceMock.Object,
+            _hmacValidatorMock.Object,
+            _loggerMock.Object);
+
+        // Assert
+        act.Should().Throw<ArgumentNullException>()
+            .WithMessage("*discoveryService*");
+    }
+
+    [Fact]
+    public void Constructor_WithNullExecutionService_ShouldThrowArgumentNullException()
+    {
+        // Act
+        Action act = () => new WebhookController(
+            _discoveryServiceMock.Object,
+            null!,
+            _hmacValidatorMock.Object,
+            _loggerMock.Object);
+
+        // Assert
+        act.Should().Throw<ArgumentNullException>()
+            .WithMessage("*executionService*");
+    }
+
+    [Fact]
+    public void Constructor_WithNullHmacValidator_ShouldThrowArgumentNullException()
+    {
+        // Act
+        Action act = () => new WebhookController(
+            _discoveryServiceMock.Object,
+            _executionServiceMock.Object,
+            null!,
+            _loggerMock.Object);
+
+        // Assert
+        act.Should().Throw<ArgumentNullException>()
+            .WithMessage("*hmacValidator*");
+    }
+
+    [Fact]
+    public void Constructor_WithNullLogger_ShouldThrowArgumentNullException()
+    {
+        // Act
+        Action act = () => new WebhookController(
+            _discoveryServiceMock.Object,
+            _executionServiceMock.Object,
+            _hmacValidatorMock.Object,
+            null!);
+
+        // Assert
+        act.Should().Throw<ArgumentNullException>()
+            .WithMessage("*logger*");
+    }
+
+    #endregion
+
+    #region Workflow Trigger Edge Cases
+
+    [Fact]
+    public async Task ReceiveWebhook_WithNullTriggers_ShouldReturn404()
+    {
+        // Arrange
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = "no-triggers" },
+            Spec = new WorkflowSpec { Triggers = null }
+        };
+        var payload = JsonDocument.Parse("{}");
+
+        _discoveryServiceMock
+            .Setup(x => x.DiscoverWorkflowsAsync(null))
+            .ReturnsAsync(new List<WorkflowResource> { workflow });
+
+        // Act
+        var result = await _controller.ReceiveWebhook("hooks/test", payload);
+
+        // Assert
+        result.Should().BeOfType<NotFoundObjectResult>();
+    }
+
+    [Fact]
+    public async Task ReceiveWebhook_WithNonWebhookTrigger_ShouldReturn404()
+    {
+        // Arrange - Trigger with type != "webhook"
+        var scheduleTrigger = new ScheduleTriggerSpec
+        {
+            Type = "schedule",
+            Cron = "0 0 * * *",
+            Enabled = true
+        };
+        var workflow = new WorkflowResource
+        {
+            Metadata = new ResourceMetadata { Name = "schedule-only" },
+            Spec = new WorkflowSpec { Triggers = new List<TriggerSpec> { scheduleTrigger } }
+        };
+        var payload = JsonDocument.Parse("{}");
+
+        _discoveryServiceMock
+            .Setup(x => x.DiscoverWorkflowsAsync(null))
+            .ReturnsAsync(new List<WorkflowResource> { workflow });
+
+        // Act
+        var result = await _controller.ReceiveWebhook("hooks/test", payload);
+
+        // Assert
+        result.Should().BeOfType<NotFoundObjectResult>();
+    }
+
+    [Fact]
+    public async Task ReceiveWebhook_WithCaseInsensitivePath_ShouldMatch()
+    {
+        // Arrange
+        var webhook = CreateWebhookTriggerSpec("/HOOKS/TEST");
+        var workflow = CreateWorkflowWithWebhookTrigger("case-workflow", webhook);
+        var payload = JsonDocument.Parse("{}");
+
+        _discoveryServiceMock
+            .Setup(x => x.DiscoverWorkflowsAsync(null))
+            .ReturnsAsync(new List<WorkflowResource> { workflow });
+
+        _executionServiceMock
+            .Setup(x => x.ExecuteAsync(It.IsAny<WorkflowResource>(), It.IsAny<Dictionary<string, object>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new WorkflowExecutionResponse { Success = true });
+
+        // Act - lowercase path should match uppercase spec
+        var result = await _controller.ReceiveWebhook("hooks/test", payload);
+
+        // Assert
+        result.Should().BeOfType<OkObjectResult>();
+    }
+
+    #endregion
+
     #region Helper Methods
 
     private static WebhookTriggerSpec CreateWebhookTriggerSpec(

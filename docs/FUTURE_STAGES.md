@@ -210,6 +210,183 @@ LLM: "Here's the profile for user 3:
 
 ---
 
+## Stage 33: Blast Radius Analysis (TDD)
+
+**Status:** Not Started
+
+*Scope:* Transitive dependency analysis for task changes - show complete cascade impact when replacing/modifying tasks
+*Deliverables:* 3 substages
+*Tests:* ~40 tests
+*Dependencies:* ITaskDependencyTracker (existing)
+*Value:* "Know exactly what breaks" - see all affected workflows and tasks before making changes
+
+### Problem Statement
+
+Current `/impact` endpoint only shows direct dependents (workflows using Task A). When replacing a task, you need to see:
+- All workflows using the task (depth 1)
+- All other tasks in those workflows (depth 1)
+- All workflows using THOSE tasks (depth 2)
+- And so on...
+
+### API Design
+
+```http
+GET /api/v1/tasks/{taskName}/blast-radius?depth=2&format=both
+```
+
+| Parameter | Values | Default | Description |
+|-----------|--------|---------|-------------|
+| `depth` | `1`, `2`, `3`, `unlimited` | `1` | How many levels to traverse |
+| `format` | `flat`, `graph`, `both` | `both` | Response format |
+
+### Response Structure
+
+```json
+{
+  "taskName": "get-user",
+  "analysisDepth": 2,
+  "truncatedAtDepth": false,
+  "summary": {
+    "totalAffectedWorkflows": 5,
+    "totalAffectedTasks": 8,
+    "affectedWorkflows": ["wf-1", "wf-2"],
+    "affectedTasks": ["task-a", "task-b"],
+    "byDepth": [
+      { "depth": 1, "workflows": ["wf-1", "wf-2"], "tasks": ["task-a"] },
+      { "depth": 2, "workflows": ["wf-3"], "tasks": ["task-b", "task-c"] }
+    ]
+  },
+  "graph": {
+    "nodes": [
+      { "id": "task:get-user", "name": "get-user", "type": "task", "depth": 0, "isSource": true },
+      { "id": "workflow:order-flow", "name": "order-flow", "type": "workflow", "depth": 1 }
+    ],
+    "edges": [
+      { "source": "task:get-user", "target": "workflow:order-flow", "relationship": "usedBy" }
+    ]
+  }
+}
+```
+
+### Substages
+
+#### 33.1: Blast Radius Service
+**Focus**: Core algorithm with BFS traversal and cycle detection
+**Profile**: `BACKEND_DOTNET`, Gates 1-8
+**Tests**: ~15
+
+##### New Files
+| File | Purpose |
+|------|---------|
+| `src/WorkflowCore/Models/BlastRadiusResult.cs` | Internal result model |
+| `src/WorkflowCore/Services/IBlastRadiusAnalyzer.cs` | Service interface |
+| `src/WorkflowCore/Services/BlastRadiusAnalyzer.cs` | Core algorithm |
+| `tests/WorkflowCore.Tests/Services/BlastRadiusAnalyzerTests.cs` | Unit tests |
+
+##### Algorithm: BFS with Cycle Detection
+
+```
+ComputeBlastRadius(taskName, maxDepth):
+  visited = { taskName }
+  currentLevel = [taskName]
+
+  for depth 1..maxDepth:
+    nextLevel = []
+    level = { workflows: [], tasks: [] }
+
+    for each task in currentLevel:
+      for each workflow using task (from ITaskDependencyTracker):
+        if workflow not visited:
+          mark visited, add to level.workflows
+          for each task in workflow.spec.tasks:
+            if task not visited:
+              mark visited, add to level.tasks, add to nextLevel
+
+    record level
+    if nextLevel empty: break
+    currentLevel = nextLevel
+
+  return aggregated result
+```
+
+Key features:
+- **Cycle detection**: HashSet of visited nodes prevents infinite loops
+- **Depth limiting**: Stops at specified depth, sets `truncatedAtDepth` flag
+- **BFS traversal**: Ensures correct depth attribution
+
+#### 33.2: Blast Radius API
+**Focus**: REST endpoint with query parameters
+**Profile**: `BACKEND_DOTNET`, Gates 1-8
+**Tests**: ~10
+
+##### New Files
+| File | Purpose |
+|------|---------|
+| `src/WorkflowGateway/Models/BlastRadiusResponse.cs` | API response models |
+| `tests/WorkflowGateway.Tests/Controllers/BlastRadiusEndpointTests.cs` | Controller tests |
+
+##### Modified Files
+| File | Changes |
+|------|---------|
+| `src/WorkflowGateway/Controllers/TaskImpactController.cs` | Add `/blast-radius` endpoint |
+| `src/WorkflowGateway/Program.cs` | Register `IBlastRadiusAnalyzer` |
+
+### Test Scenarios
+
+```
+Scenario: Simple Chain
+  Task A → Workflow 1 → Task B → Workflow 2 → Task C
+
+  depth=1: { workflows: [W1], tasks: [B] }
+  depth=2: { workflows: [W1, W2], tasks: [B, C] }
+
+Scenario: Diamond
+  Task A → Workflow 1 → Task B
+  Task A → Workflow 2 → Task B
+
+  Task B should only appear once (deduplicated)
+
+Scenario: Cycle
+  Task A → Workflow 1 → Task B → Workflow 2 → Task A
+
+  Should terminate, not infinite loop
+```
+
+#### 33.3: Blast Radius UI
+**Focus**: Visual display of blast radius on task detail page
+**Profile**: `FRONTEND_TS`, Gates 1-8, 14, 15
+**Tests**: ~15
+
+##### New Files
+| File | Purpose |
+|------|---------|
+| `src/workflow-ui/components/tasks/blast-radius-panel.tsx` | Main panel component |
+| `src/workflow-ui/components/tasks/blast-radius-graph.tsx` | Interactive graph visualization |
+| `src/workflow-ui/components/tasks/blast-radius-summary.tsx` | Flat summary list |
+| `src/workflow-ui/lib/api/blast-radius.ts` | API client hook |
+
+##### UI Features
+- Collapsible "Blast Radius" section on task detail page
+- Depth selector (1, 2, 3, unlimited)
+- Toggle between graph view and list view
+- Click nodes to navigate to affected workflows/tasks
+- Export affected items list
+
+### TDD Targets
+- 40+ tests across service, API, and UI
+- Cycle detection verified
+- Depth limiting verified
+- Maintain ≥90% coverage
+
+### Success Metrics
+- Response time: <500ms for depth=3
+- Accuracy: 100% of affected items discovered
+- No infinite loops on cyclic dependencies
+
+**Value:** **Complete impact visibility** - never break a workflow unknowingly again!
+
+---
+
 ## Stage 43: Workflow & Task Label Management System
 
 **Status:** Not Started

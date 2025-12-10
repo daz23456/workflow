@@ -16,13 +16,18 @@ public class TaskImpactControllerTests
 {
     private readonly Mock<ITaskDependencyTracker> _dependencyTrackerMock;
     private readonly Mock<ITaskLifecycleManager> _lifecycleManagerMock;
+    private readonly Mock<IBlastRadiusAnalyzer> _blastRadiusAnalyzerMock;
     private readonly TaskImpactController _controller;
 
     public TaskImpactControllerTests()
     {
         _dependencyTrackerMock = new Mock<ITaskDependencyTracker>();
         _lifecycleManagerMock = new Mock<ITaskLifecycleManager>();
-        _controller = new TaskImpactController(_dependencyTrackerMock.Object, _lifecycleManagerMock.Object);
+        _blastRadiusAnalyzerMock = new Mock<IBlastRadiusAnalyzer>();
+        _controller = new TaskImpactController(
+            _dependencyTrackerMock.Object,
+            _lifecycleManagerMock.Object,
+            _blastRadiusAnalyzerMock.Object);
     }
 
     [Fact]

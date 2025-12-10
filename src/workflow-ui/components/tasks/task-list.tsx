@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTasks } from '@/lib/api/queries';
 import type { Task } from '@/types/task';
@@ -8,6 +8,7 @@ import { TaskFilters } from './task-filters';
 import { TaskCard } from './task-card';
 import { TaskCardSkeleton } from './task-card-skeleton';
 import { EmptyState } from './empty-state';
+import { Pagination } from '@/components/ui/pagination';
 import { formatRelativeTime } from '@/lib/utils';
 
 interface TaskListProps {
@@ -18,6 +19,8 @@ interface TaskListProps {
   };
 }
 
+const DEFAULT_PAGE_SIZE = 25;
+
 export function TaskList({ defaultFilters }: TaskListProps) {
   const router = useRouter();
   const [filters, setFilters] = useState({
@@ -25,68 +28,83 @@ export function TaskList({ defaultFilters }: TaskListProps) {
     namespace: defaultFilters?.namespace,
     sort: defaultFilters?.sort || 'name',
   });
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [filterResetKey, setFilterResetKey] = useState(0);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  const { data, isLoading, error, dataUpdatedAt } = useTasks();
+  // Debounce search to avoid too many API calls
+  const [debouncedSearch, setDebouncedSearch] = useState(filters.search);
 
-  // Extract tasks and convert to Task[] for local filtering
-  const allTasks: Task[] = data?.tasks
-    ? data.tasks.map((task: any) => ({
-        name: task.name,
-        namespace: task.namespace || 'default',
-        description: task.description || '',
-        endpoint: task.endpoint || '',
-        inputSchemaPreview: task.inputSchemaPreview,
-        stats: {
-          usedByWorkflows: task.stats?.usedByWorkflows || 0,
-          totalExecutions: task.stats?.totalExecutions || 0,
-          avgDurationMs: task.stats?.avgDurationMs || 0,
-          successRate: task.stats?.successRate || 0,
-          lastExecuted: task.stats?.lastExecuted,
-        },
-      }))
-    : [];
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(filters.search);
+      setPage(1); // Reset to first page on search
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [filters.search]);
+
+  // Reset page when namespace changes
+  useEffect(() => {
+    setPage(1);
+  }, [filters.namespace]);
+
+  const skip = (page - 1) * pageSize;
+
+  const { data, isLoading, error, dataUpdatedAt, isFetching } = useTasks({
+    search: debouncedSearch || undefined,
+    namespace: filters.namespace || undefined,
+    skip,
+    take: pageSize,
+  });
 
   const lastUpdated = dataUpdatedAt ? formatRelativeTime(dataUpdatedAt) : null;
 
-  // Extract unique namespaces from tasks
-  const namespaces =
-    allTasks.length > 0 ? Array.from(new Set(allTasks.map((t) => t.namespace))).sort() : [];
+  // Extract tasks from API response
+  const tasks: Task[] = useMemo(() => {
+    if (!data?.tasks) return [];
+    return data.tasks.map((task: any) => ({
+      name: task.name,
+      namespace: task.namespace || 'default',
+      description: task.description || '',
+      endpoint: task.endpoint || '',
+      inputSchemaPreview: task.inputSchemaPreview,
+      stats: {
+        usedByWorkflows: task.stats?.usedByWorkflows || 0,
+        totalExecutions: task.stats?.totalExecutions || 0,
+        avgDurationMs: task.stats?.avgDurationMs || 0,
+        successRate: task.stats?.successRate || 0,
+        lastExecuted: task.stats?.lastExecuted,
+      },
+    }));
+  }, [data?.tasks]);
 
-  // Client-side filtering
-  const filteredTasks = allTasks.filter((task) => {
-    // Filter by search
-    if (filters.search) {
-      const searchLower = filters.search.toLowerCase();
-      const matchesSearch =
-        task.name.toLowerCase().includes(searchLower) ||
-        task.description.toLowerCase().includes(searchLower);
-      if (!matchesSearch) return false;
-    }
+  // Client-side sorting (backend doesn't support sort parameter for tasks)
+  const sortedTasks = useMemo(() => {
+    return [...tasks].sort((a, b) => {
+      switch (filters.sort) {
+        case 'success-rate':
+          return b.stats.successRate - a.stats.successRate;
+        case 'executions':
+          return b.stats.totalExecutions - a.stats.totalExecutions;
+        case 'usage':
+          return b.stats.usedByWorkflows - a.stats.usedByWorkflows;
+        case 'name':
+        default:
+          return a.name.localeCompare(b.name);
+      }
+    });
+  }, [tasks, filters.sort]);
 
-    // Filter by namespace
-    if (filters.namespace && task.namespace !== filters.namespace) {
-      return false;
-    }
+  const total = data?.total || 0;
+  const totalPages = Math.ceil(total / pageSize);
 
-    return true;
-  });
-
-  // Client-side sorting
-  const sortedTasks = [...filteredTasks].sort((a, b) => {
-    switch (filters.sort) {
-      case 'success-rate':
-        return b.stats.successRate - a.stats.successRate;
-      case 'executions':
-        return b.stats.totalExecutions - a.stats.totalExecutions;
-      case 'usage':
-        return b.stats.usedByWorkflows - a.stats.usedByWorkflows;
-      case 'name':
-      default:
-        return a.name.localeCompare(b.name);
-    }
-  });
+  // For namespace filter - need all namespaces from a separate call
+  // For simplicity, we'll extract from current page
+  const namespaces = useMemo(() => {
+    if (!data?.tasks) return [];
+    return Array.from(new Set(data.tasks.map((t: any) => t.namespace || 'default'))).sort();
+  }, [data?.tasks]);
 
   // Calculate active filter count (excluding default sort)
   const activeFilterCount =
@@ -100,14 +118,26 @@ export function TaskList({ defaultFilters }: TaskListProps) {
     router.push(`/tasks/${taskName}`);
   };
 
-  const handleClearFilters = () => {
+  const handleClearFilters = useCallback(() => {
     setFilters({
       search: '',
       namespace: undefined,
       sort: 'name',
     });
+    setPage(1);
     // Force TaskFilters to reset by changing key
     setFilterResetKey((prev) => prev + 1);
+  }, []);
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+    // Scroll to top of list
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handlePageSizeChange = (newPageSize: number) => {
+    setPageSize(newPageSize);
+    setPage(1); // Reset to first page
   };
 
   // Keyboard shortcuts
@@ -140,7 +170,7 @@ export function TaskList({ defaultFilters }: TaskListProps) {
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, []);
+  }, [handleClearFilters]);
 
   if (error) {
     return (
@@ -191,14 +221,20 @@ export function TaskList({ defaultFilters }: TaskListProps) {
       )}
 
       {/* Task Count */}
-      {!isLoading && sortedTasks.length > 0 && (
+      {!isLoading && total > 0 && (
         <div
           className="mb-4 text-sm text-gray-600"
           role="status"
           aria-live="polite"
           aria-atomic="true"
         >
-          Showing {sortedTasks.length} {sortedTasks.length === 1 ? 'task' : 'tasks'}
+          {isFetching ? (
+            <span className="text-gray-400">Loading...</span>
+          ) : (
+            <>
+              Showing {sortedTasks.length} of {total} {total === 1 ? 'task' : 'tasks'}
+            </>
+          )}
         </div>
       )}
 
@@ -210,7 +246,7 @@ export function TaskList({ defaultFilters }: TaskListProps) {
       {/* Loading State - Skeleton Cards */}
       {isLoading && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {Array.from({ length: 6 }).map((_, index) => (
+          {Array.from({ length: pageSize > 8 ? 8 : pageSize }).map((_, index) => (
             <TaskCardSkeleton key={index} />
           ))}
         </div>
@@ -233,11 +269,26 @@ export function TaskList({ defaultFilters }: TaskListProps) {
 
       {/* Task Grid */}
       {!isLoading && sortedTasks.length > 0 && (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {sortedTasks.map((task) => (
-            <TaskCard key={task.name} task={task} onClick={() => handleCardClick(task.name)} />
-          ))}
-        </div>
+        <>
+          <div className={`grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 ${isFetching ? 'opacity-60' : ''}`}>
+            {sortedTasks.map((task) => (
+              <TaskCard key={task.name} task={task} onClick={() => handleCardClick(task.name)} />
+            ))}
+          </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <Pagination
+              currentPage={page}
+              totalPages={totalPages}
+              totalItems={total}
+              pageSize={pageSize}
+              onPageChange={handlePageChange}
+              onPageSizeChange={handlePageSizeChange}
+              isLoading={isFetching}
+            />
+          )}
+        </>
       )}
     </div>
   );

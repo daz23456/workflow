@@ -377,4 +377,173 @@ describe('TemplatePreview', () => {
       expect(downloadButton).not.toBeDisabled();
     });
   });
+
+  it('should trigger download when Download button is clicked', async () => {
+    mockUseTemplateDetail.mockReturnValue({
+      data: mockTemplateDetail,
+      isLoading: false,
+      error: null,
+    });
+
+    // Mock URL.createObjectURL and URL.revokeObjectURL
+    const mockCreateObjectURL = vi.fn().mockReturnValue('blob:test-url');
+    const mockRevokeObjectURL = vi.fn();
+    global.URL.createObjectURL = mockCreateObjectURL;
+    global.URL.revokeObjectURL = mockRevokeObjectURL;
+
+    // Track the anchor element
+    const mockClick = vi.fn();
+    const originalCreateElement = document.createElement.bind(document);
+    vi.spyOn(document, 'createElement').mockImplementation((tagName: string) => {
+      const element = originalCreateElement(tagName);
+      if (tagName === 'a') {
+        element.click = mockClick;
+      }
+      return element;
+    });
+
+    render(
+      <TemplatePreview
+        templateName="template-test"
+        onClose={mockOnClose}
+        onDeploy={mockOnDeploy}
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Download/i })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: /Download/i }));
+
+    expect(mockCreateObjectURL).toHaveBeenCalled();
+    expect(mockClick).toHaveBeenCalled();
+    expect(mockRevokeObjectURL).toHaveBeenCalledWith('blob:test-url');
+
+    vi.restoreAllMocks();
+  });
+
+  it('should not trigger download when template is null', async () => {
+    mockUseTemplateDetail.mockReturnValue({
+      data: null,
+      isLoading: false,
+      error: null,
+    });
+
+    const mockCreateObjectURL = vi.fn();
+    global.URL.createObjectURL = mockCreateObjectURL;
+
+    render(
+      <TemplatePreview
+        templateName="template-test"
+        onClose={mockOnClose}
+        onDeploy={mockOnDeploy}
+      />
+    );
+
+    // Check that deploy button is disabled
+    const deployButton = screen.getByRole('button', { name: /Deploy Template/i });
+    expect(deployButton).toBeDisabled();
+  });
+
+  it('should pass templateName to useTemplateDetail', () => {
+    mockUseTemplateDetail.mockReturnValue({
+      data: mockTemplateDetail,
+      isLoading: false,
+      error: null,
+    });
+
+    render(
+      <TemplatePreview
+        templateName="my-custom-template"
+        onClose={mockOnClose}
+        onDeploy={mockOnDeploy}
+      />
+    );
+
+    expect(mockUseTemplateDetail).toHaveBeenCalledWith('my-custom-template');
+  });
+
+  it('should render workflow definition header', async () => {
+    mockUseTemplateDetail.mockReturnValue({
+      data: mockTemplateDetail,
+      isLoading: false,
+      error: null,
+    });
+
+    render(
+      <TemplatePreview
+        templateName="template-test"
+        onClose={mockOnClose}
+        onDeploy={mockOnDeploy}
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('YAML Definition')).toBeInTheDocument();
+    });
+  });
+
+  it('should show description section', async () => {
+    mockUseTemplateDetail.mockReturnValue({
+      data: mockTemplateDetail,
+      isLoading: false,
+      error: null,
+    });
+
+    render(
+      <TemplatePreview
+        templateName="template-test"
+        onClose={mockOnClose}
+        onDeploy={mockOnDeploy}
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Description')).toBeInTheDocument();
+    });
+  });
+
+  it('should show tags section', async () => {
+    mockUseTemplateDetail.mockReturnValue({
+      data: mockTemplateDetail,
+      isLoading: false,
+      error: null,
+    });
+
+    render(
+      <TemplatePreview
+        templateName="template-test"
+        onClose={mockOnClose}
+        onDeploy={mockOnDeploy}
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Tags')).toBeInTheDocument();
+    });
+  });
+
+  it('should render all metadata labels', async () => {
+    mockUseTemplateDetail.mockReturnValue({
+      data: mockTemplateDetail,
+      isLoading: false,
+      error: null,
+    });
+
+    render(
+      <TemplatePreview
+        templateName="template-test"
+        onClose={mockOnClose}
+        onDeploy={mockOnDeploy}
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Setup Time')).toBeInTheDocument();
+      expect(screen.getByText('Task Count')).toBeInTheDocument();
+      expect(screen.getByText('Execution Mode')).toBeInTheDocument();
+      expect(screen.getByText('Namespace')).toBeInTheDocument();
+    });
+  });
 });

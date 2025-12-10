@@ -86,4 +86,23 @@ public class TaskDependencyTracker : ITaskDependencyTracker
         }
         return Array.Empty<string>();
     }
+
+    /// <inheritdoc />
+    public IReadOnlyList<string> GetTasksInWorkflow(string workflowName)
+    {
+        // Build reverse mapping: find all tasks that have this workflow as a dependent
+        var tasks = new List<string>();
+        foreach (var kvp in _dependencies)
+        {
+            var dependency = kvp.Value;
+            lock (dependency)
+            {
+                if (dependency.DependentWorkflows.Contains(workflowName))
+                {
+                    tasks.Add(kvp.Key);
+                }
+            }
+        }
+        return tasks;
+    }
 }

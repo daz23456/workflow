@@ -7,8 +7,14 @@ using WorkflowGateway.Services;
 namespace WorkflowGateway.Controllers;
 
 /// <summary>
-/// API controller for field usage analysis and tracking.
+/// Controller for analyzing field-level usage patterns across workflows.
+/// Tracks which task input/output fields are actually used by consumers,
+/// enabling safe schema evolution and identifying unused fields for cleanup.
 /// </summary>
+/// <remarks>
+/// Part of the CI/CD integration (Stage 16.7) - enables breaking change detection
+/// before deployment by understanding which fields consumers depend on.
+/// </remarks>
 [ApiController]
 [Route("api/v1/tasks")]
 public class FieldUsageController : ControllerBase
@@ -28,9 +34,20 @@ public class FieldUsageController : ControllerBase
     }
 
     /// <summary>
-    /// Get field usage information for a task.
+    /// Get comprehensive field usage information for a task.
+    /// Shows which input and output fields are used by which workflows,
+    /// along with usage counts and whether fields are unused.
     /// </summary>
+    /// <param name="taskName">Name of the task to analyze.</param>
+    /// <returns>
+    /// Field usage details including:
+    /// - Field name and type (input/output)
+    /// - List of workflows using each field
+    /// - Usage count across all workflows
+    /// - IsUnused flag for cleanup candidates
+    /// </returns>
     [HttpGet("{taskName}/field-usage")]
+    [ProducesResponseType(typeof(FieldUsageResponse), StatusCodes.Status200OK)]
     public async Task<ActionResult<FieldUsageResponse>> GetFieldUsage(string taskName)
     {
         var fieldInfoList = _analyzer.GetAllFieldUsage(taskName);
@@ -52,9 +69,24 @@ public class FieldUsageController : ControllerBase
     }
 
     /// <summary>
-    /// Get impact analysis for removing a specific field.
+    /// Analyze the impact of removing a specific field from a task.
+    /// Use this before making breaking schema changes to understand which
+    /// workflows would be affected and whether removal is safe.
     /// </summary>
+    /// <param name="taskName">Name of the task containing the field.</param>
+    /// <param name="field">Name of the field to analyze for removal.</param>
+    /// <param name="type">Field type: 'input' or 'output'. Default: 'output'.</param>
+    /// <returns>
+    /// Impact analysis including:
+    /// - Whether removal is safe (no consumers)
+    /// - List of affected workflows that would break
+    /// </returns>
+    /// <remarks>
+    /// A field is safe to remove only if no workflows currently use it.
+    /// Use the affected workflows list to coordinate migration before removal.
+    /// </remarks>
     [HttpGet("{taskName}/field-impact")]
+    [ProducesResponseType(typeof(FieldImpactResponse), StatusCodes.Status200OK)]
     public async Task<ActionResult<FieldImpactResponse>> GetFieldImpact(
         string taskName,
         [FromQuery] string field,
@@ -78,9 +110,24 @@ public class FieldUsageController : ControllerBase
     }
 
     /// <summary>
-    /// Analyze field usage for a workflow and register it.
+    /// Analyze and register field usage patterns for a workflow.
+    /// Scans the workflow definition to determine which task fields are accessed
+    /// and registers this information for impact analysis.
     /// </summary>
+    /// <param name="workflowName">Name of the workflow to analyze.</param>
+    /// <returns>
+    /// Analysis results showing for each task:
+    /// - Input fields used by the workflow
+    /// - Output fields consumed by the workflow
+    /// Returns 404 if workflow not found.
+    /// </returns>
+    /// <remarks>
+    /// Call this after deploying a workflow to update the field usage tracking.
+    /// This enables accurate impact analysis for future schema changes.
+    /// </remarks>
     [HttpPost("/api/v1/workflows/{workflowName}/analyze-usage")]
+    [ProducesResponseType(typeof(WorkflowUsageAnalysisResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<WorkflowUsageAnalysisResponse>> AnalyzeWorkflowUsage(string workflowName)
     {
         var workflow = await _discoveryService.GetWorkflowByNameAsync(workflowName);

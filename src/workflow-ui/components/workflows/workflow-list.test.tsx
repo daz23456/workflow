@@ -401,7 +401,7 @@ describe('WorkflowList', () => {
         const cards = screen.getAllByRole('article');
         expect(cards.length).toBeGreaterThan(0);
 
-        const count = screen.getByText(new RegExp(`Showing ${cards.length} workflows?`));
+        const count = screen.getByText(/Showing \d+ of \d+ workflows?/);
         expect(count).toBeInTheDocument();
       });
     });
@@ -413,7 +413,7 @@ describe('WorkflowList', () => {
         const cards = screen.getAllByRole('article');
         expect(cards.length).toBeGreaterThan(0);
 
-        const count = screen.getByText(new RegExp(`Showing ${cards.length} workflows?`));
+        const count = screen.getByText(/Showing \d+ of \d+ workflows?/);
         expect(count).toBeInTheDocument();
       });
     });

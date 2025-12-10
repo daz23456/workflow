@@ -496,3 +496,48 @@ export interface ApiError {
   message: string;
   details?: Record<string, any>;
 }
+
+// ============================================================================
+// Blast Radius Types
+// ============================================================================
+
+export interface BlastRadiusDepthLevel {
+  depth: number;
+  workflows: string[];
+  tasks: string[];
+}
+
+export interface BlastRadiusSummary {
+  totalAffectedWorkflows: number;
+  totalAffectedTasks: number;
+  affectedWorkflows: string[];
+  affectedTasks: string[];
+  byDepth: BlastRadiusDepthLevel[];
+}
+
+export interface BlastRadiusNode {
+  id: string;
+  name: string;
+  type: 'task' | 'workflow';
+  depth: number;
+  isSource: boolean;
+}
+
+export interface BlastRadiusEdge {
+  source: string;
+  target: string;
+  relationship: 'usedBy' | 'contains';
+}
+
+export interface BlastRadiusGraph {
+  nodes: BlastRadiusNode[];
+  edges: BlastRadiusEdge[];
+}
+
+export interface BlastRadiusResponse {
+  taskName: string;
+  analysisDepth: number;
+  truncatedAtDepth: boolean;
+  summary?: BlastRadiusSummary;
+  graph?: BlastRadiusGraph;
+}

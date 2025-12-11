@@ -1,6 +1,6 @@
 # Stage Execution Checklist (MANDATORY)
 
-**Version:** 4.2.0 | **Scripts are REQUIRED. No manual alternative.**
+**Version:** 4.3.0 | **Scripts are REQUIRED. No manual alternative.**
 
 ---
 
@@ -83,9 +83,11 @@ If any gate fails → fix and re-run.
 **This handles:**
 - Validates gates passed
 - Generates CHANGELOG entry
-- Creates commit
+- Creates implementation commit
 - Updates proof with commit hash
 - Creates git tag
+- **Updates documentation (CLAUDE.md, COMPLETED_STAGES_ARCHIVE.md, FUTURE_STAGES.md)**
+- Creates documentation commit
 
 ---
 
@@ -146,9 +148,10 @@ git log --oneline -1                             # Commit exists
 - ❌ Manually copy proof template
 - ❌ Run `run-quality-gates.sh` without `--stage` parameter
 - ❌ Manually update CHANGELOG.md (let `complete-stage.sh` do it)
+- ❌ Manually update CLAUDE.md, COMPLETED_STAGES_ARCHIVE.md, FUTURE_STAGES.md
 - ❌ Manually create git tags
 
-**If you do any of the above, artifacts will be in wrong locations.**
+**If you do any of the above, artifacts will be in wrong locations or inconsistent.**
 
 ---
 
@@ -158,7 +161,7 @@ git log --oneline -1                             # Commit exists
 |--------|------|--------------|
 | `init-stage.sh` | Start of stage | Creates all files in correct locations |
 | `run-quality-gates.sh` | After implementation | Runs gates, saves to `stage-proofs/stage-X/reports/gates/` |
-| `complete-stage.sh` | After gates pass | CHANGELOG, commit, tag |
+| `complete-stage.sh` | After gates pass | CHANGELOG, commits, tag, **updates all docs** |
 | `stage-status.sh` | Anytime | Shows progress |
 
 ---

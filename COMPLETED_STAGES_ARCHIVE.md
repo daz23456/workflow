@@ -2556,3 +2556,30 @@ Added control flow capabilities to the workflow orchestration engine:
 | ForEachExecutor | `src/WorkflowCore/Services/ForEachExecutor.cs` |
 
 ---
+
+---
+
+## Stage 39: Response Caching
+
+### Stage 39.1: Task-Level Caching
+**Status:** ✅ Complete - See `stage-proofs/stage-39.1/STAGE_39.1_PROOF.md`
+
+1. **TaskCacheOptions Model** - Cache config with TTL parsing, CacheMethods flags
+2. **ITaskCacheProvider Interface** - Abstract cache operations (Get, Set, Invalidate)
+3. **DistributedTaskCacheProvider** - IDistributedCache implementation with JSON serialization
+4. **CachedHttpTaskExecutor** - Decorator wrapping HttpTaskExecutor with cache layer
+5. **WorkflowTaskSpec.Cache** - Per-task cache configuration property
+6. **DI Registration** - Redis (prod) / in-memory (dev) via config
+
+### Key Deliverables
+
+| Component | Location |
+|-----------|----------|
+| TaskCacheOptions | `src/WorkflowCore/Models/TaskCacheOptions.cs` |
+| ITaskCacheProvider | `src/WorkflowCore/Services/ITaskCacheProvider.cs` |
+| DistributedTaskCacheProvider | `src/WorkflowCore/Services/DistributedTaskCacheProvider.cs` |
+| CachedHttpTaskExecutor | `src/WorkflowCore/Services/CachedHttpTaskExecutor.cs` |
+
+### Test Summary
+- **47 tests** (21 provider, 26 executor)
+- **97% coverage** for new files

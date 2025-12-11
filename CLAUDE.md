@@ -162,8 +162,7 @@ For proof of completion, see the respective `STAGE_X_PROOF.md` files or `stage-p
 | 15.1-15.5 | MCP Consumer (External) | 77 | 98.4% | stage-proofs/stage-15.5/ |
 | 14.1-14.4 | Workflow Optimization Engine | - | - | stage-proofs/stage-14.4/ |
 | 32.1-32.5 | Workflow & Task Label Management | - | - | stage-proofs/stage-32.5/ |
-| 33.2 | Blast Radius API | - | - | stage-proofs/stage-33.2/ |
-| 33.3 | Blast Radius UI | 23 | - | stage-proofs/stage-33.3/ |
+| 33.1-33.3 | Blast Radius Analysis | 40+ | - | stage-proofs/stage-33.3/ |
 | 39.1 | Task-Level Caching | 47 | 97% | stage-proofs/stage-39.1/ |
 
 ---

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1765425887622" clover="3.2.0">
-  <project timestamp="1765425887622" name="All files">
+<coverage generated="1765426442018" clover="3.2.0">
+  <project timestamp="1765426442018" name="All files">
     <metrics statements="201" coveredstatements="186" conditionals="112" coveredconditionals="89" methods="27" coveredmethods="27" elements="340" coveredelements="302" complexity="0" loc="201" ncloc="201" packages="1" files="4" classes="4"/>
     <file name="completionProvider.ts" path="/Users/darren/dev/workflow/src/vscode-extension/server/src/completionProvider.ts">
       <metrics statements="88" coveredstatements="77" conditionals="48" coveredconditionals="37" methods="14" coveredmethods="14"/>

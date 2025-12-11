@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 using WorkflowCore.Interfaces;
 using WorkflowCore.Models;
@@ -10,6 +11,7 @@ namespace WorkflowCore.Services;
 /// <summary>
 /// Decorator that wraps HttpTaskExecutor to add caching support.
 /// Checks cache before making HTTP calls, stores results after successful calls.
+/// Supports stale-while-revalidate and cache bypass conditions.
 /// </summary>
 public class CachedHttpTaskExecutor : IHttpTaskExecutor
 {
@@ -41,6 +43,13 @@ public class CachedHttpTaskExecutor : IHttpTaskExecutor
             return await _inner.ExecuteAsync(taskSpec, context, cancellationToken);
         }
 
+        // Check bypass condition
+        if (ShouldBypassCache(cacheOptions, context))
+        {
+            _logger.LogDebug("Cache bypassed due to bypass condition");
+            return await _inner.ExecuteAsync(taskSpec, context, cancellationToken);
+        }
+
         var httpRequest = taskSpec.Http ?? taskSpec.Request;
         if (httpRequest == null)
         {
@@ -63,7 +72,13 @@ public class CachedHttpTaskExecutor : IHttpTaskExecutor
         var body = httpRequest.Body;
         var cacheKey = GenerateCacheKey(taskRef, httpMethod, url, body);
 
-        // Check cache
+        // Handle stale-while-revalidate pattern
+        if (cacheOptions.StaleWhileRevalidate)
+        {
+            return await ExecuteWithStaleWhileRevalidateAsync(taskSpec, context, cacheKey, cacheOptions, cancellationToken);
+        }
+
+        // Standard cache check
         var cachedResult = await _cacheProvider.GetAsync(cacheKey, cancellationToken);
         if (cachedResult != null)
         {
@@ -83,6 +98,144 @@ public class CachedHttpTaskExecutor : IHttpTaskExecutor
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// Executes with stale-while-revalidate pattern.
+    /// Returns stale data immediately if available, triggers background refresh.
+    /// </summary>
+    private async Task<TaskExecutionResult> ExecuteWithStaleWhileRevalidateAsync(
+        WorkflowTaskSpec taskSpec,
+        TemplateContext context,
+        string cacheKey,
+        TaskCacheOptions cacheOptions,
+        CancellationToken cancellationToken)
+    {
+        var taskRef = taskSpec.Type ?? "unknown";
+        var cacheEntry = await _cacheProvider.GetWithMetadataAsync(cacheKey, cancellationToken);
+
+        // No cache entry at all - execute fresh
+        if (cacheEntry == null)
+        {
+            _logger.LogDebug("Cache miss (stale-while-revalidate) for task {TaskRef}, executing fresh", taskRef);
+            var freshResult = await _inner.ExecuteAsync(taskSpec, context, cancellationToken);
+
+            if (ShouldCacheResult(freshResult, cacheOptions))
+            {
+                await _cacheProvider.SetAsync(cacheKey, freshResult, cacheOptions, cancellationToken);
+            }
+
+            return freshResult;
+        }
+
+        // Entry is beyond stale TTL - execute fresh
+        if (cacheEntry.IsBeyondStaleTtl || cacheEntry.Result == null)
+        {
+            _logger.LogDebug("Cache entry beyond stale TTL for task {TaskRef}, executing fresh", taskRef);
+            var freshResult = await _inner.ExecuteAsync(taskSpec, context, cancellationToken);
+
+            if (ShouldCacheResult(freshResult, cacheOptions))
+            {
+                await _cacheProvider.SetAsync(cacheKey, freshResult, cacheOptions, cancellationToken);
+            }
+
+            return freshResult;
+        }
+
+        // Entry is within TTL (fresh) - return immediately
+        if (!cacheEntry.IsStale)
+        {
+            _logger.LogInformation("Cache hit (fresh) for task {TaskRef}", taskRef);
+            return cacheEntry.Result;
+        }
+
+        // Entry is stale but within stale TTL - return stale data and trigger background refresh
+        _logger.LogInformation("Serving stale data for task {TaskRef}, triggering background refresh", taskRef);
+
+        // Fire-and-forget background refresh
+        _ = RefreshCacheInBackgroundAsync(taskSpec, context, cacheKey, cacheOptions);
+
+        return cacheEntry.Result;
+    }
+
+    /// <summary>
+    /// Refreshes the cache in the background without blocking the response.
+    /// </summary>
+    private async Task RefreshCacheInBackgroundAsync(
+        WorkflowTaskSpec taskSpec,
+        TemplateContext context,
+        string cacheKey,
+        TaskCacheOptions cacheOptions)
+    {
+        try
+        {
+            var taskRef = taskSpec.Type ?? "unknown";
+            _logger.LogDebug("Starting background cache refresh for task {TaskRef}", taskRef);
+
+            var freshResult = await _inner.ExecuteAsync(taskSpec, context, CancellationToken.None);
+
+            if (ShouldCacheResult(freshResult, cacheOptions))
+            {
+                await _cacheProvider.SetAsync(cacheKey, freshResult, cacheOptions, CancellationToken.None);
+                _logger.LogDebug("Background cache refresh completed for task {TaskRef}", taskRef);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Background cache refresh failed");
+        }
+    }
+
+    /// <summary>
+    /// Determines if the cache should be bypassed based on the BypassWhen condition.
+    /// </summary>
+    private static bool ShouldBypassCache(TaskCacheOptions options, TemplateContext context)
+    {
+        if (string.IsNullOrWhiteSpace(options.BypassWhen))
+        {
+            return false;
+        }
+
+        // Evaluate simple template expressions like {{input.forceRefresh}}
+        var bypassValue = EvaluateSimpleTemplate(options.BypassWhen, context);
+        return IsTruthy(bypassValue);
+    }
+
+    /// <summary>
+    /// Evaluates a simple template expression against the context.
+    /// Supports {{input.field}} syntax.
+    /// </summary>
+    private static string EvaluateSimpleTemplate(string template, TemplateContext context)
+    {
+        var pattern = @"\{\{input\.(\w+)\}\}";
+        var match = Regex.Match(template, pattern);
+
+        if (match.Success && context.Input != null)
+        {
+            var fieldName = match.Groups[1].Value;
+            if (context.Input.TryGetValue(fieldName, out var value))
+            {
+                return value?.ToString() ?? "";
+            }
+        }
+
+        return template;
+    }
+
+    /// <summary>
+    /// Determines if a value is truthy (true, "true", non-zero, etc.)
+    /// </summary>
+    private static bool IsTruthy(object? value)
+    {
+        return value switch
+        {
+            null => false,
+            bool b => b,
+            string s => s.Equals("true", StringComparison.OrdinalIgnoreCase) || s == "1",
+            int i => i != 0,
+            long l => l != 0,
+            _ => !string.IsNullOrEmpty(value.ToString())
+        };
     }
 
     /// <summary>

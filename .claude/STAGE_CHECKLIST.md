@@ -23,9 +23,11 @@ If you skip the scripts, artifacts will be in wrong locations and the stage will
 **Profiles:**
 | Profile | Gates | Use For |
 |---------|-------|---------|
-| `BACKEND_DOTNET` | 1-8 | .NET backend work |
-| `FRONTEND_TS` | 1-8, 14, 15, 21 | TypeScript/React UI |
-| `MINIMAL` | 1-8 | POC, small fixes |
+| `BACKEND_DOTNET` | 1-10 | .NET backend work |
+| `FRONTEND_TS` | 1-10, 14, 15, 21, 22 | TypeScript/React UI |
+| `MINIMAL` | 1, 3, 5, 6, 8 | POC, small fixes |
+
+*Gates 9-10 = TIER 2 (Mutation Testing, Documentation). Gates 11-22 = optional, add as needed.*
 
 **Example:**
 ```bash
@@ -125,9 +127,12 @@ cat stage-proofs/stage-<NUMBER>/.stage-state.yaml
 | 6 | Coverage | ≥90% |
 | 7 | Security | 0 vulnerabilities |
 | 8 | Proof | No placeholders |
+| 9 | Mutation | ≥80% mutation score |
+| 10 | Documentation | README complete, API docs ≥90% |
 | 14 | Accessibility | ≥90 Lighthouse (TS UI only) |
 | 15 | E2E Tests | All Playwright pass (TS UI only) |
-| 21 | Storybook | All components have stories, build passes (TS UI only) |
+| 21 | Storybook | All components have stories (TS UI only) |
+| 22 | Screenshots | All UI pages captured (TS UI only) |
 
 ---
 

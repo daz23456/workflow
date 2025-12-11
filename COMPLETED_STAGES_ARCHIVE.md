@@ -1,9 +1,9 @@
 # Completed Stages Implementation Archive
 
 **Created:** 2025-11-22
-**Updated:** 2025-12-07
+**Updated:** 2025-12-10
 **Purpose:** Archive of detailed implementation instructions for completed stages
-**Status:** 52 stages/substages complete
+**Status:** 72 stages/substages complete
 
 This file contains the detailed TDD implementation instructions that were used to build completed stages of the Workflow Orchestration Engine. These stages are now complete and documented in their respective proof files.
 
@@ -84,6 +84,28 @@ This file contains the detailed TDD implementation instructions that were used t
 ### Resilience (Stage 28)
 - **Stage 28.1: Circuit Breaker Orchestrator Integration** - See `stage-proofs/stage-28.1/STAGE_28.1_PROOF.md`
 - **Stage 28.2: Circuit Breaker API** - See `stage-proofs/stage-28.2/STAGE_28.2_PROOF.md`
+
+### Workflow Optimization Engine (Stage 14) ✅ COMPLETE
+- **Stage 14.1: Static Workflow Analyzer** - See `stage-proofs/stage-14.1/`
+- **Stage 14.2: Transform Equivalence Checker** - See `stage-proofs/stage-14.2/`
+- **Stage 14.3: Historical Replay Engine** - See `stage-proofs/stage-14.3/`
+- **Stage 14.4: Optimization Suggestions API** - See `stage-proofs/stage-14.4/`
+
+### MCP Consumer (Stage 15) ✅ COMPLETE
+- **Stage 15.1: Backend Metadata Enrichment** - See `stage-proofs/stage-15.1/`
+- **Stage 15.2: MCP Tools for Workflow Discovery** - See `stage-proofs/stage-15.2/`
+- **Stage 15.3: MCP Tool for Workflow Execution** - See `stage-proofs/stage-15.3/`
+- **Stage 15.4: MCP Resources & Prompts** - See `stage-proofs/stage-15.4/`
+- **Stage 15.5: Integration & Documentation** - See `stage-proofs/stage-15.5/`
+
+### Label Management (Stage 32) ✅ COMPLETE
+- **Stage 32.1: Backend Label Storage & Sync** - See `stage-proofs/stage-32.1/`
+- **Stage 32.2: Backend Label API** - See `stage-proofs/stage-32.2/`
+
+### Blast Radius Analysis (Stage 33) ✅ COMPLETE
+- **Stage 33.1: Blast Radius Service** - See `stage-proofs/stage-33.1/`
+- **Stage 33.2: Blast Radius API** - See `stage-proofs/stage-33.2/`
+- **Stage 33.3: Blast Radius UI** - See `stage-proofs/stage-33.3/`
 
 ---
 

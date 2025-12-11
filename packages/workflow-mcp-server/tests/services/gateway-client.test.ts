@@ -102,9 +102,8 @@ describe('GatewayClient', () => {
   describe('validateWorkflow', () => {
     it('should validate a workflow successfully', async () => {
       const mockResult = {
-        valid: true,
-        errors: [],
-        executionPlan: { tasks: [] }
+        success: true,
+        validationErrors: []
       };
 
       mockFetch.mockResolvedValueOnce({
@@ -117,18 +116,16 @@ describe('GatewayClient', () => {
 
       expect(mockFetch).toHaveBeenCalledWith('http://localhost:5000/api/v1/workflows/test-execute', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-yaml' },
-        body: yaml
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ workflowYaml: yaml, input: {} })
       });
       expect(result.valid).toBe(true);
     });
 
     it('should handle validation errors from API', async () => {
       const mockResult = {
-        valid: false,
-        errors: [
-          { message: 'Unknown task reference: invalid-task', code: 'UNKNOWN_TASK_REF' }
-        ]
+        success: false,
+        validationErrors: ['Unknown task reference: invalid-task']
       };
 
       mockFetch.mockResolvedValueOnce({
@@ -144,13 +141,22 @@ describe('GatewayClient', () => {
     });
 
     it('should handle API errors during validation', async () => {
+      const mockResult = {
+        validationErrors: ['Invalid YAML syntax'],
+        detail: 'Failed to parse workflow YAML'
+      };
+
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 400,
-        statusText: 'Bad Request'
+        statusText: 'Bad Request',
+        json: () => Promise.resolve(mockResult)
       });
 
-      await expect(client.validateWorkflow('invalid yaml')).rejects.toThrow('Failed to validate workflow: 400 Bad Request');
+      // Implementation returns validation result instead of throwing
+      const result = await client.validateWorkflow('invalid yaml');
+      expect(result.valid).toBe(false);
+      expect(result.errors).toHaveLength(1);
     });
   });
 

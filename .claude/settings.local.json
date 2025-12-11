@@ -51,7 +51,8 @@
       "Bash(do basename \"$f\")",
       "Bash(do basename $f)",
       "Bash(comm:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(./scripts/generate-screenshot-manifest.sh:*)"
     ],
     "deny": [],
     "ask": []

@@ -130,6 +130,23 @@ builder.Services.AddScoped<HttpClient>(sp =>
     sp.GetRequiredService<IHttpClientFactory>().CreateClient());
 builder.Services.AddScoped<IHttpClientWrapper, HttpClientWrapper>();
 
+// Register distributed cache for task-level caching (Stage 39.1)
+// Uses Redis if connection string available, otherwise in-memory
+var redisConnectionString = builder.Configuration.GetConnectionString("Redis");
+if (!string.IsNullOrEmpty(redisConnectionString))
+{
+    builder.Services.AddStackExchangeRedisCache(options =>
+    {
+        options.Configuration = redisConnectionString;
+        options.InstanceName = "workflow:";
+    });
+}
+else
+{
+    builder.Services.AddDistributedMemoryCache();
+}
+builder.Services.AddSingleton<ITaskCacheProvider, DistributedTaskCacheProvider>();
+
 // Register response storage and handlers
 builder.Services.AddScoped<WorkflowCore.Interfaces.IResponseStorage, HybridResponseStorage>();
 builder.Services.AddScoped<WorkflowCore.Interfaces.IResponseHandler, WorkflowCore.Services.ResponseHandlers.JsonResponseHandler>();
@@ -137,7 +154,27 @@ builder.Services.AddScoped<WorkflowCore.Interfaces.IResponseHandler, WorkflowCor
 builder.Services.AddScoped<WorkflowCore.Interfaces.IResponseHandler, WorkflowCore.Services.ResponseHandlers.TextResponseHandler>();
 builder.Services.AddScoped<WorkflowCore.Interfaces.IResponseHandlerFactory, ResponseHandlerFactory>();
 
-builder.Services.AddScoped<IHttpTaskExecutor, HttpTaskExecutor>();
+// Register HttpTaskExecutor wrapped with CachedHttpTaskExecutor for task-level caching (Stage 39.1)
+builder.Services.AddScoped<IHttpTaskExecutor>(sp =>
+{
+    var templateResolver = sp.GetRequiredService<ITemplateResolver>();
+    var schemaValidator = sp.GetRequiredService<ISchemaValidator>();
+    var retryPolicy = sp.GetRequiredService<IRetryPolicy>();
+    var httpClient = sp.GetRequiredService<IHttpClientWrapper>();
+    var responseHandlerFactory = sp.GetRequiredService<WorkflowCore.Interfaces.IResponseHandlerFactory>();
+
+    var innerExecutor = new HttpTaskExecutor(
+        templateResolver,
+        schemaValidator,
+        retryPolicy,
+        httpClient,
+        responseHandlerFactory);
+
+    var cacheProvider = sp.GetRequiredService<ITaskCacheProvider>();
+    var logger = sp.GetRequiredService<ILogger<CachedHttpTaskExecutor>>();
+
+    return new CachedHttpTaskExecutor(innerExecutor, cacheProvider, logger);
+});
 builder.Services.AddScoped<IDataTransformer, JsonPathTransformer>();
 builder.Services.AddScoped<ITransformTaskExecutor, TransformTaskExecutor>();
 builder.Services.AddScoped<ITemplatePreviewService, TemplatePreviewService>();

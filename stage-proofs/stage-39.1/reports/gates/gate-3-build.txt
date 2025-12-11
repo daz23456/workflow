@@ -1,0 +1,303 @@
+
+> workflow-root@1.0.0 build
+> turbo run build
+
+turbo 2.6.1
+
+• Packages in scope: @workflow/api-client, @workflow/cli, @workflow/graph, @workflow/mcp-consumer, @workflow/mcp-server, @workflow/types, @workflow/ui-components, @workflow/validation, workflow-ui, workflow-vscode-client, workflow-vscode-server
+• Running build in 11 packages
+• Remote caching disabled
+@workflow/mcp-consumer:build: cache miss, executing 9776a33c5f01f866
+@workflow/mcp-server:build: cache miss, executing d8ef476446d33e63
+@workflow/api-client:build: cache miss, executing 2d4054efb8a5161f
+@workflow/cli:build: cache miss, executing d9e9bcee086833bd
+@workflow/types:build: cache miss, executing ace2171c7cc28bf8
+workflow-ui:build: cache miss, executing 991006ca1d0f564b
+@workflow/mcp-consumer:build: 
+@workflow/mcp-consumer:build: > @workflow/mcp-consumer@0.1.0 build /Users/darren/dev/workflow/packages/workflow-mcp-consumer
+@workflow/mcp-consumer:build: > tsc
+@workflow/mcp-consumer:build: 
+@workflow/api-client:build: 
+@workflow/api-client:build: > @workflow/api-client@0.1.0 build /Users/darren/dev/workflow/packages/workflow-api-client
+@workflow/api-client:build: > tsc
+@workflow/api-client:build: 
+@workflow/cli:build: 
+@workflow/cli:build: > @workflow/cli@0.1.0 build /Users/darren/dev/workflow/packages/workflow-cli
+@workflow/cli:build: > tsc
+@workflow/cli:build: 
+@workflow/mcp-server:build: 
+@workflow/mcp-server:build: > @workflow/mcp-server@0.1.0 build /Users/darren/dev/workflow/packages/workflow-mcp-server
+@workflow/mcp-server:build: > tsc
+@workflow/mcp-server:build: 
+@workflow/types:build: 
+@workflow/types:build: > @workflow/types@0.1.0 build /Users/darren/dev/workflow/packages/workflow-types
+@workflow/types:build: > tsc
+@workflow/types:build: 
+workflow-ui:build: 
+workflow-ui:build: > workflow-ui@0.1.0 build /Users/darren/dev/workflow/src/workflow-ui
+workflow-ui:build: > next build
+workflow-ui:build: 
+workflow-ui:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+@workflow/validation:build: cache miss, executing 9f49888e52db7654
+@workflow/validation:build: 
+@workflow/validation:build: > @workflow/validation@0.1.0 build /Users/darren/dev/workflow/packages/workflow-validation
+@workflow/validation:build: > tsc
+@workflow/validation:build: 
+@workflow/graph:build: cache miss, executing 5decfe5d8ce66c65
+workflow-ui:build:  ⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+workflow-ui:build:  We detected multiple lockfiles and selected the directory of /Users/darren/package-lock.json as the root directory.
+workflow-ui:build:  To silence this warning, set `turbopack.root` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+workflow-ui:build:    See https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory for more information.
+workflow-ui:build:  Detected additional lockfiles: 
+workflow-ui:build:    * /Users/darren/dev/workflow/src/workflow-ui/package-lock.json
+workflow-ui:build:    * /Users/darren/dev/workflow/pnpm-lock.yaml
+workflow-ui:build: 
+@workflow/graph:build: 
+@workflow/graph:build: > @workflow/graph@0.1.0 build /Users/darren/dev/workflow/packages/workflow-graph
+@workflow/graph:build: > tsc
+@workflow/graph:build: 
+workflow-ui:build:    ▲ Next.js 16.0.3 (Turbopack)
+workflow-ui:build:    - Environments: .env.local
+workflow-ui:build: 
+workflow-ui:build:    Creating an optimized production build ...
+workflow-ui:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+workflow-vscode-client:build: cache miss, executing 637e12d631839aa2
+workflow-vscode-server:build: cache miss, executing c23271e9a2846979
+@workflow/ui-components:build: cache miss, executing ee42d07d275d104b
+workflow-vscode-server:build: 
+workflow-vscode-server:build: > workflow-vscode-server@0.1.0 build /Users/darren/dev/workflow/src/vscode-extension/server
+workflow-vscode-server:build: > webpack --mode production
+workflow-vscode-server:build: 
+workflow-vscode-client:build: 
+workflow-vscode-client:build: > workflow-vscode-client@0.1.0 build /Users/darren/dev/workflow/src/vscode-extension/client
+workflow-vscode-client:build: > webpack --config webpack.extension.config.js --mode production && webpack --config webpack.config.js --mode production
+workflow-vscode-client:build: 
+@workflow/ui-components:build: 
+@workflow/ui-components:build: > @workflow/ui-components@0.1.0 build /Users/darren/dev/workflow/packages/workflow-ui-components
+@workflow/ui-components:build: > tsc
+@workflow/ui-components:build: 
+workflow-vscode-server:build: asset server.js 292 KiB [emitted] [minimized] (name: main) 1 related asset
+workflow-vscode-server:build: runtime modules 670 bytes 3 modules
+workflow-vscode-server:build: modules by path ../../../node_modules/.pnpm/ 734 KiB
+workflow-vscode-server:build:   modules by path ../../../node_modules/.pnpm/yaml@2.8.1/node_modules/yaml/dist/ 280 KiB 72 modules
+workflow-vscode-server:build:   modules by path ../../../node_modules/.pnpm/vscode-languageserver-protocol@3.17.5/node_modules/v...(truncated) 114 KiB 28 modules
+workflow-vscode-server:build:   modules by path ../../../node_modules/.pnpm/vscode-languageserver@9.0.1/node_modules/vscode-l...(truncated) 109 KiB 24 modules
+workflow-vscode-server:build:   modules by path ../../../node_modules/.pnpm/vscode-jsonrpc@8.2.0/node_modules/vscode-jsonrpc/ 130 KiB 17 modules
+workflow-vscode-server:build:   modules by path ../../../node_modules/.pnpm/vscode-languageserver-types@3.17.5/node_modules/vsco...(truncated) 91.9 KiB 2 modules
+workflow-vscode-server:build:   ../../../node_modules/.pnpm/vscode-languageserver-textdocument@1.0.12/node_modul...(truncated) 9.96 KiB [built] [code generated]
+workflow-vscode-server:build: modules by path ./src/*.ts 28.4 KiB
+workflow-vscode-server:build:   ./src/server.ts 5.42 KiB [built] [code generated]
+workflow-vscode-server:build:   ./src/completionProvider.ts 11.1 KiB [built] [code generated]
+workflow-vscode-server:build:   ./src/hoverProvider.ts 2.68 KiB [built] [code generated]
+workflow-vscode-server:build:   ./src/diagnosticsProvider.ts 9.22 KiB [built] [code generated]
+workflow-vscode-server:build: + 11 modules
+workflow-vscode-server:build: 
+workflow-vscode-server:build: WARNING in ../../../node_modules/.pnpm/vscode-languageserver-types@3.17.5/node_modules/vscode-languageserver-types/lib/umd/main.js 3:24-31
+workflow-vscode-server:build: Critical dependency: require function is used in a way in which dependencies cannot be statically extracted
+workflow-vscode-server:build:  @ ../../../node_modules/.pnpm/vscode-languageserver-protocol@3.17.5/node_modules/vscode-languageserver-protocol/lib/common/api.js 23:13-51
+workflow-vscode-server:build:  @ ../../../node_modules/.pnpm/vscode-languageserver-protocol@3.17.5/node_modules/vscode-languageserver-protocol/lib/node/main.js 24:13-37
+workflow-vscode-server:build:  @ ../../../node_modules/.pnpm/vscode-languageserver@9.0.1/node_modules/vscode-languageserver/lib/common/api.js 25:13-55
+workflow-vscode-server:build:  @ ../../../node_modules/.pnpm/vscode-languageserver@9.0.1/node_modules/vscode-languageserver/lib/node/main.js 29:13-37
+workflow-vscode-server:build:  @ ./src/completionProvider.ts 37:32-64
+workflow-vscode-server:build:  @ ./src/server.ts 5:29-60
+workflow-vscode-server:build: 
+workflow-vscode-server:build: 1 warning has detailed information that is not shown.
+workflow-vscode-server:build: Use 'stats.errorDetails: true' resp. '--stats-error-details' to show it.
+workflow-vscode-server:build: 
+workflow-vscode-server:build: webpack 5.103.0 compiled with 1 warning in 7256 ms
+workflow-ui:build:  ✓ Compiled successfully in 10.2s
+workflow-ui:build:    Running TypeScript ...
+workflow-vscode-client:build: asset extension.js 459 KiB [emitted] [minimized] (name: main) 1 related asset
+workflow-vscode-client:build: runtime modules 88 bytes 1 module
+workflow-vscode-client:build: modules by path ../../../node_modules/.pnpm/ 1.13 MiB 198 modules
+workflow-vscode-client:build: modules by path ../../../packages/workflow-graph/dist/*.js 7.81 KiB
+workflow-vscode-client:build:   ../../../packages/workflow-graph/dist/index.js 783 bytes [built] [code generated]
+workflow-vscode-client:build:   ../../../packages/workflow-graph/dist/executionGraphBuilder.js 3.7 KiB [built] [code generated]
+workflow-vscode-client:build:   ../../../packages/workflow-graph/dist/dependencyAnalyzer.js 3.34 KiB [built] [code generated]
+workflow-vscode-client:build: modules by path ./src/*.ts 10.7 KiB
+workflow-vscode-client:build:   ./src/extension.ts 4.16 KiB [built] [code generated]
+workflow-vscode-client:build:   ./src/graphPanel.ts 6.55 KiB [built] [code generated]
+workflow-vscode-client:build: + 10 modules
+workflow-vscode-client:build: 
+workflow-vscode-client:build: WARNING in ../../../node_modules/.pnpm/vscode-languageserver-types@3.17.5/node_modules/vscode-languageserver-types/lib/umd/main.js 3:24-31
+workflow-vscode-client:build: Critical dependency: require function is used in a way in which dependencies cannot be statically extracted
+workflow-vscode-client:build:  @ ../../../node_modules/.pnpm/vscode-languageserver-protocol@3.17.5/node_modules/vscode-languageserver-protocol/lib/common/api.js 23:13-51
+workflow-vscode-client:build:  @ ../../../node_modules/.pnpm/vscode-languageserver-protocol@3.17.5/node_modules/vscode-languageserver-protocol/lib/node/main.js 24:13-37
+workflow-vscode-client:build:  @ ../../../node_modules/.pnpm/vscode-languageclient@9.0.1/node_modules/vscode-languageclient/lib/common/api.js 22:13-54
+workflow-vscode-client:build:  @ ../../../node_modules/.pnpm/vscode-languageclient@9.0.1/node_modules/vscode-languageclient/lib/node/main.js 34:13-37
+workflow-vscode-client:build:  @ ../../../node_modules/.pnpm/vscode-languageclient@9.0.1/node_modules/vscode-languageclient/node.js 7:0-43
+workflow-vscode-client:build:  @ ./src/extension.ts 40:15-52
+workflow-vscode-client:build: 
+workflow-vscode-client:build: 1 warning has detailed information that is not shown.
+workflow-vscode-client:build: Use 'stats.errorDetails: true' resp. '--stats-error-details' to show it.
+workflow-vscode-client:build: 
+workflow-vscode-client:build: webpack 5.103.0 compiled with 1 warning in 8654 ms
+workflow-vscode-client:build: asset bundle.js 435 KiB [emitted] [minimized] [big] (name: main) 1 related asset
+workflow-vscode-client:build: orphan modules 31.7 KiB [orphan] 9 modules
+workflow-vscode-client:build: runtime modules 1.29 KiB 7 modules
+workflow-vscode-client:build: modules by path ../../../node_modules/.pnpm/lodash@4.17.21/node_modules/lodash/*.js 187 KiB 240 modules
+workflow-vscode-client:build: modules by path ../../../node_modules/.pnpm/dagre@0.8.5/node_modules/dagre/ 77.1 KiB 30 modules
+workflow-vscode-client:build: modules by path ../../../node_modules/.pnpm/graphlib@2.1.8/node_modules/graphlib/ 28 KiB 20 modules
+workflow-vscode-client:build: modules by path ../../../node_modules/.pnpm/style-loader@4.0.0_webpack@5.103.0/node_modules/styl...(truncated) 5.84 KiB 6 modules
+workflow-vscode-client:build: modules by path ../../../node_modules/.pnpm/react@18.3.1/node_modules/react/ 8 KiB 4 modules
+workflow-vscode-client:build: modules by path ../../../node_modules/.pnpm/react-dom@18.3.1_react@18.3.1/node_modu...(truncated) 131 KiB 3 modules
+workflow-vscode-client:build: modules by path ../../../node_modules/.pnpm/@xyflow+react@12.9.3_@types+react@19.2.7_immer@11.0....(truncated) 200 KiB 3 modules
+workflow-vscode-client:build: modules by path ./src/webview/*.tsx 10.1 KiB 2 modules
+workflow-vscode-client:build: modules by path ../../../node_modules/.pnpm/css-loader@7.1.2_webpack@5.103.0/node_modules/css-lo...(truncated) 2.31 KiB 2 modules
+workflow-vscode-client:build: modules by path ../../../node_modules/.pnpm/scheduler@0.23.2/node_modules/scheduler/ 4.33 KiB 2 modules
+workflow-vscode-client:build: ../../../node_modules/.pnpm/html-to-image@1.11.13/node_modules/html-to-image/es/...(truncated) 34.1 KiB [built] [code generated]
+workflow-vscode-client:build: 
+workflow-vscode-client:build: WARNING in asset size limit: The following asset(s) exceed the recommended size limit (244 KiB).
+workflow-vscode-client:build: This can impact web performance.
+workflow-vscode-client:build: Assets: 
+workflow-vscode-client:build:   bundle.js (435 KiB)
+workflow-vscode-client:build: 
+workflow-vscode-client:build: WARNING in entrypoint size limit: The following entrypoint(s) combined asset size exceeds the recommended limit (244 KiB). This can impact web performance.
+workflow-vscode-client:build: Entrypoints:
+workflow-vscode-client:build:   main (435 KiB)
+workflow-vscode-client:build:       bundle.js
+workflow-vscode-client:build: 
+workflow-vscode-client:build: WARNING in webpack performance recommendations: 
+workflow-vscode-client:build: You can limit the size of your bundles by using import() or require.ensure to lazy load some parts of your application.
+workflow-vscode-client:build: For more info visit https://webpack.js.org/guides/code-splitting/
+workflow-vscode-client:build: 
+workflow-vscode-client:build: webpack 5.103.0 compiled with 3 warnings in 6465 ms
+workflow-ui:build:    Collecting page data using 15 workers ...
+workflow-ui:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+workflow-ui:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+workflow-ui:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+workflow-ui:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+workflow-ui:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+workflow-ui:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+workflow-ui:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+workflow-ui:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+workflow-ui:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+workflow-ui:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+workflow-ui:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+workflow-ui:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+workflow-ui:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+workflow-ui:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+workflow-ui:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+workflow-ui:build:    Generating static pages using 15 workers (0/19) ...
+workflow-ui:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+workflow-ui:build:    Generating static pages using 15 workers (4/19) 
+workflow-ui:build:    Generating static pages using 15 workers (9/19) 
+workflow-ui:build:    Generating static pages using 15 workers (14/19) 
+workflow-ui:build:  ✓ Generating static pages using 15 workers (19/19) in 953.1ms
+workflow-ui:build:    Finalizing page optimization ...
+workflow-ui:build: 
+workflow-ui:build: Route (app)
+workflow-ui:build: ┌ ○ /
+workflow-ui:build: ├ ○ /_not-found
+workflow-ui:build: ├ ƒ /api/executions/[id]
+workflow-ui:build: ├ ƒ /api/executions/[id]/trace
+workflow-ui:build: ├ ƒ /api/generate-workflow
+workflow-ui:build: ├ ƒ /api/tasks
+workflow-ui:build: ├ ƒ /api/tasks/[name]
+workflow-ui:build: ├ ƒ /api/tasks/[name]/duration-trends
+workflow-ui:build: ├ ƒ /api/tasks/[name]/execute
+workflow-ui:build: ├ ƒ /api/tasks/[name]/executions
+workflow-ui:build: ├ ƒ /api/tasks/[name]/usage
+workflow-ui:build: ├ ƒ /api/templates
+workflow-ui:build: ├ ƒ /api/templates/[name]
+workflow-ui:build: ├ ƒ /api/workflows
+workflow-ui:build: ├ ƒ /api/workflows/[name]
+workflow-ui:build: ├ ƒ /api/workflows/[name]/duration-trends
+workflow-ui:build: ├ ƒ /api/workflows/[name]/execute
+workflow-ui:build: ├ ƒ /api/workflows/[name]/executions
+workflow-ui:build: ├ ƒ /api/workflows/[name]/test
+workflow-ui:build: ├ ƒ /api/workflows/[name]/versions
+workflow-ui:build: ├ ○ /dashboard
+workflow-ui:build: ├ ƒ /executions/[id]/debug
+workflow-ui:build: ├ ○ /playground
+workflow-ui:build: ├ ƒ /playground/[lessonId]
+workflow-ui:build: ├ ○ /tasks
+workflow-ui:build: ├ ƒ /tasks/[name]
+workflow-ui:build: ├ ○ /templates
+workflow-ui:build: ├ ○ /transforms
+workflow-ui:build: ├ ○ /visualization
+workflow-ui:build: ├ ○ /visualization/galaxy
+workflow-ui:build: ├ ○ /visualization/traffic
+workflow-ui:build: ├ ○ /visualization/tube
+workflow-ui:build: ├ ○ /workflows
+workflow-ui:build: ├ ƒ /workflows/[name]
+workflow-ui:build: └ ○ /workflows/new
+workflow-ui:build: 
+workflow-ui:build: 
+workflow-ui:build: ○  (Static)   prerendered as static content
+workflow-ui:build: ƒ  (Dynamic)  server-rendered on demand
+workflow-ui:build: 
+
+ Tasks:    11 successful, 11 total
+Cached:    0 cached, 11 total
+  Time:    32.139s 
+
+
+> workflow-root@1.0.0 type-check
+> turbo run type-check
+
+turbo 2.6.1
+
+• Packages in scope: @workflow/api-client, @workflow/cli, @workflow/graph, @workflow/mcp-consumer, @workflow/mcp-server, @workflow/types, @workflow/ui-components, @workflow/validation, workflow-ui, workflow-vscode-client, workflow-vscode-server
+• Running type-check in 11 packages
+• Remote caching disabled
+@workflow/mcp-consumer:type-check: cache miss, executing 153be8043dd73ddc
+workflow-vscode-server:type-check: cache miss, executing 947b1e7e6d85e0cd
+@workflow/cli:type-check: cache miss, executing b886e4ffb530b5fd
+workflow-vscode-client:type-check: cache miss, executing 81eebf4bae2bfc3a
+@workflow/mcp-server:type-check: cache miss, executing 5c2c2d0477d75726
+@workflow/graph:type-check: cache miss, executing 46e18ac390e47129
+@workflow/validation:type-check: cache miss, executing bc62400629ffc86b
+workflow-ui:type-check: cache miss, executing 7b9d52ccc0232c91
+@workflow/api-client:type-check: cache miss, executing f572928f4dcb7569
+@workflow/types:type-check: cache miss, executing faf6da08064acf97
+@workflow/graph:type-check: 
+@workflow/graph:type-check: > @workflow/graph@0.1.0 type-check /Users/darren/dev/workflow/packages/workflow-graph
+@workflow/graph:type-check: > tsc --noEmit
+@workflow/graph:type-check: 
+@workflow/api-client:type-check: 
+@workflow/api-client:type-check: > @workflow/api-client@0.1.0 type-check /Users/darren/dev/workflow/packages/workflow-api-client
+@workflow/api-client:type-check: > tsc --noEmit
+@workflow/api-client:type-check: 
+@workflow/validation:type-check: 
+@workflow/validation:type-check: > @workflow/validation@0.1.0 type-check /Users/darren/dev/workflow/packages/workflow-validation
+@workflow/validation:type-check: > tsc --noEmit
+@workflow/validation:type-check: 
+@workflow/cli:type-check: 
+@workflow/cli:type-check: > @workflow/cli@0.1.0 type-check /Users/darren/dev/workflow/packages/workflow-cli
+@workflow/cli:type-check: > tsc --noEmit
+@workflow/cli:type-check: 
+workflow-ui:type-check: 
+workflow-ui:type-check: > workflow-ui@0.1.0 type-check /Users/darren/dev/workflow/src/workflow-ui
+workflow-ui:type-check: > tsc --noEmit
+workflow-ui:type-check: 
+@workflow/mcp-consumer:type-check: 
+@workflow/mcp-consumer:type-check: > @workflow/mcp-consumer@0.1.0 type-check /Users/darren/dev/workflow/packages/workflow-mcp-consumer
+@workflow/mcp-consumer:type-check: > tsc --noEmit
+@workflow/mcp-consumer:type-check: 
+@workflow/types:type-check: 
+@workflow/types:type-check: > @workflow/types@0.1.0 type-check /Users/darren/dev/workflow/packages/workflow-types
+@workflow/types:type-check: > tsc --noEmit
+@workflow/types:type-check: 
+workflow-vscode-client:type-check: 
+workflow-vscode-client:type-check: > workflow-vscode-client@0.1.0 type-check /Users/darren/dev/workflow/src/vscode-extension/client
+workflow-vscode-client:type-check: > tsc --noEmit
+workflow-vscode-client:type-check: 
+@workflow/mcp-server:type-check: 
+@workflow/mcp-server:type-check: > @workflow/mcp-server@0.1.0 type-check /Users/darren/dev/workflow/packages/workflow-mcp-server
+@workflow/mcp-server:type-check: > tsc --noEmit
+@workflow/mcp-server:type-check: 
+workflow-vscode-server:type-check: 
+workflow-vscode-server:type-check: > workflow-vscode-server@0.1.0 type-check /Users/darren/dev/workflow/src/vscode-extension/server
+workflow-vscode-server:type-check: > tsc --noEmit
+workflow-vscode-server:type-check: 
+@workflow/ui-components:type-check: cache miss, executing 29e864443b34f5e7
+@workflow/ui-components:type-check: 
+@workflow/ui-components:type-check: > @workflow/ui-components@0.1.0 type-check /Users/darren/dev/workflow/packages/workflow-ui-components
+@workflow/ui-components:type-check: > tsc --noEmit
+@workflow/ui-components:type-check: 
+
+ Tasks:    11 successful, 11 total
+Cached:    0 cached, 11 total
+  Time:    14.633s 
+

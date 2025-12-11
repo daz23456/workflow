@@ -98,6 +98,15 @@ public class WorkflowTaskSpec
     [YamlMember(Alias = "timeout")]
     [JsonPropertyName("timeout")]
     public string? Timeout { get; set; }
+
+    /// <summary>
+    /// Cache configuration for this task.
+    /// When enabled, task outputs are cached based on resolved request parameters.
+    /// Stage 39.1: Task-Level Caching
+    /// </summary>
+    [YamlMember(Alias = "cache")]
+    [JsonPropertyName("cache")]
+    public TaskCacheOptions? Cache { get; set; }
 }
 
 public class HttpRequestDefinition

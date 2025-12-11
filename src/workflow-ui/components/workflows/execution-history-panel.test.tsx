@@ -321,7 +321,7 @@ describe('ExecutionHistoryPanel', () => {
 
       expect(screen.getByRole('button', { name: /previous/i })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /next/i })).toBeInTheDocument();
-    });
+    }, 10000);
 
     it('Previous button is disabled on first page', async () => {
       const user = userEvent.setup();

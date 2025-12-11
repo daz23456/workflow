@@ -541,3 +541,24 @@ export interface BlastRadiusResponse {
   summary?: BlastRadiusSummary;
   graph?: BlastRadiusGraph;
 }
+
+// ============================================================================
+// Cache Management Types (Stage 39.3)
+// ============================================================================
+
+export interface CacheKeyInfo {
+  key: string;
+  hits: number;
+  lastAccess: string;
+}
+
+export interface CacheStats {
+  totalHits: number;
+  totalMisses: number;
+  hitRatio: number;
+  totalEntries: number;
+  memoryUsageBytes: number;
+  oldestEntryAge: string;
+  recentKeys: CacheKeyInfo[];
+  generatedAt: string;
+}

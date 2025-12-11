@@ -16,6 +16,11 @@ const mockUseTasks = vi.fn();
 vi.mock('@/lib/api/queries', () => ({
   useTasks: () => mockUseTasks(),
   usePrefetchTaskDetail: () => vi.fn(),
+  useLabels: () => ({
+    data: { tags: [], categories: [] },
+    isLoading: false,
+    error: null,
+  }),
 }));
 
 // Create query client wrapper

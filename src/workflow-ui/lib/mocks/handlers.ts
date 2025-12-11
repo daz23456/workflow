@@ -828,4 +828,160 @@ export const handlers = [
 
     return HttpResponse.json(response);
   }),
+
+  // ============================================================================
+  // LABEL ENDPOINTS
+  // ============================================================================
+
+  // Mock label data
+  // GET /api/v1/labels - List all labels
+  http.get(`${API_BASE}/labels`, async () => {
+    await delay(200);
+    return HttpResponse.json({
+      tags: [
+        { value: 'production', workflowCount: 5, taskCount: 3 },
+        { value: 'beta', workflowCount: 2, taskCount: 1 },
+        { value: 'deprecated', workflowCount: 1, taskCount: 0 },
+      ],
+      categories: [
+        { value: 'payments', workflowCount: 3 },
+        { value: 'orders', workflowCount: 2 },
+        { value: 'users', workflowCount: 4 },
+      ],
+    });
+  }),
+
+  // GET /api/v1/labels/stats - Get label statistics
+  http.get(`${API_BASE}/labels/stats`, async () => {
+    await delay(200);
+    return HttpResponse.json({
+      totalTags: 10,
+      totalCategories: 5,
+      workflowsWithTags: 8,
+      workflowsWithCategories: 6,
+      tasksWithTags: 4,
+      tasksWithCategories: 3,
+      topTags: [
+        { value: 'production', workflowCount: 5, taskCount: 3 },
+        { value: 'beta', workflowCount: 2, taskCount: 1 },
+      ],
+      topCategories: [
+        { value: 'payments', workflowCount: 3 },
+        { value: 'users', workflowCount: 4 },
+      ],
+    });
+  }),
+
+  // PATCH /api/v1/workflows/:name/labels - Update workflow labels
+  http.patch(`${API_BASE}/workflows/:name/labels`, async ({ params, request }) => {
+    await delay(200);
+    const { name } = params;
+    const body = (await request.json()) as {
+      addTags?: string[];
+      removeTags?: string[];
+      addCategories?: string[];
+      removeCategories?: string[];
+    };
+
+    // Simulate current tags (merge adds, filter removes)
+    const currentTags = ['production', ...(body.addTags || [])].filter(
+      (t) => !(body.removeTags || []).includes(t)
+    );
+    const currentCategories = ['payments', ...(body.addCategories || [])].filter(
+      (c) => !(body.removeCategories || []).includes(c)
+    );
+
+    return HttpResponse.json({
+      success: true,
+      entityName: name,
+      currentTags,
+      currentCategories,
+      message: 'Labels updated successfully',
+    });
+  }),
+
+  // PATCH /api/v1/tasks/:name/labels - Update task labels
+  http.patch(`${API_BASE}/tasks/:name/labels`, async ({ params, request }) => {
+    await delay(200);
+    const { name } = params;
+    const body = (await request.json()) as {
+      addTags?: string[];
+      removeTags?: string[];
+      addCategories?: string[];
+      removeCategories?: string[];
+    };
+
+    const currentTags = ['beta', ...(body.addTags || [])].filter(
+      (t) => !(body.removeTags || []).includes(t)
+    );
+    const currentCategories = ['orders', ...(body.addCategories || [])].filter(
+      (c) => !(body.removeCategories || []).includes(c)
+    );
+
+    return HttpResponse.json({
+      success: true,
+      entityName: name,
+      currentTags,
+      currentCategories,
+      message: 'Labels updated successfully',
+    });
+  }),
+
+  // POST /api/v1/workflows/labels/bulk - Bulk update workflow labels
+  http.post(`${API_BASE}/workflows/labels/bulk`, async ({ request }) => {
+    await delay(300);
+    const body = (await request.json()) as {
+      entityNames: string[];
+      addTags?: string[];
+      removeTags?: string[];
+      addCategories?: string[];
+      removeCategories?: string[];
+      dryRun?: boolean;
+    };
+
+    const changes = body.entityNames.map((name) => ({
+      name,
+      addedTags: body.addTags || [],
+      removedTags: body.removeTags || [],
+      addedCategories: body.addCategories || [],
+      removedCategories: body.removeCategories || [],
+    }));
+
+    return HttpResponse.json({
+      success: true,
+      affectedEntities: body.entityNames.length,
+      isDryRun: body.dryRun || false,
+      changes,
+      message: body.dryRun ? 'Dry run completed' : 'Bulk update completed',
+    });
+  }),
+
+  // POST /api/v1/tasks/labels/bulk - Bulk update task labels
+  http.post(`${API_BASE}/tasks/labels/bulk`, async ({ request }) => {
+    await delay(300);
+    const body = (await request.json()) as {
+      entityNames: string[];
+      addTags?: string[];
+      removeTags?: string[];
+      addCategories?: string[];
+      removeCategories?: string[];
+      dryRun?: boolean;
+    };
+
+    const changes = body.entityNames.map((name) => ({
+      name,
+      addedTags: body.addTags || [],
+      removedTags: body.removeTags || [],
+      addedCategories: body.addCategories || [],
+      removedCategories: body.removeCategories || [],
+    }));
+
+    return HttpResponse.json({
+      success: true,
+      affectedEntities: body.entityNames.length,
+      isDryRun: body.dryRun || false,
+      changes,
+      message: body.dryRun ? 'Dry run completed' : 'Bulk update completed',
+    });
+  }),
 ];

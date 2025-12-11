@@ -947,7 +947,7 @@ export function useRunHealthCheck() {
 // BLAST RADIUS QUERIES
 // ============================================================================
 
-import type { BlastRadiusResponse } from './types';
+import type { BlastRadiusResponse, CacheStats } from './types';
 
 /**
  * Fetch blast radius analysis for a task
@@ -974,5 +974,235 @@ export function useBlastRadius(
     staleTime: 60000, // 1 minute (blast radius doesn't change frequently)
     gcTime: 300000, // 5 minutes
     enabled: enabled && !!taskName,
+  });
+}
+
+// ============================================================================
+// LABEL QUERIES & MUTATIONS
+// ============================================================================
+
+import type {
+  LabelListResponse,
+  LabelStatsResponse,
+  UpdateLabelsRequest,
+  UpdateLabelsResponse,
+  BulkLabelsRequest,
+  BulkLabelsResponse,
+} from '@/types/label';
+
+/**
+ * Query key factory for labels
+ */
+export const labelQueryKeys = {
+  all: ['labels'] as const,
+  list: () => [...labelQueryKeys.all, 'list'] as const,
+  stats: () => [...labelQueryKeys.all, 'stats'] as const,
+};
+
+/**
+ * Fetch all available labels (tags and categories) with usage counts
+ */
+export function useLabels() {
+  return useQuery({
+    queryKey: labelQueryKeys.list(),
+    queryFn: async () => {
+      const data = await fetchJson<LabelListResponse>(`${API_BASE_URL}/labels`);
+      return data;
+    },
+    staleTime: 60000, // 1 minute
+    gcTime: 300000, // 5 minutes
+  });
+}
+
+/**
+ * Fetch label statistics
+ */
+export function useLabelStats() {
+  return useQuery({
+    queryKey: labelQueryKeys.stats(),
+    queryFn: async () => {
+      const data = await fetchJson<LabelStatsResponse>(`${API_BASE_URL}/labels/stats`);
+      return data;
+    },
+    staleTime: 60000, // 1 minute
+    gcTime: 300000, // 5 minutes
+  });
+}
+
+/**
+ * Update labels on a single workflow
+ */
+export function useUpdateWorkflowLabels() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      workflowName,
+      request,
+    }: {
+      workflowName: string;
+      request: UpdateLabelsRequest;
+    }) => {
+      const data = await fetchJson<UpdateLabelsResponse>(
+        `${API_BASE_URL}/workflows/${encodeURIComponent(workflowName)}/labels`,
+        {
+          method: 'PATCH',
+          body: JSON.stringify(request),
+        }
+      );
+      return data;
+    },
+    onSuccess: () => {
+      // Invalidate workflows to reflect label changes
+      queryClient.invalidateQueries({ queryKey: ['workflows'] });
+      // Invalidate labels to update counts
+      queryClient.invalidateQueries({ queryKey: labelQueryKeys.all });
+    },
+  });
+}
+
+/**
+ * Update labels on a single task
+ */
+export function useUpdateTaskLabels() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      taskName,
+      request,
+    }: {
+      taskName: string;
+      request: UpdateLabelsRequest;
+    }) => {
+      const data = await fetchJson<UpdateLabelsResponse>(
+        `${API_BASE_URL}/tasks/${encodeURIComponent(taskName)}/labels`,
+        {
+          method: 'PATCH',
+          body: JSON.stringify(request),
+        }
+      );
+      return data;
+    },
+    onSuccess: () => {
+      // Invalidate tasks to reflect label changes
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      // Invalidate labels to update counts
+      queryClient.invalidateQueries({ queryKey: labelQueryKeys.all });
+    },
+  });
+}
+
+/**
+ * Bulk update labels on multiple workflows
+ */
+export function useBulkUpdateWorkflowLabels() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (request: BulkLabelsRequest) => {
+      const data = await fetchJson<BulkLabelsResponse>(
+        `${API_BASE_URL}/workflows/labels/bulk`,
+        {
+          method: 'POST',
+          body: JSON.stringify(request),
+        }
+      );
+      return data;
+    },
+    onSuccess: (data) => {
+      // Only invalidate if not a dry run
+      if (!data.isDryRun) {
+        queryClient.invalidateQueries({ queryKey: ['workflows'] });
+        queryClient.invalidateQueries({ queryKey: labelQueryKeys.all });
+      }
+    },
+  });
+}
+
+/**
+ * Bulk update labels on multiple tasks
+ */
+export function useBulkUpdateTaskLabels() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (request: BulkLabelsRequest) => {
+      const data = await fetchJson<BulkLabelsResponse>(
+        `${API_BASE_URL}/tasks/labels/bulk`,
+        {
+          method: 'POST',
+          body: JSON.stringify(request),
+        }
+      );
+      return data;
+    },
+    onSuccess: (data) => {
+      // Only invalidate if not a dry run
+      if (!data.isDryRun) {
+        queryClient.invalidateQueries({ queryKey: ['tasks'] });
+        queryClient.invalidateQueries({ queryKey: labelQueryKeys.all });
+      }
+    },
+  });
+}
+
+// ============================================================================
+// Cache Management Queries (Stage 39.3)
+// ============================================================================
+
+const cacheQueryKeys = {
+  all: ['cache'] as const,
+  stats: () => [...cacheQueryKeys.all, 'stats'] as const,
+};
+
+/**
+ * Hook to fetch cache statistics
+ */
+export function useCacheStats() {
+  return useQuery({
+    queryKey: cacheQueryKeys.stats(),
+    queryFn: async () => {
+      const data = await fetchJson<CacheStats>(`${API_BASE_URL}/cache/stats`);
+      return data;
+    },
+    refetchInterval: 30000, // Auto-refresh every 30 seconds
+  });
+}
+
+/**
+ * Hook to invalidate a specific cache key
+ */
+export function useInvalidateCache() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (cacheKey: string) => {
+      await fetchJson(`${API_BASE_URL}/cache/invalidate`, {
+        method: 'POST',
+        body: JSON.stringify({ key: cacheKey }),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: cacheQueryKeys.all });
+    },
+  });
+}
+
+/**
+ * Hook to clear all cache entries
+ */
+export function useClearCache() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      await fetchJson(`${API_BASE_URL}/cache/clear`, {
+        method: 'POST',
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: cacheQueryKeys.all });
+    },
   });
 }

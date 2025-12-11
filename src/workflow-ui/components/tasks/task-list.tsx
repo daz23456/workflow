@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { useTasks } from '@/lib/api/queries';
+import { useTasks, useLabels } from '@/lib/api/queries';
 import type { Task } from '@/types/task';
 import { TaskFilters } from './task-filters';
 import { TaskCard } from './task-card';
@@ -27,11 +27,16 @@ export function TaskList({ defaultFilters }: TaskListProps) {
     search: defaultFilters?.search || '',
     namespace: defaultFilters?.namespace,
     sort: defaultFilters?.sort || 'name',
+    tags: [] as string[],
+    category: undefined as string | undefined,
   });
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [filterResetKey, setFilterResetKey] = useState(0);
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Fetch available labels for filter dropdowns
+  const { data: labelsData } = useLabels();
 
   // Debounce search to avoid too many API calls
   const [debouncedSearch, setDebouncedSearch] = useState(filters.search);
@@ -110,7 +115,9 @@ export function TaskList({ defaultFilters }: TaskListProps) {
   const activeFilterCount =
     (filters.search ? 1 : 0) +
     (filters.namespace ? 1 : 0) +
-    (filters.sort && filters.sort !== 'name' ? 1 : 0);
+    (filters.sort && filters.sort !== 'name' ? 1 : 0) +
+    filters.tags.length +
+    (filters.category ? 1 : 0);
 
   const hasActiveFilters = activeFilterCount > 0;
 
@@ -118,11 +125,31 @@ export function TaskList({ defaultFilters }: TaskListProps) {
     router.push(`/tasks/${taskName}`);
   };
 
+  // Handle clicking a tag on a task card - add to filters
+  const handleTagClick = useCallback((tag: string) => {
+    setFilters((prev) => ({
+      ...prev,
+      tags: prev.tags.includes(tag) ? prev.tags : [...prev.tags, tag],
+    }));
+    setPage(1);
+  }, []);
+
+  // Handle clicking a category on a task card - set as filter
+  const handleCategoryClick = useCallback((category: string) => {
+    setFilters((prev) => ({
+      ...prev,
+      category,
+    }));
+    setPage(1);
+  }, []);
+
   const handleClearFilters = useCallback(() => {
     setFilters({
       search: '',
       namespace: undefined,
       sort: 'name',
+      tags: [],
+      category: undefined,
     });
     setPage(1);
     // Force TaskFilters to reset by changing key
@@ -198,6 +225,8 @@ export function TaskList({ defaultFilters }: TaskListProps) {
       <TaskFilters
         key={filterResetKey}
         namespaces={namespaces}
+        availableTags={labelsData?.tags.map((t) => t.value) ?? []}
+        availableCategories={labelsData?.categories.map((c) => c.value) ?? []}
         onFilterChange={setFilters}
         defaultValues={filters}
         isLoading={isLoading}
@@ -272,7 +301,13 @@ export function TaskList({ defaultFilters }: TaskListProps) {
         <>
           <div className={`grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 ${isFetching ? 'opacity-60' : ''}`}>
             {sortedTasks.map((task) => (
-              <TaskCard key={task.name} task={task} onClick={() => handleCardClick(task.name)} />
+              <TaskCard
+                key={task.name}
+                task={task}
+                onClick={() => handleCardClick(task.name)}
+                onTagClick={handleTagClick}
+                onCategoryClick={handleCategoryClick}
+              />
             ))}
           </div>
 

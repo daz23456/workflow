@@ -10,6 +10,7 @@ import { SlowestWorkflowsPanel } from './slowest-workflows-panel';
 import { LatencyChart } from './latency-chart';
 import { LatencyDistribution } from './latency-distribution';
 import { HealthSummaryPanel } from './health-summary-panel';
+import { CacheStatsPanel } from './cache-stats-panel';
 
 export function Dashboard() {
   const [timeRange, setTimeRange] = useState<TimeRange>('24h');
@@ -66,7 +67,7 @@ export function Dashboard() {
             workflowName={selectedWorkflow}
           />
         </div>
-        {/* Right column: Health summary and slowest workflows */}
+        {/* Right column: Health summary, slowest workflows, and cache stats */}
         <div className="space-y-4">
           <HealthSummaryPanel />
           <SlowestWorkflowsPanel
@@ -75,6 +76,7 @@ export function Dashboard() {
             selectedWorkflow={selectedWorkflow}
             onSelectWorkflow={setSelectedWorkflow}
           />
+          <CacheStatsPanel />
         </div>
       </div>
 

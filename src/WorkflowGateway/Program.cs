@@ -146,6 +146,7 @@ else
     builder.Services.AddDistributedMemoryCache();
 }
 builder.Services.AddSingleton<ITaskCacheProvider, DistributedTaskCacheProvider>();
+builder.Services.AddSingleton<ICacheStatsService, InMemoryCacheStatsService>();
 
 // Register response storage and handlers
 builder.Services.AddScoped<WorkflowCore.Interfaces.IResponseStorage, HybridResponseStorage>();

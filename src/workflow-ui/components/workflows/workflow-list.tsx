@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { useWorkflows } from '@/lib/api/queries';
+import { useWorkflows, useLabels } from '@/lib/api/queries';
 import { WorkflowFilters } from './workflow-filters';
 import { WorkflowCard } from './workflow-card';
 import { WorkflowCardSkeleton } from './workflow-card-skeleton';
@@ -26,11 +26,16 @@ export function WorkflowList({ defaultFilters }: WorkflowListProps) {
     search: defaultFilters?.search || '',
     namespace: defaultFilters?.namespace,
     sort: defaultFilters?.sort || 'name',
+    tags: [] as string[],
+    categories: [] as string[],
   });
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [filterResetKey, setFilterResetKey] = useState(0);
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Fetch available labels for filter dropdowns
+  const { data: labelsData } = useLabels();
 
   // Debounce search to avoid too many API calls
   const [debouncedSearch, setDebouncedSearch] = useState(filters.search);
@@ -109,7 +114,9 @@ export function WorkflowList({ defaultFilters }: WorkflowListProps) {
   const activeFilterCount =
     (filters.search ? 1 : 0) +
     (filters.namespace ? 1 : 0) +
-    (filters.sort && filters.sort !== 'name' ? 1 : 0);
+    (filters.sort && filters.sort !== 'name' ? 1 : 0) +
+    filters.tags.length +
+    filters.categories.length;
 
   const hasActiveFilters = activeFilterCount > 0;
 
@@ -117,11 +124,31 @@ export function WorkflowList({ defaultFilters }: WorkflowListProps) {
     router.push(`/workflows/${workflowName}`);
   };
 
+  // Handle clicking a tag on a workflow card - add to filters
+  const handleTagClick = useCallback((tag: string) => {
+    setFilters((prev) => ({
+      ...prev,
+      tags: prev.tags.includes(tag) ? prev.tags : [...prev.tags, tag],
+    }));
+    setPage(1);
+  }, []);
+
+  // Handle clicking a category on a workflow card - add to filters
+  const handleCategoryClick = useCallback((category: string) => {
+    setFilters((prev) => ({
+      ...prev,
+      categories: prev.categories.includes(category) ? prev.categories : [...prev.categories, category],
+    }));
+    setPage(1);
+  }, []);
+
   const handleClearFilters = useCallback(() => {
     setFilters({
       search: '',
       namespace: undefined,
       sort: 'name',
+      tags: [],
+      categories: [],
     });
     setPage(1);
     // Force WorkflowFilters to reset by changing key
@@ -197,6 +224,8 @@ export function WorkflowList({ defaultFilters }: WorkflowListProps) {
       <WorkflowFilters
         key={filterResetKey}
         namespaces={namespaces}
+        availableTags={labelsData?.tags.map((t) => t.value) ?? []}
+        availableCategories={labelsData?.categories.map((c) => c.value) ?? []}
         onFilterChange={setFilters}
         defaultValues={filters}
         isLoading={isLoading}
@@ -278,6 +307,8 @@ export function WorkflowList({ defaultFilters }: WorkflowListProps) {
                 key={workflow.name}
                 workflow={workflow}
                 onClick={() => handleCardClick(workflow.name)}
+                onTagClick={handleTagClick}
+                onCategoryClick={handleCategoryClick}
               />
             ))}
           </div>

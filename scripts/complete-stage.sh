@@ -5,12 +5,20 @@
 #
 # Automates ALL post-gate steps that are commonly forgotten:
 # 1. Validates gates passed
-# 2. Extracts metrics from gate outputs
-# 3. Updates proof file with actual data
-# 4. Generates CHANGELOG entry
-# 5. Creates commit
-# 6. Updates proof with commit hash
-# 7. Creates git tag
+# 2. Validates screenshots captured (if UI stage)
+# 3. Extracts metrics from gate outputs
+# 4. Validates proof file completeness
+# 5. Generates CHANGELOG entry
+# 6. Updates stage state
+# 7. Creates implementation commit
+# 8. Updates proof with commit hash
+# 9. Creates git tag
+# 10. Updates documentation files:
+#     - CLAUDE.md (completed stages table)
+#     - COMPLETED_STAGES_ARCHIVE.md (stage section)
+#     - docs/FUTURE_STAGES.md (mark complete)
+# 11. Creates documentation commit
+# 12. Generates MR/PR description
 #
 # Usage:
 #   ./scripts/complete-stage.sh --stage 9.7 --name "Transform DSL"
@@ -385,16 +393,157 @@ else
 fi
 
 ###############################################################################
-# Step 9: Update stage state to complete
+# Step 9: Update documentation files
+###############################################################################
+print_info "Step 9: Updating documentation files..."
+
+update_claude_md() {
+    local stage_num="$1"
+    local stage_name="$2"
+    local tests="$3"
+    local coverage="$4"
+
+    # Add stage to completed stages table in CLAUDE.md
+    # Find the last row in the table and add after it
+    local table_row="| $stage_num | $stage_name | $tests | $coverage% | stage-proofs/stage-$stage_num/ |"
+
+    # Check if entry already exists
+    if grep -q "| $stage_num |" CLAUDE.md 2>/dev/null; then
+        print_warning "CLAUDE.md already has entry for Stage $stage_num"
+        return 0
+    fi
+
+    # Find the line with "## Completed Stages" and the table, then add after last row
+    # Use awk to find the table and insert before the empty line after it
+    local temp_file=$(mktemp)
+    awk -v row="$table_row" '
+        /^\| [0-9]/ { last_table_line = NR; last_content = $0 }
+        { lines[NR] = $0 }
+        END {
+            for (i = 1; i <= NR; i++) {
+                print lines[i]
+                if (i == last_table_line) {
+                    print row
+                }
+            }
+        }
+    ' CLAUDE.md > "$temp_file" && mv "$temp_file" CLAUDE.md
+
+    # Update stage count (find "X stages/substages complete" and increment)
+    local current_count=$(grep -oE "[0-9]+ stages/substages complete" CLAUDE.md | grep -oE "^[0-9]+")
+    if [[ -n "$current_count" ]]; then
+        local new_count=$((current_count + 1))
+        sed -i '' "s/${current_count} stages\/substages complete/${new_count} stages\/substages complete/" CLAUDE.md
+    fi
+
+    print_success "CLAUDE.md updated"
+}
+
+update_completed_archive() {
+    local stage_num="$1"
+    local stage_name="$2"
+    local tests="$3"
+    local coverage="$4"
+
+    # Check if entry already exists
+    if grep -q "## Stage $stage_num:" COMPLETED_STAGES_ARCHIVE.md 2>/dev/null; then
+        print_warning "COMPLETED_STAGES_ARCHIVE.md already has entry for Stage $stage_num"
+        return 0
+    fi
+
+    # Add stage section at the end of the file
+    cat >> COMPLETED_STAGES_ARCHIVE.md << EOF
+
+---
+
+## Stage $stage_num: $stage_name
+
+**Completed:** $(date +%Y-%m-%d)
+**Tests:** $tests passing
+**Coverage:** $coverage%
+
+### Deliverables
+EOF
+
+    # Extract deliverables from proof file if available
+    if [[ -f "$PROOF_FILE" ]]; then
+        grep -A 30 "## 📦 Deliverables" "$PROOF_FILE" | grep "^\- \[x\]" | head -10 >> COMPLETED_STAGES_ARCHIVE.md 2>/dev/null || echo "- See proof file for details" >> COMPLETED_STAGES_ARCHIVE.md
+    else
+        echo "- See proof file for details" >> COMPLETED_STAGES_ARCHIVE.md
+    fi
+
+    print_success "COMPLETED_STAGES_ARCHIVE.md updated"
+}
+
+update_future_stages() {
+    local stage_num="$1"
+    local stage_name="$2"
+
+    # Mark stage as complete in FUTURE_STAGES.md
+    # Look for the stage number and update its status
+    if [[ -f "docs/FUTURE_STAGES.md" ]]; then
+        # Check if stage exists in file
+        if grep -q "Stage $stage_num" docs/FUTURE_STAGES.md 2>/dev/null || grep -q "\*\*$stage_num\*\*" docs/FUTURE_STAGES.md 2>/dev/null; then
+            # Try to mark it complete - look for the stage line and add ✅ if not present
+            sed -i '' "s/^\(\*\*$stage_num\*\*.*\)$/\1 ✅ COMPLETE/" docs/FUTURE_STAGES.md 2>/dev/null || true
+            print_success "docs/FUTURE_STAGES.md updated"
+        else
+            print_info "Stage $stage_num not found in FUTURE_STAGES.md - may be a new stage"
+        fi
+    else
+        print_warning "docs/FUTURE_STAGES.md not found"
+    fi
+}
+
+if [[ "$DRY_RUN" == true ]]; then
+    print_warning "[DRY-RUN] Would update CLAUDE.md, COMPLETED_STAGES_ARCHIVE.md, docs/FUTURE_STAGES.md"
+else
+    update_claude_md "$STAGE_NUM" "$STAGE_NAME" "$TESTS_PASSED" "$COVERAGE"
+    update_completed_archive "$STAGE_NUM" "$STAGE_NAME" "$TESTS_PASSED" "$COVERAGE"
+    update_future_stages "$STAGE_NUM" "$STAGE_NAME"
+fi
+
+###############################################################################
+# Step 10: Commit documentation updates
+###############################################################################
+print_info "Step 10: Committing documentation updates..."
+
+DOC_COMMIT_MSG="📚 Update docs for Stage $STAGE_NUM completion
+
+- Updated CLAUDE.md completed stages table
+- Added Stage $STAGE_NUM to COMPLETED_STAGES_ARCHIVE.md
+- Marked Stage $STAGE_NUM complete in FUTURE_STAGES.md
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>"
+
+if [[ "$DRY_RUN" == true ]]; then
+    print_warning "[DRY-RUN] Would commit documentation updates"
+else
+    # Stage documentation files
+    git add CLAUDE.md COMPLETED_STAGES_ARCHIVE.md docs/FUTURE_STAGES.md 2>/dev/null || true
+
+    # Check if there are changes to commit
+    if git diff --cached --quiet; then
+        print_info "No documentation changes to commit"
+    else
+        git commit -m "$DOC_COMMIT_MSG"
+        print_success "Documentation commit created"
+    fi
+fi
+
+###############################################################################
+# Step 11: Update stage state to complete
 ###############################################################################
 if [[ "$DRY_RUN" == false ]]; then
     sed -i '' 's/status: completing/status: complete/' "$STATE_FILE"
 fi
 
 ###############################################################################
-# Step 10: Generate MR/PR description with screenshots
+# Step 12: Generate MR/PR description with screenshots
 ###############################################################################
-print_info "Step 10: Generating MR description..."
+print_info "Step 12: Generating MR description..."
 
 MR_FILE="$STAGE_DIR/MR_DESCRIPTION.md"
 COMMIT_HASH_FINAL=$(git log -1 --format=%h)
@@ -499,4 +648,9 @@ echo -e "${BOLD}Next Steps:${NC}"
 echo "  1. Review MR description: cat $MR_FILE"
 echo "  2. Create MR/PR using the generated description"
 echo "  3. Push to remote: git push origin HEAD --tags"
+echo ""
+echo -e "${BOLD}Automated Documentation Updates:${NC}"
+echo "  ✅ CLAUDE.md - completed stages table updated"
+echo "  ✅ COMPLETED_STAGES_ARCHIVE.md - stage section added"
+echo "  ✅ docs/FUTURE_STAGES.md - stage marked complete"
 echo ""

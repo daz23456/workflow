@@ -344,7 +344,80 @@ export const Default: Story = {
 
 **Then run optional gates:** 7 (Mutation), 13 (Documentation), 10-12, 14-20
 
-**Complete proof file, commit, tag** (see [.claude/stage-completion-checklist.md](./.claude/stage-completion-checklist.md) for details)
+### Stage Completion Checklist (MANDATORY)
+
+After all gates pass, complete these steps **in order**:
+
+#### Step 1: Fill Proof File
+- Complete `stage-proofs/stage-X/STAGE_X_PROOF.md`
+- Fill ALL placeholders (no [TBD], [N/N], [XX%])
+- Include actual test counts, coverage percentages, deliverables
+
+#### Step 2: Commit Stage Implementation
+```bash
+git add src/ tests/ stage-proofs/stage-X/
+git commit -m "✅ Stage X Complete: [Stage Name]
+
+[Brief description of what was implemented]
+
+Deliverables:
+- [List key deliverables]
+
+Tests: [N] new tests ([coverage]% coverage)
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>"
+```
+
+#### Step 3: Create Tag
+```bash
+git tag -a stage-X-complete -m "Stage X complete: [Stage Name]"
+```
+
+#### Step 4: Update Documentation (REQUIRED - DO NOT SKIP)
+Update these three files to reflect the completed stage:
+
+1. **CLAUDE.md** - Completed Stages table:
+   - Increment stage count (e.g., "72 stages" → "73 stages")
+   - Add row: `| X | [Stage Name] | [tests] | [coverage] | stage-proofs/stage-X/ |`
+
+2. **COMPLETED_STAGES_ARCHIVE.md** - Add section:
+   ```markdown
+   ### Stage X: [Stage Name]
+   **Status:** ✅ Complete - See `stage-proofs/stage-X/STAGE_X_PROOF.md`
+
+   1. **[Deliverable 1]** - [Description]
+   2. **[Deliverable 2]** - [Description]
+   ...
+   ```
+
+3. **docs/FUTURE_STAGES.md** - Mark substage complete:
+   - Find `#### X: [Stage Name]`
+   - Add `✅ COMPLETE` after the title
+   - Update description with actual implementation details
+
+#### Step 5: Commit Documentation Updates
+```bash
+git add CLAUDE.md COMPLETED_STAGES_ARCHIVE.md docs/FUTURE_STAGES.md
+git commit -m "📚 Update docs for Stage X completion
+
+- CLAUDE.md: Update count to N stages, add X to table
+- COMPLETED_STAGES_ARCHIVE.md: Add Stage X deliverables
+- FUTURE_STAGES.md: Mark X as complete
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>"
+```
+
+#### Step 6: Verify Completion
+```bash
+git log --oneline -3  # Should show implementation + docs commits
+git tag -l "stage-X*"  # Should show stage-X-complete tag
+```
+
+**⚠️ IMPORTANT:** Steps 4-5 are MANDATORY. Do not consider a stage complete until documentation is updated.
 
 ---
 

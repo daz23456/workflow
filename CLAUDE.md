@@ -117,7 +117,7 @@ workflow-operator/
 
 ## Completed Stages
 
-**Status:** 74 stages/substages complete - Stage 8 SKIPPED (architectural decision)
+**Status:** 76 stages/substages complete - Stage 8 SKIPPED (architectural decision)
 
 For detailed deliverables and TDD instructions, see `COMPLETED_STAGES_ARCHIVE.md`.
 For proof of completion, see the respective `STAGE_X_PROOF.md` files or `stage-proofs/` directory.
@@ -164,6 +164,8 @@ For proof of completion, see the respective `STAGE_X_PROOF.md` files or `stage-p
 | 32.1-32.5 | Workflow & Task Label Management | - | - | stage-proofs/stage-32.5/ |
 | 33.1-33.3 | Blast Radius Analysis | 40+ | - | stage-proofs/stage-33.3/ |
 | 39.1 | Task-Level Caching | 47 | 97% | stage-proofs/stage-39.1/ |
+| 39.2 | Advanced Cache Patterns | 21 | 98% | stage-proofs/stage-39.2/ |
+| 39.3 | Cache Management UI | 20 | - | stage-proofs/stage-39.3/ |
 
 ---
 

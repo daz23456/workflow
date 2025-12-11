@@ -39,6 +39,7 @@ print_info() { echo -e "${CYAN}ℹ️  $1${NC}"; }
 STAGE_NUM=""
 STAGE_NAME=""
 PROFILE="BACKEND_DOTNET"
+PACKAGE=""
 USE_WORKTREE=false
 PROJECT_NAME=$(basename "$(pwd)")
 
@@ -56,6 +57,10 @@ while [[ $# -gt 0 ]]; do
             PROFILE="$2"
             shift 2
             ;;
+        --package)
+            PACKAGE="$2"
+            shift 2
+            ;;
         --worktree)
             USE_WORKTREE=true
             shift
@@ -68,11 +73,13 @@ while [[ $# -gt 0 ]]; do
             echo "  --name <name>        Stage name (required)"
             echo "  --profile <profile>  Gate profile: BACKEND_DOTNET, FRONTEND_TS, MINIMAL"
             echo "                       (default: BACKEND_DOTNET)"
+            echo "  --package <name>     Package filter for turbo (monorepo)"
+            echo "                       Auto-detected from profile if not specified"
             echo "  --worktree           Create a git worktree for this stage"
             echo ""
             echo "Gate Profiles:"
-            echo "  BACKEND_DOTNET  Gates 1-8           (.NET API/service)"
-            echo "  FRONTEND_TS     Gates 1-8, 14, 15   (TypeScript UI)"
+            echo "  BACKEND_DOTNET  Gates 1-8           (.NET API/service, no package filter)"
+            echo "  FRONTEND_TS     Gates 1-8, 14, 15   (TypeScript UI, package: workflow-ui)"
             echo "  MINIMAL         Gates 1-8           (POC, small fixes)"
             exit 0
             ;;
@@ -105,15 +112,21 @@ case $PROFILE in
         ;;
 esac
 
-# Determine gates based on profile
+# Determine gates and auto-detect package based on profile
 case $PROFILE in
     BACKEND_DOTNET)
         GATES="1 2 3 4 5 6 7 8"
         TECH_STACK=".NET"
+        # No package filter for .NET (uses dotnet test)
         ;;
     FRONTEND_TS)
         GATES="1 2 3 4 5 6 7 8 14 15"
         TECH_STACK="TypeScript"
+        # Auto-detect package if not specified
+        if [[ -z "$PACKAGE" ]]; then
+            PACKAGE="workflow-ui"
+            print_info "Auto-detected package: $PACKAGE (from FRONTEND_TS profile)"
+        fi
         ;;
     MINIMAL)
         GATES="1 2 3 5 6 7 8"
@@ -201,6 +214,7 @@ stage: "$STAGE_NUM"
 name: "$STAGE_NAME"
 profile: "$PROFILE"
 tech_stack: "$TECH_STACK"
+package: "${PACKAGE:-none}"
 gates: [$GATES]
 
 status: before  # before | during | after | complete

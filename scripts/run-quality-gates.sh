@@ -70,6 +70,9 @@ TECH_STACK=""
 # Stage number (required parameter)
 STAGE_NUM=""
 
+# Package filter (optional - for monorepo filtering)
+PACKAGE_FILTER=""
+
 ###############################################################################
 # Helper Functions
 ###############################################################################
@@ -129,6 +132,17 @@ safe_array_length() {
     echo "${#arr[@]}"
 }
 
+# Build turbo command with optional package filter
+# Usage: build_turbo_cmd "test:coverage" -> "pnpm turbo test:coverage --filter=workflow-ui"
+build_turbo_cmd() {
+    local task="$1"
+    if [[ -n "$PACKAGE_FILTER" ]]; then
+        echo "pnpm turbo $task --filter=$PACKAGE_FILTER"
+    else
+        echo "pnpm turbo $task"
+    fi
+}
+
 detect_tech_stack() {
     if [[ -n "$TECH_STACK" ]]; then
         # Already set via command line
@@ -158,6 +172,8 @@ USAGE:
 OPTIONS:
     --stage <number>   Stage number (REQUIRED) - outputs to stage-proofs/stage-N/
                        Examples: --stage 5, --stage 7.5, --stage 9.1
+    --package <name>   Filter to specific package (for monorepo turbo commands)
+                       Examples: --package workflow-ui, --package @workflow/cli
     --dotnet           Force .NET tech stack
     --typescript       Force TypeScript tech stack
     --help             Show this help message
@@ -242,10 +258,12 @@ run_gate_1() {
             return 1
         fi
     else
-        print_info "Running: npm run clean && npm run build && npm run type-check"
-        if npm run clean &>"$output_file.tmp" && \
-           npm run build &>"$output_file" && \
-           npm run type-check >> "$output_file" 2>&1; then
+        local build_cmd=$(build_turbo_cmd "build")
+        local typecheck_cmd=$(build_turbo_cmd "type-check")
+        print_info "Running: pnpm turbo clean && $build_cmd && $typecheck_cmd"
+        if pnpm turbo clean &>"$output_file.tmp" && \
+           $build_cmd &>"$output_file" && \
+           $typecheck_cmd >> "$output_file" 2>&1; then
             print_success "Build succeeded"
             GATES_PASSED+=("1")
             return 0
@@ -364,8 +382,9 @@ run_gate_3() {
             return 1
         fi
     else
-        print_info "Running: npm run test:coverage"
-        if npm run test:coverage &>"$output_file"; then
+        local turbo_cmd=$(build_turbo_cmd "test:coverage")
+        print_info "Running: $turbo_cmd"
+        if $turbo_cmd &>"$output_file"; then
             # Extract coverage percentage from vitest/istanbul table format
             # Format: "All files          |   89.42 |    82.97 |   88.94 |   90.54 |"
             # We want the last percentage (Lines column)
@@ -543,8 +562,9 @@ run_gate_8() {
         # Auto-format first, then lint
         print_info "Running: npm run format (auto-format)"
         npm run format &>"$output_file"
-        print_info "Running: npx oxlint src/ && npm run lint"
-        if npx oxlint src/ >> "$output_file" 2>&1 && npm run lint >> "$output_file" 2>&1; then
+        local lint_cmd=$(build_turbo_cmd "lint")
+        print_info "Running: npx oxlint src/ && $lint_cmd"
+        if npx oxlint src/ >> "$output_file" 2>&1 && $lint_cmd >> "$output_file" 2>&1; then
             print_success "Linting passed"
             GATES_PASSED+=("8")
             return 0
@@ -567,8 +587,9 @@ run_gate_9() {
         return 0
     fi
 
-    print_info "Running: npm run type-check"
-    if npm run type-check &>"$output_file"; then
+    local typecheck_cmd=$(build_turbo_cmd "type-check")
+    print_info "Running: $typecheck_cmd"
+    if $typecheck_cmd &>"$output_file"; then
         print_success "Type check passed"
         GATES_PASSED+=("9")
         return 0
@@ -780,6 +801,10 @@ main() {
                 TECH_STACK="typescript"
                 shift
                 ;;
+            --package)
+                PACKAGE_FILTER="$2"
+                shift 2
+                ;;
             --help)
                 show_help
                 exit 0
@@ -813,6 +838,15 @@ main() {
     STAGE_DIR="stage-proofs/stage-$STAGE_NUM"
     OUTPUT_DIR="$STAGE_DIR/reports/gates"
 
+    # Auto-detect package from stage state file if not provided via --package
+    if [[ -z "$PACKAGE_FILTER" && -f "$STAGE_DIR/.stage-state.yaml" ]]; then
+        local state_package=$(grep "^package:" "$STAGE_DIR/.stage-state.yaml" | sed 's/package: *//' | tr -d '"' || echo "")
+        if [[ -n "$state_package" && "$state_package" != "none" ]]; then
+            PACKAGE_FILTER="$state_package"
+            print_info "Auto-detected package from stage state: $PACKAGE_FILTER"
+        fi
+    fi
+
     # Create all required subdirectories
     mkdir -p "$STAGE_DIR/reports"/{gates,coverage,test-results,mutation,benchmarks}
 
@@ -824,6 +858,9 @@ main() {
 
     print_info "Stage: $STAGE_NUM"
     print_info "Tech stack: $TECH_STACK"
+    if [[ -n "$PACKAGE_FILTER" ]]; then
+        print_info "Package filter: $PACKAGE_FILTER"
+    fi
     print_info "Gates to run: ${gates_to_run[*]}"
     print_info "Output directory: $OUTPUT_DIR"
     print_info "Reports directory: $STAGE_DIR/reports/"

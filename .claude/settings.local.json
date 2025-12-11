@@ -52,7 +52,8 @@
       "Bash(do basename $f)",
       "Bash(comm:*)",
       "Bash(ls:*)",
-      "Bash(./scripts/generate-screenshot-manifest.sh:*)"
+      "Bash(./scripts/generate-screenshot-manifest.sh:*)",
+      "Bash(bash -c 'AFFECTED=$(grep \"\"affected_ui_pages:\"\" stage-proofs/stage-43.6/.stage-state.yaml | sed \"\"s/affected_ui_pages:\\s*//\"\" | tr -d \"\"[]\"\"); echo \"\"AFFECTED=|$AFFECTED|\"\"; echo \"\"Length: ${#AFFECTED}\"\"')"
     ],
     "deny": [],
     "ask": []

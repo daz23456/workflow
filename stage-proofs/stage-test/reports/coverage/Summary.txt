@@ -1,6 +1,0 @@
-Line coverage: 92.5%
-Branch coverage: 88.3%
-
-Test coverage summary
-Total lines: 450
-Covered lines: 416
